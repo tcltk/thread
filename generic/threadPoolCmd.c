@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.12 2002/12/09 17:02:01 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.13 2002/12/11 22:56:49 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -163,6 +163,9 @@ TpoolRelease   _ANSI_ARGS_((ThreadPool *tpoolPtr));
 static void
 InitWaiter     _ANSI_ARGS_((void));
 
+static void
+GetTime        _ANSI_ARGS_((Tcl_Time *timePtr));
+
 
 /*
  *----------------------------------------------------------------------
@@ -224,14 +227,9 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
                 return TCL_ERROR;
             }
         } else if (OPT_CMP(opt, "-idletimer")) {
-#if (TCL_MAJOR_VERSION >= 8) && (TCL_MINOR_VERSION <= 3)
-            Tcl_AppendResult(interp, "-idletimer requires Tcl 8.4+", NULL);
-            return TCL_ERROR;
-#else
             if (Tcl_GetIntFromObj(interp, objv[ii+1], &idle) != TCL_OK) {
                 return TCL_ERROR;
             }
-#endif
         } else if (OPT_CMP(opt, "-initscript")) {
             char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
             cmd  = strcpy(Tcl_Alloc(len+1), val);
@@ -403,7 +401,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     memset(rPtr, 0, sizeof(TpoolResult));
 
     if (detached == 0) {
-        jobId = tpoolPtr->jobId++;
+        jobId = ++tpoolPtr->jobId;
         rPtr->jobId = jobId;
     }
 
@@ -956,19 +954,15 @@ TpoolWorker(clientData)
         tpoolPtr->idleWorkers++;
         SignalWaiter(tpoolPtr); /* Another worker available */
         while (!tpoolPtr->tearDown && !(rPtr = PopWork(tpoolPtr))) {
-#if (TCL_MAJOR_VERSION >= 8) && (TCL_MINOR_VERSION <= 3)
-            Tcl_ConditionWait(&tpoolPtr->cond, &tpoolPtr->mutex, NULL);
-#else
             Tcl_Time t1,t2;
-            Tcl_GetTime(&t1);
+            GetTime(&t1);
             Tcl_ConditionWait(&tpoolPtr->cond, &tpoolPtr->mutex, idlePtr);
-            Tcl_GetTime(&t2);
+            GetTime(&t2);
             if (tpoolPtr->idleTime) {
                 if ((t2.sec - t1.sec) >= tpoolPtr->idleTime) {
                     tout = 1;
                 }
             }
-#endif
         }
         tpoolPtr->idleWorkers--;
         if (tpoolPtr->tearDown || tout) {
@@ -1539,6 +1533,48 @@ ExitHandler(clientData)
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     Tcl_Free((char*)tsdPtr->waitPtr);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * GetTime --
+ *
+ *  Wrapper for the Tcl_GetTime which is not available for 8.3
+ *
+ * Results:
+ *  None.
+ *
+ * Side effects:
+ *  None.
+ *
+ *----------------------------------------------------------------------
+ */
+static void
+GetTime(timePtr)
+    Tcl_Time *timePtr;
+{
+    int maj, min, patch, type;
+
+    Tcl_GetVersion(&maj, &min, &patch, &type);
+
+    if ((maj == 8) && (min <= 3)) {
+#ifdef __WIN32__
+        struct timeb t;
+        ftime(&t);
+        timePtr->sec  = t.time;
+        timePtr->usec = t.millitm * 1000;
+#else
+#include <sys/time.h>
+        struct timeval tv;
+        struct timezone tz;
+        (void)gettimeofday(&tv, &tz);
+        timePtr->sec  = tv.tv_sec;
+        timePtr->usec = tv.tv_usec;
+#endif  
+    } else {
+        Tcl_GetTime(timePtr);
+    }
 }
 
 /*
