@@ -1,3 +1,12 @@
+2004-01-31 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: fixed incorrect handling of return
+        codes from the scripts passed to threads. We were wrongly
+        triggering error for non-error return codes such as TCL_RETURN,
+	TCL_BREAK, TCL_CONTINUE etc. Now we trigger error only for
+	TCL_ERROR and return other codes (as-is) to the caller.
+	This also fixes the Tcl Bug #884549.
+
 2003-12-22 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadSpCmd.c: added recursive and reader/writer locks
