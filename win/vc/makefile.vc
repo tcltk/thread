@@ -4,7 +4,7 @@
 # Microsoft Visual C++ makefile for use with nmake.exe v1.62+ (VC++ 5.0+)
 #
 #---------------------------------------------------------------------
-# RCS: @(#) $Id: makefile.vc,v 1.25 2003/02/15 00:41:21 davygrvy Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.26 2003/02/15 01:02:15 davygrvy Exp $
 #---------------------------------------------------------------------
 
 !if "$(MSVCDIR)" == ""
@@ -146,7 +146,6 @@ SOURCEROOT	= ..\..
 GENERICDIR	= $(SOURCEROOT)\generic
 TESTDIR		= $(SOURCEROOT)\tests
 WINDIR		= $(SOURCEROOT)\win
-TMP_DIR		= $(WINDIR)\$(TMPDIRNAME)
 
 THREADLIBBASE	= $(OUT_DIR)\thread$(THREAD_MAJOR)$(THREAD_MINOR)$(SUFX)
 THREADLIB	= $(THREADLIBBASE).$(EXT)
@@ -266,7 +265,7 @@ setup:
 	@if not exist $(TMP_DIR)\nul mkdir $(TMP_DIR)
 
 test: all
-    $(TCLSH_PROG) <<
+    $(TCLSH) <<
 regsub -all {\\} {$(THREADLIB)} {/} threadlib
 if {$$::tcl_version == "8.3"} {
 package ifneeded Thread $(THREAD_VERSION_SUBSET83) [list load $$threadlib]
