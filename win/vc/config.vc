@@ -1,8 +1,9 @@
 ######################################################################
 #
-#  edit to your paths and stuff
+#  edit for your paths
 #
 ######################################################################
+# RCS: @(#) $Id: config.vc,v 1.6 2000/08/10 01:37:56 davidg Exp $
 
 # only affects the linker and resource compiler
 # pick from:
