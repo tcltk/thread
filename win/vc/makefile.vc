@@ -5,7 +5,7 @@
 # maintenance utility -> nmake.exe that builds the Tcl thread
 # extension.  See README.txt for commandline options and instructions.
 #
-# RCS: @(#) $Id: makefile.vc,v 1.17 2001/04/27 01:40:56 davygrvy Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.18 2001/04/29 00:09:30 davygrvy Exp $
 ######################################################################
 
 
@@ -22,6 +22,7 @@ _NMAKE_VER  = $(_NMAKE_VER:6.00.8168.0=600)
 
 
 !include "config.vc"
+!include "pkg.vc"
 
 
 ######################################################################
@@ -70,11 +71,6 @@ NOMSVCRT	= 0
 # Macro setups
 ######################################################################
 
-
-# remember to change thread.h as well when this changes
-#
-VER	= 22
-
 !if $(DEBUG)
 TMPDIRNAMEPREFIX = Debug
 DBGX = d
@@ -113,8 +109,8 @@ TMP_DIR		= $(WINDIR)\$(TMPDIRNAME)
 OUT_DIR		= $(WINDIR)\$(TMPDIRNAME)
 !endif
 
-THREADLIB	= $(OUT_DIR)\thread$(VER)$(STCX)$(DBGX).$(OUTEXT)
-THREADLIBBASE	= $(OUT_DIR)\thread$(VER)$(STCX)$(DBGX)
+THREADLIBBASE	= $(OUT_DIR)\thread$(THREAD_MAJOR)$(THREAD_MINOR)$(STCX)$(DBGX)
+THREADLIB	= $(THREADLIBBASE).$(OUTEXT)
 
 # Is TCLROOT pointing to the sources or the install ?
 #
@@ -143,7 +139,11 @@ THREADOBJS	= \
 
 
 !if $(DEBUG)
+!if $(MSDEV_VER) < 6
+cdebug = -Zi -Od -WX
+!else
 cdebug = -ZI -Od -WX
+!endif
 !else
 cdebug = -Ox
 !endif
@@ -160,8 +160,6 @@ ctclstubs   = -DUSE_TCL_STUBS
 ctclstubs   =
 !endif
 
-# Is TCLROOT pointing to the sources or the install?
-#
 !if $(ISTCLINSTALL)
 TCLINCLUDE	= -I"$(TCLROOT)\include"
 !else
@@ -174,8 +172,10 @@ cdll	=
 cdll	= -GD
 !endif
 
-cflags = -nologo -c -W3 -YX -GB $(cdebug) $(crt) $(cdll) -Fp$(TMP_DIR)\ \
-	-Fo$(TMP_DIR)\ $(TCLINCLUDE)
+cflags = -nologo -c -W3 -YX -GB $(cdebug) $(crt) $(cdll) \
+	-DTHREAD_VERSION=\"$(THREAD_VERSION)\" \
+	-DTHREAD_VERSION_SUBSET83=\"$(THREAD_VERSION_SUBSET83)\" \
+	-Fp$(TMP_DIR)\ -Fo$(TMP_DIR)\ $(TCLINCLUDE)
 
 
 ######################################################################
@@ -203,7 +203,7 @@ lflags = $(lcommon) -machine:$(MACHINE) -subsystem:windows -dll -link50compat $(
 
 !if $(USE_TCL_STUBS)
 # A reference to msvcrt.lib happens to be embedded into the
-# Stubs library.  This is a bug with no current solution.
+# Stubs library.  This is a bug with no current resolution.
 # We need to strip this reference at link-time.
 #
 ltclstubs	    = -nodefaultlib:msvcrt.lib $(TCLSTUBSLIB)
@@ -280,7 +280,9 @@ $<
 $(TMP_DIR)\thread.res : $(WINDIR)\thread.rc
 	@echo Compiling resources...
 	$(rc32) -fo"$@" -i "$(GENERICDIR)" $(TCLINCLUDE) -r \
-		-DDEBUG=$(DEBUG) -DRESOURCE_INCLUDED $(WINDIR)\thread.rc
+		-DDEBUG=$(DEBUG) -DRESOURCE_INCLUDED -DTHREAD_MAJOR=$(THREAD_MAJOR) \
+		-DTHREAD_MINOR=$(THREAD_MINOR) -DTHREAD_VERSION=$(THREAD_VERSION) \
+		$(WINDIR)\thread.rc
 
 $(TMP_DIR)\resource.obj : $(TMP_DIR)\thread.res
 	$(cvtres32) -nologo -machine:$(MACHINE) -out:$@ $(TMP_DIR)\thread.res
