@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.19 2002/07/12 11:44:12 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.20 2002/07/20 10:11:12 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -47,13 +47,12 @@ static Tcl_ObjType* intObjTypePtr;
 static Tcl_ObjType* stringObjTypePtr;
 
 /*
- * For windows, we must use tricks to get this
- * pointer right. Look in Sv_Init for details.
+ * In order to be fully stub enabled, a small
+ * hack is needed to query the tclEmptyStringRep
+ * global symbol defined by Tcl. See Sv_Init.
  */
 
-#ifdef WIN32
- char* tclEmptyStringRep = NULL;
-#endif
+char *Sv_tclEmptyStringRep = NULL;
 
 /*
  * Global variables used within this file.
@@ -767,7 +766,7 @@ Sv_DuplicateObj(objPtr)
 
     if (objPtr->bytes == NULL) {
         dupPtr->bytes = NULL;
-    } else if (objPtr->bytes != tclEmptyStringRep) {
+    } else if (objPtr->bytes != Sv_tclEmptyStringRep) {
         /* A copy of TclInitStringRep macro */
         dupPtr->bytes = (char*)Tcl_Alloc((unsigned)objPtr->length + 1);
         if (objPtr->length > 0) {
@@ -1691,17 +1690,19 @@ Sv_Init (interp)
                 Tcl_InitHashTable(&bucketPtr->handles, TCL_ONE_WORD_KEYS);
             }
             Tcl_CreateExitHandler((Tcl_ExitProc*)SvFinalize, NULL);
-#ifdef WIN32
             /*
-             * There is no other way to get tclEmptyStringRep
-             * pointer in Windows environment w/o this trick
+             * We use this trick to get the tclEmptyStringRep pointer
+             * defined by Tcl without directly referencing it. If we
+             * referenced the symbol directly, we could not link
+             * under Windows. It would also break under Linux if
+             * both Tcl and the Threads package were dynamically
+             * loaded into an application.
              */
             {
                 Tcl_Obj *dummy = Tcl_NewObj();
-                tclEmptyStringRep = dummy->bytes;
+                Sv_tclEmptyStringRep = dummy->bytes;
                 Tcl_DecrRefCount(dummy);
             }
-#endif
         }
         Tcl_MutexUnlock(&bucketsMutex);
     }
