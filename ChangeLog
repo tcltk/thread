@@ -1,3 +1,7 @@
+2000-05-18 Brent Welch <welch@scriptics.com>
+
+	* Restored Andreas' changes for transferring sockets.
+
 2000-05-16 Brent Welch <welch@scriptics.com>
 
 	* Temprarily rolled back Andreas' changes so I can fix up
