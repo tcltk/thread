@@ -14,18 +14,40 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadWin.c,v 1.3 2002/01/21 23:58:36 davygrvy Exp $
+ * RCS: @(#) $Id: threadWin.c,v 1.4 2002/01/26 05:52:01 davygrvy Exp $
  */
 
 #include "../generic/tclThread.h"
 #include <windows.h>
 #include <process.h>
 
-/* EOF $RCSfile: threadWin.c,v $ */
+#if 0
+/* only Windows 2000 (or XP??) has this function */
+HANDLE (WINAPI *winOpenThreadProc)(DWORD, BOOL, HANDLE);
 
-/* Emacs Setup Variables */
-/* Local Variables:      */
-/* mode: C               */
-/* indent-tabs-mode: nil */
-/* c-basic-offset: 4     */
-/* End:                  */
+void
+ThreadpInit (void)
+{
+    HINSTANCE hKernel = LoadLibrary("kernel32");
+    winOpenThreadProc = GetProcAddress("OpenThread", hKernel);
+}
+
+int
+ThreadpKill (Tcl_Interp *interp, long id)
+{
+    HANDLE hThread;
+    int result = TCL_OK;
+
+    if (winOpenThreadProc) {
+	hThread = winOpenThreadProc(THREAD_TERMINATE, FALSE, id);
+
+	/* not to be misunderstood as "devilishly clever", but evil in it's pure form. */
+	TerminateThread(hThread, 666);
+    } else {
+	Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
+		"Can't kill threads on this OS, sorry.", NULL);
+	result = TCL_ERROR;
+    }
+    return result;
+}
+#endif
