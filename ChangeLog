@@ -1,3 +1,8 @@
+2002-12-18 Zoran Vasiljevic <zoran@archiware.com>
+
+	* README: added some AOLserver info
+	* tcl/tpool/tpool.tcl: added missing tpool::names command
+
 2002-12-14 Zoran Vasiljevic <zoran@archiware.com>
 
 	* doc/*: finished docs for the 2.5 release
