@@ -6,7 +6,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: thread.h,v 1.6 2000/10/27 03:24:50 davidg Exp $ 
+ * RCS: @(#) $Id: thread.h,v 1.7 2001/04/25 23:14:57 davygrvy Exp $ 
  */
 
 /* remember to change win/vc/makefile.vc as well when these change */
@@ -24,11 +24,15 @@
 #endif
 
 
+
 /*
  * Functions from threadCmd.c file.
  */
 
-DLLEXPORT int	Thread_Init _ANSI_ARGS_((Tcl_Interp *interp));
+#undef TCL_STORAGE_CLASS
+#define TCL_STORAGE_CLASS DLLEXPORT
+
+EXTERN int	Thread_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 int	ThreadCreateObjCmd _ANSI_ARGS_((ClientData clientData, 
 	    Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
