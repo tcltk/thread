@@ -21,6 +21,9 @@
 	* win/vc/.cvsignore(added): moved file to help to keep a
 	cleaner build environment.
 
+	* generic/threadSvCmd.c: Added some additional casting of
+	Tcl_GetHashValue to prevent compiler warnings.
+
 2000-07-14 Zoran Vasiljevic <zoran@munich.com>
 
 	* generic/threadCmd.c: improved thread::exit behaviour
