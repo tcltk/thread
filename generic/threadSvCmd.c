@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.7 2002/01/19 23:13:54 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.8 2002/01/20 00:20:39 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1646,12 +1646,26 @@ Sv_Init (interp)
 
     /*
      * Plug-in registered commands in current interpreter
+     * These are new commands, located in tsv::* namespace.
      */
 
     for (cmdPtr = svCmdInfo; cmdPtr; cmdPtr = cmdPtr->nextPtr) {
         Tcl_CreateObjCommand(interp, cmdPtr->cmdName, cmdPtr->objProcPtr,
                 (ClientData)cmdPtr->clientData, (Tcl_CmdDeleteProc*)0);
     }
+#ifndef OLD_COMPAT
+    /*
+     * Plug-in commands for compatibility with thread::sv_* interface.
+     * These are going to be dropped in 3.0 version.
+     */
+
+    for (cmdPtr = svCmdInfo; cmdPtr; cmdPtr = cmdPtr->nextPtr) {
+        char buf[32];
+	sprintf(buf, "thread::sv_%s", cmdPtr->name);
+        Tcl_CreateObjCommand(interp, buf, cmdPtr->objProcPtr,
+                (ClientData)cmdPtr->clientData, (Tcl_CmdDeleteProc*)0);
+    }
+#endif
 
     /*
      * Create array of buckets and initialize each bucket
