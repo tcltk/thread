@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.43 2002/06/17 20:22:55 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.44 2002/07/02 15:46:56 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1492,7 +1492,7 @@ ThreadErrorProc(interp)
         sendPtr = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
         sendPtr->execProc   = ThreadSendEval;
         sendPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
-        sendPtr->clientData = (ClientData) Tcl_Merge(3, (CONST char**)argv);
+        sendPtr->clientData = (ClientData) Tcl_Merge(3, (CONST84 char**)argv);
 
         ThreadSend(interp, errorThreadId, sendPtr, NULL, 0);
     }
