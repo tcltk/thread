@@ -96,5 +96,13 @@ SOURCE=.\thread.rc
 
 SOURCE=..\..\generic\threadCmd.c
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\generic\threadSpCmd.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\generic\threadSvCmd.c
+# End Source File
 # End Target
 # End Project
