@@ -4,6 +4,8 @@
 	* win/vc/thread.rc: added version numbers to filename to follow
 	Tcl standards.
 
+	* doc/thread.tmml(new): Initial TMML document.
+
 2000-08-20  David Gravereaux <davygrvy@ajubasolutions.com>
 
 	* win/vc/config.vc:
