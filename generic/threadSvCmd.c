@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.8 2002/01/20 00:20:39 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.9 2002/01/22 00:03:24 davygrvy Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -105,6 +105,7 @@ static void       SvAllocateContainers(Bucket*);
 static void       SvFinalizeContainers(Bucket*);
 static void       SvRegisterStdCommands(void);
 static void       SvFinalize(ClientData);
+static Tcl_ObjCmdProc SvObjDispatchObjCmd;
 
 /*
  *-----------------------------------------------------------------------------

@@ -5,7 +5,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.2 2002/01/20 00:48:02 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.3 2002/01/22 00:01:53 davygrvy Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -61,33 +61,6 @@
 typedef struct Svconf {
     int numbuckets;
 } Svconf;
-
-/*
- * Cover some Windows specifics
- */
-
-#ifdef BUILD_library
-# undef TCL_STORAGE_CLASS
-# define TCL_STORAGE_CLASS DLLEXPORT
-#endif
-
-#define EXPORT(a,b) a b
-
-#ifdef WIN32
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h>
-# undef WIN32_LEAN_AND_MEAN
-# ifndef STATIC_BUILD
-#   if defined(__BORLANDC__)
-#     undef EXPORT
-#     define EXPORT(a,b) a _export b
-#   endif
-#   if defined(_MSC_VER)
-#     undef EXPORT
-#     define EXPORT(a,b) a __declspec(dllexport) b
-#   endif
-# endif
-#endif
 
 /*
  * Used when creating arrays/variables
