@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.48 2002/07/19 17:32:50 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.49 2002/07/19 19:33:32 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -2940,7 +2940,6 @@ ThreadExitProc(clientData)
 
                 tResultPtr->resultMsg  = strcpy(Tcl_Alloc(1+strlen(diemsg)), diemsg);
                 tResultPtr->resultCode = TCL_ERROR;
-                resultPtr->errorCode = resultPtr->errorInfo = NULL;
                 Tcl_ConditionNotify(&tResultPtr->done);
             }
         }
