@@ -4,7 +4,7 @@
 # Microsoft Visual C++ descriptions file for their program
 # maintenance utility -> nmake.exe
 #
-# RCS: @(#) $Id: makefile.vc,v 1.9 2000/08/20 08:00:42 davidg Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.10 2000/08/20 08:41:53 davidg Exp $
 ######################################################################
 
 
@@ -96,7 +96,6 @@ STCX	=
 OUTEXT	= dll
 !endif
 
-
 SOURCEROOT	= ..\..
 GENERICDIR	= $(SOURCEROOT)\generic
 TESTDIR		= $(SOURCEROOT)\tests
@@ -108,7 +107,7 @@ OUTDIR		= $(WINDIR)\$(TMPDIRNAME)
 !endif
 
 THREADLIB	= $(OUTDIR)\thread$(VER)$(STCX)$(DBGX).$(OUTEXT)
-THREADLIBPREFIX	= $(OUTDIR)\thread$(VER)$(STCX)$(DBGX).
+THREADLIBBASE	= $(OUTDIR)\thread$(VER)$(STCX)$(DBGX)
 
 THREADOBJS	= \
 	$(TMPDIR)\threadCmd.obj \
@@ -210,7 +209,7 @@ $(THREADLIB) : $(THREADOBJS) $(TCLSTUBSLIB)
 $(THREADOBJS)
 <<nokeep
 !if $(STATIC_BUILD) == 0
-	-del $(THREADLIBPREFIX)exp $(THREADLIBPREFIX)lib
+	-del $(THREADLIBBASE).exp $(THREADLIBBASE).lib
 !endif
 
 ######################################################################
