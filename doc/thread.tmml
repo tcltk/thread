@@ -16,7 +16,7 @@
 <syntax>
 <p>
 <cmd>package require Thread ?2.5?</cmd></p>
-<cmd>thread::create</cmd> ?<m>-joinable</m>? ?<m>script</m>?
+<cmd>thread::create</cmd> ?<m>-joinable</m>? ?<m>-preserved</m>? ?<m>script</m>?
 <cmd>thread::preserve</cmd> <m>id</m>
 <cmd>thread::release</cmd> ?<m>-wait</m>? <m>id</m>
 <cmd>thread::id</cmd>
@@ -24,48 +24,26 @@
 <cmd>thread::unwind</cmd>
 <cmd>thread::exit</cmd>
 <cmd>thread::names</cmd>
-<cmd>thread::exists</cmd>
+<cmd>thread::exists</cmd> <m>id</m>
 <cmd>thread::send</cmd> ?<m>-async</m>? <m>id</m> <m>script</m> ?<m>varname</m>?
 <cmd>thread::wait</cmd>
-<cmd>thread::eval ?<m>-lock mutex</m>? <m>arg</m> ?<m>arg ...</m>?</cmd>
+<cmd>thread::eval</cmd> ?<m>-lock mutex</m>? <m>arg</m> ?<m>arg ...</m>?
 <cmd>thread::join</cmd> <m>id</m>
 <cmd>thread::configure</cmd> <m>id</m> ?<m>option</m>? ?<m>value</m><m>? ?</m><m>option value</m><m>?...</m>
 <cmd>thread::transfer</cmd> <m>id</m> <m>channel</m>
 <cmd>thread::detach</cmd> <m>channel</m>
 <cmd>thread::attach</cmd> <m>channel</m>
-
 <cmd>thread::cond</cmd> <m>options</m>
 <cmd>thread::mutex</cmd> <m>options</m>
-
-<cmd>tsv::names</cmd> ?<m>pattern</m>?
-<cmd>tsv::object</cmd> <m>array</m> <m>element</m>
-<cmd>tsv::set</cmd> <m>array</m> <m>element</m> <m>value</m> 
-<cmd>tsv::get</cmd> <m>array</m> <m>element</m> ?<m>varname</m>?
-<cmd>tsv::unset</cmd> <m>array</m> ?<m>element</m>?
-<cmd>tsv::exists</cmd> <m>array</m> ?<m>element</m>?
-<cmd>tsv::pop</cmd> <m>array</m> <m>element</m>
-<cmd>tsv::move</cmd> <m>array</m> <m>old</m> <m>new</m>
-<cmd>tsv::incr</cmd> <m>array</m> <m>element</m> ?<m>increment</m>?
-<cmd>tsv::append</cmd> <m>array</m> <m>element</m> <m>value</m> ?<m>value</m> ...?
-<cmd>tsv::lappend</cmd> <m>array</m> <m>element</m> <m>value</m> ?<m>value</m> ...?
-<cmd>tsv::linsert</cmd> <m>array</m> <m>element</m> <m>index</m> <m>value</m> ?<m>value</m> ...?
-<cmd>tsv::lreplace</cmd> <m>array</m> <m>element</m> <m>first</m> <m>last</m> ?<m>value</m> ...?
-<cmd>tsv::llength</cmd> <m>array</m> <m>element</m>
-<cmd>tsv::lindex</cmd> <m>array</m> <m>element</m> <m>index</m>
-<cmd>tsv::lrange</cmd> <m>array</m> <m>element</m> <m>first</m> <m>last</m>
-<cmd>tsv::lsearch</cmd> <m>array</m> <m>element</m> ?<m>mode</m>? <m>pattern</m>
-<cmd>tsv::lpop</cmd> <m>array</m> <m>element</m> ?<m>index</m>?
-<cmd>tsv::lpush</cmd> <m>array</m> <m>element</m> <m>value</m> ?<m>index</m>?
-<cmd>tsv::eval <m>arg</m> ?<m>arg ...</m>?</cmd>
 </syntax>
 </synopsis>
 
 <section>
 <title>DESCRIPTION</title>
-<p>The <package>thread</package> extension creates threads that contain Tcl interpreters, 
-and it lets you send scripts to those threads for evaluation. It also enables you to share data
-between threads in a safe, protected fashion. Additionaly, it provides script-level access
-to basic thread synchronization primitives, like mutexes and condition variables.
+<p>The <package>thread</package> extension creates threads that contain Tcl 
+interpreters, and it lets you send scripts to those threads for evaluation.
+Additionaly, it provides script-level access to basic thread synchronization 
+primitives, like mutexes and condition variables.
 </p>
 </section>
 
@@ -79,16 +57,65 @@ and sending scripts to threads for evaluation.</p>
 
 <commanddef>
 <command>
-<cmd>thread::create</cmd> ?<m>-joinable</m>? ?<m>script</m>?
+<cmd>thread::create</cmd> ?<m>-joinable</m>? ?<m>-preserved</m>? ?<m>script</m>?
 </command>
 <desc>This command creates a thread that contains a Tcl interpreter. 
-The Tcl interpreter either evaluates the <m>script</m>, if
+The Tcl interpreter either evaluates the optional <m>script</m>, if
 specified, or it waits in the event loop for scripts that arrive via
-the <cmd>thread::send</cmd> command. The result of <cmd>thread::create</cmd> is
-the ID of the thread. The result, if any, of <m>script</m> is
-ignored. Using flag <option>-joinable</option> it is possible to create a
-joinable thread, i.e. one upon whose exit can be waited upon (by using
-<cmd>thread::join</cmd> command).
+the <cmd>thread::send</cmd> command. The result, if any, of the
+optional <m>script</m> is never returned to the caller.
+<p>
+The result of <cmd>thread::create</cmd> is the ID of the thread. This is
+the small integer handle which indentifies the newly created thread for
+all other package commands. The handle of the thread goes out of scope
+automatically when thread is marked for exit (see the <cmd>thread::release</cmd>
+command below).
+If the optional <m>script</m> argument contains the <cmd>thread::wait</cmd>
+command the thread will enter into the event loop. If such command is not found 
+in the <m>script</m> the thread will run the <m>script</m> to the end and exit. 
+In that case, the handle may be safely ignored since it refers to a thread 
+which does not exists any more at the time when the command returns.</p>
+Using flag <m>-joinable</m> it is possible to create a joinable
+thread, i.e. one upon whose exit can be waited upon by using 
+<cmd>thread::join</cmd> command. Note that only Tcl8.4+ core supports joinable 
+threads. Note also that failure to join a thread created with 
+<option>-joinable</option> flag results in resource and memory leaks. 
+<p>
+Threads created by the <cmd>thread::create</cmd> cannot be destroyed forcefully.
+Consequently, there is no corresponding destroy-type command. A thread may only
+be "released" using the <cmd>thread::release</cmd> and if its internal reference 
+count drops to zero, the thread is marked for exit. This kicks the thread out 
+of the event loop servicing and the thread continues to execute commands passed
+in the <m>script</m> argument, following the <cmd>thread::wait</cmd> command.
+If this was the last command in the script, as usualy the case, the thread will
+exit. It is possible to create a situation in which it may be impossible to
+terminate the thread, for example by putting some endless loop after the 
+<cmd>thread::wait</cmd> or entering the event loop again by doing an vwait-type
+of command. In such cases, the thread may never exit. This is considered to
+be a bad practice and should be avoided if possible.</p>
+Consider:
+<example>
+    # You should NEVER do ...
+    set tid [thread::create {
+        packkage require Http
+        thread::wait
+        vwait forever ; # -- this!
+    }]
+</example>
+The thread created in the above example will never be able to exit.
+After it has been released with the last matching <cmd>thread::release</cmd> call
+the thread will jump out of the <cmd>thread::wait</cmd> and continue to execute 
+commands following. It will enter <cmd>vwait</cmd> command and wait endlessly for 
+events. There is no way one can terminate this thread, so you wouldn't want to this!
+<p>
+Each newly created has its internal reference counter set to 0 (zero), i.e. it is
+unreserved. This counter gets incremented by a call to <cmd>thread::preserve</cmd> 
+and decremented by a call to <cmd>thread::release</cmd> command. These two commands
+implement simple but effective thread reservation system and offer predictable and 
+controllable thread termination capabilities. It is however possible to create 
+initialy preserved threads by using flag <m>-preserved</m>. Threads 
+created with this flag have the initial value of the reference counter of 1 (one). 
+</p>
 </desc>
 </commanddef>
 
@@ -96,15 +123,15 @@ joinable thread, i.e. one upon whose exit can be waited upon (by using
 <command> <cmd>thread::preserve</cmd> ?<m>id</m>?
 </command>
 <desc>This procedure increments the thread reference counter. Each call
-to this command increments the reference counter by one (1). Command returns the value 
-of the reference counter after the increment. 
-If called with the optional thread <m>id</m>, the command preserves the given thread.
-Otherwise the current thread is preserved.
-<p>With reference counting, one can implement controlled access to a shared Tcl thread. 
-By incrementing the reference counter, the caller signalizes that he/she wishes to use
-the thread for a longer period of time. By decrementing the counter, using the 
-<cmd>thread::release</cmd> command, caller signalizes that he/she has finished using 
-the thread.</p>
+to this command increments the reference counter by one (1). Command returns
+the value of the reference counter after the increment. 
+If called with the optional thread <m>id</m>, the command preserves the given
+thread. Otherwise the current thread is preserved.
+<p>With reference counting, one can implement controlled access to a shared Tcl
+thread.  By incrementing the reference counter, the caller signalizes that 
+he/she wishes to use the thread for a longer period of time. By decrementing 
+the counter, using the  <cmd>thread::release</cmd> command, caller signalizes 
+that he/she has finished using the thread.</p>
 </desc>
 </commanddef>
 
@@ -113,17 +140,19 @@ the thread.</p>
 </command>
 <desc>This procedure decrements the thread reference counter. Each call to this
 command decrements the reference counter by one (1). 
-If called with the optional thread <m>id</m>, the command releases the given thread.
-Otherwise, the current thread is released.
+If called with the optional thread <m>id</m>, the command releases the given
+thread. Otherwise, the current thread is released.
 Command returns the value of the reference counter after the decrement. When the 
-reference counter reaches zero (0), the target thread is terminated. You should 
-not reference the thread after the <cmd>thread::release</cmd> command returns 
-zero or negative integer.
+reference counter reaches zero (0), the target thread is marked for termination. 
+You should not reference the thread after the <cmd>thread::release</cmd> command 
+returns zero or negative integer. The handle of the thread goes out of scope and 
+should not be used any more. Any following reference to the same thread handle 
+will result in Tcl error.
 <p>Optional flag <m>-wait</m> instructs the caller thread to wait for the target
 thread to exit, if the effect of the command would result in termination of the
-target thread, i.e. if the return result is zero (0). Without the flag, the caller
-thread does not wait for the target thread to exit. Care must be taken when using
-the <m>-wait</m>, since this may block the caller thread indefinitely.</p>
+target thread, i.e. if the return result would be zero (0). Without the flag, the 
+caller thread does not wait for the target thread to exit. Care must be taken 
+when using the <m>-wait</m>, since this may block the caller thread indefinitely.</p>
 </desc>
 </commanddef>
 
@@ -134,11 +163,11 @@ the <m>-wait</m>, since this may block the caller thread indefinitely.</p>
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::errorproc</cmd> </command>
+<command><cmd>thread::errorproc</cmd> ?<m>procname</m>?</command>
 <desc>This command sets a handler for errors that occur in scripts sent 
-asynchronously, using the <option>-async</option> flag of the <cmd>thread::send</cmd>
-command, to other threads. If no handler is specified, the current 
-handler is returned. The empty string resets the handler to default 
+asynchronously, using the <option>-async</option> flag of the 
+<cmd>thread::send</cmd> command, to other threads. If no handler is specified,
+the current handler is returned. The empty string resets the handler to default 
 (unspecified) value.
 An uncaught error in a thread causes an error message to be sent
 to the standard error channel. This default reporting scheme can be
@@ -151,31 +180,33 @@ The <m>proc</m> is called in the interpreter that invoked the
 
 <commanddef>
 <command><cmd>thread::unwind</cmd></command>
-<desc>This stops a prior <cmd>thread::wait</cmd>. Execution of the script will continue
-from the <cmd>thread::wait</cmd> command. If <cmd>thread::wait</cmd> was the last command
-in the script passed to the thread at the time of its creation, the thread will exit. 
-The command usually returns empty result but may trigger Tcl error with the message 
-"target thread died" in some situations.
+<desc>
 This command is deprecated in favour of more advanced thread reservation system 
-implemented with <cmd>thread::preserve</cmd> and <cmd>thread::release</cmd> commands.
-Support for this command will dissapear in some future major release of the extenstion.
+implemented with <cmd>thread::preserve</cmd> and <cmd>thread::release</cmd> 
+commands. Support for <cmd>thread::wait</cmd> will dissapear in some future 
+major release of the extension.
+<p>
+This stops a prior <cmd>thread::wait</cmd>. Execution of the script will 
+continue from the <cmd>thread::wait</cmd> command. If <cmd>thread::wait</cmd> 
+was the last command in the script passed to the thread at the time of its 
+creation, the thread will exit. The command usually returns empty result but 
+may trigger Tcl error with the message "target thread died" in some situations.</p>
 </desc>
 </commanddef>
 
 <commanddef>
 <command><cmd>thread::exit</cmd></command>
-<desc>This forces a thread stuck in the <cmd>thread::wait</cmd> to unconditionaly
-exit. This command is guaranteed to leave the program memory in the
-unconsistent state, produce memory leaks and otherwise affect other
-subsytem(s) of the Tcl application in an unpredictable manner.
+<desc>
+Use of this command is deprecated in favour of the more advanced thread reservation 
+system implemented with <cmd>thread::preserve</cmd> and <cmd>thread::release</cmd> 
+commands. Use on your own risk and with extreme precaution. Support for 
+<cmd>thread::exit</cmd> will dissapear in  some future major release of the extension.
 <p>
-Use of this command is deprecated in favour of the <cmd>thread::unwind</cmd> command
-or more advanced thread reservation system implemented with <cmd>thread::preserve</cmd>
-and <cmd>thread::release</cmd> commands. Use on your own risk and with extreme precaution.
-The command usually  returns empty result but may trigger Tcl error with the message 
-"target thread died" in some situations.
-Support for this command will dissapear in some future major release of the extenstion.
-</p>
+This forces a thread stuck in the <cmd>thread::wait</cmd> to unconditionaly
+exit. This command is guaranteed to leave the program memory in the unconsistent
+state, produce memory leaks and otherwise affect other subsytem(s) of the Tcl
+application in an unpredictable manner. The command usually  returns empty result.
+but may trigger Tcl error with the message "target thread died" in some situations.</p>
 </desc>
 </commanddef>
 
@@ -189,7 +220,7 @@ reported by the <cmd>thread::names</cmd> command.
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::exists</cmd> </command>
+<command><cmd>thread::exists</cmd> <m>id</m></command>
 <desc>Returns true (1) if thread given by the ID parameter exists, false (0)
 otherwise. This applies only for threads that have been created via 
 <cmd>thread::create</cmd> command.
@@ -197,37 +228,64 @@ otherwise. This applies only for threads that have been created via
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::send</cmd></command>
+<command><cmd>thread::send</cmd> ?<m>-async</m>? <m>id</m> <m>script</m> ?<m>varname</m>?</command>
 <desc>This command passes a <m>script</m> to another thread and, optionally, waits
 for the result. If the <option>-async</option> flag is specified, the command does
 not wait for the result and it returns empty string. The target thread must
 enter it's event loop in order to receive scripts sent via this command.
 This is done by default for threads created without a startup script. Threads
-can enter the event loop explicitly by calling <cmd>thread::wait</cmd> or 
-<cmd>vwait</cmd>. 
+can enter the event loop explicitly by calling <cmd>thread::wait</cmd> or any other
+relevant Tcl/Tk command, like <cmd>update</cmd>, <cmd>vwait</cmd>, etc. 
 <p>Optional <m>varname</m> specifies name of the variable to store
-the result of the <m>script</m>. Without the <option>-async</option> flag, the command
-returns the evaluation code, similarily to the standard Tcl <cmd>catch</cmd> 
-command.
-If, however, the <option>-async</option> flag is specified, the command returns 
-immediately and caller can later <cmd>vwait</cmd> on <m>varname</m> to get the
-result of the passed <m>script</m>.
-</p></desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>thread::wait</cmd></command>
-<desc>This enters the event loop so a thread can receive messages from <cmd>thread::send</cmd>. 
-This is equivalent to <samp>vwait <m>unusedvariable</m></samp> except that thread::unwind will
-not unblock a <cmd>vwait</cmd>. This command should only be used within the script passed to
-the <cmd>thread::create</cmd>. It should be the very last command in the script.
-If this is not the case, the exiting thread will continue executing the script lines pass the
-<cmd>thread::wait</cmd> which is not what you usualy want and/or expect.
+the result of the <m>script</m>. Without the <option>-async</option> flag, the 
+command returns the evaluation code, similarily to the standard Tcl <cmd>catch</cmd> 
+command. If, however, the <option>-async</option> flag is specified, the command 
+returns  immediately and caller can later <cmd>vwait</cmd> on <m>varname</m> to 
+get the result of the passed <m>script</m>.</p>
+<example>
+    set t1 [thread::create]
+    set t2 [thread::create] 
+    thread::send -async $t1 "set a 1" result
+    thread::send -async $t2 "set b 2" result 
+    for {set i 0} {$i &lt; 2} {incr i} {
+        vwait result
+    }
+</example>
+<p>
+In the above example, two threads were fed work and both of them were instructed
+to signalize the same variable "result" in the calling thread. The caller entered
+the event loop twice to get both results. Note, however, that the order of the 
+received results may vary, depending on the current system load, type of work done,
+etc, etc.</p>
+<p>Many threads can simultaneously send scripts to the target thread for execution.
+All of them are entered into the event queue of the target thread and 
+executed on the FIFO basis, intermingled with optional other events pending in
+the event queue of the target thread.</p>
 </desc>
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::eval</cmd> </command>
+<command><cmd>thread::wait</cmd></command>
+<desc>This enters the event loop so a thread can receive messages from 
+<cmd>thread::send</cmd>. This command should only be used within 
+the script passed to the <cmd>thread::create</cmd>. It should be the very last 
+command in the script. If this is not the case, the exiting thread will continue
+executing the script lines pass the <cmd>thread::wait</cmd> which is not what 
+you usualy want and/or expect.
+<example>
+    set t1 [thread::create {
+        #
+        # Do some initialization work
+        #
+        thread::wait ; # Enter the event loop
+    }
+</example>
+
+</desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>thread::eval</cmd> ?<m>-lock mutex</m>? <m>arg</m> ?<m>arg ...</m>?</command>
 <desc>This command concatenates passed arguments and evaluates the 
 resulting script under the mutex protection. If no mutex is specified,
 using the <option>-lock mutex</option> optional argument, an internal
@@ -236,15 +294,18 @@ static mutex is used.
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::join</cmd> </command>
+<command><cmd>thread::join</cmd> <m>id</m></command>
 <desc>This command waits for the thread with ID <m>id</m> to exit and
 then returns it's exit code. Errors will be returned for threads which
-are not joinable or already waited upon by another thread.
+are not joinable or already waited upon by another thread. Upon the join
+the handle of the thread has gone out of scope and should not be used
+any more.
+<p>NOTE: This command is available only when loaded into the Tcl8.4+ shell.</p>
 </desc>
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::configure</cmd> </command>
+<command><cmd>thread::configure</cmd> <m>id</m> ?<m>option</m>? ?<m>value</m><m>? ?</m><m>option value</m><m>?...</m></command>
 <desc>This command configures various low-level aspects of the thread with ID
 <m>id</m> in the similar way as the standard Tcl command <cmd>fconfigure</cmd>
 configures some Tcl channel options.
@@ -265,7 +326,7 @@ to process scripts after one of the posted scripts fails.
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::transfer</cmd> </command>
+<command><cmd>thread::transfer</cmd> <m>id</m> <m>channel</m></command>
 <desc>This moves the specified <m>channel</m> from the
 current thread and interpreter to the main interpreter of the thread
 with the given <m>id</m>. After the move the current interpreter has no
@@ -280,25 +341,42 @@ Other restrictions: the channel in question must not be shared among
 multiple interpreters running in the sending thread. This
 automatically excludes the special channels for standard input, output
 and error.
+<p>
+Due to the internal Tcl core implementation and the restriction on 
+transferring shared channels, one has to take extra measures when
+transferring socket channels created by accepting the connection
+out of the <cmd>socket</cmd> commands callback procedures:
+<example>
+    socket -server _Accept 2200
+    proc _Accept {s ipaddr port} {
+        after idle [list Accept $s $ipaddr $port]
+    }
+    proc Accept {s ipaddr port} {
+        set tid [thread::create]
+        thread::transfer $tid $s
+    }
+</example>
+</p>
+
+<p>NOTE: this command is available only when loaded into the Tcl8.4+ shell.</p>
 </desc>
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::detach</cmd> </command>
+<command><cmd>thread::detach</cmd> <m>channel</m></command>
 <desc>This detaches the specified <m>channel</m> from the
 current thread and interpreter. After that, the current interpreter 
 has no access to the channel anymore. The channel is in the parked
 state until some other (or the same) thread attaches the channel
 again with <cmd>thread::attach</cmd>.
-Restriction: the channel in question must not be shared among
-multiple interpreters running in the sending thread. This
-automatically excludes the special channels for standard input, output
-and error.
+Restrictions: same as for transferring shared channels with the
+<cmd>thread::transfer</cmd> command.
+<p>NOTE: this command is available only when loaded into the Tcl8.4+ shell.</p>
 </desc>
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::attach</cmd> </command>
+<command><cmd>thread::attach</cmd> <m>channel</m></command>
 <desc>This attaches the previously detached <m>channel</m> in the
 current thread/interpreter. For already existing channels, 
 the command does nothing, i.e. it is not an error to attach the
@@ -307,13 +385,9 @@ perform the operation, while all subsequent operation will just
 do nothing.
 Command throws error if the <m>channel</m> cannot be found in the
 list of detached channels and/or in the current interpreter.
+<p>NOTE: this command is available only when loaded into the Tcl8.4+ shell.</p>
 </desc>
 </commanddef>
-
-<p>
-This section describes commands used for script-level access to 
-most common and basic thread synchronization primitives: mutexes and 
-condition variables.</p>
 
 <commanddef>
 <command> <cmd>thread::mutex</cmd> <m>options</m></command>
@@ -331,12 +405,14 @@ mutexes may lead to various deadlock situations.
 should be used for any future reference to the newly created mutex.
 </desc>
 </commanddef>
+
 <commanddef>
 <command><cmd>thread::mutex destroy</cmd> <m>mutex</m></command>
 <desc>Destroys the mutex <m>mutex</m>. Extreme care has to be taken that 
 nobody is using the <m>mutex</m>, otherwise unexpected errors may happen.
 </desc>
 </commanddef>
+
 <commanddef>
 <command><cmd>thread::mutex lock</cmd> <m>mutex</m></command>
 <desc>Locks the mutex <m>mutex</m>. Locking the mutex may deadlock the program
@@ -344,13 +420,19 @@ if same thread attempts to lock the same mutex twice without unlocking it
 in between.
 </desc>
 </commanddef>
+
 <commanddef>
 <command><cmd>thread::mutex unlock</cmd> <m>mutex</m></command>
 <desc>Unlocks the mutex <m>mutex</m> so some other thread may lock it again.
 </desc>
 </commanddef>
-</commandlist></desc>
+
+</commandlist>
+</desc>
 </commanddef>
+
+
+
 <commanddef>
 <command> <cmd>thread::cond</cmd> <m>options</m></command>
 <desc>This command provides script-level access to condition variables. A condition
@@ -366,6 +448,7 @@ is always used in the conjuction with a mutex.
 should be used for any future reference to newly created condition variable.
 </desc>
 </commanddef>
+
 <commanddef>
 <command><cmd>thread::cond destroy</cmd> <m>cond</m></command>
 <desc>Destroys condition variable <m>cond</m>. Extreme care has to be taken that nobody
@@ -373,11 +456,13 @@ is using (i.e. waiting on) the condition variable, otherwise unexpected
 errors may happen.
 </desc>
 </commanddef>
+
 <commanddef>
 <command><cmd>thread::cond notify</cmd> <m>cond</m></command>
 <desc>Wakes up all threads waiting on the condition variable <m>cond</m>.
 </desc>
 </commanddef>
+
 <commanddef>
 <command><cmd>thread::cond wait</cmd> <m>cond</m> <m>mutex ?</m><m>ms?</m></command>
 <desc>This command is used to suspend program execution until the condition
@@ -415,214 +500,6 @@ thread wake-ups, for example).</p>
 </desc>
 </commanddef>
 
-<p>
-This section describes commands implementing thread shared variables. A thread
-shared variable is very similar to a Tcl array but in contrast to a Tcl array 
-it is created in thread-shared memory and can be accessed from many threads at
-the same time. Important feature of thread shared variable is that each access
-to the variable is internaly protected by a mutex so script programmer does not have
-to take care about locking the variable himself.</p>
-
-<commanddef>
-<command><cmd>tsv::names</cmd></command>
-<desc>Returns names of shared variables matching optional <m>pattern</m> or all known
-variables if pattern is ommited.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::object</cmd></command>
-<desc>Creates object accessor command for the <m>element</m> in the given shared 
-<m>array</m>. Using this command, one can apply most of the other shared variable
-commands as method functions of the element object command:
-<example>
-% tsv::set foo bar "A shared string"
-% set string [tsv::object foo bar]
-% $string append " appended"
-=&gt; A shared string appended</example>
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::set</cmd></command>
-<desc>Sets the value of the <m>element</m>  in the shared <m>array</m> to
-<m>value</m> and returns the value. The <m>value</m> may be ommited, and
-the command will return the current value of the <m>element</m>. If the 
-element cannot be found, error is triggered.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::get</cmd></command>
-<desc>Retrieves a value of the <m>element</m> located in the shared <m>array</m>.
-The command triggers error if the <m>element</m> is not found. If the optional 
-<m>varname</m> is given, the value  is stored in the named variable. In this case, 
-the command returns true (1) if <m>element</m> is found or false (0) if the 
-<m>element</m> is not found.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::unset</cmd></command>
-<desc>Deletes the <m>element</m> in the shared <m>array</m>. If the <m>element</m>
-is not given, it deletes the whole <m>array</m>.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::exists</cmd></command>
-<desc>Checks wether the <m>element</m> exists in the shared <m>array</m>.
-If the <m>element</m> is not given it tests the existence of the 
-<m>array</m> itself. Returns true (1) if the item exists, 
-false (0) if not.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::pop</cmd></command>
-<desc>Returns value of the <m>element</m> in the shared <m>array</m> variable
-and unsets the <m>element</m> in one atomic operation.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::move</cmd></command>
-<desc>Renames the element <m>old</m> to <m>new</m> in the shared <m>array</m>.
-This effectively performs an get/unset/set sequence of operations
-but in one atomic step.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::incr</cmd></command>
-<desc>Similar to standard Tcl <cmd>incr</cmd> but increments the value of the
-<m>element</m> in shared <m>array</m> instead of the Tcl variable.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::append</cmd></command>
-<desc>Similar to standard Tcl <cmd>append</cmd> but appends one or more values
-to the <m>element</m> in the shared <m>array</m> instead of the Tcl variable.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::lappend</cmd></command>
-<desc>Similar to standard Tcl <cmd>lappend</cmd> but appends one or more values
-to the list <m>element</m> in the shared <m>array</m> instead of the Tcl variable.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::linsert</cmd></command>
-<desc>Similar to standard Tcl <cmd>linsert</cmd> but inserts one or more values at the 
-<m>index</m> list position in the list <m>element</m> in the shared <m>array</m>
-instead of the Tcl variable.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::lreplace</cmd></command>
-<desc>Similar to standard Tcl <cmd>lreplace</cmd> but replaces one or more values
-from the list <m>element</m> in the shared <m>array</m> instead of the Tcl variable.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::llength</cmd></command>
-<desc>Similar to standard Tcl <cmd>llength</cmd> but returns length of the list
-<m>element</m> in the shared <m>array</m> instead of the Tcl variable.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::lindex</cmd></command>
-<desc>Similar to standard Tcl <cmd>lindex</cmd> but returns value at the <m>index</m>
-list position from the list <m>element</m> in the shared <m>array</m>
-instead of the Tcl variable.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::lrange</cmd></command>
-<desc>Similar to standard Tcl <cmd>lrange</cmd> but returns values between <m>first</m>
-and <m>last</m> list position from the list <m>element</m> in the shared <m>array</m>
-instead of the Tcl variable.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::lsearch</cmd></command>
-<desc>Similar to standard Tcl <cmd>lsearch</cmd> but searches the list <m>element</m>
-in the shared <m>array</m> instead of the Tcl variable.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::lpop</cmd></command>
-<desc>Splices out the value at the <m>index</m> list position from the list <m>element</m>
-in the shared <m>array</m>. If <m>index</m> is not specified, it defaults to zero.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::lpush</cmd></command>
-<desc>Inserts the <m>value</m> at the <m>index</m> list position in the list <m>element</m>
-in the shared <m>array</m>. If <m>index</m> is not specified, it defaults to zero.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::eval</cmd> </command>
-<desc>This command concatenates passed arguments and evaluates the 
-resulting script under the internal mutex protection. During the
-script evaluation, the entire shared array is locked. For shared
-variable commands within the script, the internal locking is disabled
-so no deadlock can occur.
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::array</cmd></command>
-<desc>This command supports most of the options of the standard Tcl <cmd>array</cmd>
-command like:
-<commandlist>
-
-<commanddef>
-<command><cmd>tsv::array set</cmd></command>
-<desc>Does the same as standard Tcl <samp>array set</samp>
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::array get</cmd></command>
-<desc>Does the same as standard Tcl <samp>array get</samp>
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::array names</cmd></command>
-<desc>Does the same as standard Tcl <samp>array names</samp>
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::array size</cmd></command>
-<desc>Does the same as standard Tcl <samp>array size</samp>
-</desc>
-</commanddef>
-
-<commanddef>
-<command><cmd>tsv::array reset</cmd></command>
-<desc>Does the same as standard Tcl <samp>array set</samp> but
-it clears the array and sets new values atomically.
-</desc>
-</commanddef>
-
-</commandlist>
-</desc>
-</commanddef>
 </commandlist>
 </section>
 
@@ -641,34 +518,21 @@ message passing between threads works naturally with event-driven I/O,
 <cmd>vwait</cmd> on variables, and so forth. For the transfer of bulk information
 it is possible to move channels between the threads.
 </p>
-<p>In addition, this extension provides simple but effective way of
-threads to access thread-shared data without the need of explicit locking.
-This is implemented with shared variable arrays. Shared variable array
-is a data structure similar to Tcl array but internaly protected with mutex. 
-Several threads can access array elements without synchronizing themselves.
-Script programmer can create any number of such arrays and access them
-or their elements from any thread, without explicit locking.
-</p>
 <p>For advanced multithreading scripts, script-level access to two basic 
 synchronization primitives, mutex and condition variables, is also supported.
 </p>
 </section>
-<section>
-<title>CREDITS</title>
-<p>Shared variable arrays are inspired by the nsv interface found in 
-AOLserver 3.+ highly scalable Web server from America Online.
-</p>
-</section>
-<seealso>
+
+<seealso> 
 <ref href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
 </ref>
 </seealso>
+
 <keywords>
 <keyword>threads</keyword>
 <keyword>events</keyword>
 <keyword>message passing</keyword>
 <keyword>synchronization</keyword>
-<keyword>shared variables</keyword>
 <keyword>mutex</keyword>
 <keyword>condition variable</keyword>
 </keywords>
