@@ -1,3 +1,11 @@
+2005-03-18  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* Makefile.in (AR): use @AR@
+	(TCLSH_ENV): add TCL_THREAD_LIBRARY var
+	* pkgIndex.tcl.in: grok TCL_THREAD_LIBRARY var
+
+	* configure, configure.in: update to TEA 3.2
+
 2005-03-15 Zoran Vasiljevic <zv@archiware.com>
 
 	* pkgIndex.tcl.in: Applied patch for Bug #1163357.
