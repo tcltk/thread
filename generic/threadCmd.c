@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.16 2000/08/29 17:18:33 davidg Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.17 2000/10/27 03:24:50 davidg Exp $
  */
 
 #include "thread.h"
@@ -133,10 +133,12 @@ typedef struct ThreadTransferResult {
 
 static ThreadTransferResult *transferList;
 
-static int	ThreadTransferEventProc _ANSI_ARGS_((Tcl_Event *evPtr,
-	int mask));
-static int 	ThreadTransfer _ANSI_ARGS_((Tcl_Interp *interp,
-        Tcl_ThreadId id, Tcl_Channel chan));
+static int ThreadTransferEventProc _ANSI_ARGS_((Tcl_Event *evPtr, int mask));
+static int ThreadTransfer _ANSI_ARGS_((Tcl_Interp *interp, Tcl_ThreadId id,
+	Tcl_Channel chan));
+
+static int 	ThreadJoin _ANSI_ARGS_((Tcl_Interp *interp,
+	Tcl_ThreadId id));
 #endif
 
 
@@ -169,8 +171,6 @@ static int 	ThreadCreate _ANSI_ARGS_((Tcl_Interp *interp,
 static int 	ThreadList _ANSI_ARGS_((Tcl_Interp *interp));
 static int 	ThreadSend _ANSI_ARGS_((Tcl_Interp *interp,
 	Tcl_ThreadId id, char *script, int wait));
-static int 	ThreadJoin _ANSI_ARGS_((Tcl_Interp *interp,
-	Tcl_ThreadId id));
 static int 	ThreadExists _ANSI_ARGS_((Tcl_ThreadId id));
 static void	ThreadErrorProc _ANSI_ARGS_((Tcl_Interp *interp));
 static void	ThreadFreeProc _ANSI_ARGS_((ClientData clientData));
@@ -189,7 +189,7 @@ static void	ThreadExitProc _ANSI_ARGS_((ClientData clientData));
  *      TCL_OK if the package was properly initialized.
  *
  * Side effects:
- *	Add the "thread" command to the interp.
+ *	Add the "thread::*" commands to the interp.
  *
  *----------------------------------------------------------------------
  */
@@ -202,6 +202,7 @@ Thread_Init(interp)
     Tcl_Obj *boolObjPtr;
     int boolVar;
     int maj, min, ptch, type;
+    int subset83;
 
     if (Tcl_InitStubs(interp, "8.3", 0) == NULL) {
 	return TCL_ERROR;
@@ -210,12 +211,29 @@ Thread_Init(interp)
     Tcl_GetVersion(&maj, &min, &ptch, &type);
 
     if ((maj == 8) && (min == 3) && (ptch < 1)) {
-	/* Truely depends on 8.3.1+ with the new Tcl_CreateThread API
+	/*
+	 * Truely depends on 8.3.1+ with the new Tcl_CreateThread API
 	 */
+
 	Tcl_SetObjResult(interp, Tcl_NewStringObj(
 		"The thread extension can't run in a Tcl core less than version 8.3.1", -1));
 	return TCL_ERROR;
     }
+
+    /*
+     * Tcl 8.3.[1,*) is limited to a subset of commands and provides a
+     * different package version of the thread extension.  This way of
+     * dynamically (at runtime) adjusting what commands are added to the interp
+     * based on the core version, is needed to prevent accessing Stubs
+     * functions that don't exist in 8.3.[1,*) and to maintain the proper
+     * package version provided to Tcl for a consistent interface.
+     */
+
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
+    subset83 = ((maj > 8) || ((maj == 8) && (min == 3))) ? 1 : 0;
+#else
+    subset83 = 1
+#endif
 
     boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", 0);
 
@@ -245,13 +263,17 @@ Thread_Init(interp)
 	Tcl_CreateObjCommand(interp,"thread::exists", ThreadExistsObjCmd, 
 		(ClientData)NULL ,NULL);
 
-	if ((maj > 8) || ((maj == 8) && (min >= 4)) ) {
-	    /* Only 8.4+ supports the transfer of channels.
+	if (!subset83) {
+	    /*
+	     * Only 8.4+ supports the transfer of channels and joining of threads.
 	     */
+
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
 	    Tcl_CreateObjCommand(interp,"thread::join", ThreadJoinObjCmd, 
 		    (ClientData)NULL ,NULL);
 	    Tcl_CreateObjCommand(interp,"thread::transfer", ThreadTransferObjCmd, 
 		    (ClientData)NULL ,NULL);
+#endif
 	}
 
 	/*
@@ -270,10 +292,20 @@ Thread_Init(interp)
     
 	Initialize_Sp(interp);
 
-	if (Tcl_PkgProvide(interp, "Thread", THREAD_VERSION) != TCL_OK) {
-	    return TCL_ERROR;
+	/*
+	 *  Set the proper package version based on the core features available.
+	 */
+	if (subset83) {
+	    if (Tcl_PkgProvide(interp, "Thread", THREAD_VERSION_SUBSET83) != TCL_OK)
+		return TCL_ERROR;
+
+	} else {
+	    if (Tcl_PkgProvide(interp, "Thread", THREAD_VERSION) != TCL_OK)
+		return TCL_ERROR;
 	}
+
 	return TCL_OK;
+
     } else {
 	Tcl_SetObjResult(interp, Tcl_NewStringObj(
 		"This Tcl core wasn't compiled for multithreading.", -1));
@@ -643,6 +675,7 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
     return TCL_OK;
 }
 
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
 /*
  *----------------------------------------------------------------------
  *
@@ -668,10 +701,10 @@ ThreadJoinObjCmd(dummy, interp, objc, objv)
     int objc;				/* Number of arguments. */
     Tcl_Obj *CONST objv[];		/* Argument objects. */
 {
-    /* Syntax of 'join': id
+    /*
+     * Syntax of 'join': id
      */
 
-#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
     long id;
 
     Init(interp);
@@ -685,12 +718,6 @@ ThreadJoinObjCmd(dummy, interp, objc, objv)
     }
 
     return ThreadJoin(interp, (Tcl_ThreadId) id);
-#else
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(
-	    "Thread join not supported in this compilation of the thread extension.",
-	    -1));
-    return TCL_ERROR;
-#endif
 }
 
 /*
@@ -718,13 +745,13 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
     int objc;				/* Number of arguments. */
     Tcl_Obj *CONST objv[];		/* Argument objects. */
 {
-    /* Syntax of 'transfer': id channel
+    /*
+     * Syntax of 'transfer': id channel
      */
 
     long        id;
     Tcl_Channel chan;
 
-#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
     Init(interp);
 
     if (objc != 3) {
@@ -740,13 +767,8 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
     }
 
     return ThreadTransfer(interp, (Tcl_ThreadId) id, chan);
-#else
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(
-	    "Channel transfer not supported in this compilation of the thread extension.",
-	    -1));
-    return TCL_ERROR;
-#endif
 }
+#endif
 
 /*
  *----------------------------------------------------------------------

@@ -8,12 +8,12 @@ CFG=thread - Win32 Release DLL
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE -f "thread.mak".
+!MESSAGE NMAKE /f "thread.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE -f "thread.mak" CFG="thread - Win32 Release DLL"
+!MESSAGE NMAKE /f "thread.mak" CFG="thread - Win32 Release DLL"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -46,7 +46,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread20.dll"
+# PROP Target_File "thread22.dll"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -65,7 +65,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread20.lib"
+# PROP Target_File "thread22.lib"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -84,7 +84,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir "Release_StaticX"
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread20x.lib"
+# PROP Target_File "thread22x.lib"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -103,7 +103,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread20d.dll"
+# PROP Target_File "thread22d.dll"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -122,7 +122,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread20sd.lib"
+# PROP Target_File "thread22sd.lib"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -141,7 +141,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread20xd.lib"
+# PROP Target_File "thread22xd.lib"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -156,33 +156,47 @@ CFG=thread - Win32 Release DLL
 # Name "thread - Win32 Debug LIB"
 # Name "thread - Win32 Debug LIB _use msvcrtd_"
 
+!IF  "$(CFG)" == "thread - Win32 Release DLL"
+
+!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
+
+!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
+
+!ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
+
+!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
+
+!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
+
+!ENDIF 
+
 # Begin Source File
+
 SOURCE=.\config.vc
 # End Source File
-
 # Begin Source File
+
 SOURCE=.\makefile.vc
 # End Source File
-
 # Begin Source File
+
 SOURCE=..\..\generic\thread.h
 # End Source File
-
 # Begin Source File
+
 SOURCE=.\thread.rc
 # End Source File
-
 # Begin Source File
+
 SOURCE=..\..\generic\threadCmd.c
 # End Source File
-
 # Begin Source File
+
 SOURCE=..\..\generic\threadSpCmd.c
 # End Source File
-
 # Begin Source File
+
 SOURCE=..\..\generic\threadSvCmd.c
 # End Source File
-
 # End Target
 # End Project
