@@ -1,3 +1,8 @@
+2003-08-26 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadPoolCmd.c: fixed result list corruption
+	in TpoolCancelObjCmd. 
+
 2003-07-27 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadPoolCmd.c: added "-nowait" option
