@@ -1,3 +1,9 @@
+2000-11-02  David Gravereaux <davygrvy@ajubasolutions.com>
+
+	* generic/threadCmd.c (NewThread): Added logic to test for a
+	working Tcl_Init() based on the core version at runtime and ignore
+	its failure in versions 8.3.[1,2] and 8.4a1.  [BUG: 5301]
+
 2000-10-26  David Gravereaux <davygrvy@ajubasolutions.com>
 
 	* generic/thread.h:
