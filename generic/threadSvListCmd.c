@@ -5,7 +5,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvListCmd.c,v 1.4 2002/07/11 06:26:33 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvListCmd.c,v 1.5 2002/08/03 14:48:17 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -227,9 +227,10 @@ SvLpushObjCmd (arg, interp, objc, objv)
         }
     }
 
-    args[0] = objv[off];
+    args[0] = Tcl_DuplicateObj(objv[off]);
     ret = Tcl_ListObjReplace(interp, svObj->tclObj, index, 0, 1, args);
     if (ret != TCL_OK) {
+        Tcl_DecrRefCount(args[0]);
         goto cmd_err;
     }
 
@@ -288,6 +289,7 @@ SvLappendObjCmd(arg, interp, objc, objv)
         dup = Sv_DuplicateObj(objv[i]);
         ret = Tcl_ListObjAppendElement(interp, svObj->tclObj, dup);
         if (ret != TCL_OK) {
+            Tcl_DecrRefCount(dup);
             goto cmd_err;
         }
     }
@@ -385,6 +387,11 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
 
     ret = Tcl_ListObjReplace(interp, svObj->tclObj, first, ndel, nargs, args);
     if (args) {
+        if (ret != TCL_OK) {
+            for(i = off + 2, j = 0; i < objc; i++, j++) {
+                Tcl_DecrRefCount(args[j]);
+            }
+        }
         Tcl_Free((char*)args);
     }
 
@@ -542,11 +549,15 @@ SvLinsertObjCmd (arg, interp, objc, objv)
          args[j] = Sv_DuplicateObj(objv[i]);
     }
     ret = Tcl_ListObjReplace(interp, svObj->tclObj, index, 0, nargs, args);
-    Tcl_Free((char*)args);
     if (ret != TCL_OK) {
+        for (i = off + 1, j = 0; i < objc; i++, j++) {
+            Tcl_DecrRefCount(args[j]);
+        }
+        Tcl_Free((char*)args);
         goto cmd_err;
     }
 
+    Tcl_Free((char*)args);
     Sv_Unlock(svObj);
     return TCL_OK;
 
@@ -699,10 +710,11 @@ SvLsearchObjCmd (arg, interp, objc, objv)
         }
     }
 
+    Sv_Unlock(svObj);
+
     Tcl_ResetResult(interp);
     Tcl_SetIntObj(Tcl_GetObjResult(interp), index);
 
-    Sv_Unlock(svObj);
     return TCL_OK;
 
  cmd_err:
