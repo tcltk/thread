@@ -3,7 +3,7 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
 #
-# RCS: @(#) $Id: configure.in,v 1.9 2002/03/20 01:35:30 hobbs Exp $
+# RCS: @(#) $Id: configure.in,v 1.10 2002/03/28 02:38:51 hobbs Exp $
 
 #--------------------------------------------------------------------
 # This configure.in is based on the Tcl Extension Architecture (TEA)
@@ -28,7 +28,7 @@ THREAD_MAJOR=2
 THREAD_MINOR=4
 THREAD_PATCHLEVEL=
 
-THREAD_VERSION_SUBSET83="2.1.4"
+THREAD_VERSION_SUBSET83="${THREAD_MAJOR}.1.${THREAD_MINOR}"
 
 VERSION=${THREAD_MAJOR}.${THREAD_MINOR}${THREAD_PATCHLEVEL}
 NODOT_VERSION=${THREAD_MAJOR}${THREAD_MINOR}
@@ -36,6 +36,8 @@ NODOT_VERSION=${THREAD_MAJOR}${THREAD_MINOR}
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 AC_SUBST(THREAD_VERSION_SUBSET83)
+# This package name must be replaced statically for AC_SUBST to work
+AC_SUBST(thread_LIB_FILE)
 
 #--------------------------------------------------------------------
 # We put this here so that you can compile with -DVERSION="1.2" to
@@ -201,6 +203,7 @@ if test "${SHARED_BUILD}" = "1" ; then
 else
     CFLAGS='${CFLAGS_DEFAULT} ${CFLAGS_WARNING}'
 fi
+AC_SUBST(SHARED_BUILD)
 
 #--------------------------------------------------------------------
 # Everyone should be linking against the Tcl stub library.
@@ -215,34 +218,6 @@ AC_DEFINE(USE_TCL_STUBS)
 #--------------------------------------------------------------------
 
 SC_MAKE_LIB
-
-#--------------------------------------------------------------------
-# Shared libraries and static libraries have different names.
-# Use the double eval to make sure the ${DBGX} in the suffix is substituted.
-#--------------------------------------------------------------------
-
-if test "${TEA_PLATFORM}" = "windows" ; then
-    if test "${SHARED_BUILD}" = "1" ; then
-	SHLIB_LD_LIBS="\"`${CYGPATH} ${TCL_BIN_DIR}/${TCL_STUB_LIB_FILE}`\" ${TCL_SHLIB_LD_LIBS}"
-	eval eval "${PACKAGE}_LIB_FILE=${PACKAGE}${SHARED_LIB_SUFFIX}"
-	RANLIB=:
-    else
-	eval eval "${PACKAGE}_LIB_FILE=${PACKAGE}${UNSHARED_LIB_SUFFIX}"
-    fi
-else
-    if test "${SHARED_BUILD}" = "1" ; then
-	SHLIB_LD_LIBS="${TCL_STUB_LIB_SPEC}"
-	eval eval "${PACKAGE}_LIB_FILE=lib${PACKAGE}${SHARED_LIB_SUFFIX}"
-	RANLIB=:
-    else
-	eval eval "${PACKAGE}_LIB_FILE=lib${PACKAGE}${UNSHARED_LIB_SUFFIX}"
-    fi
-fi
-
-AC_SUBST(SHARED_BUILD)
-
-AC_SUBST(thread_LIB_FILE)
-AC_SUBST(SHLIB_LD_LIBS)
 
 #--------------------------------------------------------------------
 # Find tclsh so that we can run pkg_mkIndex to generate the pkgIndex.tcl
