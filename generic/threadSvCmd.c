@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.23 2002/08/19 09:25:29 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.24 2002/08/20 18:37:48 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -761,8 +761,8 @@ Sv_DuplicateObj(objPtr)
      */
 
     if (objPtr->bytes == NULL) {
-        dupPtr->bytes == NULL;
-    } else if (objPtr->bytes != tclEmptyStringRep) {
+        dupPtr->bytes = NULL;
+    } else if (objPtr->bytes != Sv_tclEmptyStringRep) {
         /* A copy of TclInitStringRep macro */
         dupPtr->bytes = (char*)Tcl_Alloc((unsigned)objPtr->length + 1);
         if (objPtr->length > 0) {
