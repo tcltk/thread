@@ -5,7 +5,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvListCmd.c,v 1.3 2002/07/02 15:46:56 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvListCmd.c,v 1.4 2002/07/11 06:26:33 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -466,6 +466,7 @@ SvLrangeObjCmd (arg, interp, objc, objv)
         args[j] = Sv_DuplicateObj(elPtrs[i]);
     }
 
+    Tcl_ResetResult(interp);
     Tcl_SetListObj(Tcl_GetObjResult(interp), nargs, args);
     Tcl_Free((char*)args);
 
@@ -594,6 +595,7 @@ SvLlengthObjCmd (arg, interp, objc, objv)
     ret = Tcl_ListObjLength(interp, svObj->tclObj, &llen);
     Sv_Unlock(svObj);
     if (ret == TCL_OK) {
+        Tcl_ResetResult(interp);
         Tcl_SetIntObj(Tcl_GetObjResult(interp), llen);
     }
 
@@ -697,6 +699,7 @@ SvLsearchObjCmd (arg, interp, objc, objv)
         }
     }
 
+    Tcl_ResetResult(interp);
     Tcl_SetIntObj(Tcl_GetObjResult(interp), index);
 
     Sv_Unlock(svObj);
@@ -911,6 +914,7 @@ SvGetIntForIndex(interp, objPtr, endValue, indexPtr)
     } else {
   intforindex_error:
         if (interp != NULL) {
+            Tcl_ResetResult(interp);
             Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "bad index \"",
                     bytes, "\": must be integer or end?-integer?",(char*)NULL);
             SvCheckBadOctal(interp, bytes);
