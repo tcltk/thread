@@ -24,7 +24,7 @@ file in the top-level distribution directory for complete information.
 HOW TO COMPILE ?
 ================
 
-Only Unix and Windows platforms are supported at the moment. Depending
+Only Unix-like and Windows platforms are supported at the moment. Depending
 on your platform (Unix-like or Windows) go to the appropriate directory 
 (unix or win) and start with the README file.
 
@@ -36,6 +36,8 @@ Documentation in Unix man and standard HTML format is available in the
 doc/man and doc/html directories respectively. 
 Currently, documentation is in reference-style only. The tutorial-style
 documentation will be provided with future releases of the extension.
+That is, if I ever get time to do that. Everybody is more than welcome
+to jump in and help with the docs.
 
 
 HOW TO GET SUPPORT ?
