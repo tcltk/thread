@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.71 2003/04/10 12:00:20 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.72 2003/04/10 13:14:18 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -65,7 +65,8 @@ static Tcl_ThreadDataKey dataKey;
 
 #define THREAD_FLAGS_NONE          0      /* None */
 #define THREAD_FLAGS_STOPPED       1      /* Thread is being stopped */
-#define THREAD_FLAGS_UNWINDONERROR 2      /* Thread unwinds on script error */
+#define THREAD_FLAGS_INERROR       2      /* Thread is in error */
+#define THREAD_FLAGS_UNWINDONERROR 4      /* Thread unwinds on script error */
 
 #define THREAD_RESERVE             1      /* Reserves the thread */
 #define THREAD_RELEASE             2      /* Releases the thread */
@@ -2275,19 +2276,28 @@ ThreadSend(interp, id, send, clbk, wait)
     Tcl_ThreadId threadId = (Tcl_ThreadId)id;
 
     /* 
-     * Verify the thread exists.
+     * Verify the thread exists and is not in the error state.
+     * The thread is in the error state only if we've configured
+     * it to unwind on script evaluation error and last script
+     * evaluation resulted in error actually.
      */
 
     Tcl_MutexLock(&threadMutex);
     tsdPtr = ThreadExistsInner(threadId);
 
-    if (tsdPtr == (ThreadSpecificData*)NULL) {
+    if (tsdPtr == (ThreadSpecificData*)NULL
+            || (tsdPtr->flags & THREAD_FLAGS_INERROR)) {
+        int inerror = tsdPtr->flags & THREAD_FLAGS_INERROR;
         Tcl_MutexUnlock(&threadMutex);
         ThreadFreeProc((ClientData)send);
         if (clbk) {
             ThreadFreeProc((ClientData)clbk);
         }
-        Tcl_SetResult(interp, "invalid thread id", TCL_STATIC);
+        if (inerror) {
+            Tcl_SetResult(interp, "thread is in error", TCL_STATIC);
+        } else {
+            Tcl_SetResult(interp, "invalid thread id", TCL_STATIC);
+        }
         return TCL_ERROR;
     }
     
@@ -2436,14 +2446,15 @@ ThreadSend(interp, id, send, clbk, wait)
  */
 static int
 ThreadWait()
-{    
+{
+    int canrun = 1;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     /*
      * Process events until signaled to stop.
      */
 
-    while (!(tsdPtr->flags & THREAD_FLAGS_STOPPED)) {
+    while (canrun) {
 
         /*
          * About to service another event.
@@ -2456,8 +2467,16 @@ ThreadWait()
             Tcl_ConditionNotify(&tsdPtr->doOneEvent);
             Tcl_MutexUnlock(&threadMutex);
         }
-
         Tcl_DoOneEvent(TCL_ALL_EVENTS);
+        
+        /*
+         * Test stop condition under mutex since
+         * some other thread may flip our flags.
+         */
+
+        Tcl_MutexLock(&threadMutex);
+        canrun = (tsdPtr->flags & THREAD_FLAGS_STOPPED) == 0;
+        Tcl_MutexUnlock(&threadMutex);
     }
 
     /*
@@ -2634,11 +2653,7 @@ ThreadEventProc(evPtr, mask)
      * changed to one given in the callback.
      */
 
-    if (sendPtr && sendPtr->interp) {
-        interp = sendPtr->interp;
-    } else {
-        interp = tsdPtr->interp;
-    }
+    interp = (sendPtr && sendPtr->interp) ? sendPtr->interp : tsdPtr->interp;
 
     if (interp != NULL) {
         if (clbkPtr && clbkPtr->threadId == threadId) {
@@ -2704,19 +2719,26 @@ ThreadEventProc(evPtr, mask)
         ThreadErrorProc(interp);
     }
 
-    /*
-     * Mark unwind scenario for this thread if the script resulted
-     * in error condition and thread has been marked to unwind
-     * in such cases. This will cause thread to disappear from the
-     * list of active threads, clean-up its event queue and exit.
-     */
-
-    if (code != TCL_OK && (tsdPtr->flags & THREAD_FLAGS_UNWINDONERROR)) {
-        tsdPtr->flags |= THREAD_FLAGS_STOPPED;
-    }
-
     if (interp != NULL) {
         Tcl_Release((ClientData)interp);
+    }
+
+    /*
+     * Mark unwind scenario for this thread if the script resulted
+     * in error condition and thread has been marked to unwind.
+     * This will cause thread to disappear from the list of active
+     * threads, clean-up its event queue and exit.
+     */
+
+    if (code != TCL_OK) {
+        Tcl_MutexLock(&threadMutex);
+        if (tsdPtr->flags & THREAD_FLAGS_UNWINDONERROR) {
+            tsdPtr->flags |= THREAD_FLAGS_INERROR;
+            if (tsdPtr->refCount == 0) {
+                tsdPtr->flags |= THREAD_FLAGS_STOPPED;
+            }
+        }
+        Tcl_MutexUnlock(&threadMutex);
     }
 
     return 1;
