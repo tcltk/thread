@@ -7,7 +7,7 @@
 # Copyright (c) 1998-1999 by Scriptics Corporation.
 # All rights reserved.
 # 
-# RCS: @(#) $Id: all.tcl,v 1.4 2004/07/21 21:01:57 vasiljevic Exp $
+# RCS: @(#) $Id: all.tcl,v 1.5 2004/12/18 13:26:03 vasiljevic Exp $
 
 package require tcltest
 namespace import -force ::tcltest::*
@@ -42,11 +42,8 @@ puts stdout "Tests began at [eval $timeCmd]"
 
 # Require the accurate version for the tests so we don't pick up
 # older Thread packages by accident
-if {$::tcl_version == 8.3} {
-    package require Thread 2.1.6
-} else {
-    package require Thread 2.6
-}
+package require Tcl 8.4
+package require Thread 2.6
 set ::tcltest::mainThread [thread::id]
 
 puts stdout "Thread [package provide Thread]"

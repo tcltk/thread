@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.87 2004/10/20 08:54:13 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.88 2004/12/18 13:26:03 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -33,8 +33,6 @@
  */
 
 TCL_DECLARE_MUTEX(threadMutex)
-
-static int tclIs83 = 0;
 
 /*
  * Each thread has an single instance of the following structure. There
@@ -366,39 +364,18 @@ Thread_Init(interp)
 {
     Tcl_Obj *boolObjPtr;
     char *msg;
-    int boolVar, maj, min, ptch, type;
+    int boolVar;
 
-    if (Tcl_InitStubs(interp, "8.3", 0) == NULL) {
+    if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
         return TCL_ERROR;
     }
 
-    Tcl_GetVersion(&maj, &min, &ptch, &type);
-
-    if ((maj == 8) && (min == 3) && (ptch < 1)) {
-        /*
-         * Truely depends on 8.3.1+ with the new Tcl_CreateThread API
-         */
-        msg = "The Thread extension requires Tcl 8.3.1+";
-        Tcl_SetStringObj(Tcl_GetObjResult(interp), msg, -1);
-        return TCL_ERROR;
-    }
-
-    /*
-     * Tcl 8.3.[1,*) is limited to a subset of commands and provides a
-     * different package version of the thread extension.  This way of
-     * dynamically (at runtime) adjusting what commands are added to the
-     * interp based on the core version, is needed to prevent accessing 
-     * stubs functions that don't exist in 8.3.[1,*) and to maintain the
-     * proper package version provided to Tcl for a consistent interface.
-     */
-
-    tclIs83 = ((maj == 8) && (min == 3));
     boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", 0);
 
     if (boolObjPtr == NULL
             || Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_OK
             || boolVar == 0) {
-        msg = "Tcl core wasn't compiled for multithreading.";
+        msg = "Tcl core wasn't compiled for threading.";
         Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
         return TCL_ERROR;        
     }
@@ -420,13 +397,10 @@ Thread_Init(interp)
     TCL_CMD(interp, THNS"errorproc", ThreadErrorProcObjCmd);
     TCL_CMD(interp, THNS"preserve",  ThreadReserveObjCmd);
     TCL_CMD(interp, THNS"release",   ThreadReleaseObjCmd);
-
-    if (!tclIs83) {
     TCL_CMD(interp, THNS"join",      ThreadJoinObjCmd);
     TCL_CMD(interp, THNS"transfer",  ThreadTransferObjCmd);
     TCL_CMD(interp, THNS"detach",    ThreadDetachObjCmd);
     TCL_CMD(interp, THNS"attach",    ThreadAttachObjCmd);
-    }
 
     /*
      * Add shared variable commands
@@ -452,8 +426,7 @@ Thread_Init(interp)
      * on the core features available.
      */
 
-    return Tcl_PkgProvide(interp, "Thread", 
-            (tclIs83) ? THREAD_VERSION_SUBSET83 : THREAD_VERSION);
+    return Tcl_PkgProvide(interp, "Thread", PACKAGE_VERSION);
 }
 
 /*
@@ -1622,7 +1595,6 @@ NewThread(clientData)
     Tcl_Interp *interp;
     int result = TCL_OK, scriptLen;
     char *evalScript;
-    int maj, min, ptch, type;
 
     /*
      * Initialize the interpreter.
@@ -1635,19 +1607,6 @@ NewThread(clientData)
 #else
     interp = Tcl_CreateInterp();
     result = Tcl_Init(interp);
- 
-    /*
-     *  Tcl_Init() under 8.3.[1,2] and 8.4a1 doesn't work under threads.
-     */
-
-    Tcl_GetVersion(&maj, &min, &ptch, &type);
-    if (!((maj == 8) && (min == 3) && (ptch <= 2))
-        && !((maj == 8) && (min == 4) && (ptch == 1)  
-             && (type == TCL_ALPHA_RELEASE)) && (result != TCL_OK)) {
-        Tcl_ConditionNotify(&ctrlPtr->condWait);
-        ThreadErrorProc(interp);
-        Tcl_ExitThread(result);
-    }
 #endif
 
 #if !defined(NS_AOLSERVER) || (defined(NS_MAJOR_VERSION) && NS_MAJOR_VERSION >= 4)
@@ -3290,7 +3249,7 @@ ThreadDeleteEvent(eventPtr, clientData)
         }
         return 1;
     }
-    if (!tclIs83 && (eventPtr->proc == TransferEventProc)) {
+    if ((eventPtr->proc == TransferEventProc)) {
         /* 
          * A channel is in flight toward the thread just exiting.
          * Pass it back to the originator, if possible.
@@ -3410,33 +3369,31 @@ ThreadExitProc(clientData)
             Tcl_ConditionNotify(&resultPtr->done);
         }
     }
-    if (!tclIs83) {
-        for (tResultPtr = transferList; tResultPtr; tResultPtr = tNextPtr) {
-            tNextPtr = tResultPtr->nextPtr;
-            if (tResultPtr->srcThreadId == self) {
-                /*
-                 * We are going away. By freeing up the result we signal
-                 * to the other thread we don't care about the result.
-                 *
-                 * This should not happen, as this thread should be in
-                 * ThreadTransfer at location (*).
-                 */
-
-                SpliceOut(tResultPtr, transferList);
-                Tcl_Free((char*)tResultPtr);
-
-            } else if (tResultPtr->dstThreadId == self) {
-                /*
-                 * Dang. The target is going away. Unblock the caller.
-                 * The result string must be dynamically allocated 
-                 * because the main thread is going to call free on it.
-                 */
-
-                tResultPtr->resultMsg = strcpy(Tcl_Alloc(1+strlen(diemsg)),
-                                               diemsg);
-                tResultPtr->resultCode = TCL_ERROR;
-                Tcl_ConditionNotify(&tResultPtr->done);
-            }
+    for (tResultPtr = transferList; tResultPtr; tResultPtr = tNextPtr) {
+        tNextPtr = tResultPtr->nextPtr;
+        if (tResultPtr->srcThreadId == self) {
+            /*
+             * We are going away. By freeing up the result we signal
+             * to the other thread we don't care about the result.
+             *
+             * This should not happen, as this thread should be in
+             * ThreadTransfer at location (*).
+             */
+            
+            SpliceOut(tResultPtr, transferList);
+            Tcl_Free((char*)tResultPtr);
+            
+        } else if (tResultPtr->dstThreadId == self) {
+            /*
+             * Dang. The target is going away. Unblock the caller.
+             * The result string must be dynamically allocated 
+             * because the main thread is going to call free on it.
+             */
+            
+            tResultPtr->resultMsg = strcpy(Tcl_Alloc(1+strlen(diemsg)),
+                                           diemsg);
+            tResultPtr->resultCode = TCL_ERROR;
+            Tcl_ConditionNotify(&tResultPtr->done);
         }
     }
     Tcl_MutexUnlock(&threadMutex);

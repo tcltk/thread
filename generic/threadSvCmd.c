@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.37 2004/10/19 23:37:19 andreas_kupries Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.38 2004/12/18 13:26:03 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -2143,7 +2143,7 @@ Sv_Init (interp)
     intObjTypePtr       = Tcl_GetObjType("int");
     stringObjTypePtr    = Tcl_GetObjType("string");
 
-#ifdef USE_GDBM
+#ifdef HAVE_GDBM
     /*
      * Register persistent store handlers
      */

@@ -2,7 +2,7 @@
 [manpage_begin thread n 2.6]
 [moddesc {Tcl Threading}]
 [titledesc {Extension for script access to Tcl threading}]
-[require Tcl 8.3]
+[require Tcl 8.4]
 [require Thread [opt 2.6]]
 
 [description]
@@ -145,10 +145,10 @@ in termination of the target thread, i.e. if the return result would
 be zero (0). Without the flag, the caller thread does not wait for 
 the target thread to exit. Care must be taken when using the 
 [option -wait], since this may block the caller thread indefinitely.
-This option has been implemented for users of Tcl 8.3 version only.
-Users of Tcl 8.4 or later should create joinable threads, by using
-the [option -joinable] option of the [cmd thread::create] command 
-and the [cmd thread::join] to wait for thread exit.
+This option has been implemented for some special uses of the extension
+and is deprecated for regular use. Regular users should create joinable
+threads by using the [option -joinable] option of the [cmd thread::create]
+command and the [cmd thread::join] to wait for thread to exit. 
 
 [call [cmd thread::id]]
 

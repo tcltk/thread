@@ -1,10 +1,32 @@
-2004-11-27 Zoran Vasiljevic <zoran@archiware.com>
+2004-12-18 Zoran Vasiljevic <zv@archiware.com>
+
+	**** COMPATIBILITY: Dropped support for Tcl 8.3 ****
+	
+	* aclocal.m4: Adjusted for TEA3
+	* Makefile.in:
+	* configure.in:
+	* pkgIndex.tcl.in:
+
+	* configure: Rebuild with autoconf 2.59
+
+	* tests/all.tcl:    Removed extra handling for Tcl 8.3
+	* tests/thread.tcl: since we do not support 8.3 any more
+	* generic/psGdbm.c:
+	* generic/threadCmd.c:
+	* generic/threadSvCmd.c:
+
+	* doc/thread.man: Updated docs for the 2.6 release
+	* doc/tpool.man:
+	* doc/tsv.man:
+	* doc/ttrace.man:
+
+2004-11-27 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: Fixed race condition which resulted 
 	  in blocking at pool creation with high -minworkers threads.
 	  This fixes the Tcl Bug #933975.
 
-2004-11-25 Zoran Vasiljevic <zoran@archiware.com>
+2004-11-25 Zoran Vasiljevic <zv@archiware.com>
 
 	* tests/thread.tcl: Disabled all tests handling channel transfer
           for Windows ports until core is capable of handling this correctly.
@@ -25,7 +47,7 @@
 	  the incoming alert is directed to the wrong thread for event
 	  processing.
 
-2004-10-20 Zoran Vasiljevic <zoran@archiware.com>
+2004-10-20 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c (ThreadSetResult): adjusted handling of
 	  interp result to accomodate for recent changes in Tcl core.
@@ -50,7 +72,7 @@
 	* tests/thread.test: Duplicate test id thread-16.1 renamed to
 	  thread-16.2.
 
-2004-08-14 Zoran Vasiljevic <zoran@archiware.com>
+2004-08-14 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: fixed broken parsing of 
 	pool handles. Pool handles are now generated in the
@@ -62,7 +84,7 @@
 	handles on 64-bit machines since the problem was actually
 	in Tcl itself, rather than here.
 
-2004-07-21 Zoran Vasiljevic <zoran@archiware.com>
+2004-07-21 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/tclThread.h: corrected namespace prefix for
 	AOLserver 4.x or higher, since namespaced commands are
@@ -79,7 +101,7 @@
 	* generic/threadPoolCmd.c: adjusted handles of the pools to
 	match ones of threads (see above).
 
-2004-07-21 Zoran Vasiljevic <zoran@archiware.com>
+2004-07-21 Zoran Vasiljevic <zv@archiware.com>
 
 	* doc/*: reformatted docs and added some clarifications 
 	about mutex handling.
@@ -110,7 +132,7 @@
 	* tests/ttrace.test:
 	* tests/tsv.test: new files, currently no-ops.
 
-2004-01-31 Zoran Vasiljevic <zoran@archiware.com>
+2004-01-31 Zoran Vasiljevic <zv@archiware.com>
 
 	* lib/ttrace.tcl: added unconditional "package require"
 	call to ttrace::eval so we need not explicitly load the
@@ -121,7 +143,7 @@
 	* doc/format.tcl: fixed inclusion of man.macros in
 	every *.n doc file
 
-2004-01-31 Zoran Vasiljevic <zoran@archiware.com>
+2004-01-31 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed incorrect handling of return
         codes from the scripts passed to threads. We were wrongly
@@ -130,7 +152,7 @@
 	TCL_ERROR and return other codes (as-is) to the caller.
 	This also fixes the Tcl Bug #884549.
 
-2003-12-22 Zoran Vasiljevic <zoran@archiware.com>
+2003-12-22 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSpCmd.c: added recursive and reader/writer locks
 	and associated commands
@@ -143,14 +165,14 @@
 	doc files to match the release 2.6 state.
 
 
-2003-12-01 Zoran Vasiljevic <zoran@archiware.com>
+2003-12-01 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: removed the concept of foreign
 	thread since it broke our async message bouncing. We
 	still have to find the way how we should avoid broadcasting
 	non-package threads (like for aolserver).
 
-2003-11-27 Zoran Vasiljevic <zoran@archiware.com>
+2003-11-27 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed mutex release in ThreadSend
 	when refusing to send message to foreign thread.
@@ -158,7 +180,7 @@
 	should not return anything to the caller, no matter the
 	outcome of the command.
 
-2003-11-27 Zoran Vasiljevic <zoran@archiware.com>
+2003-11-27 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: mark threads created by the package
 	to distinguish them from "foreign" threads. We will forbid
@@ -172,7 +194,7 @@
 	* generic/threadPoolCmd.c: added optional varname argument
 	(last arg) to the tpool::cancel
 
-2003-11-25 Zoran Vasiljevic <zoran@archiware.com>
+2003-11-25 Zoran Vasiljevic <zv@archiware.com>
 
 	* doc/format.tcl: new file with a simple poor man's
 	documentation formatter.
@@ -185,13 +207,13 @@
 	* Makefile.in: added support for building nroff and html
 	files out of doctools sources found in doc directory.
 
-2003-11-18 Zoran Vasiljevic <zoran@archiware.com>
+2003-11-18 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: added implementation of the 
 	thread::broadcast command. This one asynchronously 
 	sends a script to all known threads, except the caller.
 
-2003-09-03 Zoran Vasiljevic <zoran@archiware.com>
+2003-09-03 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/tclXkeylist.(c|h): added keyed-list datatype
 	implementation borrowed from the TclX package. This is
@@ -212,19 +234,19 @@
 	to process newly added files for keyed lists and persistent
 	stores.
 
-2003-08-27 Zoran Vasiljevic <zoran@archiware.com>
+2003-08-27 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: after expiration of the idle
 	timer, all idle workers exit unconditionaly. Before the
 	change, idle threads exited after getting the first job
 	posted. This way we were loosing work.
 
-2003-08-26 Zoran Vasiljevic <zoran@archiware.com>
+2003-08-26 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: fixed result list corruption
 	in TpoolCancelObjCmd. 
 
-2003-07-27 Zoran Vasiljevic <zoran@archiware.com>
+2003-07-27 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: added "-nowait" option
 	to the "tpool::post" commandi. This allows the 
@@ -234,7 +256,7 @@
 	available to satisfy the first request.
 	Added "tpool::cancel" command. See docs for info.
 
-2003-05-31 Zoran Vasiljevic <zoran@archiware.com>
+2003-05-31 Zoran Vasiljevic <zv@archiware.com>
 	
 	* generic/threadCmd.c: fixed ListRemoveInner for
 	the Tcl Bug #746352
@@ -242,12 +264,12 @@
 	* generic/threadSpCmd.c: modified Sp_Init to 
 	return a proper value for Tcl Bug #746352
 
-2003-05-17 Zoran Vasiljevic <zoran@archiware.com>
+2003-05-17 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: sets the name of the new thread
 	to "-tclthread-" when compiled for AOLserver
 
-2003-04-29 Zoran Vasiljevic <zoran@archiware.com>
+2003-04-29 Zoran Vasiljevic <zv@archiware.com>
 
         Tagged interim 2.5.2 release.
 
@@ -257,7 +279,7 @@
         from the top-level dir instead of unix/win subdir.
         Thanks to Mo DeJong for the fix.
 
-2003-04-10 Zoran Vasiljevic <zoran@archiware.com>
+2003-04-10 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: removed checking of stopped flag
 	during walk of the list of active threads. This
@@ -266,7 +288,7 @@
 	Also, added new "-errorstate" configuration option
 	to set/get error state of reserved unwinding thread.
 	
-2003-04-02 Zoran Vasiljevic <zoran@archiware.com>
+2003-04-02 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c:
 	* generic/threadPoolCmd.c:
@@ -275,7 +297,7 @@
 	with non-NULL clientData, otherwise Tcl won't invoke
 	the registered  callback. 
 
-2003-03-28 Zoran Vasiljevic <zoran@archiware.com>
+2003-03-28 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvList.c
 	* generic/threadSvCmd.c: fixed some rare cases
@@ -285,7 +307,7 @@
 	* generic/threadCmd.c: fixed broken AOLserver 3.x
 	compatibility mode introduced by last 4.x changes.
 
-2003-03-17 Zoran Vasiljevic <zoran@archiware.com>
+2003-03-17 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvCmd.c: fixed incompatibility 
 	with Tcl 8.4.2 filepath object
@@ -293,13 +315,13 @@
 	* generic/threadCmd.c:
 	* aolstub.cpp: adjusted for AOLserver 4.0
  
-2003-02-24 Zoran Vasiljevic <zoran@archiware.com>
+2003-02-24 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed ThreadSetResult
 	to correctly initialize all elements of the 
 	result structure.
 
-2003-02-08 Zoran Vasiljevic <zoran@archiware.com>
+2003-02-08 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed ListRemoveInner
 	to correctly update global threadList ptr when 
@@ -317,7 +339,7 @@
 	* tests/thread.test: Add test for negative
 	number as thread id.
 
-2003-01-22 Zoran Vasiljevic <zoran@archiware.com>
+2003-01-22 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed reference to errorInfo
 	when reporting error from the passed script.
@@ -327,16 +349,16 @@
 	* configure: Regenerate to include recent fixes
 	for mingw build support in tclconfig module.
 
-2002-12-18 Zoran Vasiljevic <zoran@archiware.com>
+2002-12-18 Zoran Vasiljevic <zv@archiware.com>
 
 	* README: added some AOLserver info
 	* tcl/tpool/tpool.tcl: added missing tpool::names command
 
-2002-12-14 Zoran Vasiljevic <zoran@archiware.com>
+2002-12-14 Zoran Vasiljevic <zv@archiware.com>
 
 	* doc/*: finished docs for the 2.5 release
 
-2002-12-09 Zoran Vasiljevic <zoran@archiware.com>
+2002-12-09 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: added tpool::names command
 	added -exitscript for tpool::create
@@ -346,7 +368,7 @@
 	* doc/html/tpool.html: added files. This is still the
 	work in progress.
 
-2002-12-06 Zoran Vasiljevic <zoran@archiware.com>
+2002-12-06 Zoran Vasiljevic <zv@archiware.com>
 
 	* configure.in
 	* configure
@@ -354,7 +376,7 @@
 	* aolserver.m4: added support for compilation under
 	AOLserver as loadable module.
 
-2002-12-06 Zoran Vasiljevic <zoran@archiware.com>
+2002-12-06 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvCmd.c: the tsv::lock now allows
 	for unsetting the shared array within the script argument.
@@ -368,14 +390,14 @@
 	* tcl/phttpd/phttpd.tcl: simplified switching to Tcl-level
 	threadpool implementation. 	
 
-2002-12-04 Zoran Vasiljevic <zoran@archiware.com>
+2002-12-04 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolcmd.c: rewritten to use
 	worker threads sitting on the cond var instead of 
 	in the event loop. The poster thread still respects
 	i.e. does not block the event loop while posting jobs.
 
-2002-12-03 Zoran Vasiljevic <zoran@archiware.com>
+2002-12-03 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/tclthread.h: added SpliceIn/SpliceOut macros.
 	Fixed to include exports from threadPoolCmd.c
@@ -391,12 +413,12 @@
 
 	* Makefile.in: added threadPoolCmd.c to list of source files.
 
-2002-11-25 Zoran Vasiljevic <zoran@archiware.com>
+2002-11-25 Zoran Vasiljevic <zv@archiware.com>
 
 	* tcl/phttpd/phttpd.tcl: added raw file; no thread support
 	* tcl/cmdsrv/cmdsrv.tcl: first working version
 
-2002-11-24 Zoran Vasiljevic <zoran@archiware.com>
+2002-11-24 Zoran Vasiljevic <zv@archiware.com>
 
 	* tcl/tpool/tpool.tcl: added threadpool implementation in Tcl
 	* tcl/phttpd: added directory for later mt-enabled pico-httpd 
@@ -412,25 +434,25 @@
 	Also, fixed thread::preserve and thread::release to accept
 	the thread id as the optional paramter.
 	
-2002-11-23 Zoran Vasiljevic <zoran@archiware.com>
+2002-11-23 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed ListRemoveInner() to recognize
 	and ignore already removed tsd thread structures. 
 	Fixed some invalid TCL_OK returns which masked serious errors.
 	
-2002-11-07 Zoran Vasiljevic <zoran@archiware.com>
+2002-11-07 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixes problem when trying to report
 	the error from an async callback when the stderr channel is
 	not available (wish/tclkit on windows). Thanks to 
 	Wojciech Kocjan <wojciech@kocjan.org> for the correction.
 
-2002-10-23 Zoran Vasiljevic <zoran@archiware.com>
+2002-10-23 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: added handling of background errors
 	while doing an async callback. 
 
-2002-10-20 Zoran Vasiljevic <zoran@archiware.com>
+2002-10-20 Zoran Vasiljevic <zv@archiware.com>
 
 	* doc/html/thread.html
 	* doc/man/thread.n
@@ -450,19 +472,19 @@
 	* configure.in: move the CFLAGS definition into TEA_ENABLE_SHARED
 	and make it pick up the env CFLAGS at configure time.
 
-2002-08-23 Zoran Vasiljevic <zoran@archiware.com>
+2002-08-23 Zoran Vasiljevic <zv@archiware.com>
 
 	* threadCmd.c: fixed potential memory corruption
 	when releasing preserved interpreter.
 	[Tcl bug 599290]
 
-2002-08-19 Zoran Vasiljevic <zoran@archiware.com>
+2002-08-19 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvCmd.c: we now properly invalidate
 	duped object string rep if the internal rep has been
 	regenerated.
 
-2002-08-18 Zoran Vasiljevic <zoran@archiware.com>
+2002-08-18 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: updated some comments
 	* generic/threadSvCmd.c:
@@ -473,7 +495,7 @@
 	by Purify, but shows itself by observing the size
 	of the process using the top utility. Gosh!
 
-2002-08-03  Zoran Vasiljevic <zoran@archiware.com>
+2002-08-03  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvListCmd.c: corrected "tsv::lpush"
 	to correctly make a copy of the object pushed into
@@ -495,13 +517,13 @@
         under Windows, we now use this same hack on all systems.
 	[Tcl patch 584123]
 
-2002-07-19  Zoran Vasiljevic <zoran@archiware.com>  
+2002-07-19  Zoran Vasiljevic <zv@archiware.com>  
 
 	* threadCmd.c: added some macros to simplify
 	adding and removing result structure in and  
 	out of the corresponding lists
 
-2002-07-18  Zoran Vasiljevic <zoran@archiware.com>  
+2002-07-18  Zoran Vasiljevic <zv@archiware.com>  
 
 	* threadCmd.c: modified thread::release to allow
 	for optional "-wait" argument. This will result in 
@@ -512,7 +534,7 @@
 	the exiting thread, but the join command is not 
 	available for some older Tcl versions. 
 
-2002-07-13  Zoran Vasiljevic <zoran@archiware.com>  
+2002-07-13  Zoran Vasiljevic <zv@archiware.com>  
 
 	* doc/man:
 	* doc/html: added two directories with TMML generated files
@@ -520,25 +542,25 @@
 	* Makefile.in: updated install-doc target to look for man files
 	under doc/man instead only under doc directory
 
-2002-07-12  Zoran Vasiljevic <zoran@archiware.com>  
+2002-07-12  Zoran Vasiljevic <zv@archiware.com>  
 
 	* generic/threadSvCmd.s: fixed handling of string rep
 	in shared var object duplicator
 
-2002-07-09  Zoran Vasiljevic <zoran@archiware.com>  
+2002-07-09  Zoran Vasiljevic <zv@archiware.com>  
 	* README: added this file
  	* license.terms: added this file
 
-2002-07-05  Zoran Vasiljevic <zoran@archiware.com>  
+2002-07-05  Zoran Vasiljevic <zv@archiware.com>  
 
         * tclconfig/tcl.m4: fixed reference to MINGW so we can
 	compile w/o MSVC under windows. 
 
-2002-07-03  Zoran Vasiljevic <zoran@archiware.com>  
+2002-07-03  Zoran Vasiljevic <zv@archiware.com>  
 
 	* generic/threadSvCmd.c: simplified object duplicator
 
-2002-06-17  Zoran Vasiljevic <zoran@archiware.com>  
+2002-06-17  Zoran Vasiljevic <zv@archiware.com>  
 
 	* generic/threadCmd.c: cleanup of some unused variables
 	* generic/threadSvCmd.c:
@@ -546,20 +568,20 @@
 	* generic/threadSvList.c: added CONST qualifiers to avoid warnings
 	when compiling against 8.4 core. 
 
-2002-05-25  Zoran Vasiljevic <zoran@archiware.com>  
+2002-05-25  Zoran Vasiljevic <zv@archiware.com>  
 	* generic/threadCmd.c: added some typecasts to satisfy Windows 
 	* generic/threadSvCmd.h: added some typecasts to satisfy Windows 
 
-2002-05-04  Zoran Vasiljevic <zoran@archiware.com>  
+2002-05-04  Zoran Vasiljevic <zv@archiware.com>  
 	* generic/threadSvCmd.c: removed errant reference to (still not)
 	supported shared dictionary and shared keylist datatypes.
 
-2002-04-27  Zoran Vasiljevic <zoran@archiware.com>  
+2002-04-27  Zoran Vasiljevic <zv@archiware.com>  
 
 	* generic/threadCmd.c: fixed processing of -eventmark. We now
 	properly wait for target thread to catch up with processing events.
 
-2002-04-07  Zoran Vasiljevic <zoran@archiware.com>  
+2002-04-07  Zoran Vasiljevic <zv@archiware.com>  
 
 	* generic/threadCmd.c: added call to Ns_TclMarkForDelete(interp)
 	when compiled for AOLserver support, otherwise we were leaking std
@@ -625,20 +647,20 @@
 	* Makefile.in: Updated build system to use tclconfig (TEA 2002)
 	structure.
 
-2002-03-09  Zoran Vasiljevic <zoran@archiware.com>
+2002-03-09  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvCmd.c: fixed memory leak when copying objects
 	using custom object duplicator. If a duplicator was registered
 	more than once, we were leaking memory.
 
-2002-03-08  Zoran Vasiljevic <zoran@archiware.com>
+2002-03-08  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: added thread::configure -unwindonerror
 	configuration option. See docs for usage.
 	
 	* doc/thread.n: added docs for thread::configure -unwindonerror
 	
-2002-03-07  Zoran Vasiljevic <zoran@archiware.com>
+2002-03-07  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvCmd.c: tsv::names will skip reporting shared
 	arrays with leading dot in their names. This is turned-on 
@@ -647,12 +669,12 @@
 	the name. Motivation behind this feature is to allow certain
 	data privacy. It is not name-clash proof, though.
 
-2002-02-12  Zoran Vasiljevic <zoran@archiware.com>
+2002-02-12  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed thread::preserve glitch. We never
 	actually did bump the reservation counter by a silly mistake.
 
-2002-02-12  Zoran Vasiljevic <zoran@archiware.com>
+2002-02-12  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: added thread::preserve and thread::release
 	commands. These allow for a simple reference counting when creating
@@ -663,7 +685,7 @@
 
 	* doc/thread.n: added docs for thread::preserve/thread::release
 	
-2002-02-09  Zoran Vasiljevic <zoran@archiware.com>
+2002-02-09  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: added thread::configure interface.
 	Currently only "-eventmark" option is supported.
@@ -672,7 +694,7 @@
 
 	* doc/thread.n: added docs for thread::configure
 
-2002-02-06  Zoran Vasiljevic <zoran@archiware.com>
+2002-02-06  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/aolserv.cpp: (new) added for loading into the AOLserver.
 	Still needs to fix the Makefile and friends to get it up and
@@ -695,7 +717,7 @@
 	ISO/ANSI/CLEAN C style of setting a typed pointer to a void* now doesn't
 	want to work.  Maybe I do too much C++ to have noticed this before...
 
-2002-01-23  Zoran Vasiljevic <zoran@archiware.com>
+2002-01-23  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed address of the target interpreter when
 	doing the callback async script processing. All messages went to the
@@ -703,12 +725,12 @@
 	to hung when posting callbacks to more that one interp at the same time.
 	(thanks Jean-Luc Fontaine for the tip)
 
-2002-01-20  Zoran Vasiljevic <zoran@archiware.com>
+2002-01-20  Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed multiple async reporting of error events
 	(thanks Jean-Luc Fontaine for the tip)
    
-2002-01-02  Zoran Vasiljevic <zoran@archiware.com>
+2002-01-02  Zoran Vasiljevic <zv@archiware.com>
 
         * generic/threadSvListCmd.* (new): added for the new implementation
         of the thread-shared-variable (tsv) interface.
@@ -897,7 +919,7 @@
 	the package version is always "2.1.1" to maintain a consistent
 	interface in all combinations (as per discussions with Don Porter).
 
-2000-10-16  Zoran Vasiljevic <zoran@munich.com>
+2000-10-16  Zoran Vasiljevic <zv@munich.com>
 
 	* generic/threadSvCmd.c ThreadSvUnsetObjCmd(): deadlocked.
         Forgot to release shared-array lock which resulted in
@@ -983,7 +1005,7 @@
 	extensions (like Tk) don't become aware, then they need to add
 	a Tcl_CallWhenDeleted handler.
 
-2000-07-14 Zoran Vasiljevic <zoran@munich.com>
+2000-07-14 Zoran Vasiljevic <zv@munich.com>
 
 	* generic/threadCmd.c: improved thread::exit behaviour
 	  now does a better job of draining the event loop before exit.
@@ -993,7 +1015,7 @@
 	  added some comments in function headers.
 	  docs/tests for above still pending.
 	
-2000-07-03 Zoran Vasiljevic <zoran@munich.com>
+2000-07-03 Zoran Vasiljevic <zv@munich.com>
 	
    	Summary of changes:
 
