@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.6 2002/07/02 15:46:56 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.7 2002/07/03 09:48:09 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -46,12 +46,12 @@ static Tcl_ObjCmdProc ThreadCondObjCmd;
  */
 
 static int  GetObjFromHandle _ANSI_ARGS_((Tcl_Interp *interp, 
-                                          char type, 
+                                          int type, 
                                           char *id, 
                                           void **addrPtrPtr));
 
 static void SetHandleFromObj _ANSI_ARGS_((Tcl_Interp *interp, 
-                                          char type, 
+                                          int type, 
                                           void *addrPtr));
 
 static void DeleteObjHandle  _ANSI_ARGS_((char *id));
@@ -301,7 +301,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
 static void
 SetHandleFromObj(interp, type, addrPtr)
     Tcl_Interp *interp;                 /* Interpreter to set result. */
-    char type;                          /* Type: MUTEXID or CONDID. */
+    int type;                           /* Type: MUTEXID or CONDID. */
     void *addrPtr;                      /* Object address */
 {
     int new;
@@ -323,6 +323,8 @@ SetHandleFromObj(interp, type, addrPtr)
     RELEASE_SYNCMUTEX;
 
     Tcl_SetObjResult(interp, Tcl_NewStringObj(handle, -1));
+   
+    return;
 }
 
 /*
@@ -344,7 +346,7 @@ SetHandleFromObj(interp, type, addrPtr)
 static int
 GetObjFromHandle(interp, type, handle, addrPtrPtr)
     Tcl_Interp *interp;                 /* Interpreter for error msg. */
-    char type;                          /* Type: MUTEXID or CONDID. */
+    int type;                           /* Type: MUTEXID or CONDID. */
     char *handle;                       /* Tcl string handle */
     void **addrPtrPtr;                  /* Return object address here */
 {
