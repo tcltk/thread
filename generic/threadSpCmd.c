@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.17 2003/12/22 21:20:59 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.18 2004/04/02 10:13:32 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -140,7 +140,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
 
     /*
      * Cover the "create" option first, since it needs no existing handle.
-     * It should allow the "-readwrite" qualifier, though.
+     * It should allow the "-recursive" qualifier, though.
      */
 
     if (opt == (int)m_CREATE) {
