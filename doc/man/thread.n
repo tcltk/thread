@@ -296,6 +296,7 @@ The command usually returns empty result but may trigger Tcl error with the mess
 "target thread died" in some situations.
 This command is deprecated in favour of more advanced thread reservation system
 implemented with \fBthread::preserve\fP and \fBthread::release\fP commands.
+Support for this command will dissapear in some future major release of the extenstion.
 .TP
 \&\fB\fBthread::exit\fP
 \&\fRThis forces a thread stuck in the \fBthread::wait\fP to unconditionaly
@@ -309,6 +310,7 @@ or more advanced thread reservation system implemented with \fBthread::preserve\
 and \fBthread::release\fP commands. Use on your own risk and with extreme precaution.
 The command usually  returns empty result but may trigger Tcl error with the message
 "target thread died" in some situations.
+Support for this command will dissapear in some future major release of the extenstion.
 .RE
 .TP
 \&\fB\fBthread::names\fP
@@ -344,7 +346,10 @@ result of the passed \fIscript\fR.
 \&\fB\fBthread::wait\fP
 \&\fRThis enters the event loop so a thread can receive messages from \fBthread::send\fP.
 This is equivalent to \fBvwait \fIunusedvariable\fB\fR except that thread::unwind will
-not unblock a \fBvwait\fP.
+not unblock a \fBvwait\fP. This command should only be used within the script passed to
+the \fBthread::create\fP. It should be the very last command in the script.
+If this is not the case, the exiting thread will continue executing the script lines pass the
+\&\fBthread::wait\fP which is not what you usualy want and/or expect.
 .TP
 \&\fB\fBthread::eval\fP
 \&\fRThis command concatenates passed arguments and evaluates the
@@ -399,7 +404,7 @@ and error.
 current thread and interpreter. After that, the current interpreter
 has no access to the channel anymore. The channel is in the parked
 state until some other (or the same) thread attaches the channel
-again with \fBthread::attach\fP command.
+again with \fBthread::attach\fP.
 Restriction: the channel in question must not be shared among
 multiple interpreters running in the sending thread. This
 automatically excludes the special channels for standard input, output
