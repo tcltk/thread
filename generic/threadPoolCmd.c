@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.9 2002/12/05 15:14:04 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.10 2002/12/05 23:41:44 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -537,7 +537,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
  *
  * TpoolGetObjCmd --
  *
- *  This procedure is invoked to process the "tpool::collect" Tcl 
+ *  This procedure is invoked to process the "tpool::get" Tcl 
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -562,7 +562,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
     Tcl_HashEntry *hPtr;
 
     /* 
-     * Syntax: tpool::collect tpoolId jobId ?result?
+     * Syntax: tpool::get tpoolId jobId ?result?
      */
 
     if (objc < 3 || objc > 4) {
@@ -760,12 +760,18 @@ CreateWorker(interp, tpoolPtr)
     Tcl_Mutex waitMutex = (Tcl_Mutex)0;
 
     /*
-     * Creates the new worker thread
+     * Initialize the result structure to be
+     * passed to the new thread. This is used
+     * as communication to and from the thread.
      */
 
     memset(&result, 0, sizeof(TpoolResult));
     result.retcode  = -1;
     result.tpoolPtr = tpoolPtr;
+
+    /*
+     * Create new worker thread here.
+     */
 
     if (Tcl_CreateThread(&id, TpoolWorker, (ClientData)&result,
                          TCL_THREAD_STACK_DEFAULT, 0) != TCL_OK) {
@@ -775,7 +781,7 @@ CreateWorker(interp, tpoolPtr)
 
     /*
      * Wait for the thread to start because it's using
-     * the argument which is on our stack.
+     * the ThrreadResult argument which is on our stack.
      */
 
     Tcl_MutexLock(&waitMutex);
@@ -866,6 +872,8 @@ TpoolWorker(clientData)
     if (tpoolPtr->initScript) {
         TpoolEval(interp, tpoolPtr->initScript, -1, rPtr);
         if (rPtr->retcode != TCL_OK) {
+            char *err = (char*)Tcl_GetStringResult(interp);
+            rPtr->result = strcpy(Tcl_Alloc(strlen(err)+1), err);
             Tcl_ConditionNotify(&tpoolPtr->cond);
             goto out;
         }
@@ -1343,6 +1351,7 @@ TpoolRelease(tpoolPtr)
         }
         Tcl_MutexLock(&tpoolPtr->mutex);
     }
+    Tcl_MutexUnlock(&tpoolPtr->mutex);
     
     /*
      * Tear down the pool structure
