@@ -36,7 +36,7 @@ CFG=thread - Win32 Release DLL
 # PROP BASE Use_Debug_Libraries 0
 # PROP BASE Output_Dir ""
 # PROP BASE Intermediate_Dir ""
-# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0"
 # PROP BASE Rebuild_Opt "-a"
 # PROP BASE Target_File "thread20.dll"
 # PROP BASE Bsc_Name ""
@@ -44,7 +44,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread22.dll"
 # PROP Bsc_Name ""
@@ -55,7 +55,7 @@ CFG=thread - Win32 Release DLL
 # PROP BASE Use_Debug_Libraries 0
 # PROP BASE Output_Dir ""
 # PROP BASE Intermediate_Dir ""
-# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0 STATIC_BUILD=1"
 # PROP BASE Rebuild_Opt "-a"
 # PROP BASE Target_File "thread20.lib"
 # PROP BASE Bsc_Name ""
@@ -63,7 +63,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0 STATIC_BUILD=1"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread22.lib"
 # PROP Bsc_Name ""
@@ -74,7 +74,7 @@ CFG=thread - Win32 Release DLL
 # PROP BASE Use_Debug_Libraries 0
 # PROP BASE Output_Dir ""
 # PROP BASE Intermediate_Dir ""
-# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1 NOMSVCRT=0"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP BASE Rebuild_Opt "-a"
 # PROP BASE Target_File "thread20x.lib"
 # PROP BASE Bsc_Name ""
@@ -82,7 +82,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release_StaticX"
 # PROP Intermediate_Dir "Release_StaticX"
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1 NOMSVCRT=0"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread22x.lib"
 # PROP Bsc_Name ""
@@ -93,7 +93,7 @@ CFG=thread - Win32 Release DLL
 # PROP BASE Use_Debug_Libraries 1
 # PROP BASE Output_Dir ""
 # PROP BASE Intermediate_Dir ""
-# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1"
 # PROP BASE Rebuild_Opt "-a"
 # PROP BASE Target_File "thread20d.dll"
 # PROP BASE Bsc_Name ""
@@ -101,7 +101,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread22d.dll"
 # PROP Bsc_Name ""
@@ -112,7 +112,7 @@ CFG=thread - Win32 Release DLL
 # PROP BASE Use_Debug_Libraries 1
 # PROP BASE Output_Dir ""
 # PROP BASE Intermediate_Dir ""
-# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1 STATIC_BUILD=1"
 # PROP BASE Rebuild_Opt "-a"
 # PROP BASE Target_File "thread20sd.lib"
 # PROP BASE Bsc_Name ""
@@ -120,7 +120,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1 STATIC_BUILD=1"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread22sd.lib"
 # PROP Bsc_Name ""
@@ -131,7 +131,7 @@ CFG=thread - Win32 Release DLL
 # PROP BASE Use_Debug_Libraries 1
 # PROP BASE Output_Dir ""
 # PROP BASE Intermediate_Dir ""
-# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1 NOMSVCRT=0"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP BASE Rebuild_Opt "-a"
 # PROP BASE Target_File "thread20xd.lib"
 # PROP BASE Bsc_Name ""
@@ -139,7 +139,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1 NOMSVCRT=0"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread22xd.lib"
 # PROP Bsc_Name ""
