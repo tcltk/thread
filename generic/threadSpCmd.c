@@ -15,7 +15,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.10 2002/12/05 15:14:06 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.11 2002/12/14 14:14:20 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -154,6 +154,8 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
         Tcl_MutexFinalize(mutexPtr);
         Tcl_Free((char*)mutexPtr);
         DeleteObjHandle(mutexHandle);
+        break;
+    case m_CREATE: /* Already handled above */
         break;
     }
 
@@ -375,6 +377,8 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
         Tcl_Free((char*)condPtr);
         DeleteObjHandle(condHandle);
         break;
+    case c_CREATE: /* Already handled above */
+        break;
     }
 
     return TCL_OK;
@@ -448,7 +452,9 @@ GetObjFromHandle(interp, type, handle, addrPtrPtr)
     char *handle;                       /* Tcl string handle */
     void **addrPtrPtr;                  /* Return object address here */
 {
+#ifdef NS_AOLSERVER
     void *addrPtr = NULL;
+#endif
     Tcl_HashEntry *hashEntryPtr;
 
     if (handle[0] != type || handle[1] != 'i' || handle[2] != 'd'
