@@ -1,0 +1,233 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin tsv n 2.6]
+[moddesc {Tcl Threading}]
+[titledesc {
+    Part of the Tcl threading extension allowing script level
+    manipulation of data shared between threads.
+}]
+[require Tcl 8.3]
+[require Thread [opt 2.6]]
+
+[description]
+This section describes commands implementing thread shared variables.
+A thread shared variable is very similar to a Tcl array but in 
+contrast to a Tcl array it is created in thread-shared memory and can
+be accessed from many threads at the same time. Important feature of
+thread shared variable is that each access to the variable is internaly
+protected by a mutex so script programmer does not have to take care 
+about locking the variable himself.
+[para]
+Thread shared variables are not bound to any thread explicitly. That 
+means that when a thread which created any of thread shared variables
+exits, the variable and associated memory is not unset/reclaimed.
+User has to explicitly unset the variable to reclaim the memory 
+consumed by the variable.
+
+[section COMMANDS]
+
+[list_begin definitions]
+
+[call [cmd tsv::names] [opt pattern]]
+
+Returns names of shared variables matching optional [opt pattern] 
+or all known variables if pattern is ommited. The command returns
+an empty list on process start. All thread shared variables are 
+created by explicit user action.
+
+[call [cmd tsv::object] [arg array] [arg element]]
+
+Creates object accessor command for the [arg element] in the
+shared [arg array]. Using this command, one can apply most 
+of the other shared variable commands as method functions of
+the element object command. The object command is automatically
+deleted when the element which this command is pointing to is unset.
+
+[nl]
+
+[example {
+    % tsv::set foo bar "A shared string"
+    % set string [tsv::object foo bar]
+    % $string append " appended"
+    => A shared string appended
+}]
+
+[call [cmd tsv::set] [arg array] [arg element] [opt value]]
+
+Sets the value of the [arg element] in the shared [arg array] 
+to [option value] and returns the value to caller. The [option value]
+may be ommited, in which case the command will return the current 
+value of the element. If the element cannot be found, error is triggered.
+
+[call [cmd tsv::get] [arg array] [arg element] [opt varname]]
+
+Retrieves the value of the [arg element] from the shared [arg array].
+If the optional argument [option varname] is given, the value is
+stored in the named variable. Return value of the command depends 
+of the existence of the optional argument [option varname].
+If the argument is ommited and the requested element cannot be found 
+in the shared array, the command triggers error. If, however, the 
+optional argument [option varname] is given on the command line, the
+command returns true (1) if the element is found or false (0) if the 
+element is not found in the shared array.
+
+[call [cmd tsv::unset] [arg array] [opt element]]
+
+Unsets the [arg element] from the shared [arg array].
+If the optional element is not given, it deletes the whole array.
+
+[call [cmd tsv::exists] [arg array] [arg element]]
+
+Checks wether the [arg element] exists in the shared [arg array]
+and returns true (1) if it does or false (0) if it doesn't.
+
+[call [cmd tsv::pop] [arg array] [arg element]]
+
+Returns value of the [arg element] in the shared [arg array]
+and unsets the element, all in one atomic operation.
+
+[call [cmd tsv::move] [arg array] [arg oldname] [arg newname]]
+
+Renames the element [arg oldname] to the [arg newname] in the
+shared [arg array]. This effectively performs an get/unset/set
+sequence of operations but all in one atomic step.
+
+[call [cmd tsv::incr] [arg array] [arg element] [opt count]]
+
+Similar to standard Tcl [cmd incr] command but increments the value
+of the [arg element] in shared [arg array] instead of the Tcl variable.
+
+[call [cmd tsv::append] [arg array] [arg element] [arg value] [opt {value ...}]]
+
+Similar to standard Tcl [cmd append] command but appends one or more
+values to the [arg element] in shared [arg array] instead of the 
+Tcl variable.
+
+[call [cmd tsv::lappend] [arg array] [arg element] [arg value] [opt {value ...}]]
+
+Similar to standard Tcl [cmd lappend] command but appends one
+or more values to the [arg element] in shared [arg array] 
+instead of the Tcl variable.
+
+[call [cmd tsv::linsert] [arg array] [arg element] [arg index] [arg value] [opt {value ...}]]
+
+Similar to standard Tcl [cmd linsert] command but inserts one
+or more values at the [arg index] list position in the 
+[arg element] in the shared [arg array] instead of the Tcl variable.
+
+[call [cmd tsv::lreplace] [arg array] [arg element] [arg first] [arg last] [opt {value ...}]]
+
+Similar to standard Tcl [cmd lreplace] command but replaces one
+or more values between the [arg first] and [arg last] position 
+in the [arg element] of the shared [arg array] instead of 
+the Tcl variable.
+
+[call [cmd tsv::llength] [arg array] [arg element]]
+
+Similar to standard Tcl [cmd llength] command but returns length 
+of the [arg element] in the shared [arg array] instead of the Tcl
+variable.
+
+[call [cmd tsv::lindex] [arg array] [arg element] [opt index]]
+
+Similar to standard Tcl [cmd lindex] command but returns the value
+at the [arg index] list position of the [arg element] from
+the shared [arg array] instead of the Tcl variable.
+
+[call [cmd tsv::lrange] [arg array] [arg element] [arg from] [arg to]]
+
+Similar to standard Tcl [cmd lrange] command but returns values
+between [arg from] and [arg to] list positions from the
+[arg element] in the shared [arg array] instead of the Tcl variable.
+
+[call [cmd tsv::lsearch] [arg array] [arg element] [opt options] [arg pattern]]
+
+Similar to standard Tcl [cmd lsearch] but searches the [arg element]
+in the shared [arg array] instead of the Tcl variable.
+
+[call [cmd tsv::lpop] [arg array] [arg element] [opt index]]
+
+Similar to the standard Tcl [cmd lindex] command but in addition to
+returning, it also splices the value out of the [arg element]
+from the shared [arg array] in one atomic operation. In contrast to
+the Tcl [cmd lindex] command, this command returns no value.
+
+[call [cmd tsv::lpush] [arg array] [arg element] [opt index]]
+
+This command performes the opposite of the [cmd tsv::lpop] command.
+As its counterpart, it returns no value to the caller.
+
+[call [cmd tsv::lock] [arg array] [arg arg] [opt {arg ...}]]
+
+This command concatenates passed arguments and evaluates the
+resulting script under the internal mutex protection. During the
+script evaluation, the entire shared array is locked. For shared
+variable commands within the script, internal locking is disabled
+so no deadlock can occur. It is also allowed to unset the shared
+variable from within the script. The shared variable is automatically
+created if it did not exists at the time of the first lock operation.
+
+[nl]
+
+[example {
+    % tsv::lock foo {
+        tsv::lappend foo bar 1
+        tsv::lappend foo bar 2
+        puts stderr [tsv::set foo bar]
+        tsv::unset foo
+    }
+}]
+
+[call [cmd tsv::array]]
+
+This command supports most of the options of the standard Tcl
+[cmd array] command:
+
+[list_begin definitions]
+
+[call [cmd {tsv::array set}] [arg array] [arg list]]
+
+Does the same as standard Tcl [cmd {array set}].
+
+[call [cmd {tsv::array get}] [arg array] [opt pattern]]
+
+Does the same as standard Tcl [cmd {array get}].
+
+[call [cmd {tsv::array names}] [arg array] [opt pattern]]
+
+Does the same as standard Tcl [cmd {array names}].
+
+[call [cmd {tsv::array size}] [arg array]]
+
+Does the same as standard Tcl [cmd {array size}].
+
+[call [cmd {tsv::array reset}] [arg array] [arg list]]
+
+Does the same as standard Tcl [cmd {array set}] but it clears
+the [arg array] and sets new values from the list atomically.
+
+[list_end]
+
+[list_end]
+
+[section DISCUSSION]
+The current implementation of thread shared variables allows easy and
+convenient access to data to be shared between different threads.
+Internally, the data is stored in Tcl objects and all package commands
+operate on internal data representation, thus minimizing shimering and
+improving performance. Special care has been taken in assuring that all 
+object data is properly locked and copied when moving objects between
+threads.
+[para]
+Due to the internal design of the Tcl core, there is no provision of full 
+integration of shared variables within the Tcl syntax, unfortunately. All
+access to shared data must be performed with the supplied package commands.
+Also, variable traces are not supported. But even so, benefits of easy, 
+simple and safe shared data manipulation outweights imposed limitations.
+
+[section CREDITS]
+Thread shared variables are inspired by the nsv interface found in 
+AOLserver, a highly scalable Web server from America Online.
+
+[keywords threads synchronization locking {thread shared data}]
+
+[manpage_end]
