@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.25 2002/11/24 17:06:39 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.26 2002/12/03 07:14:24 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -89,7 +89,7 @@ static Tcl_ObjCmdProc SvNamesObjCmd;
 
 static Tcl_ObjCmdProc SvPopObjCmd;
 static Tcl_ObjCmdProc SvMoveObjCmd;
-static Tcl_ObjCmdProc SvEvalObjCmd;
+static Tcl_ObjCmdProc SvLockObjCmd;
 
 /*
  * Forward declarations for functions to
@@ -1574,9 +1574,9 @@ SvMoveObjCmd(arg, interp, objc, objv)
 /*
  *----------------------------------------------------------------------
  *
- * SvEvalObjCmd --
+ * SvLockObjCmd --
  *
- *    This procedure is invoked to process "tsp::eval" Tcl command.
+ *    This procedure is invoked to process "tsp::lock" Tcl command.
  *    See the user documentation for details on what it does.
  *
  * Results:
@@ -1589,7 +1589,7 @@ SvMoveObjCmd(arg, interp, objc, objv)
  */
 
 static int
-SvEvalObjCmd(dummy, interp, objc, objv)
+SvLockObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
@@ -1630,7 +1630,8 @@ SvEvalObjCmd(dummy, interp, objc, objv)
     } else {
         scriptObj = Tcl_ConcatObj(objc-2, objv + 2);
     }
-
+    
+    Tcl_AllowExceptions(interp);
     ret = Tcl_EvalObjEx(interp, scriptObj, TCL_EVAL_DIRECT);
 
     if (ret == TCL_ERROR) {
@@ -1683,7 +1684,7 @@ SvRegisterStdCommands(void)
             Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL, NULL);
             Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL, NULL);
             Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL, NULL);
-            Sv_RegisterCommand("eval",   SvEvalObjCmd,   NULL, NULL);
+            Sv_RegisterCommand("lock",   SvLockObjCmd,   NULL, NULL);
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);
