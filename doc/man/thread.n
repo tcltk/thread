@@ -1,72 +1,10 @@
 '\"
-'\" The definitions below are for supplemental macros used in Tcl/Tk
-'\" manual entries.
+'\" Generated from thread.tmml
 '\"
-'\" .AP type name in/out ?indent?
-'\"	Start paragraph describing an argument to a library procedure.
-'\"	type is type of argument (int, etc.), in/out is either "in", "out",
-'\"	or "in/out" to describe whether procedure reads or modifies arg,
-'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
-'\"	needed;  use .AS below instead)
-'\"
-'\" .AS ?type? ?name?
-'\"	Give maximum sizes of arguments for setting tab stops.  Type and
-'\"	name are examples of largest possible arguments that will be passed
-'\"	to .AP later.  If args are omitted, default tab stops are used.
-'\"
-'\" .BS
-'\"	Start box enclosure.  From here until next .BE, everything will be
-'\"	enclosed in one large box.
-'\"
-'\" .BE
-'\"	End of box enclosure.
-'\"
-'\" .CS
-'\"	Begin code excerpt.
-'\"
-'\" .CE
-'\"	End code excerpt.
-'\"
-'\" .VS ?version? ?br?
-'\"	Begin vertical sidebar, for use in marking newly-changed parts
-'\"	of man pages.  The first argument is ignored and used for recording
-'\"	the version when the .VS was added, so that the sidebars can be
-'\"	found and removed when they reach a certain age.  If another argument
-'\"	is present, then a line break is forced before starting the sidebar.
-'\"
-'\" .VE
-'\"	End of vertical sidebar.
-'\"
-'\" .DS
-'\"	Begin an indented unfilled display.
-'\"
-'\" .DE
-'\"	End of indented unfilled display.
-'\"
-'\" .SO
-'\"	Start of list of standard options for a Tk widget.  The
-'\"	options follow on successive lines, in four columns separated
-'\"	by tabs.
-'\"
-'\" .SE
-'\"	End of list of standard options for a Tk widget.
-'\"
-'\" .OP cmdName dbName dbClass
-'\"	Start of description of a specific option.  cmdName gives the
-'\"	option's name as specified in the class command, dbName gives
-'\"	the option's name in the option database, and dbClass gives
-'\"	the option's class in the option database.
-'\"
-'\" .UL arg1 arg2
-'\"	Print arg1 underlined, then print arg2 normally.
-'\"
-'\" RCS: @(#) $Id: thread.n,v 1.6 2002/07/22 19:44:36 mdejong Exp $
-'\"
-'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+'\" BEGIN man.macros
 .if t .wh -1.3i ^B
 .nr ^l \n(.l
 .ad b
-'\"	# Start an argument description
 .de AP
 .ie !"\\$4"" .TP \\$4
 .el \{\
@@ -88,7 +26,6 @@
 .\}
 .\}
 ..
-'\"	# define tabbing values for .AP
 .de AS
 .nr )A 10n
 .if !"\\$1"" .nr )A \\w'\\$1'u+3n
@@ -98,9 +35,6 @@
 .nr )C \\n()Bu+\\w'(in/out)'u+2n
 ..
 .AS Tcl_Interp Tcl_CreateInterp in/out
-'\"	# BS - start boxed text
-'\"	# ^y = starting y location
-'\"	# ^b = 1
 .de BS
 .br
 .mk ^y
@@ -110,7 +44,6 @@
 .if n \l'\\n(.lu\(ul'
 .if n .fi
 ..
-'\"	# BE - end boxed text (draw box now)
 .de BE
 .nf
 .ti 0
@@ -130,16 +63,12 @@
 .br
 .nr ^b 0
 ..
-'\"	# VS - start vertical sidebar
-'\"	# ^Y = starting y location
-'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
 .de VS
 .if !"\\$2"" .br
 .mk ^Y
 .ie n 'mc \s12\(br\s0
 .el .nr ^v 1u
 ..
-'\"	# VE - end of vertical sidebar
 .de VE
 .ie n 'mc
 .el \{\
@@ -154,9 +83,6 @@
 .\}
 .nr ^v 0
 ..
-'\"	# Special macro to handle page bottom:  finish off current
-'\"	# box/sidebar if in box/sidebar mode, then invoked standard
-'\"	# page bottom macro.
 .de ^B
 .ev 2
 'ti 0
@@ -183,19 +109,16 @@
 .mk ^Y
 .\}
 ..
-'\"	# DS - begin display
 .de DS
 .RS
 .nf
 .sp
 ..
-'\"	# DE - end display
 .de DE
 .fi
 .RE
 .sp
 ..
-'\"	# SO - start of list of standard options
 .de SO
 .SH "STANDARD OPTIONS"
 .LP
@@ -203,14 +126,12 @@
 .ta 5.5c 11c
 .ft B
 ..
-'\"	# SE - end of list of standard options
 .de SE
 .fi
 .ft R
 .LP
 See the \\fBoptions\\fR manual entry for details on the standard options.
 ..
-'\"	# OP - start of full description for a single option
 .de OP
 .LP
 .nf
@@ -221,14 +142,12 @@ Database Class:	\\fB\\$3\\fR
 .fi
 .IP
 ..
-'\"	# CS - begin code excerpt
 .de CS
 .RS
 .nf
 .ta .25i .5i .75i 1i
 .if t .ft C
 ..
-'\"	# CE - end code excerpt
 .de CE
 .fi
 .if t .ft R
@@ -237,10 +156,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-'\"
-'\" Generated from thread.tmml
-'\"
-.so man.macros
+'\" END man.macros
 .TH "Tcl Threading" n "2.4" Tcl ""
 .BS
 .SH NAME
@@ -262,8 +178,9 @@ thread \- A Tcl extension implementing script level access to Tcl threading capa
 \&\fBthread::exit\fP
 \&\fBthread::names\fP
 \&\fBthread::exists\fP
-\&\fBthread::send\fP \fIid\fR ?\fI-async\fR? \fIscript\fR ?\fIvarname\fR?
+\&\fBthread::send\fP ?\fI-async\fR? \fIid\fR \fIscript\fR ?\fIvarname\fR?
 \&\fBthread::wait\fP
+\&\fBthread::eval ?\fI-lock mutex\fR? \fIarg\fR ?\fIarg ...\fR?\fP
 \&\fBthread::join\fP \fIid\fR
 \&\fBthread::configure\fP \fIid\fR ?\fIoption\fR? ?\fIvalue\fR\fI? ?\fR\fIoption value\fR\fI?...\fR
 \&\fBthread::transfer\fP \fIid\fR \fIchannel\fR
@@ -417,11 +334,16 @@ result of the passed \fIscript\fR.
 This is equivalent to \fBvwait \fIunusedvariable\fB\fR except that thread::unwind will
 not unblock a \fBvwait\fP.
 .TP
+\&\fB\fBthread::eval\fP
+\&\fRThis command concatenates passed arguments and evaluates the
+resulting script under the mutex protection. If no mutex is specified,
+using the \fB-lock mutex\fP optional argument, an internal
+static mutex is used.
+.TP
 \&\fB\fBthread::join\fP
 \&\fRThis command waits for the thread with ID \fIid\fR to exit and
 then returns it's exit code. Errors will be returned for threads which
-are not joinable or already waited upon by another thread. This command
-is only available when compiling with Tcl 8.4 or newer.
+are not joinable or already waited upon by another thread.
 .TP
 \&\fB\fBthread::configure\fP
 \&\fRThis command configures various low-level aspects of the thread with ID
@@ -458,8 +380,7 @@ into longer loops of threads waiting for each other.
 Other restrictions: The channel in question must not be shared among
 multiple interpreters running in the sending thread. This
 automatically excludes the special channels for standard input, output
-and error. This command is only available when compile with Tcl 8.4
-or newer.
+and error.
 .PP
 This section describes commands used for script-level access to
 most common and basic thread synchronization primitives: mutexes and

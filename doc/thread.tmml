@@ -25,8 +25,9 @@
 <cmd>thread::exit</cmd>
 <cmd>thread::names</cmd>
 <cmd>thread::exists</cmd>
-<cmd>thread::send</cmd> <m>id</m> ?<m>-async</m>? <m>script</m> ?<m>varname</m>?
+<cmd>thread::send</cmd> ?<m>-async</m>? <m>id</m> <m>script</m> ?<m>varname</m>?
 <cmd>thread::wait</cmd>
+<cmd>thread::eval ?<m>-lock mutex</m>? <m>arg</m> ?<m>arg ...</m>?</cmd>
 <cmd>thread::join</cmd> <m>id</m>
 <cmd>thread::configure</cmd> <m>id</m> ?<m>option</m>? ?<m>value</m><m>? ?</m><m>option value</m><m>?...</m>
 <cmd>thread::transfer</cmd> <m>id</m> <m>channel</m>
@@ -204,6 +205,15 @@ result of the passed <m>script</m>.
 <desc>This enters the event loop so a thread can receive messages from <cmd>thread::send</cmd>. 
 This is equivalent to <samp>vwait <m>unusedvariable</m></samp> except that thread::unwind will
 not unblock a <cmd>vwait</cmd>.
+</desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>thread::eval</cmd> </command>
+<desc>This command concatenates passed arguments and evaluates the 
+resulting script under the mutex protection. If no mutex is specified,
+using the <option>-lock mutex</option> optional argument, an internal
+static mutex is used.
 </desc>
 </commanddef>
 
