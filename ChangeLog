@@ -1,3 +1,12 @@
+2000-04-10  Brent Welch <welch@scriptics.com>
+
+	* Moved all the configure.in, Makefile.in etc. up to the top level out
+	* of the unix (and win) subdirectories.  These are now shared.
+	* If you are using CVS, you'll want to get the "config" module into
+	* this directory, or do the checkout of thread again so the config
+	* module is brought in.  You should have a "config" subdirectory of
+	* your main thread workspace directory.
+
 2000-04-09  Brent Welch <welch@scriptics.com>
 
 	* Updated to compile against 8.3.1 export thread APIs
