@@ -11,10 +11,10 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.2 2000/07/14 22:27:14 zoran Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.3 2001/09/05 23:02:01 davygrvy Exp $
  */
 
-#include "thread.h"
+#include "tclThread.h"
 
 /*
  * This global (static) data is used to map opaque Tcl-level handles 

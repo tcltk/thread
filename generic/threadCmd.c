@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.28 2001/09/04 23:43:09 davygrvy Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.29 2001/09/05 23:02:01 davygrvy Exp $
  */
 
 #include "tclThread.h"
@@ -259,6 +259,8 @@ Thread_Init(interp)
 		(ClientData)NULL ,NULL);
 	Tcl_CreateObjCommand(interp, "thread::exit", ThreadExitObjCmd, 
 		(ClientData)NULL ,NULL);
+	Tcl_CreateObjCommand(interp, "thread::kill", ThreadKillObjCmd, 
+		(ClientData)NULL ,NULL);
 	Tcl_CreateObjCommand(interp, "thread::id", ThreadIdObjCmd, 
 		(ClientData)NULL ,NULL);
 	Tcl_CreateObjCommand(interp, "thread::names", ThreadNamesObjCmd, 
@@ -483,8 +485,8 @@ ThreadUnwindObjCmd(dummy, interp, objc, objv)
  * ThreadExitObjCmd --
  *
  *	This procedure is invoked to process the "thread::exit" Tcl 
- *	command.  This cuases an unconditional close of the thread
- *	and is GUARENTEED to cuase memory leaks.  Use this with caution.
+ *	command.  This causes an unconditional close of the thread
+ *	and is GUARENTEED to cause memory leaks.  Use this with caution.
  *
  * Results:
  *	Doesn't actually return.
@@ -505,6 +507,43 @@ ThreadExitObjCmd(dummy, interp, objc, objv)
     Tcl_ExitThread(666);
 
     /* NOT REACHED */
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadExitObjCmd --
+ *
+ *	This procedure is invoked to process the "thread::kill" Tcl 
+ *	command.  Like 'thread::exit" but used to kill a different
+ *	thread.  Use with extreme caution.
+ *
+ * Results:
+ *	Nothing.
+ *
+ * Side effects:
+ *	Lots.  improper clean up of resources.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+ThreadKillObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int objc;				/* Number of arguments. */
+    Tcl_Obj *CONST objv[];		/* Argument objects. */
+{
+    long id;
+
+    if (objc != 2) {
+	Tcl_WrongNumArgs(interp, 1, objv, "id");
+	return TCL_ERROR;
+    }
+    if (Tcl_GetLongFromObj(interp, objv[1], &id)) return TCL_ERROR;
+
+    ThreadKill(id);
     return TCL_OK;
 }
 
