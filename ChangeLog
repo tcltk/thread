@@ -1,11 +1,18 @@
+2002-03-08  Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: added thread::configure -unwindonerror
+	configuration option. See docs for usage.
+	
+	* doc/thread.n: added docs for thread::configure -unwindonerror
+	
 2002-03-07  Zoran Vasiljevic <zoran@archiware.com>
 
-	* generic/threadSvc.c: tsv::names will skip reporting shared
+	* generic/threadSv.c: tsv::names will skip reporting shared
 	arrays with leading dot in their names. This is turned-on 
 	only for AOLserver builds with the HIDE_DOTNAMES. For the
 	regular Tcl builds, all arrays are reported, regardless of
-	the name. Motivation behind this feature is to allow 
-        programmers certain privacy. It is not name-clash-proof, though,
+	the name. Motivation behind this feature is to allow certain
+	data privacy. It is not name-clash proof, though.
 
 2002-02-12  Zoran Vasiljevic <zoran@archiware.com>
 
@@ -17,9 +24,9 @@
 	* generic/threadCmd.c: added thread::preserve and thread::release
 	commands. These allow for a simple reference counting when creating
 	and/or tearing-down threads. Instead of calling thread::unwind in
-	the target thread, one can use "thread::release id" to displose it.
+	the target thread, one can use "thread::release id" to dispose it.
 	This is much easier to use and it can be coupled with calls to
-	thread::preserve to implement simple thread reservation scenario.
+	thread::preserve to implement simple thread reservation mechanism.
 
 	* doc/thread.n: added docs for thread::preserve/thread::release
 	
