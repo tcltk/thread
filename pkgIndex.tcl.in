@@ -8,4 +8,13 @@
 # script is sourced, the variable $dir must contain the
 # full path name of this file's directory.
 
-package ifneeded Thread @VERSION@ [list load [file join $dir @RELPATH@ @thread_LIB_FILE@]]
+set ver [string map {. {}} $::tcl_version]
+
+if {$ver >= 83} {
+    if {$ver < 84} {
+	set provides {@THREAD_VERSION_SUBSET83@}
+    } else {
+	set provides {@VERSION@}
+    }
+    package ifneeded Thread $provides [list load [file join $dir @RELPATH@ @thread_LIB_FILE@]]
+}
