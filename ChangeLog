@@ -1,5 +1,11 @@
 2001-09-04  David Gravereaux <davygrvy@pobox.com>
 
+	* generic/thread.h:
+	* generic/threadCmd.c:  Re-added original implimentation of [thread::exit].
+	for `emergency use only`.  You have been warned ;)
+
+2001-09-04  David Gravereaux <davygrvy@pobox.com>
+
 	-=[ Official 2.2 Tagged and cut. ]=-
 
 2001-05-27  David Gravereaux <davygrvy@pobox.com>
