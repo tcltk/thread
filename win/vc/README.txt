@@ -8,9 +8,7 @@ you should run "../configure", then "make" from the thread/win directory
 The MSVC++ v5 project files (thread.dsw and thread.dsp) are just for convienience.
 The real build instructions are in makefile.vc with the user editable information
 contained in config.vc.  Before building the extension, open config.vc in a text
-editor and change your paths as appropriate.  You might need to run vcvars32.bat,
-contained in the bin directory of Visual C++, to setup environment variables and
-paths needed by VC++ tools before invoking nmake from the commandline.
+editor and change your paths as appropriate.
 
 There are 2 ways to build the extension:
 

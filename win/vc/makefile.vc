@@ -4,7 +4,7 @@
 # Microsoft Visual C++ descriptions file for their program
 # maintenance utility -> nmake.exe
 #
-# RCS: @(#) $Id: makefile.vc,v 1.7 2000/08/20 07:24:10 davidg Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.8 2000/08/20 07:40:12 davidg Exp $
 ######################################################################
 
 
@@ -177,14 +177,14 @@ ltclstubs	    =
 all: setup $(THREADLIB)
 
 setup:
-	@$(vcvars)
+	@$(vcvars) > nul
 	@if not exist $(TMPDIR)\nul mkdir $(TMPDIR) &\
 		echo Created directory '$(TMPDIR)'
 	@if not exist $(OUTDIR)\nul mkdir $(OUTDIR) &\
 		echo Created directory '$(OUTDIR)'
 
 test: all
-    @$(TCLSH_PROG) <<
+    $(TCLSH_PROG) <<
 regsub -all {\\} {$(THREADLIB)} {/} threadlib
 package ifneeded Thread 2.0 [list load $$threadlib]
 regsub -all {\\} {$(TESTDIR)} {/} testdir
@@ -194,13 +194,13 @@ source [file join $$testdir all.tcl]
 
 
 !if $(STATIC_BUILD)
-$(THREADLIB) : $(THREADOBJS) $(TCLSTUBSLIB)
+$(THREADLIB) : $(THREADOBJS)
 	@echo Creating Static Library...
-	@$(lib32) -nologo -machine:$(MACHINE) -out:$@ @<<
+	$(lib32) -nologo -machine:$(MACHINE) -out:$@ @<<
 !else
 $(THREADLIB) : $(THREADOBJS) $(TCLSTUBSLIB)
 	@echo Linking...
-	@$(link32) $(lflags) -out:$@ $(ltclstubs) @<<
+	$(link32) $(lflags) -out:$@ $(ltclstubs) @<<
 !endif
 $(THREADOBJS)
 <<nokeep
@@ -216,7 +216,7 @@ $(THREADOBJS)
 {$(GENERICDIR)}.c{$(TMPDIR)}.obj ::
 	@echo Compiling...
 !endif
-	@$(cc32) $(cflags) $(ctclstubs) -DTCL_THREADS=1 @<<
+	$(cc32) $(cflags) $(ctclstubs) -DTCL_THREADS=1 @<<
 $<
 <<nokeep
 
@@ -227,11 +227,11 @@ $<
 
 $(TMPDIR)\thread.res : $(WINDIR)\thread.rc
 	@echo Compiling resources...
-	@$(rc32) -fo"$@" -i "$(GENERICDIR)" -i "$(TCLROOT)\generic" -r \
+	$(rc32) -fo"$@" -i "$(GENERICDIR)" -i "$(TCLROOT)\generic" -r \
 		-DNODEBUG=$(NODEBUG) -DRESOURCE_INCLUDED $(WINDIR)\thread.rc
 
 $(TMPDIR)\resource.obj : $(TMPDIR)\thread.res
-	@$(cvtres32) -nologo -machine:$(MACHINE) -out:$@ $(TMPDIR)\thread.res
+	$(cvtres32) -nologo -machine:$(MACHINE) -out:$@ $(TMPDIR)\thread.res
 
 $(TCLSTUBSLIB) :
 	@echo Build Tcl first!  Is the path to tclstubXX.lib set correctly?
