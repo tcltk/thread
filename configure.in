@@ -99,15 +99,19 @@ AC_EXEEXT
 #--------------------------------------------------------------------
 
 case "`uname -s`" in
-    *win32* | *WIN32* | *CYGWIN_NT*)
-	CYGPATH="cygpath -w"
+    *win32* | *WIN32* | *CYGWIN_NT* | *CYGWIN_98* | *CYGWIN_95*)
+        CYGPATH="cygpath -w"
+        RELPATH=".. .. bin"
     ;;
     *)
-	CYGPATH=echo
+        CYGPATH=echo
+        RELPATH=..
     ;;
 esac
 
 AC_SUBST(CYGPATH)
+AC_SUBST(RELPATH)
+
 
 #--------------------------------------------------------------------
 # Load the tclConfig.sh file
@@ -276,4 +280,4 @@ SC_PROG_TCLSH
 #--------------------------------------------------------------------
 
 AC_OUTPUT([Makefile \
-	mkIndex.tcl])
+	pkgIndex.tcl])

@@ -1,3 +1,9 @@
+2000-05-16 Brent Welch <welch@scriptics.com>
+
+	* Temprarily rolled back Andreas' changes so I can fix up
+	the 2.0 release (configure and Make).  Also need to apply
+	a 2.0 tag.
+
 2000-05-09 Andreas Kupries  <a.kupries@westend.com>
 
 	* tests/thread.test: Removed dependency on aclocals.m4. Using a
