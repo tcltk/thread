@@ -7,7 +7,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: thread.h,v 1.10 2001/08/04 02:09:21 hobbs Exp $
+ * RCS: @(#) $Id: thread.h,v 1.11 2001/09/04 23:39:52 davygrvy Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -39,6 +39,7 @@ Tcl_ObjCmdProc	ThreadCreateObjCmd;
 Tcl_ObjCmdProc	ThreadSendObjCmd;
 Tcl_ObjCmdProc	ThreadJoinObjCmd;
 Tcl_ObjCmdProc	ThreadUnwindObjCmd;
+Tcl_ObjCmdProc	ThreadExitObjCmd;
 Tcl_ObjCmdProc	ThreadWaitObjCmd;
 Tcl_ObjCmdProc	ThreadIdObjCmd;
 Tcl_ObjCmdProc	ThreadNamesObjCmd;
