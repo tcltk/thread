@@ -18,10 +18,13 @@ builtin(include,aolserver.m4)
 #
 
 AC_DEFUN(TCLTHREAD_WITH_GDBM, [
-    AC_MSG_CHECKING([for GNU gdbm library])
     AC_ARG_WITH(gdbm,
-	[  --with-gdbm             link with optional gdbm support],\
+	[  --with-gdbm             link with optional GDBM support],\
 	with_gdbm=${withval})
+
+    if test x"${with_gdbm}" != x; then
+
+    AC_MSG_CHECKING([for GNU gdbm library])
 
     AC_CACHE_VAL(ac_cv_c_gdbm,[
     if test x"${with_gdbm}" != x -a "${with_gdbm}" != "yes"; then
@@ -65,6 +68,7 @@ AC_DEFUN(TCLTHREAD_WITH_GDBM, [
         fi
     else
         AC_MSG_ERROR([none found])
+    fi
     fi
 ])
 
