@@ -1,4 +1,4 @@
-// RCS: @(#) $Id: thread.rc,v 1.1 2000/04/10 20:48:37 welch Exp $
+// RCS: @(#) $Id: thread.rc,v 1.2 2000/04/10 23:40:09 welch Exp $
 //
 // Version resource script
 //
@@ -33,10 +33,10 @@ BEGIN
             VALUE "OriginalFilename", "thread.dll\0"
 #endif
             VALUE "CompanyName", "Scriptics Corporation\0"
-            VALUE "FileVersion", THREAD_PATCH_LEVEL
+            VALUE "FileVersion", THREAD_VERSION
             VALUE "LegalCopyright", "Copyright (c) 2000 by Scriptics Corporation\0"
             VALUE "ProductName", "Tcl for Windows\0"
-            VALUE "ProductVersion", THREAD_PATCH_LEVEL
+            VALUE "ProductVersion", THREAD_VERSION
         END		    
     END
     BLOCK "VarFileInfo"
