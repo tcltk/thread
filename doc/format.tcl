@@ -20,7 +20,7 @@ set code [catch {
             set o [dt format $t]
             set f [open $dir/$xx.$ext w]
             if {$fmt == "nroff"} {
-                puts $f $m
+                set o [string map [list {.so man.macros} $m] $o]
             }
             puts $f $o
             close $f
