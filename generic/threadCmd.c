@@ -16,22 +16,11 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.56 2002/11/24 17:03:42 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.57 2002/12/02 18:24:21 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
 #include "tclThread.h"
-
-/*
- * Allow for some command/namespace customization.
- */
-
-#ifdef NS_AOLSERVER
-# include <ns.h>
-# define NS "Thread::"
-#else
-# define NS "thread::"
-#endif
 
 /* 
  * Access to the list of threads and to the thread send results
@@ -40,8 +29,7 @@
 
 TCL_DECLARE_MUTEX(threadMutex)
 
-static char *threadEmptyResult = "";
-static int   tclIs83 = 0;
+static int tclIs83 = 0;
 
 /*
  * Each thread has an single instance of the following structure. There
@@ -84,6 +72,12 @@ static Tcl_ThreadDataKey dataKey;
 static struct ThreadSpecificData *threadList = NULL;
 
 /*
+ * Used to represent the empty result.
+ */
+
+static char *threadEmptyResult = "";
+
+/*
  * An instance of the following structure contains all information that is
  * passed into a new thread when the thread is created using either the
  * "thread create" Tcl command or the ThreadCreate() C function.
@@ -121,27 +115,6 @@ typedef struct ThreadEventResult {
  */
 
 static ThreadEventResult *resultList;
-
-/*
- * Macros for splicing the result structure
- * in and out of the list defined above and
- * the similar list for tracking transfer
- * of channels (defined below)
- */
-
-#define SpliceInResult(a,b)                    \
-    (a)->nextPtr = (b);                        \
-    if ((b) != NULL)                           \
-        (b)->prevPtr = (a);                    \
-    (a)->prevPtr = NULL, (b) = (a);
-
-#define SpliceOutResult(a,b)                   \
-    if ((a)->prevPtr != NULL)                  \
-        (a)->prevPtr->nextPtr = (a)->nextPtr;  \
-    else                                       \
-        (b) = (a)->nextPtr;                    \
-    if ((a)->nextPtr != NULL)                  \
-        (a)->nextPtr->prevPtr = (a)->prevPtr;
 
 /*
  * This is the event used to send commands to other threads.
@@ -436,6 +409,12 @@ Thread_Init(interp)
      */
     
     Sp_Init(interp);
+
+    /*
+     * Add threadpool commands.
+     */
+    
+    Tpool_Init(interp);
     
     /*
      * Set the package version based 
@@ -2006,7 +1985,7 @@ ThreadTransfer(interp, id, chan)
     resultPtr->dstThreadId = id;
     resultPtr->eventPtr    = evPtr;
 
-    SpliceInResult(resultPtr, transferList);
+    SpliceIn(resultPtr, transferList);
 
     /*
      * Queue the event and poke the other thread's notifier.
@@ -2028,7 +2007,7 @@ ThreadTransfer(interp, id, chan)
      * Unlink result from the result list.
      */
 
-    SpliceOutResult(resultPtr, transferList);
+    SpliceOut(resultPtr, transferList);
 
     resultPtr->eventPtr = NULL;
     resultPtr->nextPtr  = NULL;
@@ -2149,7 +2128,7 @@ ThreadDetach(interp, chan)
     resultPtr->eventPtr    = evPtr;
 
     Tcl_MutexLock(&threadMutex);
-    SpliceInResult(resultPtr, transferList);
+    SpliceIn(resultPtr, transferList);
     Tcl_MutexUnlock(&threadMutex);
 
     return TCL_OK;
@@ -2198,7 +2177,7 @@ ThreadAttach(interp, chanName)
                 Tcl_MutexUnlock(&threadMutex);
                 return TCL_ERROR;
             }
-            SpliceOutResult(resPtr, transferList);
+            SpliceOut(resPtr, transferList);
             Tcl_Free((char*)resPtr->eventPtr);
             Tcl_Free((char*)resPtr);
             found = 1;
@@ -2328,7 +2307,7 @@ ThreadSend(interp, id, send, clbk, wait)
 
         eventPtr->resultPtr    = resultPtr;
 
-        SpliceInResult(resultPtr, resultList);
+        SpliceIn(resultPtr, resultList);
     }
 
     /*
@@ -2362,7 +2341,7 @@ ThreadSend(interp, id, send, clbk, wait)
         Tcl_ConditionWait(&resultPtr->done, &threadMutex, NULL);
     }
 
-    SpliceOutResult(resultPtr, resultList);
+    SpliceOut(resultPtr, resultList);
 
     Tcl_MutexUnlock(&threadMutex);
 
@@ -2541,7 +2520,7 @@ ThreadReserve(interp, threadId, operation, wait)
                 resultPtr->errorInfo   = NULL;
                 resultPtr->dstThreadId = threadId;
                 resultPtr->srcThreadId = Tcl_GetCurrentThread();
-                SpliceInResult(resultPtr, resultList);
+                SpliceIn(resultPtr, resultList);
             }
 
             evPtr = (ThreadEvent*)Tcl_Alloc(sizeof(ThreadEvent));
@@ -2557,7 +2536,7 @@ ThreadReserve(interp, threadId, operation, wait)
                 while (resultPtr->result == NULL) {
                     Tcl_ConditionWait(&resultPtr->done, &threadMutex, NULL);
                 }
-                SpliceOutResult(resultPtr, resultList);
+                SpliceOut(resultPtr, resultList);
                 Tcl_ConditionFinalize(&resultPtr->done);
                 if (resultPtr->result != threadEmptyResult) {
                     Tcl_Free(resultPtr->result); /* Will be ignored anyway */
@@ -2730,7 +2709,7 @@ ThreadSetResult(interp, code, resultPtr)
         errorCode = "THREAD";
     } else {
         result = Tcl_GetStringResult(interp);
-        if (code != TCL_OK) {
+        if (code == TCL_ERROR) {
             errorCode = Tcl_GetVar(interp, "errorCode", TCL_GLOBAL_ONLY);
             errorInfo = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
         } else {
@@ -3142,7 +3121,7 @@ ThreadExitProc(clientData)
              * to the other thread we don't care about the result.
              */
             
-            SpliceOutResult(resultPtr, resultList);
+            SpliceOut(resultPtr, resultList);
             Tcl_Free((char*)resultPtr);
 
         } else if (resultPtr->dstThreadId == self) {
@@ -3171,7 +3150,7 @@ ThreadExitProc(clientData)
                  * ThreadTransfer at location (*).
                  */
 
-                SpliceOutResult(tResultPtr, transferList);
+                SpliceOut(tResultPtr, transferList);
                 Tcl_Free((char*)tResultPtr);
 
             } else if (tResultPtr->dstThreadId == self) {
