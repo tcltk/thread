@@ -41,7 +41,7 @@ CFG=thread - Win32 Debug
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
-# PROP Cmd_Line "nmake -nologo -f makefile.vc TCLDIR=D:\tcl8.4.5 MSVCDIR=IDE"
+# PROP Cmd_Line "nmake -nologo -f makefile.vc TCLDIR=E:\tcl MSVCDIR=IDE"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "Release\thread26.dll"
 # PROP Bsc_Name ""
@@ -62,7 +62,7 @@ CFG=thread - Win32 Debug
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
-# PROP Cmd_Line "nmake -nologo -f makefile.vc OPTS=symbols TCLDIR=D:\tcl8.4.5 MSVCDIR=IDE"
+# PROP Cmd_Line "nmake -nologo -f makefile.vc OPTS=symbols TCLDIR=E:\tcl MSVCDIR=IDE"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "Debug\thread26d.dll"
 # PROP Bsc_Name ""
