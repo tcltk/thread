@@ -1,5 +1,0 @@
-2000-7-29    <welch@ajubasolutions.com>
-
-        * Fixed the use of TCL_SRC_DIR and TK_SRC_DIR within TCL_PRIVATE_INCLUDES
-	and TK_PRIVATE_INCLUDES to match their recent change from $(srcdir)
-	to $(srcdir)/..
