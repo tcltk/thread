@@ -4,7 +4,7 @@
 # Simple Sample httpd/1.0 server in 250 lines of Tcl.
 # Stephen Uhler / Brent Welch (c) 1996 Sun Microsystems.
 #
-# Modified to use namespaces and direct url-to-procedure access
+# Modified to use namespaces, direct url-to-procedure access
 # and thread pool package. Grown little larger since ;)
 #
 # Usage:
@@ -17,7 +17,9 @@
 #    % cmdsrv::create 5000
 #    % vwait forever
 #
-#    Starts the server on the port 5000.
+#    Starts the server on the port 5000. Also, look at the Httpd array
+#    definition in the "phttpd" namespace declaration to find out 
+#    about other options you may put on the command line.
 #
 # Copyright (c) 2002 by Zoran Vasiljevic.
 #
@@ -25,10 +27,20 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
 # -----------------------------------------------------------------------------
-# Rcsid: @(#)$Id: phttpd.tcl,v 1.3 2002/12/05 15:14:10 vasiljevic Exp $
+# Rcsid: @(#)$Id: phttpd.tcl,v 1.4 2002/12/05 23:21:40 vasiljevic Exp $
 #
 
-package require Thread 2.5
+#package require Tcl    8.4
+#package require Thread 2.5
+
+#
+# Modify the following in order to load the
+# example Tcl implementation of threadpools.
+#
+
+if {0} {
+    set TCL_TPOOL {source ../tpool/tpool.tcl}
+}
 
 namespace eval phttpd {
 
@@ -38,10 +50,10 @@ namespace eval phttpd {
     variable ErrorPage;       # Format of error response page in html
 
     array set Httpd {
-        -name    phttpd
-        -vers    1.0
-        -root    "."
-        -index   index.htm
+        -name  phttpd
+        -vers  1.0
+        -root  "."
+        -index index.htm
     }
     array set HttpCodes {
         400  "Bad Request"
@@ -102,15 +114,22 @@ proc phttpd::create {port args} {
     }
 
     #
-    # Create thread pool with max 8 worker threads
-    # 
+    # Create thread pool with max 8 worker threads.
+    #
 
-    set Httpd(tpid)        \
-        [tpool::create     \
-             -maxworkers 8 \
-             -initscript {
-                 source ../phttpd/phttpd.tcl
-             }]
+    if {[info exists ::TCL_TPOOL] == 0} {
+        #
+        # Using the internal C-based thread pool
+        #
+        set initcmd "source ../phttpd/phttpd.tcl"
+    } else {
+        #
+        # Using the Tcl-level hand-crafted thread pool
+        #
+        append initcmd "source ../phttpd/phttpd.tcl" \n $TCL_TPOOL
+    }
+
+    set Httpd(tpid) [tpool::create -maxworkers 8 -initscript $initcmd]
 
     #
     # Start the server on the given port. Note that we wrap
