@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.22 2002/08/18 20:48:18 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.23 2002/08/19 09:25:29 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -669,40 +669,37 @@ SvFinalizeContainers(bucketPtr)
  *
  * Sv_DuplicateObj --
  *
- *      Create and return a new object that is (mostly!) a duplicate of the
- *      argument object. We take care that the duplicate object is either
- *      a proper object copy, i.e. w/o hidden references to original object
- *      elements or a plain string object, i.e one w/o internal rep.
+ *  Create and return a new object that is (mostly!) a duplicate of the
+ *  argument object. We take care that the duplicate object is either
+ *  a proper object copy, i.e. w/o hidden references to original object
+ *  elements or a plain string object, i.e one w/o internal representation.
  *
- *      Decision about wether to produce a real duplicate or a string object
- *      is done as follows:
+ *  Decision about wether to produce a real duplicate or a string object
+ *  is done as follows:
  *
- *      1) Scalar Tcl object types are properly copied by default;
- *         these include: boolean, int double, string and byteArray types.
- *      2) Object registered with Sv_RegisterObjType are duplicated
- *         using custom duplicator function which is guaranteed to
- *         produce a proper deep copy of the object in question.
- *      3) All other object types are stringified; these include
- *         miscelaneous Tcl objects (cmdName, nsName, bytecode, etc, etc)
- *         and all user-defined objects. Latter may or may not have the
- *         "sv"-savvy obj dup function, but to be sure, we do not use it.
+ *     1) Scalar Tcl object types are properly copied by default;
+ *        these include: boolean, int double, string and byteArray types.
+ *     2) Object registered with Sv_RegisterObjType are duplicated
+ *        using custom duplicator function which is guaranteed to
+ *        produce a proper deep copy of the object in question.
+ *     3) All other object types are stringified; these include
+ *        miscelaneous Tcl objects (cmdName, nsName, bytecode, etc, etc)
+ *        and all user-defined objects.
  *
  * Results:
  *      The return value is a pointer to a newly created Tcl_Obj. This
  *      object has reference count 0 and the same type, if any, as the
- *      source object objPtr. So:
+ *      source object objPtr. Also:
  *
- *      1) If the source object has a valid string rep, we copy it;
- *         otherwise, the duplicate's string rep is set to NULL to mark
- *         it invalid.
- *      2) If the source object has an internal representation (i.e. its
- *         typePtr is non-NULL), the new object's internal rep is set to
- *         a copy; otherwise the new internal rep is marked invalid.
- *         (see discussion above)
+ *        1) If the source object has a valid string rep, we copy it;
+ *           otherwise, the new string rep is marked invalid.
+ *        2) If the source object has an internal representation (i.e. its
+ *           typePtr is non-NULL), the new object's internal rep is set to
+ *           a copy; otherwise the new internal rep is marked invalid.
  *
  * Side effects:
- *      Some object may, when copied, loose their type, i.e. will become
- *      just plain string objects.
+ *  Some object may, when copied, loose their type, i.e. will become
+ *  just plain string objects.
  *
  *-----------------------------------------------------------------------------
  */
@@ -721,6 +718,7 @@ Sv_DuplicateObj(objPtr)
         if (objPtr->typePtr->dupIntRepProc == NULL) {
             dupPtr->internalRep = objPtr->internalRep;
             dupPtr->typePtr = objPtr->typePtr;
+            Tcl_InvalidateStringRep(dupPtr);
         } else {
             if (   objPtr->typePtr == booleanObjTypePtr    \
                 || objPtr->typePtr == byteArrayObjTypePtr  \
@@ -728,12 +726,12 @@ Sv_DuplicateObj(objPtr)
                 || objPtr->typePtr == intObjTypePtr        \
                 || objPtr->typePtr == stringObjTypePtr) {
                /*
-                * Cover all standard obj types
+                * Cover all "safe" obj types (see header comment)
                 */
               (*objPtr->typePtr->dupIntRepProc)(objPtr, dupPtr);
+              Tcl_InvalidateStringRep(dupPtr);
             } else {
                 register RegType *regPtr;
-                int duplicated = 0;
                /*
                 * Cover special registered types. Assume not
                 * very many of those, so this sequential walk
@@ -743,7 +741,7 @@ Sv_DuplicateObj(objPtr)
                      regPtr = regPtr->nextPtr) {
                     if (objPtr->typePtr == regPtr->typePtr) {
                         (*regPtr->dupIntRepProc)(objPtr, dupPtr);
-                        duplicated = 1;
+                        Tcl_InvalidateStringRep(dupPtr);
                         break;
                     }
                 }
@@ -751,22 +749,20 @@ Sv_DuplicateObj(objPtr)
                  * If not able to duplicate, assure valid string
                  * representation is available at least.
                  */
-                if (duplicated == 0) {
-                    if (objPtr->typePtr->updateStringProc != NULL) {
-                        (*objPtr->typePtr->updateStringProc)(objPtr);
-                    }
+                if (!dupPtr->typePtr && objPtr->typePtr->updateStringProc) {
+                    (*objPtr->typePtr->updateStringProc)(objPtr);
                 }
             }
         }
     }
 
     /*
-     * Handle the string rep.
+     * Handle the string rep
      */
 
     if (objPtr->bytes == NULL) {
-        dupPtr->bytes = NULL;
-    } else if (objPtr->bytes != Sv_tclEmptyStringRep) {
+        dupPtr->bytes == NULL;
+    } else if (objPtr->bytes != tclEmptyStringRep) {
         /* A copy of TclInitStringRep macro */
         dupPtr->bytes = (char*)Tcl_Alloc((unsigned)objPtr->length + 1);
         if (objPtr->length > 0) {
@@ -775,8 +771,6 @@ Sv_DuplicateObj(objPtr)
         }
         dupPtr->length = objPtr->length;
         dupPtr->bytes[objPtr->length] = '\0';        
-    } else if (dupPtr->typePtr && dupPtr->typePtr->updateStringProc) {
-        Tcl_InvalidateStringRep(dupPtr);
     }
 
     return dupPtr;
