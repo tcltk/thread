@@ -1,3 +1,10 @@
+2002-11-07 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: fixes problem when trying to report
+	the error from an async callback when the stderr channel is
+	not available (wish/tclkit on windows). Thanks to 
+	Wojciech Kocjan <wojciech@kocjan.org> for the correction.
+
 2002-10-23 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: added handling of background errors

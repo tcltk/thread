@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.53 2002/10/23 09:48:15 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.54 2002/11/07 18:28:49 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1534,7 +1534,11 @@ ThreadErrorProc(interp)
         Ns_Log(Error, "%s\n%s", Tcl_GetStringResult(interp), errorInfo);
 #else
         Tcl_Channel errChannel = Tcl_GetStdChannel(TCL_STDERR);
-
+        if (errChannel == NULL) {
+            /* Fixes the [#634845] bug; credits to
+             * Wojciech Kocjan <wojciech@kocjan.org> */
+            return;
+        }
         Tcl_WriteChars(errChannel, "Error from thread ", -1);
         Tcl_WriteChars(errChannel, buf, -1);
         Tcl_WriteChars(errChannel, "\n", 1);
