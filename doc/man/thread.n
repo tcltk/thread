@@ -59,7 +59,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: thread.n,v 1.2 2002/07/17 18:41:27 vasiljevic Exp $
+'\" RCS: @(#) $Id: thread.n,v 1.3 2002/07/19 19:45:49 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -239,6 +239,7 @@ Database Class:	\\fB\\$3\\fR
 '\"
 '\" Generated from thread.tmml
 '\"
+.so man.macros
 .TH "Tcl Threading" n "2.4" Tcl ""
 .BS
 .SH NAME
@@ -248,7 +249,7 @@ thread \- A Tcl extension implementing script level access to Tcl threading capa
 
 \&\fBthread::create\fP ?\fI-joinable\fR? ?\fIscript\fR?
 \&\fBthread::preserve\fP \fIid\fR
-\&\fBthread::release\fP \fIid\fR
+\&\fBthread::release\fP ?\fI-wait\fR? \fIid\fR
 \&\fBthread::id\fP
 \&\fBthread::errorproc\fP ?\fIprocname\fR?
 \&\fBthread::unwind\fP
@@ -320,11 +321,19 @@ the thread for a longer period of time. By decrementing the counter, using the
 the thread.
 .RE
 .TP
-\&\fB \fBthread::release\fP \fIid\fB
+\&\fB \fBthread::release\fP ?\fI-wait\fB? \fIid\fB
 \&\fRThis procedure decrements the thread reference counter. Each call to this
 command decrements the reference counter by one (1). Command returns
 the value of the reference counter after the decrement. When the reference counter
 reaches zero (0), the target thread is terminated.
+.RS
+.PP
+Optional flag \fI-wait\fR instructs the caller thread to wait for the target
+thread to exit, if the effect of the command would result in termination of the
+target thread, i.e. if the return result is zero (0). Without the flag, the caller
+thread does not wait for the target thread to exit. Care must be taken when using
+the \fI-wait\fR, since this may block the caller thread indefinitely.
+.RE
 .TP
 \&\fB\fBthread::id\fP
 \&\fRThis command returns the ID of the current thread.

@@ -16,7 +16,7 @@
 <syntax>
 <cmd>thread::create</cmd> ?<m>-joinable</m>? ?<m>script</m>?
 <cmd>thread::preserve</cmd> <m>id</m>
-<cmd>thread::release</cmd> <m>id</m>
+<cmd>thread::release</cmd> ?<m>-wait</m>? <m>id</m>
 <cmd>thread::id</cmd>
 <cmd>thread::errorproc</cmd> ?<m>procname</m>?
 <cmd>thread::unwind</cmd>
@@ -101,12 +101,17 @@ the thread.</p>
 </commanddef>
 
 <commanddef>
-<command> <cmd>thread::release</cmd> <m>id</m>
+<command> <cmd>thread::release</cmd> ?<m>-wait</m>? <m>id</m>
 </command>
 <desc>This procedure decrements the thread reference counter. Each call to this
 command decrements the reference counter by one (1). Command returns
 the value of the reference counter after the decrement. When the reference counter
 reaches zero (0), the target thread is terminated.
+<p>Optional flag <m>-wait</m> instructs the caller thread to wait for the target
+thread to exit, if the effect of the command would result in termination of the
+target thread, i.e. if the return result is zero (0). Without the flag, the caller
+thread does not wait for the target thread to exit. Care must be taken when using
+the <m>-wait</m>, since this may block the caller thread indefinitely.</p>
 </desc>
 </commanddef>
 
