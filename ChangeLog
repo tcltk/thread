@@ -1,3 +1,9 @@
+2002-11-23 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: fixed ListRemoveInner() to recognize
+	and ignore already removed tsd thread structures. 
+	Fixed some invalid TCL_OK returns which masked serious errors.
+	
 2002-11-07 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: fixes problem when trying to report
@@ -17,14 +23,12 @@
 	* doc/thread.tmml: fixed "thread::send" command summary.
 	It was showing the wrong position of the "-async" argument.
 
-	* generic/threadCmd.c: added thread::eval command.
-	See documentation for syntax and usage.
-
 	* generic/threadSpCmd.c: adjusted mutex/cond handles to
 	use the same format and handling as AOLserver counterparts
 	when compiled for AOLserver support. This way one can mix
 	and match primitives declared with ns_mutex and thread::mutex
 	and/or ns_event and thread::cond commands.
+	Added thread::eval command. See documentation for syntax and usage.
 
 2002-10-15  Jeff Hobbs  <jeffh@ActiveState.com>
 
