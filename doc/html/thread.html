@@ -1,10 +1,10 @@
 <html>
 <head>
-<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.5 $">
+<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.6 $">
 </head><body>
 <div class="header">
 <div class="navbar" align="center">
-<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode400">DESCRIPTION</a> · <a href="#SECTnode412">COMMANDS</a> · <a href="#SECTnode1539">DISCUSSION</a> · <a href="#SECTnode1557">CREDITS</a> · <a href="#SECTnode1566">SEE ALSO</a> · <a href="#SECTnode1572">KEYWORDS</a>
+<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode400">DESCRIPTION</a> · <a href="#SECTnode412">COMMANDS</a> · <a href="#SECTnode1545">DISCUSSION</a> · <a href="#SECTnode1563">CREDITS</a> · <a href="#SECTnode1572">SEE ALSO</a> · <a href="#SECTnode1578">KEYWORDS</a>
 </div><hr class="navsep">
 </div><div class="body">
 
@@ -153,6 +153,7 @@ The command usually returns empty result but may trigger Tcl error with the mess
 &quot;target thread died&quot; in some situations.
 This command is deprecated in favour of more advanced thread reservation system 
 implemented with <b class="cmd">thread::preserve</b> and <b class="cmd">thread::release</b> commands.
+Support for this command will dissapear in some future major release of the extenstion.
 </dd>
 
 
@@ -167,7 +168,9 @@ Use of this command is deprecated in favour of the <b class="cmd">thread::unwind
 or more advanced thread reservation system implemented with <b class="cmd">thread::preserve</b>
 and <b class="cmd">thread::release</b> commands. Use on your own risk and with extreme precaution.
 The command usually  returns empty result but may trigger Tcl error with the message 
-&quot;target thread died&quot; in some situations.</p>
+&quot;target thread died&quot; in some situations.
+Support for this command will dissapear in some future major release of the extenstion.
+</p>
 </dd>
 
 
@@ -214,7 +217,10 @@ result of the passed <i class="m">script</i>.
 <dd>This enters the event loop so a thread can receive messages from <b class="cmd">thread::send</b>. 
 This is equivalent to <tt class="samp">vwait <i class="m">unusedvariable</i>
 </tt> except that thread::unwind will
-not unblock a <b class="cmd">vwait</b>.
+not unblock a <b class="cmd">vwait</b>. This command should only be used within the script passed to
+the <b class="cmd">thread::create</b>. It should be the very last command in the script.
+If this is not the case, the exiting thread will continue executing the script lines pass the
+<b class="cmd">thread::wait</b> which is not what you usualy want and/or expect.
 </dd>
 
 
@@ -287,7 +293,7 @@ and error.
 current thread and interpreter. After that, the current interpreter 
 has no access to the channel anymore. The channel is in the parked
 state until some other (or the same) thread attaches the channel
-again with <b class="cmd">thread::attach</b> command.
+again with <b class="cmd">thread::attach</b>.
 Restriction: the channel in question must not be shared among
 multiple interpreters running in the sending thread. This
 automatically excludes the special channels for standard input, output
@@ -640,7 +646,7 @@ it clears the array and sets new values atomically.
 
 </dl>
 
-<h2><a name="SECTnode1539">DISCUSSION</a></h2><p>The fundamental threading model in Tcl is that there can be one or
+<h2><a name="SECTnode1545">DISCUSSION</a></h2><p>The fundamental threading model in Tcl is that there can be one or
 more Tcl interpreters per thread, but each Tcl interpreter should only
 be used by a single thread which created it.
 A &quot;shared memory&quot; abstraction is awkward to provide in Tcl because Tcl
@@ -662,12 +668,12 @@ or their elements from any thread, without explicit locking.
 </p><p>For advanced multithreading scripts, script-level access to two basic 
 synchronization primitives, mutex and condition variables, is also supported.
 </p>
-<h2><a name="SECTnode1557">CREDITS</a></h2><p>Shared variable arrays are inspired by the nsv interface found in 
+<h2><a name="SECTnode1563">CREDITS</a></h2><p>Shared variable arrays are inspired by the nsv interface found in 
 AOLserver 3.+ highly scalable Web server from America Online.
 </p>
-<h2><a name="SECTnode1566">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
+<h2><a name="SECTnode1572">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
 </a></p>
-<h2><a name="SECTnode1572">KEYWORDS</a></h2><p class="keywords">
+<h2><a name="SECTnode1578">KEYWORDS</a></h2><p class="keywords">
 <a class="keyword" href="keyword-index.html#KW-threads">threads</a>, <a class="keyword" href="keyword-index.html#KW-events">events</a>, <a class="keyword" href="keyword-index.html#KW-messagepassing">message passing</a>, <a class="keyword" href="keyword-index.html#KW-synchronization">synchronization</a>, <a class="keyword" href="keyword-index.html#KW-sharedvariables">shared variables</a>, <a class="keyword" href="keyword-index.html#KW-mutex">mutex</a>, <a class="keyword" href="keyword-index.html#KW-conditionvariable">condition variable</a>
 </p>
 </div><div class="footer">
