@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.26 2001/08/04 02:09:21 hobbs Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.27 2001/09/04 23:39:52 davygrvy Exp $
  */
 
 #include "thread.h"
@@ -257,6 +257,8 @@ Thread_Init(interp)
 		(ClientData)NULL ,NULL);
 	Tcl_CreateObjCommand(interp, "thread::unwind", ThreadUnwindObjCmd, 
 		(ClientData)NULL ,NULL);
+	Tcl_CreateObjCommand(interp, "thread::exit", ThreadExitObjCmd, 
+		(ClientData)NULL ,NULL);
 	Tcl_CreateObjCommand(interp, "thread::id", ThreadIdObjCmd, 
 		(ClientData)NULL ,NULL);
 	Tcl_CreateObjCommand(interp, "thread::names", ThreadNamesObjCmd, 
@@ -473,6 +475,37 @@ ThreadUnwindObjCmd(dummy, interp, objc, objv)
 	return TCL_ERROR;
     }
     return ThreadStop();
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadExitObjCmd --
+ *
+ *	This procedure is invoked to process the "thread::exit" Tcl 
+ *	command.  This cuases an unconditional close of the thread
+ *	and is GUARENTEED to cuase memory leaks.  Use this with caution.
+ *
+ * Results:
+ *	Doesn't actually return.
+ *
+ * Side effects:
+ *	Lots.  improper clean up of resources.
+ *
+ *----------------------------------------------------------------------
+ */
+
+int
+ThreadExitObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int objc;				/* Number of arguments. */
+    Tcl_Obj *CONST objv[];		/* Argument objects. */
+{
+    Tcl_ExitThread(666);
+
+    /* NOT REACHED */
+    return TCL_OK;
 }
 
 /*
