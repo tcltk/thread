@@ -3,12 +3,12 @@
  *
  * This file implements the Tcl thread pools.
  *
- * Copyright (c) 2002 by Zoran Vasiljevic, Archiware GmbH
+ * Copyright (c) 2002 by Zoran Vasiljevic.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.8 2002/12/04 16:51:52 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.9 2002/12/05 15:14:04 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 

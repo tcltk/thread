@@ -2,10 +2,12 @@
  * Implementation of most standard Tcl list processing commands
  * suitable for operation on thread shared (list) variables.
  *
+ * Copyright (c) 2002 by Zoran Vasiljevic.
+ *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvListCmd.c,v 1.6 2002/08/18 20:48:18 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvListCmd.c,v 1.7 2002/12/05 15:14:08 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 

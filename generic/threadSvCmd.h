@@ -2,10 +2,12 @@
  * This is the header file for the module that implements shared variables.
  * for protected multithreaded access.
  *
+ * Copyright (c) 2002 by Zoran Vasiljevic.
+ *
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.7 2002/11/24 17:01:27 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.8 2002/12/05 15:14:07 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 

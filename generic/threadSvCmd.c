@@ -6,10 +6,12 @@
  * distribution and modified to support Tcl 8.0+ command object interface
  * and internal storage in private shared Tcl objects.
  *
+ * Copyright (c) 2002 by Zoran Vasiljevic.
+ *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.26 2002/12/03 07:14:24 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.27 2002/12/05 15:14:06 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 

@@ -1,22 +1,23 @@
 /* 
  * threadCmd.c --
  *
- *  This file implements the Tcl thread commands that allow script
- *  level access to threading. It will not load into a core that was
- *  not compiled for thread support.
+ * This file implements the Tcl thread commands that allow script
+ * level access to threading. It will not load into a core that was
+ * not compiled for thread support.
  *
- *  see http://www.tcl.tk/doc/howto/thread_model.html
+ * See http://www.tcl.tk/doc/howto/thread_model.html
  *
- *  Some of this code is based on work done by Richard Hipp on behalf of
- *  Conservation Through Innovation, Limited, with their permission.
+ * Some of this code is based on work done by Richard Hipp on behalf of
+ * Conservation Through Innovation, Limited, with their permission.
  *
  * Copyright (c) 1998 by Sun Microsystems, Inc.
  * Copyright (c) 1999,2000 by Scriptics Corporation.
+ * Copyright (c) 2002 by Zoran Vasiljevic.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.57 2002/12/02 18:24:21 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.58 2002/12/05 15:14:02 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
