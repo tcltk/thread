@@ -1,3 +1,9 @@
+2002-07-22  Mo DeJong  <mdejong@users.sourceforge.net>
+
+	* README: Fix typo.
+	* doc/man/thread.n: Note that thread::join and
+	thread::transfer are only available with Tcl 8.4.
+
 2002-07-20  Mo DeJong  <mdejong@users.sourceforge.net>
 
         * generic/threadSvCmd.c (Sv_tclEmptyStringRep, Sv_Init):
