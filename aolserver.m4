@@ -45,11 +45,11 @@ AC_DEFUN(NS_PATH_AOLSERVER, [
         AOL_DIR=${ac_cv_c_aolserver}
         AC_MSG_RESULT([found AOLserver in $AOL_DIR])
         CFLAGS="${CFLAGS} -I${AOL_DIR}/include"
-        aollibs=`ls ${AOL_DIR}/lib/libnsd* 2>/dev/null`
-        if test "x$aollibs" != x ; then
-            LIBS="${LIBS} -L${AOL_DIR}/lib -lnsd -lnsthread"
-        fi
-        if test "`uname -s`" = Darwin ; then 
+        if test "`uname -s`" = Darwin ; then
+            aollibs=`ls ${AOL_DIR}/lib/libnsd* 2>/dev/null`
+            if test x"$aollibs" != x ; then
+                LIBS="${LIBS} -L${AOL_DIR}/lib -lnsd -lnsthread"
+            fi
             SHLIB_LD="cc -bundle \${LDFLAGS}"
         fi
         AC_SUBST(SHLIB_LD)
