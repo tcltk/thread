@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.3 2000/08/10 01:55:07 davidg Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.4 2000/10/16 21:18:24 zoran Exp $
  */
 
 #include "thread.h"
@@ -512,6 +512,7 @@ ThreadSvUnsetObjCmd(dummy, interp, objc, objv)
                 arrayName, NULL);
         return TCL_ERROR;
     }
+    UnlockArray(arrayPtr);
     return TCL_OK;
 }
 
