@@ -8,7 +8,7 @@
 # Tcl on Unix (uses public Tcl library)
 # Again, this is usually what you mostly want.
 # --------------------------------------------
-   ../configure --enable-threads
+   ../configure --enable-threads --enable-symbols
 #
 #
 # AOLserver 3.X. It delivers its own patched Tcl lib.
@@ -52,7 +52,7 @@
 # shared variables. As an working example of this, there
 # is a simple wrapper for the popular Gdbm library from GNU.
 # To use this functionality, you might want to give the 
-# "--with-gdbm" option to the "configure" script. This will
+# "--enable-gdbm" option to the "configure" script. This will
 # try to locate the Gbdm library support files on your system 
 # and compile the extension with persistent store support.
 #
