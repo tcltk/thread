@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.13 2002/12/11 22:56:49 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.14 2002/12/12 08:16:24 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -226,7 +226,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
             if (Tcl_GetIntFromObj(interp, objv[ii+1], &maxw) != TCL_OK) {
                 return TCL_ERROR;
             }
-        } else if (OPT_CMP(opt, "-idletimer")) {
+        } else if (OPT_CMP(opt, "-idletime")) {
             if (Tcl_GetIntFromObj(interp, objv[ii+1], &idle) != TCL_OK) {
                 return TCL_ERROR;
             }
@@ -1560,15 +1560,15 @@ GetTime(timePtr)
 
     if ((maj == 8) && (min <= 3)) {
 #ifdef __WIN32__
-        struct timeb t;
-        ftime(&t);
-        timePtr->sec  = t.time;
-        timePtr->usec = t.millitm * 1000;
+#include <sys/timeb.h>
+        struct timeb tb;
+        (void)ftime(&tb);
+        timePtr->sec  = tb.time;
+        timePtr->usec = tb.millitm * 1000;
 #else
 #include <sys/time.h>
         struct timeval tv;
-        struct timezone tz;
-        (void)gettimeofday(&tv, &tz);
+        (void)gettimeofday(&tv, NULL);
         timePtr->sec  = tv.tv_sec;
         timePtr->usec = tv.tv_usec;
 #endif  
