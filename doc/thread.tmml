@@ -105,7 +105,7 @@ information it is possible to move channels between the threads.
 </section>
 
 <seealso>
-<a href=http://www.scriptics.com/support/howto/thread_model.html>
+<a href=http://dev.scriptics.com/doc/howto/thread_model.html>
 A Guide to the Tcl Threading Model</a>.
 <ref>Tcl_CreateThread(3)</ref>
 </seealso>
