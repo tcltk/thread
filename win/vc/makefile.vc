@@ -5,7 +5,7 @@
 # maintenance utility -> nmake.exe that builds the Tcl thread
 # extension.  See README.txt for commandline options and instructions.
 #
-# RCS: @(#) $Id: makefile.vc,v 1.12 2000/08/20 18:48:15 davidg Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.13 2000/08/20 20:49:20 davidg Exp $
 ######################################################################
 
 
@@ -113,14 +113,14 @@ SOURCEROOT	= ..\..
 GENERICDIR	= $(SOURCEROOT)\generic
 TESTDIR		= $(SOURCEROOT)\tests
 WINDIR		= $(SOURCEROOT)\win\vc
-TMPDIR		= $(WINDIR)\$(TMPDIRNAME)
+TMP_DIR		= $(WINDIR)\$(TMPDIRNAME)
 
-!ifndef OUTDIR
-OUTDIR		= $(WINDIR)\$(TMPDIRNAME)
+!ifndef OUT_DIR
+OUT_DIR		= $(WINDIR)\$(TMPDIRNAME)
 !endif
 
-THREADLIB	= $(OUTDIR)\thread$(VER)$(STCX)$(DBGX).$(OUTEXT)
-THREADLIBBASE	= $(OUTDIR)\thread$(VER)$(STCX)$(DBGX)
+THREADLIB	= $(OUT_DIR)\thread$(VER)$(STCX)$(DBGX).$(OUTEXT)
+THREADLIBBASE	= $(OUT_DIR)\thread$(VER)$(STCX)$(DBGX)
 
 # Is TCLROOT pointing to the sources or the install ?
 #
@@ -135,11 +135,11 @@ TCLSH_PROG	= "$(TCLROOT)\win\$(TMPDIRNAMEPREFIX)\tclsh84.exe"
 !endif
 
 THREADOBJS	= \
-	$(TMPDIR)\threadCmd.obj \
-	$(TMPDIR)\threadSpCmd.obj \
-	$(TMPDIR)\threadSvCmd.obj \
+	$(TMP_DIR)\threadCmd.obj \
+	$(TMP_DIR)\threadSpCmd.obj \
+	$(TMP_DIR)\threadSvCmd.obj \
 !if $(STATIC_BUILD) == 0
-	$(TMPDIR)\resource.obj
+	$(TMP_DIR)\resource.obj
 !endif
 
 
@@ -174,8 +174,8 @@ TCLINCLUDE	= -I"$(TCLROOT)\include"
 TCLINCLUDE	= -I"$(TCLROOT)\generic"
 !endif
 
-cflags = -nologo -c -W3 -YX $(cdebug) $(crt) -Fp$(TMPDIR)\ \
-	-Fo$(TMPDIR)\ $(TCLINCLUDE)
+cflags = -nologo -c -W3 -YX $(cdebug) $(crt) -Fp$(TMP_DIR)\ \
+	-Fo$(TMP_DIR)\ $(TCLINCLUDE)
 
 
 ######################################################################
@@ -223,10 +223,10 @@ all: setup $(THREADLIB)
 
 setup:
 	@$(vcvars) > nul
-	@if not exist $(TMPDIR)\nul mkdir $(TMPDIR) &\
-		echo Created directory '$(TMPDIR)'
-	@if not exist $(OUTDIR)\nul mkdir $(OUTDIR) &\
-		echo Created directory '$(OUTDIR)'
+	@if not exist $(TMP_DIR)\nul mkdir $(TMP_DIR) &\
+		echo Created directory '$(TMP_DIR)'
+	@if not exist $(OUT_DIR)\nul mkdir $(OUT_DIR) &\
+		echo Created directory '$(OUT_DIR)'
 
 test: all
     $(TCLSH_PROG) <<
@@ -258,9 +258,9 @@ $(THREADOBJS)
 
 
 !if $(_NMAKE_VER) < 162
-{$(GENERICDIR)}.c{$(TMPDIR)}.obj :
+{$(GENERICDIR)}.c{$(TMP_DIR)}.obj :
 !else
-{$(GENERICDIR)}.c{$(TMPDIR)}.obj ::
+{$(GENERICDIR)}.c{$(TMP_DIR)}.obj ::
 	@echo Compiling...
 !endif
 	$(cc32) $(cflags) $(ctclstubs) -DTCL_THREADS=1 @<<
@@ -273,13 +273,13 @@ $<
 ######################################################################
 
 
-$(TMPDIR)\thread.res : $(WINDIR)\thread.rc
+$(TMP_DIR)\thread.res : $(WINDIR)\thread.rc
 	@echo Compiling resources...
 	$(rc32) -fo"$@" -i "$(GENERICDIR)" -i "$(TCLROOT)\generic" -r \
 		-DNODEBUG=$(NODEBUG) -DRESOURCE_INCLUDED $(WINDIR)\thread.rc
 
-$(TMPDIR)\resource.obj : $(TMPDIR)\thread.res
-	$(cvtres32) -nologo -machine:$(MACHINE) -out:$@ $(TMPDIR)\thread.res
+$(TMP_DIR)\resource.obj : $(TMP_DIR)\thread.res
+	$(cvtres32) -nologo -machine:$(MACHINE) -out:$@ $(TMP_DIR)\thread.res
 
 
 ######################################################################
@@ -300,7 +300,7 @@ $(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\thread.h
 
 clean:
 	@echo Cleaning non-output build files...
-	@if exist $(TMPDIR)\nul rmdir /s /q $(TMPDIR)
+	@if exist $(TMP_DIR)\nul rmdir /s /q $(TMP_DIR)
 
 hose: clean
 	@echo Deleting output file $(THREADLIB) ...

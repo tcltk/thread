@@ -25,7 +25,7 @@ There are 2 ways to build the extension:
 		NOMSVCRT=(0|1)
 			Will reference libcmt(d).lib for the runtime when set to one.
 			This is zero by default unless STATIC_BUILD is set to one.
-		OUTDIR=<someDir>
+		OUT_DIR=<someDir>
 			You may specify where the output is placed.  Defaults to
 			the build directory.
 
