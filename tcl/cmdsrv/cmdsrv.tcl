@@ -5,19 +5,21 @@
 # Works in thread mode with each new connection receiving a new thread.
 #  
 # Usage:
-#    cmdsrv::create port ?-idletimer value? ?-initcmd cmd?
+#    cmdsrv::create port ?-idletime value? ?-initcmd cmd?
 # 
 #    port         Tcp port where the server listens
-#    -idletimer   # of ms to idle before tearing down socket (def: 300 sec)
+#    -idletime    # of sec to idle before tearing down socket (def: 300 sec)
 #    -initcmd     script to initialize new worker thread (def: empty)
 #
 # Example:
 #
-#    % cmdsrv::create 5000 -idletimer 60
+#    # tclsh8.4
+#    % source cmdsrv.tcl
+#    % cmdsrv::create 5000 -idletime 60
 #    % vwait forever
 #
-#    Starts the server on the port 5000, sets idle timer
-#    to 1 minute. You can now use "telnet" utility to connect.
+#    Starts the server on the port 5000, sets idle timer to 1 minute. 
+#    You can now use "telnet" utility to connect.
 #
 # Copyright (c) 2002 by Zoran Vasiljevic.
 #
@@ -25,13 +27,11 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: cmdsrv.tcl,v 1.4 2002/12/05 15:14:10 vasiljevic Exp $
+# RCS: @(#) $Id: cmdsrv.tcl,v 1.5 2002/12/13 20:55:07 vasiljevic Exp $
 #
 
-#package require Thread 2.5
-#package provide Cmdsrv 1.0
-
-load ./libthread2.5.so
+package require Tcl    8.4
+package require Thread 2.5
 
 namespace eval cmdsrv {
     variable data; # Stores global configuration options
@@ -66,8 +66,8 @@ proc cmdsrv::create {port args} {
     #
 
     array set data {
-        -idletimer 300000
-        -initcmd   {source cmdsrv.tcl}
+        -idletime 300000
+        -initcmd  {source cmdsrv.tcl}
     }
     
     #
@@ -76,8 +76,8 @@ proc cmdsrv::create {port args} {
 
     foreach {arg val} $args {
         switch -- $arg {
-            -idletimer {set data($arg) [expr {$val*1000}]}
-            -initcmd   {append data($arg) \n $val}
+            -idletime {set data($arg) [expr {$val*1000}]}
+            -initcmd  {append data($arg) \n $val}
             default {
                 error "unsupported pool option \"$arg\""
             }
@@ -292,7 +292,7 @@ proc cmdsrv::StartIdleTimer {s} {
     variable data
 
     set data(idleevent) \
-        [after $data(-idletimer) [list [namespace current]::SockDone $s]]
+        [after $data(-idletime) [list [namespace current]::SockDone $s]]
 }
 
 # EOF $RCSfile: cmdsrv.tcl,v $

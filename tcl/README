@@ -4,10 +4,10 @@ and applications using the Tcl threading extension.
 
 Currently, following packages are supplied:
 
-   tpool/    Example Tcl-only implementation of thread pools
+   tpool/    Example Tcl-only implementation of thread pools.
              The threading extension includes the efficient
              threadpool implementation in C. This file is 
-             provided as fully functional example how this
+             provided as a fully functional example how this
              functionality may be implemented in Tcl alone.
 
    phttpd/   MT-enabled httpd server. It uses the threadpool
