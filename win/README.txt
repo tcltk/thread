@@ -1,10 +1,8 @@
 
-To build on windows, set up your Cygwin environment as described in
-http://dev.scriptics.com/doc/tea/windows.html
-then run the CONFIG script here from the Cygwin bash shell.
-	sh CONFIG
-That will create a Makefile which you use to run "make" and "make install".
+You should use the project and nmake files for the MSVC++ in
+the vc/ directory. You'll have to edit those files according 
+to the vc/README file.
 
-Alternatively, you can use the project and nmake files in the vc directory.
-You'll have to edit those files to according to the vc/README file.
+The Cygwin/Mingw build is seriously broken for threads so there
+is no alternative to the Microsoft dev tools for the time being.
 
