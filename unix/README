@@ -1,7 +1,19 @@
 
+Extension can be compiled on several Unix derivates including various
+distributions of Linux. Build process is pretty straightforward. I've
+checked various versions of Solaris and Linux but the extension
+should compile without problems on any Unix-like operating system
+with a proper pthreads library implementation.
+
 To build on Unix-like operating systems, run the CONFIG script:
-    sh CONFIG
+
+    % sh CONFIG
+
 That will create a Makefile which you use to run "make" and "make install".
 You can use "make clean" to clean the directory from temporary compilation
 files and/or "make distclean" to additionaly remove local config files.
 
+You might want to do "make test" before doing the "make install" in order
+to run the regression tests on the package. 
+
+-EOF-
