@@ -1,0 +1,12 @@
+2000-04-09  Brent Welch <welch@scriptics.com>
+
+	* Updated to compile against 8.3.1 export thread APIs
+	* Added Windows makefiles
+
+2000-03-27  Brent Welch <welch@scriptics.com> (proxy for Andreas Kupries)
+
+	* tests/all.tcl: Added this file
+	* tests/thread.test: fixed to use tcltest
+	* doc/thread.n: Added this file as clone of thread.html
+	# doc/thread.html: fixed typo
+
