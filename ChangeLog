@@ -1,3 +1,9 @@
+2000-04-17  Brent Welch <welch@scriptics.com>
+
+	* generic/threadCmd.c
+	Added Tcl_CreateThreadType and TCL_RETURN_THREAD_TYPE
+	macros for declaring the NewThread callback proc.
+
 2000-04-11  Brent Welch <welch@scriptics.com>
 
 	* Picked up minor changes from David Gravereaux <davygrvy@bigfoot.com>
