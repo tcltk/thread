@@ -5,7 +5,7 @@
 # maintenance utility -> nmake.exe that builds the Tcl thread
 # extension.  See README.txt for commandline options and instructions.
 #
-# RCS: @(#) $Id: makefile.vc,v 1.20 2001/08/04 02:06:51 hobbs Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.21 2001/09/05 22:59:42 davygrvy Exp $
 ######################################################################
 
 
@@ -102,7 +102,7 @@ TMPDIRNAME	= $(TMPDIRNAMEPREFIX)
 SOURCEROOT	= ..\..
 GENERICDIR	= $(SOURCEROOT)\generic
 TESTDIR		= $(SOURCEROOT)\tests
-WINDIR		= $(SOURCEROOT)\win\vc
+WINDIR		= $(SOURCEROOT)\win
 TMP_DIR		= $(WINDIR)\$(TMPDIRNAME)
 
 !ifndef OUT_DIR
@@ -128,6 +128,7 @@ THREADOBJS	= \
 	$(TMP_DIR)\threadCmd.obj \
 	$(TMP_DIR)\threadSpCmd.obj \
 	$(TMP_DIR)\threadSvCmd.obj \
+	$(TMP_DIR)\threadWin.obj \
 !if $(STATIC_BUILD) == 0
 	$(TMP_DIR)\resource.obj
 !endif
@@ -271,6 +272,16 @@ $(THREADOBJS)
 $<
 <<nokeep
 
+!if $(_NMAKE_VER) < 162
+{$(WINDIR)}.c{$(TMP_DIR)}.obj :
+!else
+{$(WINDIR)}.c{$(TMP_DIR)}.obj ::
+	@echo Compiling...
+!endif
+	$(cc32) $(cflags) $(ctclstubs) -DTCL_THREADS=1 @<<
+$<
+<<nokeep
+
 
 ######################################################################
 # Special case targets
@@ -293,10 +304,10 @@ $(TMP_DIR)\resource.obj : $(TMP_DIR)\thread.res
 ######################################################################
 
 
-$(WINDIR)\thread.rc : $(WINDIR)\pkg.vc
-$(GENERICDIR)\threadCmd.c : $(GENERICDIR)\thread.h $(WINDIR)\pkg.vc
-$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\thread.h
-$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\thread.h
+$(WINDIR)\thread.rc : $(WINDIR)\vc\pkg.vc
+$(GENERICDIR)\threadCmd.c : $(GENERICDIR)\tclThread.h $(WINDIR)\vc\pkg.vc
+$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\tclThread.h
+$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\tclThread.h
 
 
 ######################################################################
