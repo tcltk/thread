@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: tpool.html,v 1.4 2003/11/25 18:55:34 vasiljevic Exp $ tpool.n
+<! -- CVS: $Id: tpool.html,v 1.5 2003/12/22 21:21:41 vasiljevic Exp $ tpool.n
    -->
 
 <body>
@@ -26,11 +26,12 @@ package require <b>Tcl 8.3</b><br>
 package require <b>Thread ?2.6?</b><br>
 <br><table border=1 width=100% cellspacing=0 cellpadding=0><tr            bgcolor=lightyellow><td bgcolor=lightyellow><table 0 width=100% cellspacing=0 cellpadding=0><tr valign=top ><td ><a href="#1"><b class='cmd'>tpool::create</b> ?options?</a></td></tr>
 <tr valign=top ><td ><a href="#2"><b class='cmd'>tpool::names</b> </a></td></tr>
-<tr valign=top ><td ><a href="#3"><b class='cmd'>tpool::post</b> <i class='arg'>tpool</i> <i class='arg'>script</i></a></td></tr>
+<tr valign=top ><td ><a href="#3"><b class='cmd'>tpool::post</b> ?-detached? ?-nowait? <i class='arg'>tpool</i> <i class='arg'>script</i></a></td></tr>
 <tr valign=top ><td ><a href="#4"><b class='cmd'>tpool::wait</b> <i class='arg'>tpool</i> <i class='arg'>joblist</i> ?varname?</a></td></tr>
-<tr valign=top ><td ><a href="#5"><b class='cmd'>tpool::get</b> <i class='arg'>tpool</i> <i class='arg'>job</i></a></td></tr>
-<tr valign=top ><td ><a href="#6"><b class='cmd'>tpool::preserve</b> <i class='arg'>tpool</i></a></td></tr>
-<tr valign=top ><td ><a href="#7"><b class='cmd'>tpool::release</b> <i class='arg'>tpool</i></a></td></tr>
+<tr valign=top ><td ><a href="#5"><b class='cmd'>tpool::cancel</b> <i class='arg'>tpool</i> <i class='arg'>joblist</i> ?varname?</a></td></tr>
+<tr valign=top ><td ><a href="#6"><b class='cmd'>tpool::get</b> <i class='arg'>tpool</i> <i class='arg'>job</i></a></td></tr>
+<tr valign=top ><td ><a href="#7"><b class='cmd'>tpool::preserve</b> <i class='arg'>tpool</i></a></td></tr>
+<tr valign=top ><td ><a href="#8"><b class='cmd'>tpool::release</b> <i class='arg'>tpool</i></a></td></tr>
 </table></td></tr></table>
 <h2><a name="description">DESCRIPTION</a></h2>
 <p>
@@ -133,9 +134,8 @@ This command returns a list of IDs of threadpools created with the
 <b class='cmd'>tpool::create</b> command. If no threadpools were found, the
 command will return empty list.
 
-
 <br><br>
-<dt><a name="3"><b class='cmd'>tpool::post</b> <i class='arg'>tpool</i> <i class='arg'>script</i></a><dd>
+<dt><a name="3"><b class='cmd'>tpool::post</b> ?-detached? ?-nowait? <i class='arg'>tpool</i> <i class='arg'>script</i></a><dd>
 
 
 This command sends a <i class='arg'>script</i> to the target <i class='arg'>tpool</i> threadpool
@@ -144,16 +144,22 @@ worker thread. If there are no idle worker threads available, the command
 will create new one, enter the event loop and service events until the 
 newly created thread is initialized. If the current number of worker 
 threads is equal to the maximum number of worker threads, as defined 
-during the threadpool creation with the <b class='cmd'>tpool::create</b> command, 
-the command will enter the event loop and service events while waiting 
-for one of the worker threads to become idle.
+during the threadpool creation, the command will enter the event loop and
+service events while waiting for one of the worker threads to become idle.
+If the optional ?-nowait? argument is given, the command will not wait
+for one idle worker. It will just place the job in the pool's job queue
+and return immediately.
 <br><br>
 The command returns the ID of the posted job. This ID is used for subsequent
-<b class='cmd'>tpool::wait</b> and <b class='cmd'>tpool::get</b> commands to wait for and 
-retrieve result of the posted script respectively. If the threadpool 
-<i class='arg'>tpool</i> is not found in the list of active thread pools, the command
-will throw error. The error will also be triggered if the newly created 
-worker thread fails to initialize.
+<b class='cmd'>tpool::wait</b>, <b class='cmd'>tpool::get</b> and <b class='cmd'>tpool::cancel</b> commands to wait
+for and retrieve result of the posted script, or cancel the posted job
+respectively. If the optional ?-detached? argument is specified, the 
+command will post a detached job. A detached job can not be cancelled or 
+waited upon and is not identified by the job ID.
+<br><br>
+If the threadpool <i class='arg'>tpool</i> is not found in the list of active
+thread pools, the command will throw error. The error will also be triggered
+if the newly created worker thread fails to initialize.
 
 <br><br>
 <dt><a name="4"><b class='cmd'>tpool::wait</b> <i class='arg'>tpool</i> <i class='arg'>joblist</i> ?varname?</a><dd>
@@ -170,7 +176,20 @@ The command returns the list of completed job IDs. If the optional variable
 is not found in the list of active thread pools, the command will throw error.
 
 <br><br>
-<dt><a name="5"><b class='cmd'>tpool::get</b> <i class='arg'>tpool</i> <i class='arg'>job</i></a><dd>
+<dt><a name="5"><b class='cmd'>tpool::cancel</b> <i class='arg'>tpool</i> <i class='arg'>joblist</i> ?varname?</a><dd>
+
+
+This command cancels the previously posted jobs given by the <i class='arg'>joblist</i>
+to the pool <i class='arg'>tpool</i>. Job cancellation succeeds only for job still
+waiting to be processed. If the job is already being executed by one of
+the worker threads, the job will not be cancelled.
+The command returns the list of cancelled job IDs. If the optional variable
+?varname? is given, it will be set to the list of jobs in the 
+<i class='arg'>joblist</i> which were not cancelled. If the threadpool <i class='arg'>tpool</i> 
+is not found in the list of active thread pools, the command will throw error.
+
+<br><br>
+<dt><a name="6"><b class='cmd'>tpool::get</b> <i class='arg'>tpool</i> <i class='arg'>job</i></a><dd>
 
 
 This command retrieves the result of the previously posted <i class='arg'>job</i>.
@@ -183,7 +202,7 @@ If the job <i class='arg'>job</i> is not ready for retrieval, because it is curr
 being executed by the worker thread, the command will throw error.
 
 <br><br>
-<dt><a name="6"><b class='cmd'>tpool::preserve</b> <i class='arg'>tpool</i></a><dd>
+<dt><a name="7"><b class='cmd'>tpool::preserve</b> <i class='arg'>tpool</i></a><dd>
 
 
 Each call to this command increments the reference counter of the
@@ -193,7 +212,7 @@ By incrementing the reference counter, the caller signalizes that
 he/she wishes to use the resource for a longer period of time.
 
 <br><br>
-<dt><a name="7"><b class='cmd'>tpool::release</b> <i class='arg'>tpool</i></a><dd>
+<dt><a name="8"><b class='cmd'>tpool::release</b> <i class='arg'>tpool</i></a><dd>
 
 
 Each call to this command decrements the reference counter of the 
@@ -235,6 +254,11 @@ by forcing any request to wait until a thread is available to process it.
 
 
 
+
+
+<h2><a name="seealso">SEE ALSO</a></h2>
+<p>
+thread, tsv, ttrace
 <h2><a name="keywords">KEYWORDS</a></h2>
 <p>
 thread, threadpool

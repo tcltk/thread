@@ -59,7 +59,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: tpool.n,v 1.4 2003/11/25 18:55:34 vasiljevic Exp $
+'\" RCS: @(#) $Id: tpool.n,v 1.5 2003/12/22 21:21:47 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -256,9 +256,11 @@ package require \fBThread  ?2.6?\fR
 .sp
 \fBtpool::names\fR \fR
 .sp
-\fBtpool::post\fR \fItpool\fR \fIscript\fR\fR
+\fBtpool::post\fR ?-detached? ?-nowait? \fItpool\fR \fIscript\fR\fR
 .sp
 \fBtpool::wait\fR \fItpool\fR \fIjoblist\fR ?varname?\fR
+.sp
+\fBtpool::cancel\fR \fItpool\fR \fIjoblist\fR ?varname?\fR
 .sp
 \fBtpool::get\fR \fItpool\fR \fIjob\fR\fR
 .sp
@@ -349,23 +351,29 @@ This command returns a list of IDs of threadpools created with the
 \fBtpool::create\fR command. If no threadpools were found, the
 command will return empty list.
 .TP
-\fBtpool::post\fR \fItpool\fR \fIscript\fR\fR
+\fBtpool::post\fR ?-detached? ?-nowait? \fItpool\fR \fIscript\fR\fR
 This command sends a \fIscript\fR to the target \fItpool\fR threadpool
 for execution. The script will be executed in the first available idle
 worker thread. If there are no idle worker threads available, the command
 will create new one, enter the event loop and service events until the
 newly created thread is initialized. If the current number of worker
 threads is equal to the maximum number of worker threads, as defined
-during the threadpool creation with the \fBtpool::create\fR command,
-the command will enter the event loop and service events while waiting
-for one of the worker threads to become idle.
+during the threadpool creation, the command will enter the event loop and
+service events while waiting for one of the worker threads to become idle.
+If the optional ?-nowait? argument is given, the command will not wait
+for one idle worker. It will just place the job in the pool's job queue
+and return immediately.
 .sp
 The command returns the ID of the posted job. This ID is used for subsequent
-\fBtpool::wait\fR and \fBtpool::get\fR commands to wait for and
-retrieve result of the posted script respectively. If the threadpool
-\fItpool\fR is not found in the list of active thread pools, the command
-will throw error. The error will also be triggered if the newly created
-worker thread fails to initialize.
+\fBtpool::wait\fR, \fBtpool::get\fR and \fBtpool::cancel\fR commands to wait
+for and retrieve result of the posted script, or cancel the posted job
+respectively. If the optional ?-detached? argument is specified, the
+command will post a detached job. A detached job can not be cancelled or
+waited upon and is not identified by the job ID.
+.sp
+If the threadpool \fItpool\fR is not found in the list of active
+thread pools, the command will throw error. The error will also be triggered
+if the newly created worker thread fails to initialize.
 .TP
 \fBtpool::wait\fR \fItpool\fR \fIjoblist\fR ?varname?\fR
 This command waits for one or many jobs, whose job IDs are given in the
@@ -376,6 +384,16 @@ events and wait for the first job to get ready.
 The command returns the list of completed job IDs. If the optional variable
 ?varname? is given, it will be set to the list of jobs in the
 \fIjoblist\fR which are still pending. If the threadpool \fItpool\fR
+is not found in the list of active thread pools, the command will throw error.
+.TP
+\fBtpool::cancel\fR \fItpool\fR \fIjoblist\fR ?varname?\fR
+This command cancels the previously posted jobs given by the \fIjoblist\fR
+to the pool \fItpool\fR. Job cancellation succeeds only for job still
+waiting to be processed. If the job is already being executed by one of
+the worker threads, the job will not be cancelled.
+The command returns the list of cancelled job IDs. If the optional variable
+?varname? is given, it will be set to the list of jobs in the
+\fIjoblist\fR which were not cancelled. If the threadpool \fItpool\fR
 is not found in the list of active thread pools, the command will throw error.
 .TP
 \fBtpool::get\fR \fItpool\fR \fIjob\fR\fR
@@ -426,5 +444,7 @@ the delay introduced by thread creation is eliminated. Thus, the request
 can be serviced immediately. Furthermore, by properly tuning the number
 of threads in the thread pool, resource thrashing may also be eliminated
 by forcing any request to wait until a thread is available to process it.
+.SH "SEE ALSO"
+thread, tsv, ttrace
 .SH "KEYWORDS"
 thread, threadpool

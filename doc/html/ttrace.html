@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: ttrace.html,v 1.1 2003/11/27 19:56:37 vasiljevic Exp $ ttrace.n
+<! -- CVS: $Id: ttrace.html,v 1.2 2003/12/22 21:21:45 vasiljevic Exp $ ttrace.n
    -->
 
 <body>
@@ -182,7 +182,7 @@ script to be passed to other interpreters. This script is
 used to set the stage for the Tcl <b class='cmd'>unknown</b> command.
 Registered callbacks are activated on FIFO basis.
 The callback definition includes the name of the callback,
-<b class='cmd'>name</b> and the <i class='arg'>body</i> of the callback.
+<i class='arg'>name</i> and the <i class='arg'>body</i> of the callback.
 
 <br><br>
 <dt><a name="11"><b class='cmd'>ttrace::addresolver</b> <i class='arg'>cmd</i> <i class='arg'>arglist</i> <i class='arg'>body</i></a><dd>
@@ -205,13 +205,13 @@ Registered callbacks are activated on FIFO basis.
 <dt><a name="13"><b class='cmd'>ttrace::addentry</b> <i class='arg'>cmd</i> <i class='arg'>var</i> <i class='arg'>val</i></a><dd>
 
 
-Adds one entry to the framework in-memory database.
+Adds one entry to the named in-memory database.
 
 <br><br>
 <dt><a name="14"><b class='cmd'>ttrace::getentry</b> <i class='arg'>cmd</i> <i class='arg'>var</i></a><dd>
 
 
-Returns the value of the entry from the in-memory database. 
+Returns the value of the entry from the named in-memory database. 
 
 <br><br>
 <dt><a name="15"><b class='cmd'>ttrace::getentries</b> <i class='arg'>cmd</i> ?pattern?</a><dd>

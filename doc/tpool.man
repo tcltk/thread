@@ -99,8 +99,7 @@ This command returns a list of IDs of threadpools created with the
 [cmd tpool::create] command. If no threadpools were found, the
 command will return empty list.
 
-
-[call [cmd tpool::post] [arg tpool] [arg script]]
+[call [cmd tpool::post] [opt -detached] [opt -nowait] [arg tpool] [arg script]]
 
 This command sends a [arg script] to the target [arg tpool] threadpool
 for execution. The script will be executed in the first available idle 
@@ -108,16 +107,22 @@ worker thread. If there are no idle worker threads available, the command
 will create new one, enter the event loop and service events until the 
 newly created thread is initialized. If the current number of worker 
 threads is equal to the maximum number of worker threads, as defined 
-during the threadpool creation with the [cmd tpool::create] command, 
-the command will enter the event loop and service events while waiting 
-for one of the worker threads to become idle.
+during the threadpool creation, the command will enter the event loop and
+service events while waiting for one of the worker threads to become idle.
+If the optional [opt -nowait] argument is given, the command will not wait
+for one idle worker. It will just place the job in the pool's job queue
+and return immediately.
 [nl]
 The command returns the ID of the posted job. This ID is used for subsequent
-[cmd tpool::wait] and [cmd tpool::get] commands to wait for and 
-retrieve result of the posted script respectively. If the threadpool 
-[arg tpool] is not found in the list of active thread pools, the command
-will throw error. The error will also be triggered if the newly created 
-worker thread fails to initialize.
+[cmd tpool::wait], [cmd tpool::get] and [cmd tpool::cancel] commands to wait
+for and retrieve result of the posted script, or cancel the posted job
+respectively. If the optional [opt -detached] argument is specified, the 
+command will post a detached job. A detached job can not be cancelled or 
+waited upon and is not identified by the job ID.
+[nl]
+If the threadpool [arg tpool] is not found in the list of active
+thread pools, the command will throw error. The error will also be triggered
+if the newly created worker thread fails to initialize.
 
 [call [cmd tpool::wait] [arg tpool] [arg joblist] [opt varname]]
 
@@ -129,6 +134,17 @@ events and wait for the first job to get ready.
 The command returns the list of completed job IDs. If the optional variable
 [opt varname] is given, it will be set to the list of jobs in the 
 [arg joblist] which are still pending. If the threadpool [arg tpool] 
+is not found in the list of active thread pools, the command will throw error.
+
+[call [cmd tpool::cancel] [arg tpool] [arg joblist] [opt varname]]
+
+This command cancels the previously posted jobs given by the [arg joblist]
+to the pool [arg tpool]. Job cancellation succeeds only for job still
+waiting to be processed. If the job is already being executed by one of
+the worker threads, the job will not be cancelled.
+The command returns the list of cancelled job IDs. If the optional variable
+[opt varname] is given, it will be set to the list of jobs in the 
+[arg joblist] which were not cancelled. If the threadpool [arg tpool] 
 is not found in the list of active thread pools, the command will throw error.
 
 [call [cmd tpool::get] [arg tpool] [arg job]]
@@ -187,6 +203,8 @@ the delay introduced by thread creation is eliminated. Thus, the request
 can be serviced immediately. Furthermore, by properly tuning the number 
 of threads in the thread pool, resource thrashing may also be eliminated
 by forcing any request to wait until a thread is available to process it.
+
+[see_also tsv ttrace thread]
 
 [keywords thread threadpool]
 
