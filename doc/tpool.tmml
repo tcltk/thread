@@ -1,0 +1,114 @@
+<manpage cat="package" id="thread" title="Tcl Threading" version="2.5">
+<!--
+     Copyright (c) 2002 Zoran Vasiljevic 
+     
+     See the file "license.terms" for information on usage and redistribution
+     of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+ -->
+
+<namesection>
+<name>tsv</name>
+<desc>Part of the Tcl threading extension implementing pools of worker threads.</desc>
+</namesection>
+
+<synopsis>
+<syntax>
+<p>
+<cmd>package require Thread ?2.5?</cmd></p>
+<cmd>tpool::names</cmd>
+<cmd>tpool::create</cmd> ?<m>options</m>?
+<cmd>tpool::post</cmd> <m>tpoolId</m> <m>script</m>
+<cmd>tpool::wait</cmd> <m>tpoolId</m> <m>jobIdList</m> ?<m>varName</m>?
+<cmd>tpool::get</cmd> <m>tpoolId</m> <m>jobId</m>
+<cmd>tpool::preserve</cmd> <m>tpoolId</m>
+<cmd>tpool::release</cmd> <m>tpoolId</m>
+</syntax>
+</synopsis>
+
+<section>
+<title>DESCRIPTION</title>
+<p>
+</p>
+</section>
+
+<section>
+<title>COMMANDS</title>
+<commandlist>
+
+<commanddef>
+<command><cmd>tpool::names</cmd></command>
+<desc>This command returns a list of IDs of threadpools created with the 
+<cmd>tpool::create</cmd> command.</desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>tpool::create </cmd> ?<m>options</m>?</command>
+<desc></desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>tpool::post</cmd> <m>tpoolId</m> <m>script</m></command>
+<desc>This command sends a <m>script</m> to the target <m>tpoolId</m> threadpool
+for execution. The script will be executed in the first available worker thread.
+If there are no idle worker threads available, the command will create
+new one, enter the event loop and service events until the newly created
+thread is initialized. If the current number of worker threads is equal to 
+the maximum number of worker threads, as defined during the threadpool creation
+with the <cmd>tpool::create</cmd> command, the command will enter the event loop
+and service events while waiting for one of the worker threads to become 
+available.
+<p>
+The command returns the ID of the posted job. This ID is used for subsequent
+<cmd>tpool::wait</cmd> and <cmd>tpool::get</cmd> commands to wait for and 
+retrieve result of the posted script. If the pool <m>tpoolId</m> is not found
+in the list of active thread pools, the command will throw error. The error
+will also be triggered if the newly created worker thread fails to initialize.</p>
+</desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>tpool::wait</cmd> <m>tpoolId</m> <m>jobIdList</m> ?<m>varName</m>?</command>
+<desc></desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>tpool::get</cmd> <m>tpoolId</m> <m>jobId</m></command>
+<desc>
+This command retrieves the result of the previously posted job <m>jobId</m>.
+Only results of jobs waited upon with the <cmd>tpool::wait</cmd> command can
+be retrieved. If the execution of the script resulted in error, it will throw
+the error and update the <samp>errorInfo</samp> and <samp>errorCode</samp> 
+variables correspondingly. If the pool <m>tpoolId</m> is not found in the list
+of threadpools, the command will throw error. If the job <m>jobId</m> 
+is not ready for retrieval, while still not processed, or currently 
+being executed by the worker thread, the command will throw error.
+</desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>tpool::preserve</cmd> <m>tpoolId</m></command>
+<desc></desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>tpool::release</cmd> <m>tpoolId</m></command>
+<desc></desc>
+</commanddef>
+
+</commandlist>
+</section>
+
+<section>
+<title>DISCUSSION</title>
+</section>
+
+<seealso>
+<ref href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
+</ref>
+</seealso>
+
+<keywords>
+<keyword>threads</keyword>
+<keyword>pool</keyword>
+</keywords>
+</manpage>
