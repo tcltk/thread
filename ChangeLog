@@ -9,6 +9,12 @@
 	* generic/threadCmd.c:  Re-added original implimentation of [thread::exit].
 	for `emergency use only`.  You have been warned ;)
 
+	* configure.in:
+	* configure:
+	* win/vc/thread.dsp:
+	* win/vc/pkg.vc:  Upped version numbers to 2.3 and 2.1.3 because I just cut
+	a release.
+
 2001-09-04  David Gravereaux <davygrvy@pobox.com>
 
 	-=[ Official 2.2 Tagged and cut. ]=-
