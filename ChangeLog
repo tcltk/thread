@@ -2,7 +2,52 @@
 
 	* generic/threadCmd.c (ThreadEventProc): ThreadErrorProc now
 	supported in asyncronous sends when Tcl_Eval returns other than
-	TCL_OK.  It silently failed prior to this. Bug #219324
+	TCL_OK.  Errors were silently ignored prior to this. Bug #219324
+
+	==== INTERFACE CHANGE ====
+	* generic/threadCmd.c:
+	* generic/thread.h: thread::exit renamed to thread::unwind. The
+	name of 'exit' is misleading.  An exit implies an unconditional
+	return.  But there are conditions.  'unwind' describes with more
+	clarity what's happening to the prior thread::wait.  For example:
+
+	  # parent thread
+	  set T [thread::create {source worker.tcl}]
+	  ....
+	  thread::send -async $T doStuff
+	  ....
+	  thread::send -async $T doStuff
+	  ....
+	  thread::send -async $T thread::unwind
+
+	  # worker.tcl
+	  proc init    {} {#do initialization}
+	  proc cleanup {} {#do cleanup}
+	  proc doStuff {} {#the work}
+	  init
+	  thread::wait
+	  cleanup
+
+	When worker.tcl is sourced, the execution stops at thread::wait and
+	the event loop is entered.  When thread::unwind is sent to the worker,
+	thread::wait falls-out and cleanup is called.  The condition for
+	thread::unwind to cause an exit is determined by the script.  If
+	thread::wait was the last Tcl command in the script, yes the thread
+	will exit.  But if thread::wait is not the last, the execution of the
+	script is just continued.  Hence, the name change to clarify this fact.
+
+	Package version has not been changed.  There hasn't been an official
+	release of 2.2, so it stays.
+
+	* doc/thread.n:
+	* tests/thread.test: Replaced thread::exit with thread::unwind and
+	documented the change and clarified the subtleties.
+
+	* win/vc/makefile.vc:
+	* win/vc/thread.dsp: Change NODEBUG macro to be DEBUG instead.
+	Double negatives give me a headache.  DEBUG=1 makes more sense
+	to me than NODEBUG=0.  Not that I didn't think you wouldn't have
+	disagreed it was confusing, no?
 
 2001-04-25  David Gravereaux <davygrvy@pobox.com>
 
