@@ -1,3 +1,13 @@
+2004-10-18  Andreas Kupries <andreask@activestate.com>
+
+	* generic/threadCmd.c (ThreadErrorProc): Added code to explicitly
+	  initialize the field 'interp' in ThreadSendData. This was ok
+	  (NULL) for a regular build, but when build with symbols the
+	  guard pattern forced a crash in test thread-16.2.
+
+	* tests/thread.test: Duplicate test id thread-16.1 renamed to
+	  thread-16.2.
+
 2004-08-14 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadPoolCmd.c: fixed broken parsing of 
