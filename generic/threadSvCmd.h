@@ -5,7 +5,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.6 2002/07/02 15:46:56 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.7 2002/11/24 17:01:27 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -102,8 +102,6 @@ typedef struct Array {
     Tcl_HashTable vars;        /* Table of variables. */
 } Array;
 
-#define UnlockArray(a) Tcl_MutexUnlock(&((a)->bucketPtr->lock))
-
 /*
  * The object container for Tcl-objects stored within shared arrays.
  */
@@ -163,8 +161,18 @@ int  Sv_Container(Tcl_Interp*,int,Tcl_Obj*CONST objv[],Container**,int*,int);
 
 Tcl_Obj* Sv_DuplicateObj(Tcl_Obj*);
 
-#define Sv_Lock(a)   Tcl_MutexLock(&(a)->bucketPtr->lock)
-#define Sv_Unlock(a) Tcl_MutexUnlock(&(a)->bucketPtr->lock)
+#define LOCK_BUCKET(a)   if ((a)->lock != (Tcl_Mutex)-1) \
+                             Tcl_MutexLock(&(a)->lock)
+#define UNLOCK_BUCKET(a) if ((a)->lock != (Tcl_Mutex)-1) \
+                             Tcl_MutexUnlock(&(a)->lock)
+
+#define Sv_Lock(a)       if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
+                             Tcl_MutexLock(&(a)->bucketPtr->lock)
+#define Sv_Unlock(a)     if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
+                             Tcl_MutexUnlock(&(a)->bucketPtr->lock)
+
+#define UnlockArray(a)    if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
+                             Tcl_MutexUnlock(&((a)->bucketPtr->lock))
 
 /*
  * Needed when copying objects. This is something not exported
