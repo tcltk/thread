@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.21 2002/07/20 10:48:41 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.22 2002/08/18 20:48:18 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -64,6 +64,7 @@ static Tcl_Mutex  bucketsMutex; /* Protects the array of buckets */
 static SvCmdInfo* svCmdInfo;    /* Linked list of registered commands */
 static RegType*   regType;      /* Linked list of registered obj types */
 static Tcl_Mutex  typesMutex;   /* Protects inserts into above lists */
+static Tcl_Mutex  initMutex;    /* Assures only-once initialization */
 
 /*
  * The standard commands found in AOLserver nsv_* interface. 
@@ -1594,18 +1595,27 @@ SvMoveObjCmd(arg, interp, objc, objv)
 static void
 SvRegisterStdCommands(void)
 {
-    Sv_RegisterCommand("var",    SvObjObjCmd,    NULL, NULL); /* compat */
-    Sv_RegisterCommand("object", SvObjObjCmd,    NULL, NULL);
-    Sv_RegisterCommand("set",    SvSetObjCmd,    NULL, NULL);
-    Sv_RegisterCommand("unset",  SvUnsetObjCmd,  NULL, NULL);
-    Sv_RegisterCommand("get",    SvGetObjCmd,    NULL, NULL);
-    Sv_RegisterCommand("incr",   SvIncrObjCmd,   NULL, NULL);
-    Sv_RegisterCommand("exists", SvExistsObjCmd, NULL, NULL);
-    Sv_RegisterCommand("append", SvAppendObjCmd, NULL, NULL);
-    Sv_RegisterCommand("array",  SvArrayObjCmd,  NULL, NULL);
-    Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL, NULL);
-    Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL, NULL);
-    Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL, NULL);
+    static int initialized;
+    
+    if (initialized == 0) {
+        Tcl_MutexLock(&initMutex);
+        if (initialized == 0) {
+            Sv_RegisterCommand("var",    SvObjObjCmd,    NULL, NULL);
+            Sv_RegisterCommand("object", SvObjObjCmd,    NULL, NULL);
+            Sv_RegisterCommand("set",    SvSetObjCmd,    NULL, NULL);
+            Sv_RegisterCommand("unset",  SvUnsetObjCmd,  NULL, NULL);
+            Sv_RegisterCommand("get",    SvGetObjCmd,    NULL, NULL);
+            Sv_RegisterCommand("incr",   SvIncrObjCmd,   NULL, NULL);
+            Sv_RegisterCommand("exists", SvExistsObjCmd, NULL, NULL);
+            Sv_RegisterCommand("append", SvAppendObjCmd, NULL, NULL);
+            Sv_RegisterCommand("array",  SvArrayObjCmd,  NULL, NULL);
+            Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL, NULL);
+            Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL, NULL);
+            Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL, NULL);
+            initialized = 1;
+        }
+        Tcl_MutexUnlock(&initMutex);
+    }
 }
 
 /*

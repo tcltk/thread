@@ -5,7 +5,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvListCmd.c,v 1.5 2002/08/03 14:48:17 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvListCmd.c,v 1.6 2002/08/18 20:48:18 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -50,6 +50,13 @@ static int SvGetIntForIndex(Tcl_Interp*,  Tcl_Obj *, int, int*);
 
 static void DupListObjShared(Tcl_Obj*, Tcl_Obj*);
 
+/*
+ * This mutex protects a static variable which tracks
+ * registration of commands and object types.
+ */
+
+static Tcl_Mutex initMutex;
+
 
 /*
  *-----------------------------------------------------------------------------
@@ -70,21 +77,25 @@ static void DupListObjShared(Tcl_Obj*, Tcl_Obj*);
 void
 Sv_RegisterListCommands(void)
 {
-    Sv_RegisterCommand("lpop",     SvLpopObjCmd,     NULL, NULL);
-    Sv_RegisterCommand("lpush",    SvLpushObjCmd,    NULL, NULL);
-    Sv_RegisterCommand("lappend",  SvLappendObjCmd,  NULL, NULL);
-    Sv_RegisterCommand("lreplace", SvLreplaceObjCmd, NULL, NULL);
-    Sv_RegisterCommand("linsert",  SvLinsertObjCmd,  NULL, NULL);
-    Sv_RegisterCommand("llength",  SvLlengthObjCmd,  NULL, NULL);
-    Sv_RegisterCommand("lindex",   SvLindexObjCmd,   NULL, NULL);
-    Sv_RegisterCommand("lrange",   SvLrangeObjCmd,   NULL, NULL);
-    Sv_RegisterCommand("lsearch",  SvLsearchObjCmd,  NULL, NULL);
+    static int initialized;
 
-    /*
-     * We must use our own (inefficient) list duplicator
-     */
-
-    Sv_RegisterObjType(Tcl_GetObjType("list"), DupListObjShared);
+    if (initialized == 0) {
+        Tcl_MutexLock(&initMutex);
+        if (initialized == 0) {
+            Sv_RegisterCommand("lpop",     SvLpopObjCmd,     NULL, NULL);
+            Sv_RegisterCommand("lpush",    SvLpushObjCmd,    NULL, NULL);
+            Sv_RegisterCommand("lappend",  SvLappendObjCmd,  NULL, NULL);
+            Sv_RegisterCommand("lreplace", SvLreplaceObjCmd, NULL, NULL);
+            Sv_RegisterCommand("linsert",  SvLinsertObjCmd,  NULL, NULL);
+            Sv_RegisterCommand("llength",  SvLlengthObjCmd,  NULL, NULL);
+            Sv_RegisterCommand("lindex",   SvLindexObjCmd,   NULL, NULL);
+            Sv_RegisterCommand("lrange",   SvLrangeObjCmd,   NULL, NULL);
+            Sv_RegisterCommand("lsearch",  SvLsearchObjCmd,  NULL, NULL);
+            Sv_RegisterObjType(Tcl_GetObjType("list"), DupListObjShared);
+            initialized = 1;
+        }
+        Tcl_MutexUnlock(&initMutex);
+    }
 }
 
 /*
