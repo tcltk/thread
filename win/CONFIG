@@ -9,9 +9,6 @@
 # create "debug" and "release" directories and run configure
 # from in those directories with the appropriate flags.
 #
-# Also, only MinGW gcc for Windows is supported. Cygwin gcc
-# is not supported and the configure will throw error if you
-# attempt to use it.
 # Note the CC=gcc must be set *before* the "configure" is ran.
 # This is really needed, otherwise configure will not be able
 # to compile the small test file which checks the presence
@@ -20,5 +17,5 @@
 # 
 
 export CC=gcc
-sh ../configure --enable-threads --with-tcl=d:/tcl8.4.1/win
+sh ../configure --enable-threads --with-tcl=d:/tcl8.4.5/win/release
 
