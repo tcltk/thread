@@ -11,8 +11,8 @@ You would need to give the <path> of the Tcl distribution where
 tcl.h and other needed Tcl files are located.
 Please look into the makefile.vc file for more information.
 
-Alternatively, you can open the extension workspace and project
-files (thread.dsw and thread.dsp) from within the MSVC++ and
-press F7 to build the extension under the control of the MSVC IDE.
+Alternatively, you can open the extension workspace and project files
+(thread_win.dsw and thread_win.dsp) from within the MSVC++ and press
+the F7 key to build the extension under the control of the MSVC IDE.
 
 -EOF-
