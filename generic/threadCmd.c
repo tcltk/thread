@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.60 2002/12/14 14:14:20 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.61 2002/12/14 16:13:54 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -3094,15 +3094,16 @@ ThreadExitProc(clientData)
     
     Tcl_MutexLock(&threadMutex);
 
-#ifdef NS_AOLSERVER
     /*
      * AOLserver threads get started/stopped 
      * outside the thread package, so this 
      * is the first chance to splice them out.
+     * Also, threadpool worker threads are 
+     * tracked outside thread::* interface and
+     * need to be spliced out here as well.
      */
     ListRemoveInner(NULL);
-#endif
-    
+
     /* 
      * Delete events posted to our queue while we were running.
      * For threads exiting from the thread::wait command, this 
