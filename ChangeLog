@@ -1,3 +1,13 @@
+2002-02-06  Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/aolserv.cpp: (new) added for loading into the AOLserver.
+	Still needs to fix the Makefile and friends to get it up and
+	running.
+
+	* generic/threadCmd.c: added conditional setup of the command
+ 	prefix. Now, the "NS" can be used to select the command prefix
+ 	for thread::* commands.
+
 2002-01-26  David Gravereaux <davygrvy@pobox.com>
 
 	* generic/threadSvCmd.c:  A small 'const' qualifier change to remove a
