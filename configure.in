@@ -3,7 +3,7 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
 #
-# RCS: @(#) $Id: configure.in,v 1.10 2002/03/28 02:38:51 hobbs Exp $
+# RCS: @(#) $Id: configure.in,v 1.11 2002/03/29 05:08:33 hobbs Exp $
 
 #--------------------------------------------------------------------
 # This configure.in is based on the Tcl Extension Architecture (TEA)
@@ -154,7 +154,7 @@ SC_PUBLIC_TCL_HEADERS
 #--------------------------------------------------------------------
 
 if test "${TEA_PLATFORM}" = "windows" ; then
-    AC_DEFINE_UNQUOTED(BUILD_${PACKAGE})
+    AC_DEFINE_UNQUOTED(BUILD_thread)
     CLEANFILES="*.lib *.dll *.exp *.ilk *.pdb vc*.pch"
     EXTRA_SOURCES=
 else
