@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.64 2003/01/26 03:57:16 mdejong Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.65 2003/02/08 12:45:46 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1764,6 +1764,8 @@ ListRemoveInner(tsdPtr)
         }
         tsdPtr->nextPtr = NULL;
         tsdPtr->prevPtr = NULL;
+    } else if (tsdPtr == threadList) {
+        threadList = NULL;
     }
 }
 
