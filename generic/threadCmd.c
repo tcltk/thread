@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.76 2003/05/31 10:45:18 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.77 2003/11/18 19:37:22 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -258,7 +258,7 @@ static int
 ThreadExists      _ANSI_ARGS_((Tcl_ThreadId id));
 
 static int  
-ThreadList        _ANSI_ARGS_((Tcl_Interp *interp));
+ThreadList        _ANSI_ARGS_((Tcl_Interp *interp, Tcl_Obj **listObjPtr));
 
 static void 
 ThreadErrorProc   _ANSI_ARGS_((Tcl_Interp *interp));
@@ -309,6 +309,7 @@ static Tcl_ObjCmdProc ThreadCreateObjCmd;
 static Tcl_ObjCmdProc ThreadReserveObjCmd;
 static Tcl_ObjCmdProc ThreadReleaseObjCmd;
 static Tcl_ObjCmdProc ThreadSendObjCmd;
+static Tcl_ObjCmdProc ThreadBroadcastObjCmd;
 static Tcl_ObjCmdProc ThreadUnwindObjCmd;
 static Tcl_ObjCmdProc ThreadExitObjCmd;
 static Tcl_ObjCmdProc ThreadIdObjCmd;
@@ -390,6 +391,7 @@ Thread_Init(interp)
 
     TCL_CMD(interp, THNS"create",    ThreadCreateObjCmd);
     TCL_CMD(interp, THNS"send",      ThreadSendObjCmd);
+    TCL_CMD(interp, THNS"broadcast", ThreadBroadcastObjCmd);
     TCL_CMD(interp, THNS"exit",      ThreadExitObjCmd);
     TCL_CMD(interp, THNS"unwind",    ThreadUnwindObjCmd);
     TCL_CMD(interp, THNS"id",        ThreadIdObjCmd);
@@ -775,14 +777,21 @@ ThreadNamesObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
+    Tcl_Obj *listObj;
+
     Init(interp);
 
     if (objc > 1) {
         Tcl_WrongNumArgs(interp, 1, objv, NULL);
         return TCL_ERROR;
     }
+    listObj = Tcl_NewListObj(0, NULL);
+    if (ThreadList(interp, &listObj) != TCL_OK) {
+        return TCL_ERROR;
+    }
+    Tcl_SetObjResult(interp, listObj);
 
-    return ThreadList(interp);
+    return TCL_OK;
 }
 
 /*
@@ -902,6 +911,97 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
 usage:
     Tcl_WrongNumArgs(interp, 1, objv, "?-async? id script ?varName?");
     return TCL_ERROR;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadBroadcastObjCmd --
+ *
+ *  This procedure is invoked to process the "thread::broadcast" Tcl
+ *  command. This asynchronously sends a script to all known threads.
+ *
+ * Results:
+ *  A standard Tcl result.
+ *
+ * Side effects:
+ *  Script is sent to all known threads except the caller thread. 
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+ThreadBroadcastObjCmd(dummy, interp, objc, objv)
+    ClientData  dummy;          /* Not used. */
+    Tcl_Interp *interp;         /* Current interpreter. */
+    int         objc;           /* Number of arguments. */
+    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+{
+    int ii, id, len, nthreads;
+    char *script;
+    Tcl_Obj *listObj, **tidObjPtr;
+    ThreadSendData *sendPtr, job;
+
+    Init(interp);
+
+    if (objc != 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "script");
+        return TCL_ERROR;
+    }
+
+    script = Tcl_GetStringFromObj(objv[1], &len);
+
+    /*
+     * Get the list of known threads. Note that this one may
+     * actually change (thread may exit or otherwise cease to
+     * exist) while we circle in the loop below. We really do
+     * not care about that here since we don't return any 
+     * script results to the caller.
+     */
+
+    listObj = Tcl_NewListObj(0, NULL);
+    if (ThreadList(interp, &listObj) != TCL_OK) {
+        Tcl_DecrRefCount(listObj);
+        return TCL_ERROR;
+    }
+    if (Tcl_ListObjGetElements(interp, listObj, &nthreads, &tidObjPtr)
+            != TCL_OK) {
+        Tcl_DecrRefCount(listObj);
+        return TCL_ERROR;
+    }
+
+    /* 
+     * Prepare the structure with the job description
+     * to be sent asynchronously to each known thread.
+     */
+
+    job.interp   = NULL; /* Signal to use thread's main interp */
+    job.execProc = ThreadSendEval;
+    job.freeProc = (ThreadSendFree*)Tcl_Free;
+
+    /*
+     * Now, circle this list and send each of them the script.
+     * This is sent asynchronously, since we do not care what
+     * are they going to do with it.
+     */
+
+    for (ii = 0; ii < nthreads; ii++) {
+        if (Tcl_GetIntFromObj(interp, tidObjPtr[ii], &id) != TCL_OK) {
+            Tcl_DecrRefCount(listObj);
+            return TCL_ERROR;
+        }
+        if ((Tcl_ThreadId)id == Tcl_GetCurrentThread()) {
+            continue; /* Do not broadcast self */
+        }
+        sendPtr  = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
+        *sendPtr = job;
+        sendPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+len), script);
+        ThreadSend(interp, (Tcl_ThreadId)id, sendPtr, NULL, 0);
+    }
+
+    Tcl_DecrRefCount(listObj);
+
+    return TCL_OK;
 }
 
 /*
@@ -1798,19 +1898,18 @@ ListRemoveInner(tsdPtr)
  */
 
 static int
-ThreadList(interp)
+ThreadList(interp, listObjPtr)
     Tcl_Interp *interp;
+    Tcl_Obj **listObjPtr;
 {
     ThreadSpecificData *tsdPtr;
-    Tcl_Obj *listObj = Tcl_NewListObj(0, NULL);
     
     Tcl_MutexLock(&threadMutex);
     for (tsdPtr = threadList; tsdPtr; tsdPtr = tsdPtr->nextPtr) {
         long id = (long)tsdPtr->threadId;
-        Tcl_ListObjAppendElement(interp, listObj, Tcl_NewLongObj(id));
+        Tcl_ListObjAppendElement(interp, *listObjPtr, Tcl_NewLongObj(id));
     }
     Tcl_MutexUnlock(&threadMutex);
-    Tcl_SetObjResult(interp, listObj);
 
     return TCL_OK;
 }
