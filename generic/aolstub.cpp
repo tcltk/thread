@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: aolstub.cpp,v 1.2 2002/12/05 15:14:01 vasiljevic Exp $
+ * Rcsid: @(#)$Id: aolstub.cpp,v 1.3 2002/12/19 09:55:43 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -41,8 +41,6 @@ NsThread_Init (Tcl_Interp *interp, void *context)
     if (ret != TCL_OK) {
         Ns_Log(Warning, "can't load module %s: %s", 
                (char *)context, Tcl_GetStringResult(interp));
-    } else {
-        Ns_Log(Notice, "%s module", (char*)context);
     }
 
     return ret;

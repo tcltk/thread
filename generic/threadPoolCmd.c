@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.18 2002/12/18 18:22:23 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.19 2002/12/19 09:55:43 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1629,13 +1629,13 @@ Tpool_Init (interp)
 {
     static initialized;
 
-    TCL_CMD(interp, "tpool::create",   TpoolCreateObjCmd);
-    TCL_CMD(interp, "tpool::names",    TpoolNamesObjCmd);
-    TCL_CMD(interp, "tpool::post",     TpoolPostObjCmd);
-    TCL_CMD(interp, "tpool::wait",     TpoolWaitObjCmd);
-    TCL_CMD(interp, "tpool::get",      TpoolGetObjCmd);
-    TCL_CMD(interp, "tpool::preserve", TpoolReserveObjCmd);
-    TCL_CMD(interp, "tpool::release",  TpoolReleaseObjCmd);
+    TCL_CMD(interp, TPNS"create",   TpoolCreateObjCmd);
+    TCL_CMD(interp, TPNS"names",    TpoolNamesObjCmd);
+    TCL_CMD(interp, TPNS"post",     TpoolPostObjCmd);
+    TCL_CMD(interp, TPNS"wait",     TpoolWaitObjCmd);
+    TCL_CMD(interp, TPNS"get",      TpoolGetObjCmd);
+    TCL_CMD(interp, TPNS"preserve", TpoolReserveObjCmd);
+    TCL_CMD(interp, TPNS"release",  TpoolReleaseObjCmd);
 
     if (initialized == 0) {
         Tcl_MutexLock(&listMutex);
