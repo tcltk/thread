@@ -1,5 +1,10 @@
 2004-01-31 Zoran Vasiljevic <zoran@archiware.com>
 
+	* lib/ttrace.tcl: added unconditional "package require"
+	call to ttrace::eval so we need not explicitly load the
+	Ttrace package in each and every thread. Also, fixed some
+	issues with errorInfo/errorCode handling.
+
 	* pkgIndex.tcl.in: fixed Tcl Bug #918137
 	* doc/format.tcl: fixed inclusion of man.macros in
 	every *.n doc file
