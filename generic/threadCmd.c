@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.70 2003/04/02 12:57:47 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.71 2003/04/10 12:00:20 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1804,10 +1804,8 @@ ThreadList(interp)
     
     Tcl_MutexLock(&threadMutex);
     for (tsdPtr = threadList; tsdPtr; tsdPtr = tsdPtr->nextPtr) {
-        if (!(tsdPtr->flags & THREAD_FLAGS_STOPPED)) {
-            long id = (long)tsdPtr->threadId;
-            Tcl_ListObjAppendElement(interp, listObj, Tcl_NewLongObj(id));
-        }
+        long id = (long)tsdPtr->threadId;
+        Tcl_ListObjAppendElement(interp, listObj, Tcl_NewLongObj(id));
     }
     Tcl_MutexUnlock(&threadMutex);
     Tcl_SetObjResult(interp, listObj);
@@ -1870,8 +1868,7 @@ ThreadExistsInner(threadId)
     ThreadSpecificData *tsdPtr;
     
     for (tsdPtr = threadList; tsdPtr; tsdPtr = tsdPtr->nextPtr) {
-        if (tsdPtr->threadId == threadId
-                && !(tsdPtr->flags & THREAD_FLAGS_STOPPED)) {
+        if (tsdPtr->threadId == threadId) {
             return tsdPtr;
         }
     }
