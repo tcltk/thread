@@ -1,13 +1,13 @@
 /*
  * thread.h --
  * 
- * RCS: @(#) $Id: thread.h,v 1.4 2000/08/20 08:00:41 davidg Exp $ 
+ * RCS: @(#) $Id: thread.h,v 1.5 2000/08/24 01:13:02 welch Exp $ 
  */
 
 /* remember to change win/vc/makefile.vc as well when these change */
 #define THREAD_MAJOR_VERSION  2
-#define THREAD_MINOR_VERSION  0
-#define THREAD_VERSION        "2.0"
+#define THREAD_MINOR_VERSION  1
+#define THREAD_VERSION        "2.1"
 
 #include "tcl.h"
 

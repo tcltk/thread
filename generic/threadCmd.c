@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.12 2000/08/10 02:20:37 davidg Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.13 2000/08/24 01:13:02 welch Exp $
  */
 
 #include "thread.h"
@@ -99,8 +99,10 @@ typedef struct ThreadEventResult {
 
 static ThreadEventResult *resultList;
 
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
 /*
  * This is the special event used to transfer a channel between threads.
+ * This requires Tcl core support added in Tcl 8.4
  */
 
 typedef struct ThreadTransferEvent {
@@ -127,6 +129,12 @@ typedef struct ThreadTransferResult {
 
 static ThreadTransferResult *transferList;
 
+static int	ThreadTransferEventProc _ANSI_ARGS_((Tcl_Event *evPtr,
+	int mask));
+static int 	ThreadTransfer _ANSI_ARGS_((Tcl_Interp *interp,
+        Tcl_ThreadId id, Tcl_Channel chan));
+#endif
+
 
 /*
  * This is for simple error handling when a thread script exits badly.
@@ -150,8 +158,6 @@ Tcl_ThreadCreateType	NewThread _ANSI_ARGS_((ClientData clientData));
 static void	ListRemove _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 static void	ListUpdateInner _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 static int	ThreadEventProc _ANSI_ARGS_((Tcl_Event *evPtr, int mask));
-static int	ThreadTransferEventProc _ANSI_ARGS_((Tcl_Event *evPtr,
-	int mask));
 static int      ThreadWait _ANSI_ARGS_((void));
 static int      ThreadStop _ANSI_ARGS_((void));
 static int 	ThreadCreate _ANSI_ARGS_((Tcl_Interp *interp,
@@ -162,8 +168,6 @@ static int 	ThreadSend _ANSI_ARGS_((Tcl_Interp *interp,
 static int 	ThreadJoin _ANSI_ARGS_((Tcl_Interp *interp,
 	Tcl_ThreadId id));
 static int 	ThreadExists _ANSI_ARGS_((Tcl_ThreadId id));
-static int 	ThreadTransfer _ANSI_ARGS_((Tcl_Interp *interp,
-        Tcl_ThreadId id, Tcl_Channel chan));
 static void	ThreadErrorProc _ANSI_ARGS_((Tcl_Interp *interp));
 static void	ThreadFreeProc _ANSI_ARGS_((ClientData clientData));
 Tcl_EventDeleteProc	ThreadDeleteEvent;
@@ -650,6 +654,7 @@ ThreadJoinObjCmd(dummy, interp, objc, objv)
     /* Syntax of 'join': id
      */
 
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
     long id;
 
     Init(interp);
@@ -663,6 +668,10 @@ ThreadJoinObjCmd(dummy, interp, objc, objv)
     }
 
     return ThreadJoin(interp, (Tcl_ThreadId) id);
+#else
+    Tcl_AppendResult(interp, "Thread join not supported in this Tcl version", NULL);
+    return TCL_ERROR;
+#endif
 }
 
 /*
@@ -696,6 +705,7 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
     long        id;
     Tcl_Channel chan;
 
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
     Init(interp);
 
     if (objc != 3) {
@@ -711,6 +721,10 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
     }
 
     return ThreadTransfer(interp, (Tcl_ThreadId) id, chan);
+#else
+    Tcl_AppendResult(interp, "Channel transfer not supported in this Tcl version", NULL);
+    return TCL_ERROR;
+#endif
 }
 
 /*
@@ -1045,6 +1059,7 @@ ThreadList(interp)
     return TCL_OK;
 }
 
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
 /*
  *----------------------------------------------------------------------
  *
@@ -1078,6 +1093,7 @@ ThreadJoin(interp, id)
     }
     return result;
 }
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -1112,6 +1128,7 @@ ThreadExists(id)
     return found;
 }
 
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
 /*
  *----------------------------------------------------------------------
  *
@@ -1306,6 +1323,7 @@ ThreadTransfer(interp, id, chan)
 
     return TCL_OK;
 }
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -1483,6 +1501,7 @@ static int
 ThreadWait()
 {    
     int eventFlags = TCL_ALL_EVENTS;
+    int i;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     /*
@@ -1505,7 +1524,19 @@ ThreadWait()
      * By doing this here, we avoid processing them below.
      */
 
-    Tcl_DeleteEvents(ThreadDeleteEvent, NULL);
+    Tcl_DeleteEvents((Tcl_EventDeleteProc *)ThreadDeleteEvent, NULL);
+
+    /*
+     * Run all other pending events which we can not sink otherwise.
+     * We assume that no runnable event will block us indefinitely
+     * or kick us into a infinite loop, otherwise we're stuck.
+     */
+
+    eventFlags |= TCL_DONT_WAIT;
+    i=100;
+    while (Tcl_DoOneEvent(eventFlags) && (--i > 0)) {
+        ; /* empty loop */
+    }
 
     return TCL_OK;
 }
@@ -1605,6 +1636,7 @@ ThreadEventProc(evPtr, mask)
     return 1;
 }
 
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
 /*
  *----------------------------------------------------------------------
  *
@@ -1678,6 +1710,7 @@ ThreadTransferEventProc(evPtr, mask)
 
     return 1;
 }
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -1729,6 +1762,7 @@ ThreadDeleteEvent(eventPtr, clientData)
 	Tcl_Free((char *) ((ThreadEvent *) eventPtr)->script);
 	return 1;
     }
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
     if (eventPtr->proc == ThreadTransferEventProc) {
         /* A channel is in flight toward the thread just exiting.
 	 * Pass it back to the originator, if possible.
@@ -1754,6 +1788,7 @@ ThreadDeleteEvent(eventPtr, clientData)
 
       return 1;
     }
+#endif
 
     /*
      * If it was NULL, we were in the middle of servicing the event
@@ -1784,7 +1819,9 @@ ThreadExitProc(clientData)
 {
     char *threadEvalScript = (char *) clientData;
     ThreadEventResult *resultPtr, *nextPtr;
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
     ThreadTransferResult *tResultPtr, *tNextPtr;
+#endif
     Tcl_ThreadId self = Tcl_GetCurrentThread();
 
     Tcl_MutexLock(&threadMutex);
@@ -1847,6 +1884,7 @@ ThreadExitProc(clientData)
 	}
     }
 
+#if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
     for (tResultPtr = transferList ; tResultPtr ; tResultPtr = tNextPtr) {
 	tNextPtr = tResultPtr->nextPtr;
 	if (tResultPtr->srcThreadId == self) {
@@ -1887,5 +1925,6 @@ ThreadExitProc(clientData)
 	    Tcl_ConditionNotify(&tResultPtr->done);
 	}
     }
+#endif
     Tcl_MutexUnlock(&threadMutex);
 }
