@@ -1,0 +1,611 @@
+<html>
+<head>
+<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.1 $">
+</head><body>
+<div class="header">
+<div class="navbar" align="center">
+<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode359">DESCRIPTION</a> · <a href="#SECTnode371">COMMANDS</a> · <a href="#SECTnode1413">DISCUSSION</a> · <a href="#SECTnode1431">CREDITS</a> · <a href="#SECTnode1440">SEE ALSO</a> · <a href="#SECTnode1446">KEYWORDS</a>
+</div><hr class="navsep">
+</div><div class="body">
+
+
+<h2><a name="SECTnode5">NAME</a></h2><p class="namesection">
+<b class="names">thread - </b><br>A Tcl extension implementing script level access to Tcl threading capabilities.</p>
+
+<h2><a name="SECTnode14">SYNOPSIS</a></h2><pre class="syntax">
+<b class="cmd">thread::create</b> ?<i class="m">-joinable</i>? ?<i class="m">script</i>?
+<b class="cmd">thread::preserve</b> <i class="m">id</i>
+<b class="cmd">thread::release</b> <i class="m">id</i>
+<b class="cmd">thread::id</b>
+<b class="cmd">thread::errorproc</b> ?<i class="m">procname</i>?
+<b class="cmd">thread::unwind</b>
+<b class="cmd">thread::exit</b>
+<b class="cmd">thread::names</b>
+<b class="cmd">thread::exists</b>
+<b class="cmd">thread::send</b> <i class="m">id</i> ?<i class="m">-async</i>? <i class="m">script</i> ?<i class="m">varname</i>?
+<b class="cmd">thread::wait</b>
+<b class="cmd">thread::join</b> <i class="m">id</i>
+<b class="cmd">thread::configure</b> <i class="m">id</i> ?<i class="m">option</i>? ?<i class="m">value</i><i class="m">? ?</i><i class="m">option value</i><i class="m">?...</i>
+<b class="cmd">thread::transfer</b> <i class="m">id</i> <i class="m">channel</i>
+
+<b class="cmd">thread::cond</b> <i class="m">options</i>
+<b class="cmd">thread::mutex</b> <i class="m">options</i>
+
+<b class="cmd">tsv::names</b> ?<i class="m">pattern</i>?
+<b class="cmd">tsv::object</b> <i class="m">array</i> <i class="m">element</i>
+<b class="cmd">tsv::set</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> 
+<b class="cmd">tsv::get</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">varname</i>?
+<b class="cmd">tsv::unset</b> <i class="m">array</i> ?<i class="m">element</i>?
+<b class="cmd">tsv::exists</b> <i class="m">array</i> ?<i class="m">element</i>?
+<b class="cmd">tsv::pop</b> <i class="m">array</i> <i class="m">element</i>
+<b class="cmd">tsv::move</b> <i class="m">array</i> <i class="m">old</i> <i class="m">new</i>
+<b class="cmd">tsv::incr</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">increment</i>?
+<b class="cmd">tsv::append</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> ?<i class="m">value</i> ...?
+<b class="cmd">tsv::lappend</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> ?<i class="m">value</i> ...?
+<b class="cmd">tsv::linsert</b> <i class="m">array</i> <i class="m">element</i> <i class="m">index</i> <i class="m">value</i> ?<i class="m">value</i> ...?
+<b class="cmd">tsv::lreplace</b> <i class="m">array</i> <i class="m">element</i> <i class="m">first</i> <i class="m">last</i> ?<i class="m">value</i> ...?
+<b class="cmd">tsv::llength</b> <i class="m">array</i> <i class="m">element</i>
+<b class="cmd">tsv::lindex</b> <i class="m">array</i> <i class="m">element</i> <i class="m">index</i>
+<b class="cmd">tsv::lrange</b> <i class="m">array</i> <i class="m">element</i> <i class="m">first</i> <i class="m">last</i>
+<b class="cmd">tsv::lsearch</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">mode</i>? <i class="m">pattern</i>
+<b class="cmd">tsv::lpop</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">index</i>?
+<b class="cmd">tsv::lpush</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> ?<i class="m">index</i>?
+</pre>
+
+<h2><a name="SECTnode359">DESCRIPTION</a></h2><p>The <b class="package">thread</b> extension creates threads that contain Tcl interpreters, 
+and it lets you send scripts to those threads for evaluation. It also enables you to share data
+between threads in a safe, protected fashion. Additionaly, it provides script-level access
+to basic thread synchronization primitives, like mutexes and condition variables.
+</p>
+
+<h2><a name="SECTnode371">COMMANDS</a></h2><dl class="commandlist">
+
+<p>
+This section describes commands for creating and destroying threads
+and sending scripts to threads for evaluation.</p>
+
+
+<dt>
+<b class="cmd">thread::create</b> ?<i class="m">-joinable</i>? ?<i class="m">script</i>?
+</dt>
+<dd>This command creates a thread that contains a Tcl interpreter. 
+The Tcl interpreter either evaluates the <i class="m">script</i>, if
+specified, or it waits in the event loop for scripts that arrive via
+the <b class="cmd">thread::send</b> command. The result of <b class="cmd">thread::create</b> is
+the ID of the thread. The result, if any, of <i class="m">script</i> is
+ignored. Using flag <b class="option">-joinable</b> it is possible to create a
+joinable thread, i.e. one upon whose exit can be waited upon (by using
+<b class="cmd">thread::join</b> command).
+</dd>
+
+
+
+<dt> <b class="cmd">thread::preserve</b> <i class="m">id</i>
+</dt>
+<dd>This procedure increments the thread reference counter. Each call
+to this command increments the reference counter by one (1). Command returns the value 
+of the reference counter after the increment. 
+<p>With reference counting, one can implement controlled access to a shared Tcl thread. 
+By incrementing the reference counter, the caller signalizes that he/she wishes to use
+the thread for a longer period of time. By decrementing the counter, using the 
+<b class="cmd">thread::release</b> command, caller signalizes that he/she has finished using 
+the thread.</p>
+</dd>
+
+
+
+<dt> <b class="cmd">thread::release</b> <i class="m">id</i>
+</dt>
+<dd>This procedure decrements the thread reference counter. Each call to this
+command decrements the reference counter by one (1). Command returns
+the value of the reference counter after the decrement. When the reference counter
+reaches zero (0), the target thread is terminated.
+</dd>
+
+
+
+<dt>
+<b class="cmd">thread::id</b> </dt>
+<dd>This command returns the ID of the current thread. 
+</dd>
+
+
+
+<dt>
+<b class="cmd">thread::errorproc</b> </dt>
+<dd>This command sets a handler for errors that occur in scripts sent 
+asynchronously, using the <b class="option">-async</b> flag of the <b class="cmd">thread::send</b>
+command, to other threads. If no handler is specified, the current 
+handler is returned. The empty string resets the handler to default 
+(unspecified) value.
+An uncaught error in a thread causes an error message to be sent
+to the standard error channel. This default reporting scheme can be
+changed by registering a procedure which is called to report the error.
+The <i class="m">proc</i> is called in the interpreter that invoked the 
+<b class="cmd">thread::errorproc</b> command. The <i class="m">proc</i> is called like this:
+<pre class="example">myerrorproc thread_id errorInfo</pre>
+</dd>
+
+
+
+<dt><b class="cmd">thread::unwind</b></dt>
+<dd>This stops a prior <b class="cmd">thread::wait</b>. Execution of the script will continue
+from the <b class="cmd">thread::wait</b> command. If <b class="cmd">thread::wait</b> was the last command
+in a thread, the thread will exit. The command usually returns empty result but
+may trigger Tcl error with the message &quot;target thread died&quot; in some situations.
+</dd>
+
+
+
+<dt><b class="cmd">thread::exit</b></dt>
+<dd>This forces a thread stuck in the <b class="cmd">thread::wait</b> to unconditionaly
+exit. This command is guaranteed to leave the program memory in the
+unconsistent state, produce memory leaks and otherwise affect other
+subsytem(s) of the Tcl application in an unpredictable manner.
+<p>
+Use of this command is deprecated in favour of the <b class="cmd">thread::unwind</b> command
+or more advanced thread reservation system implemented with <b class="cmd">thread::preserve</b>
+and <b class="cmd">thread::release</b> commands. Use on your own risk and with extreme precaution.
+The command usually  returns empty result but may trigger Tcl error with the message 
+&quot;target thread died&quot; in some situations.</p>
+</dd>
+
+
+
+<dt><b class="cmd">thread::names</b></dt>
+<dd>This command returns a list of thread IDs. These are only for
+threads that have been created via <b class="cmd">thread::create</b>. If your
+application creates other threads at the C level, they are not
+reported by the <b class="cmd">thread::names</b> command.
+</dd>
+
+
+
+<dt>
+<b class="cmd">thread::exists</b> </dt>
+<dd>Returns true (1) if thread given by the ID parameter exists, false (0)
+otherwise. This applies only for threads that have been created via 
+<b class="cmd">thread::create</b> command.
+</dd>
+
+
+
+<dt><b class="cmd">thread::send</b></dt>
+<dd>This command passes a <i class="m">script</i> to another thread and, optionally, waits
+for the result. If the <b class="option">-async</b> flag is specified, the command does
+not wait for the result and it returns empty string. The target thread must
+enter it's event loop in order to receive scripts sent via this command.
+This is done by default for threads created without a startup script. Threads
+can enter the event loop explicitly by calling <b class="cmd">thread::wait</b> or 
+<b class="cmd">vwait</b>. 
+<p>Optional <i class="m">varname</i> specifies name of the variable to store
+the result of the <i class="m">script</i>. Without the <b class="option">-async</b> flag, the command
+returns the evaluation code, similarily to the standard Tcl <b class="cmd">catch</b> 
+command.
+If, however, the <b class="option">-async</b> flag is specified, the command returns 
+immediately and caller can later <b class="cmd">vwait</b> on <i class="m">varname</i> to get the
+result of the passed <i class="m">script</i>.
+</p>
+</dd>
+
+
+
+<dt><b class="cmd">thread::wait</b></dt>
+<dd>This enters the event loop so a thread can receive messages from <b class="cmd">thread::send</b>. 
+This is equivalent to <tt class="samp">vwait <i class="m">unusedvariable</i>
+</tt> except that thread::unwind will
+not unblock a <b class="cmd">vwait</b>.
+</dd>
+
+
+
+<dt>
+<b class="cmd">thread::join</b> </dt>
+<dd>This command waits for the thread with ID <i class="m">id</i> to exit and
+then returns it's exit code. Errors will be returned for threads which
+are not joinable or already waited upon by another thread.
+</dd>
+
+
+
+<dt>
+<b class="cmd">thread::configure</b> </dt>
+<dd>This command configures various low-level aspects of the thread with ID
+<i class="m">id</i> in the similar way as the standard Tcl command <b class="cmd">fconfigure</b>
+configures some Tcl channel options.
+<p>Options currently supported are: <b class="option">-eventmark</b> and <b class="option">-unwindonerror</b>.
+</p>
+<p>The <b class="option">-eventmark</b> option, when set, limits the number of asynchronously
+posted scripts to the thread event loop. The <tt class="samp">thread::send -async</tt> 
+command will block until the number of pending scripts in the event
+loop does not drop below the value configured with <b class="option">-eventmark</b>.
+Default value for the <b class="option">-eventmark</b> is 0 (zero) which effectively 
+disables the checking, i.e. allows for unlimited number of posted scripts.
+</p>
+<p>The boolean <b class="option">-unwindonerror</b> option, when set, causes the target thread
+to unwind if the result of the script processing resulted in error.
+Default value for the <b class="option">-unwindonerror</b> is 0 (false), i.e. thread continues
+to process scripts after one of the posted scripts fails.
+</p>
+</dd>
+
+
+
+<dt>
+<b class="cmd">thread::transfer</b> </dt>
+<dd>This moves the specified <i class="m">channel</i> from the
+current thread and interpreter to the main interpreter of the thread
+with the given <i class="m">id</i>. After the move the current interpreter has no
+access to the channel anymore, but the main interpreter of the target
+thread will be able to use it from now on.
+The command waits until the other thread has incorporated the
+channel. Because of this it is possible to deadlock the participating
+threads by commanding the other through a synchronous
+<b class="cmd">thread::send</b> to transfer a channel to us. This easily extends
+into longer loops of threads waiting for each other.
+Other restrictions: The channel in question must not be shared among
+multiple interpreters running in the sending thread. This
+automatically excludes the special channels for standard input, output
+and error.
+</dd>
+
+
+<p>
+This section describes commands used for script-level access to 
+most common and basic thread synchronization primitives: mutexes and 
+condition variables.</p>
+
+
+<dt> <b class="cmd">thread::mutex</b> <i class="m">options</i>
+</dt>
+<dd>This command provides script-level access to mutexes. Mutexes are most 
+common thread synchronization primitives. They are used to synchronize
+access from two or more threads to one or more shared resources. Care has to
+be taken when using mutexes in an multithreading program. Improper use of 
+mutexes may lead to various deadlock situations.
+
+<p>The <b class="cmd">thread::mutex</b> command supports following subcommands and options:</p>
+<dl class="commandlist">
+
+<dt><b class="cmd">thread::mutex create</b></dt>
+<dd>Creates the mutex and returns it's opaque handle. This handle
+should be used for any future reference to the newly created mutex.
+</dd>
+
+
+<dt>
+<b class="cmd">thread::mutex destroy</b> <i class="m">mutex</i>
+</dt>
+<dd>Destroys the mutex <i class="m">mutex</i>. Extreme care has to be taken that 
+nobody is using the <i class="m">mutex</i>, otherwise unexpected errors may happen.
+</dd>
+
+
+<dt>
+<b class="cmd">thread::mutex lock</b> <i class="m">mutex</i>
+</dt>
+<dd>Locks the mutex <i class="m">mutex</i>. Locking the mutex may deadlock the program
+if same thread attempts to lock the same mutex twice without unlocking it
+in between.
+</dd>
+
+
+<dt>
+<b class="cmd">thread::mutex unlock</b> <i class="m">mutex</i>
+</dt>
+<dd>Unlocks the mutex <i class="m">mutex</i> so some other thread may lock it again.
+</dd>
+
+</dl>
+</dd>
+
+
+<dt> <b class="cmd">thread::cond</b> <i class="m">options</i>
+</dt>
+<dd>This command provides script-level access to condition variables. A condition
+variable creates a safe environment for the program to test some condition, sleep
+on it when false and be awakened when it might have become true. A condition variable
+is always used in the conjuction with a mutex.
+
+<p>The <b class="cmd">thread::cond</b> supports following subcommands and options:</p>
+<dl class="commandlist">
+
+<dt><b class="cmd">thread::cond create</b></dt>
+<dd>Creates the condition variable and returns it's opaque handle. This handle
+should be used for any future reference to newly created condition variable.
+</dd>
+
+
+<dt>
+<b class="cmd">thread::cond destroy</b> <i class="m">cond</i>
+</dt>
+<dd>Destroys condition variable <i class="m">cond</i>. Extreme care has to be taken that nobody
+is using (i.e. waiting on) the condition variable, otherwise unexpected 
+errors may happen.
+</dd>
+
+
+<dt>
+<b class="cmd">thread::cond notify</b> <i class="m">cond</i>
+</dt>
+<dd>Wakes up all threads waiting on the condition variable <i class="m">cond</i>.
+</dd>
+
+
+<dt>
+<b class="cmd">thread::cond wait</b> <i class="m">cond</i> <i class="m">mutex ?</i><i class="m">ms?</i>
+</dt>
+<dd>This command is used to suspend program execution until the condition
+variable <i class="m">cond</i> has been signalled (see <tt class="samp">thread::cond notify</tt>) or the
+optional timer has expired. The <i class="m">mutex</i> must be locked by the calling
+thread on entrance to <tt class="samp">thread::cond wait</tt>. While waiting on the <i class="m">cond</i>,
+the command releases <i class="m">mutex</i>. Before returning to the calling
+thread, the command re-acquires <i class="m">mutex</i> again. Unlocking the <i class="m">mutex</i>
+and waiting on the condition variable <i class="m">cond</i> is done atomically.
+<p>The <i class="m">ms</i> command option, if given,  must be an integer specifying time 
+interval in milliseconds the command waits to be signalled. Otherwise
+the command waits forever.
+</p>
+<p>In multithreading programs, there are many situations where a thread has
+to wait for some event to happen until it is allowed to proceed.
+This is usually accomplished by repeatedly testing a condition under the
+mutex protection and waiting on the condition variable until the condition
+evaluates to true:
+</p>
+<pre class="example">
+set mutex [thread::mutex create]
+set cond  [thread::cond  create]
+
+thread::mutex lock
+while {&lt;some_condition_is_true&gt;} {
+   thread::cond wait $cond $mutex
+}
+thread::mutex unlock</pre>
+<p>Repeated testing of the condition is needed since the condition variable 
+may get signalled without the condition being actually changed (spurious 
+thread wake-ups, for example).</p>
+</dd>
+
+</dl>
+</dd>
+
+
+<p>
+This section describes commands implementing thread shared variables. A thread
+shared variable is very similar to a Tcl array but in contrast to a Tcl array 
+it is created in thread-shared memory and can be accessed from many threads at
+the same time. Important feature of thread shared variable is that each access
+to the variable is internaly protected by a mutex so script programmer does not have
+to take care about locking the variable himself.</p>
+
+
+<dt><b class="cmd">tsv::names</b></dt>
+<dd>Returns names of shared variables matching optional <i class="m">pattern</i> or all known
+variables if pattern is ommited.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::object</b></dt>
+<dd>Creates object accessor command for the <i class="m">element</i> in the given shared 
+<i class="m">array</i>. Using this command, one can apply most of the other shared variable
+commands as method functions of the element object command:
+<pre class="example">
+% tsv::set foo bar &quot;A shared string&quot;
+% set string [tsv::object foo bar]
+% $string append &quot; appended&quot;
+=&gt; A shared string appended</pre>
+</dd>
+
+
+
+<dt><b class="cmd">tsv::set</b></dt>
+<dd>Sets the value of the <i class="m">element</i>  in the shared <i class="m">array</i> to
+<i class="m">value</i> and returns the value. The <i class="m">value</i> may be ommited, and
+the command will return the current value of the <i class="m">element</i>. If the 
+element cannot be found, error is triggered.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::get</b></dt>
+<dd>Retrieves a value of the <i class="m">element</i> located in the shared <i class="m">array</i>.
+The command triggers error if the <i class="m">element</i> is not found. If the optional 
+<i class="m">varname</i> is given, the value  is stored in the named variable. In this case, 
+the command returns true (1) if <i class="m">element</i> is found or false (0) if the 
+<i class="m">element</i> is not found.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::unset</b></dt>
+<dd>Deletes the <i class="m">element</i> in the shared <i class="m">array</i>. If the <i class="m">element</i>
+is not given, it deletes the whole <i class="m">array</i>.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::exists</b></dt>
+<dd>Checks wether the <i class="m">element</i> exists in the shared <i class="m">array</i>.
+If the <i class="m">element</i> is not given it tests the existence of the 
+<i class="m">array</i> itself. Returns true (1) if the item exists, 
+false (0) if not.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::pop</b></dt>
+<dd>Returns value of the <i class="m">element</i> in the shared <i class="m">array</i> variable
+and unsets the <i class="m">element</i> in one atomic operation.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::move</b></dt>
+<dd>Renames the element <i class="m">old</i> to <i class="m">new</i> in the shared <i class="m">array</i>.
+This effectively performs an get/unset/set sequence of operations
+but in one atomic step.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::incr</b></dt>
+<dd>Similar to standard Tcl <b class="cmd">incr</b> but increments the value of the
+<i class="m">element</i> in shared <i class="m">array</i> instead of the Tcl variable.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::append</b></dt>
+<dd>Similar to standard Tcl <b class="cmd">append</b> but appends one or more values
+to the <i class="m">element</i> in the shared <i class="m">array</i> instead of the Tcl variable.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::lappend</b></dt>
+<dd>Similar to standard Tcl <b class="cmd">lappend</b> but appends one or more values
+to the list <i class="m">element</i> in the shared <i class="m">array</i> instead of the Tcl variable.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::linsert</b></dt>
+<dd>Similar to standard Tcl <b class="cmd">linsert</b> but inserts one or more values at the 
+<i class="m">index</i> list position in the list <i class="m">element</i> in the shared <i class="m">array</i>
+instead of the Tcl variable.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::lreplace</b></dt>
+<dd>Similar to standard Tcl <b class="cmd">lreplace</b> but replaces one or more values
+from the list <i class="m">element</i> in the shared <i class="m">array</i> instead of the Tcl variable.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::llength</b></dt>
+<dd>Similar to standard Tcl <b class="cmd">llength</b> but returns length of the list
+<i class="m">element</i> in the shared <i class="m">array</i> instead of the Tcl variable.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::lindex</b></dt>
+<dd>Similar to standard Tcl <b class="cmd">lindex</b> but returns value at the <i class="m">index</i>
+list position from the list <i class="m">element</i> in the shared <i class="m">array</i>
+instead of the Tcl variable.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::lrange</b></dt>
+<dd>Similar to standard Tcl <b class="cmd">lrange</b> but returns values between <i class="m">first</i>
+and <i class="m">last</i> list position from the list <i class="m">element</i> in the shared <i class="m">array</i>
+instead of the Tcl variable.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::lsearch</b></dt>
+<dd>Similar to standard Tcl <b class="cmd">lsearch</b> but searches the list <i class="m">element</i>
+in the shared <i class="m">array</i> instead of the Tcl variable.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::lpop</b></dt>
+<dd>Splices out the value at the <i class="m">index</i> list position from the list <i class="m">element</i>
+in the shared <i class="m">array</i>. If <i class="m">index</i> is not specified, it defaults to zero.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::lpush</b></dt>
+<dd>Inserts the <i class="m">value</i> at the <i class="m">index</i> list position in the list <i class="m">element</i>
+in the shared <i class="m">array</i>. If <i class="m">index</i> is not specified, it defaults to zero.
+</dd>
+
+
+
+<dt><b class="cmd">tsv::array</b></dt>
+<dd>This command supports most of the options of the standard Tcl <b class="cmd">array</b>
+command like:
+<dl class="commandlist">
+
+
+<dt><b class="cmd">tsv::array set</b></dt>
+<dd>Does the same as standard Tcl <tt class="samp">array set</tt>
+</dd>
+
+
+
+<dt><b class="cmd">tsv::array get</b></dt>
+<dd>Does the same as standard Tcl <tt class="samp">array get</tt>
+</dd>
+
+
+
+<dt><b class="cmd">tsv::array names</b></dt>
+<dd>Does the same as standard Tcl <tt class="samp">array names</tt>
+</dd>
+
+
+
+<dt><b class="cmd">tsv::array size</b></dt>
+<dd>Does the same as standard Tcl <tt class="samp">array size</tt>
+</dd>
+
+
+
+<dt><b class="cmd">tsv::array reset</b></dt>
+<dd>Does the same as standard Tcl <tt class="samp">array set</tt> but
+it clears the array and sets new values atomically.
+</dd>
+
+
+</dl>
+</dd>
+
+</dl>
+
+<h2><a name="SECTnode1413">DISCUSSION</a></h2><p>The fundamental threading model in Tcl is that there can be one or
+more Tcl interpreters per thread, but each Tcl interpreter should only
+be used by a single thread which created it.
+A &quot;shared memory&quot; abstraction is awkward to provide in Tcl because Tcl
+makes assumptions about variable and data ownership. Therefore this extension
+supports a simple form of threading where the main thread can manage several
+background, or &quot;worker&quot; threads. For example, an event-driven server can pass
+requests to worker threads, and then await responses from worker threads or 
+new client requests. Everything goes through the common Tcl event loop, so 
+message passing between threads works naturally with event-driven I/O, 
+<b class="cmd">vwait</b> on variables, and so forth. For the transfer of bulk information
+it is possible to move channels between the threads.
+</p><p>In addition, this extension provides simple but effective way of
+threads to access thread-shared data without the need of explicit locking.
+This is implemented with shared variable arrays. Shared variable array
+is a data structure similar to Tcl array but internaly protected with mutex. 
+Several threads can access array elements without synchronizing themselves.
+Script programmer can create any number of such arrays and access them
+or their elements from any thread, without explicit locking.
+</p><p>For advanced multithreading scripts, script-level access to two basic 
+synchronization primitives, mutex and condition variables, is also supported.
+</p>
+<h2><a name="SECTnode1431">CREDITS</a></h2><p>Shared variable arrays are inspired by the nsv interface found in 
+AOLserver 3.+ highly scalable Web server from America Online.
+</p>
+<h2><a name="SECTnode1440">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
+</a></p>
+<h2><a name="SECTnode1446">KEYWORDS</a></h2><p class="keywords">
+<a class="keyword" href="keyword-index.html#KW-threads">threads</a>, <a class="keyword" href="keyword-index.html#KW-events">events</a>, <a class="keyword" href="keyword-index.html#KW-messagepassing">message passing</a>, <a class="keyword" href="keyword-index.html#KW-synchronization">synchronization</a>, <a class="keyword" href="keyword-index.html#KW-sharedvariables">shared variables</a>, <a class="keyword" href="keyword-index.html#KW-mutex">mutex</a>, <a class="keyword" href="keyword-index.html#KW-conditionvariable">condition variable</a>
+</p>
+</div><div class="footer">
+<hr class="navsep"><!-- footer.html: Standard navigational footer --><div class="navbar" align="center">
+	<a class="navaid" href="index.html">Table of Contents</a>
+ ·	<a class="navaid" href="category-index.html">Index</a>
+ ·	<a class="navaid" href="keyword-index.html">Keywords</a>
+</div>
+</div>
+</body>
+</html>
