@@ -1,4 +1,11 @@
-2005-01-33 Zoran Vasiljevic <zv@archiware.com>
+2005-01-03 Zoran Vasiljevic <zv@archiware.com>
+
+	* lib/ttrace.tcl: added [ttrace::isenabled] and modified
+	the [ttrace::addtrace] to dynamically activate the tracer
+	if the tracing is already enabled. This way we can dynamically
+	load tracer scripts.
+	
+2005-01-03 Zoran Vasiljevic <zv@archiware.com>
 
         **** RELEASE: 2.6.1 Tagged ****
 
