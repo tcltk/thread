@@ -17,11 +17,15 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.67 2003/03/01 07:29:08 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.68 2003/03/17 09:01:24 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
 #include "tclThread.h"
+
+#ifdef NS_AOLSERVER
+# include "aolstub.cpp"
+#endif
 
 /* 
  * Access to the list of threads and to the thread send results
@@ -90,6 +94,7 @@ typedef struct ThreadCtrl {
                                            * field in ThreadSpecificData */
     Tcl_Condition condWait;               /* Condition variable used to
                                            * sync parent and child threads */
+    ClientData cd;                        /* Opaque ptr to pass to thread */
 } ThreadCtrl;
 
 /*
@@ -1414,6 +1419,9 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
     ThreadCtrl ctrl;
     Tcl_ThreadId id;
 
+#ifdef NS_AOLSERVER
+    ctrl.cd = Tcl_GetAssocData(interp, "thread:nsd", NULL);
+#endif
     ctrl.script   = (char *)script;
     ctrl.condWait = NULL;
     ctrl.flags    = 0;
@@ -1489,7 +1497,8 @@ NewThread(clientData)
      */
 
 #ifdef NS_AOLSERVER
-    interp = (Tcl_Interp*)Ns_TclAllocateInterp(NULL);
+    struct mydata *md = (struct mydata*)ctrlPtr->cd;
+    interp = (Tcl_Interp*)Ns_TclAllocateInterp(md->server);
 #else
     interp = Tcl_CreateInterp();
     result = Tcl_Init(interp);
@@ -1764,8 +1773,8 @@ ListRemoveInner(tsdPtr)
         }
         tsdPtr->nextPtr = NULL;
         tsdPtr->prevPtr = NULL;
-    } else {
-        threadList = NULL;
+    } else if (tsdPtr == threadList) {
+        threadList == NULL;
     }
 }
 

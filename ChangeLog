@@ -1,3 +1,11 @@
+2003-03-17 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadSvCmd.c: fixed incompatibility 
+	with Tcl 8.4.2 filepath object
+
+	* generic/threadCmd.c:
+	* aolstub.cpp: adjusted for AOLserver 4.0
+ 
 2003-02-24 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: fixed ThreadSetResult

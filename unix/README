@@ -1,7 +1,10 @@
 
+How to compile
+--------------
+
 Extension can be compiled on several Unix derivates including various
 distributions of Linux. Build process is pretty straightforward. I've
-checked various versions of Solaris and Linux but the extension
+checked some versions of Solaris, Linux and Darwin, but the extension
 should compile without problems on any Unix-like operating system
 with a proper pthreads library implementation.
 
@@ -30,24 +33,22 @@ set plus advanced shared-object storage of shared data. Go to the
 generic/threadSvCmd.h file and look at the beginning of the file
 for the:
 
-/*
- * Uncomment following line to get command-line
- * compatibility with AOLserver nsv_* commands
- */
-
 /* #define NSV_COMPAT 1 */
 
 So, uncomment the define and there you go.
 
-Since AOLserver, particulary the 3.x series, do not support
-namespaced Tcl commands properly, there is a provision at the
-top of generic/tclThread.h file to change the command namespace
-to the command prefix. Per default, the "thread::" namespace is
-changed to "thread_" prefix and "tpool::" namespace is changed
-to "tpool_" prefix.
+Since AOLserver, the 3.x series, does not support namespaced
+Tcl commands properly, there is a provision at the top of 
+generic/tclThread.h file to change the command namespace
+to the command prefix. Per default, the "thread::" namespace
+is changed to "thread_" prefix and "tpool::" namespace is 
+changed to "tpool_" prefix.
+For AOLserver 4.x, this is not needed since namespace support
+is available.
+
 
 The CONFIG script has an example how to invoke configure in order
-to build the extension for AOLserver support.
+to build the extension as AOLserver module.
 Note, however, that "make install" and "make test" targets are
 still not supported for AOLserver builds. This will be corrected
 in one of the future releases.

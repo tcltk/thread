@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.19 2002/12/19 09:55:43 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.20 2003/03/17 09:01:26 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1623,7 +1623,7 @@ GetTime(timePtr)
  *----------------------------------------------------------------------
  */
 
-void
+int 
 Tpool_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
 {
@@ -1645,6 +1645,7 @@ Tpool_Init (interp)
         }
         Tcl_MutexUnlock(&listMutex);
     }
+    return TCL_OK;
 }
 
 /* EOF $RCSfile: threadPoolCmd.c,v $ */

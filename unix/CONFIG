@@ -1,9 +1,12 @@
+#!/bin/sh
 #
 # You may add --enable-symbols when compiling 
 # with debugging symbols. For list of other 
 # supported options to configure, run
 #   ../configure --help 
 #
+
+CC=gcc; export CC
 
 sh ../configure --enable-symbols --enable-threads
 
@@ -12,6 +15,7 @@ sh ../configure --enable-symbols --enable-threads
 # Just uncomment following two command lines below.
 # You should modify the "--with-aolserver" directive
 # if your AOLserver directory does not match.
+# This will build the extension as AOLserver module. 
 #
 
 #sh ../configure --enable-threads --enable-symbols \
