@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.34 2003/11/27 20:10:07 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.35 2003/12/22 21:20:59 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -118,7 +118,7 @@ static void SvFinalizeContainers(Bucket*);
 static void SvRegisterStdCommands(void);
 static void SvFinalize(ClientData);
 
-static PsStore* GetPsStore(char *handle, int);
+static PsStore* GetPsStore(char *handle);
 
 
 /*
@@ -340,7 +340,7 @@ Sv_GetContainer(interp, objc, objv, retObj, offset, flags)
         Tcl_HashTable *handles = &((*retObj)->bucketPtr->handles);
         LOCK_CONTAINER(*retObj);
         if (Tcl_FindHashEntry(handles, (char*)(*retObj)) == NULL) {
-            Tcl_MutexUnlock(&((*retObj)->bucketPtr->lock));
+            UNLOCK_CONTAINER(*retObj);
             Tcl_SetResult(interp, "key has been deleted", TCL_STATIC);
             return TCL_BREAK;
         }
@@ -397,7 +397,7 @@ Sv_PutContainer(interp, svObj, mode)
  */
 
 static PsStore*
-GetPsStore(char *handle, int internal)
+GetPsStore(char *handle)
 {
     int i;
     char *type = handle, *addr, *delimiter = strchr(handle, ':');
@@ -421,25 +421,19 @@ GetPsStore(char *handle, int internal)
         Tcl_HashSearch search;
         Tcl_HashEntry *hPtr;
         Bucket *bucketPtr = &buckets[i];
-        if (!internal) {
-            Tcl_MutexLock(&bucketPtr->lock);
-        }
+        LOCK_BUCKET(bucketPtr);
         hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
         while (hPtr) {
             Array *arrayPtr = (Array*)Tcl_GetHashValue(hPtr);
             if (arrayPtr->bindAddr && arrayPtr->psPtr) {
                 if (strcmp(arrayPtr->bindAddr, handle) == 0) {
-                    if (!internal) {
-                        Tcl_MutexUnlock(&bucketPtr->lock);
-                    }
+                    UNLOCK_BUCKET(bucketPtr);
                     return NULL; /* Array already bound */
                 }
             }
             hPtr = Tcl_NextHashEntry(&search);
         }
-        if (!internal) {
-            Tcl_MutexUnlock(&bucketPtr->lock);
-        }
+        UNLOCK_BUCKET(bucketPtr);
     }
 
     /*
@@ -1336,7 +1330,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
         }
 
         psurl = Tcl_GetStringFromObj(objv[3], &len);
-        psPtr = GetPsStore(psurl, arrayPtr != NULL);
+        psPtr = GetPsStore(psurl);
 
         if (psPtr == NULL) {
             Tcl_AppendResult(interp, "can't open persistent storage on \"", 
@@ -1380,7 +1374,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
             }
             Tcl_Free((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
         } else {
-            Tcl_AppendResult(interp, "shared array is not bound", NULL);
+            Tcl_AppendResult(interp, "shared variable is not bound", NULL);
             ret = TCL_ERROR;
             goto cmdExit;
         }
@@ -2004,7 +1998,6 @@ SvLockObjCmd(dummy, interp, objc, objv)
     int ret;
     Tcl_Obj *scriptObj;
     Bucket *bucketPtr;
-    Tcl_Mutex savelock = (Tcl_Mutex)-1;
     Array *arrayPtr = NULL;
 
     /* 
@@ -2021,11 +2014,6 @@ SvLockObjCmd(dummy, interp, objc, objv)
 
     arrayPtr  = LockArray(interp, Tcl_GetString(objv[1]), FLAGS_CREATEARRAY);
     bucketPtr = arrayPtr->bucketPtr;
-
-    if (bucketPtr->lock != (Tcl_Mutex)-1) {
-        savelock = bucketPtr->lock;
-        bucketPtr->lock = (Tcl_Mutex)-1;
-    }
 
     /*
      * Evaluate passed arguments as Tcl script. Note that
@@ -2047,10 +2035,6 @@ SvLockObjCmd(dummy, interp, objc, objv)
         char msg[32 + TCL_INTEGER_SPACE];   
         sprintf(msg, "\n    (\"eval\" body line %d)", interp->errorLine);
         Tcl_AddObjErrorInfo(interp, msg, -1);
-    }
-
-    if (savelock != (Tcl_Mutex)-1) {
-        bucketPtr->lock = savelock;
     }
 
     /*
@@ -2255,7 +2239,7 @@ SvFinalize (clientData)
                     hashPtr = Tcl_NextHashEntry(&search);
                 }
                 if (bucketPtr->lock) {
-                    Tcl_MutexFinalize(&bucketPtr->lock);
+                    Sp_RecursiveMutexFinalize(&bucketPtr->lock);
                 }
                 SvFinalizeContainers(bucketPtr);
                 Tcl_DeleteHashTable(&bucketPtr->handles);
