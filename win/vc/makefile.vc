@@ -4,7 +4,7 @@
 # Microsoft Visual C++ makefile for use with nmake.exe v1.62+ (VC++ 5.0+)
 #
 #---------------------------------------------------------------------
-# RCS: @(#) $Id: makefile.vc,v 1.28 2003/12/01 19:27:26 vasiljevic Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.29 2004/11/25 16:34:34 vasiljevic Exp $
 #---------------------------------------------------------------------
 
 !if "$(MSVCDIR)" == ""
@@ -261,7 +261,7 @@ baselibs  = kernel32.lib advapi32.lib user32.lib
 
 
 all: setup $(THREADLIB)
-install:  install-binaries install-libraries install-docs
+install:  install-binaries install-libraries
 
 setup:
 	@if not exist $(OUT_DIR)\nul mkdir $(OUT_DIR)
