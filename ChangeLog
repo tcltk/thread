@@ -1,5 +1,13 @@
 
-2002-01-02  Zoran Vasiljevic <zoran@archiware.com>
+2002-01-23  Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: fixed address od the target interpreter when
+	doing the callback async script processing. All messages went to the
+	main interpreter instead of the selected interpreter, causing process
+	to hung when posting callbacks to more that one interp at the same time.
+	(thanks Jean-Luc Fontaine for the tip)
+
+2002-01-20  Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: fixed multiple async reporting of error events
 	(thanks Jean-Luc Fontaine for the tip)
