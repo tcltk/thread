@@ -1,5 +1,5 @@
 # Microsoft Developer Studio Project File - Name="thread" - Package Owner=<4>
-# Microsoft Developer Studio Generated Build File, Format Version 5.00
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) External Target" 0x0106
@@ -19,15 +19,14 @@ CFG=thread - Win32 Release DLL
 !MESSAGE 
 !MESSAGE "thread - Win32 Release DLL" (based on "Win32 (x86) External Target")
 !MESSAGE "thread - Win32 Release LIB" (based on "Win32 (x86) External Target")
-!MESSAGE "thread - Win32 Release LIB _use msvcrt_" (based on\
- "Win32 (x86) External Target")
+!MESSAGE "thread - Win32 Release LIB _use msvcrt_" (based on "Win32 (x86) External Target")
 !MESSAGE "thread - Win32 Debug DLL" (based on "Win32 (x86) External Target")
 !MESSAGE "thread - Win32 Debug LIB" (based on "Win32 (x86) External Target")
-!MESSAGE "thread - Win32 Debug LIB _use msvcrtd_" (based on\
- "Win32 (x86) External Target")
+!MESSAGE "thread - Win32 Debug LIB _use msvcrtd_" (based on "Win32 (x86) External Target")
 !MESSAGE 
 
 # Begin Project
+# PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
 
@@ -43,7 +42,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread24.dll"
 # PROP Bsc_Name ""
@@ -61,7 +60,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0 STATIC_BUILD=1"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc OPTS=static"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread24.lib"
 # PROP Bsc_Name ""
@@ -79,7 +78,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0 STATIC_BUILD=1 NOMSVCRT=0"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc OPTS=static,msvcrt"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread24x.lib"
 # PROP Bsc_Name ""
@@ -97,7 +96,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc OPTS=symbols"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread24d.dll"
 # PROP Bsc_Name ""
@@ -115,7 +114,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1 STATIC_BUILD=1"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc OPTS=symbols,static"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread24sd.lib"
 # PROP Bsc_Name ""
@@ -133,7 +132,7 @@ CFG=thread - Win32 Release DLL
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir ""
 # PROP Intermediate_Dir ""
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1 STATIC_BUILD=1 NOMSVCRT=0"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc OPTS=symbols,static,msvcrt"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread24xd.lib"
 # PROP Bsc_Name ""
@@ -202,6 +201,10 @@ SOURCE=..\..\generic\threadPoolCmd.c
 # Begin Source File
 
 SOURCE=..\..\generic\threadSvListCmd.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\generic\threadSvListCmd.h
 # End Source File
 # End Group
 # Begin Source File
