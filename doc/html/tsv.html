@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: tsv.html,v 1.8 2004/07/21 20:51:05 vasiljevic Exp $ tsv.n
+<! -- CVS: $Id: tsv.html,v 1.9 2004/12/19 11:45:18 vasiljevic Exp $ tsv.n
    -->
 
 <body>
@@ -21,9 +21,21 @@
 
 
 
+<h2><a name="table_of_contents">TABLE OF CONTENTS</a></h2>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#table_of_contents">TABLE OF CONTENTS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#synopsis">SYNOPSIS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#description">DESCRIPTION</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#element_commands">ELEMENT COMMANDS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#list_commands">LIST COMMANDS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#array_commands">ARRAY COMMANDS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#keyed_list_commands">KEYED LIST COMMANDS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#discussion">DISCUSSION</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#credits">CREDITS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#see_also">SEE ALSO</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#keywords">KEYWORDS</a><br>
 <h2><a name="synopsis">SYNOPSIS</a></h2>
 <p>
-package require <b>Tcl 8.3</b><br>
+package require <b>Tcl 8.4</b><br>
 package require <b>Thread ?2.6?</b><br>
 <br><table border=1 width=100% cellspacing=0 cellpadding=0><tr            bgcolor=lightyellow><td bgcolor=lightyellow><table 0 width=100% cellspacing=0 cellpadding=0><tr valign=top ><td ><a href="#1"><b class='cmd'>tsv::names</b> ?pattern?</a></td></tr>
 <tr valign=top ><td ><a href="#2"><b class='cmd'>tsv::object</b> <i class='arg'>varname</i> <i class='arg'>element</i></a></td></tr>
@@ -75,7 +87,7 @@ exits, the variable and associated memory is not unset/reclaimed.
 User has to explicitly unset the variable to reclaim the memory 
 consumed by the variable.
 
-<h2><a name="elementcommands">ELEMENT COMMANDS</a></h2>
+<h2><a name="element_commands">ELEMENT COMMANDS</a></h2>
 <p>
 
 <dl>
@@ -95,8 +107,6 @@ shared variable <i class='arg'>varname</i>. Using this command, one can apply mo
 of the other shared variable commands as method functions of
 the element object command. The object command is automatically
 deleted when the element which this command is pointing to is unset.
-
-<br><br>
 
 <p><table><tr><td bgcolor=black>&nbsp;</td><td><pre class='sample'>
     % tsv::set foo bar &quot;A shared string&quot;
@@ -184,8 +194,6 @@ so no deadlock can occur. It is also allowed to unset the shared
 variable from within the script. The shared variable is automatically
 created if it did not exists at the time of the first lock operation.
 
-<br><br>
-
 <p><table><tr><td bgcolor=black>&nbsp;</td><td><pre class='sample'>
     % tsv::lock foo {
         tsv::lappend foo bar 1
@@ -197,7 +205,7 @@ created if it did not exists at the time of the first lock operation.
 
 </dl>
 
-<h2><a name="listcommands">LIST COMMANDS</a></h2>
+<h2><a name="list_commands">LIST COMMANDS</a></h2>
 <p>
 
 Those command are similar to the equivalently named Tcl command. The difference
@@ -286,7 +294,7 @@ As its counterpart, it returns no value to the caller.
 
 </dl>
 
-<h2><a name="arraycommands">ARRAY COMMANDS</a></h2>
+<h2><a name="array_commands">ARRAY COMMANDS</a></h2>
 <p>
 
 This command supports most of the options of the standard Tcl
@@ -351,7 +359,7 @@ persistent storage or zero (0) if not.
 
 </dl>
 
-<h2><a name="keyedlistcommands">KEYED LIST COMMANDS</a></h2>
+<h2><a name="keyed_list_commands">KEYED LIST COMMANDS</a></h2>
 <p>
 
 Keyed list commands are borrowed from the TclX package. Keyed lists provide
@@ -365,9 +373,7 @@ key-value pairs are referred to as fields.  This is an example of a
 keyed list:
 
 <p><table><tr><td bgcolor=black>&nbsp;</td><td><pre class='sample'>
-
     {{NAME  {Frank  Zappa}} {JOB {musician and composer}}}
-
 </pre></td></tr></table></p>
 
 Fields may contain subfields; `.' is the separator character. Subfields 
@@ -376,9 +382,7 @@ following list has the top level fields ID and NAME, and subfields
 NAME.FIRST and NAME.LAST:
 
 <p><table><tr><td bgcolor=black>&nbsp;</td><td><pre class='sample'>
-
     {ID 106} {NAME {{FIRST Frank} {LAST Zappa}}}
-
 </pre></td></tr></table></p>
 
 There is no limit to the recursive depth of subfields,
@@ -459,7 +463,7 @@ AOLserver, a highly scalable Web server from America Online.
 
 
 
-<h2><a name="seealso">SEE ALSO</a></h2>
+<h2><a name="see_also">SEE ALSO</a></h2>
 <p>
 thread, tpool, ttrace
 <h2><a name="keywords">KEYWORDS</a></h2>
