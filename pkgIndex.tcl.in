@@ -2,10 +2,12 @@
 
 if {$::tcl_version >= 8.3} {
     if {$::tcl_version == 8.3} {
-	set provides {@THREAD_VERSION_SUBSET83@}
+        set provides {@THREAD_VERSION_SUBSET83@}
     } else {
-	set provides {@VERSION@}
+        set provides {@VERSION@}
     }
+    package ifneeded Ttrace {@TTRACE_VERSION@} \
+        [list source [file join $dir ttrace.tcl]]
     package ifneeded Thread $provides \
-	    [list load [file join $dir @thread_LIB_FILE@] Thread]
+        [list load [file join $dir @thread_LIB_FILE@] Thread]
 }
