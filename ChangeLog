@@ -1,3 +1,11 @@
+2003-05-31 Zoran Vasiljevic <zoran@archiware.com>
+	
+	* generic/threadCmd.c: fixed ListRemoveInner for
+	the Tcl Bug #746352
+
+	* generic/threadSpCmd.c: modified Sp_Init to 
+	return a proper value for Tcl Bug #746352
+
 2003-05-17 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: sets the name of the new thread
