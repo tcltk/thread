@@ -11,6 +11,13 @@
 		set T [thread::create {thread::wait; update}]
 		thread::send -async $T thread::unwind
 
+	* generic/thread.h:
+	* win/vc/makefile.vc:
+	* win/vc/thread.rc:
+	* win/vc/pkg.vc (new): Moved version numbers from the header file.  It isn't
+	an export API or anything.  Moved version numbers to the build files.  I'll
+	modify configure.in and makefile.in a little later.
+
 2001-04-26  David Gravereaux <davygrvy@pobox.com>
 
 	* config/* (new): old site-wide config directory re-added.
