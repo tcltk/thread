@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.5 2002/12/04 10:59:14 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.6 2002/12/04 11:09:04 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -546,12 +546,10 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
     int ret, jobId;
-    char *tpoolName, done, *resVar = NULL;
+    char *tpoolName, *resVar = NULL;
     ThreadPool *tpoolPtr;
     TpoolResult *rPtr;
     Tcl_HashEntry *hPtr;
-
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     /* 
      * Syntax: tpool::collect tpoolId jobId ?result?
@@ -810,7 +808,6 @@ static Tcl_ThreadCreateType
 TpoolWorker(clientData)
     ClientData clientData;
 {    
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
     TpoolResult         *rPtr  = (TpoolResult*)clientData;
     ThreadPool       *tpoolPtr = rPtr->tpoolPtr;
 
@@ -887,6 +884,9 @@ TpoolWorker(clientData)
         tpoolPtr->idleWorkers++;
         SignalWaiter(tpoolPtr); /* Another worker available */
         while (!tpoolPtr->tearDown && !(rPtr = PopWork(tpoolPtr))) {
+#if (TCL_MAJOR_VERSION >= 8) && (TCL_MINOR_VERSION <= 3)
+            Tcl_ConditionWait(&tpoolPtr->cond, &tpoolPtr->mutex, NULL);
+#else
             Tcl_GetTime(&t1);
             Tcl_ConditionWait(&tpoolPtr->cond, &tpoolPtr->mutex, idlePtr);
             Tcl_GetTime(&t2);
@@ -895,6 +895,7 @@ TpoolWorker(clientData)
                     tout = 1;
                 }
             }
+#endif
         }
         tpoolPtr->idleWorkers--;
         if (tpoolPtr->tearDown || tout) {
