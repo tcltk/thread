@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.11 2002/12/09 16:33:55 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.12 2002/12/09 17:02:01 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -34,6 +34,7 @@ typedef struct ThreadPool {
     int idleTime;                   /* Time in secs a worker thread idles */
     int tearDown;                   /* Set to 1 to tear down the pool */
     char *initScript;               /* Script to initialize worker thread */
+    char *exitScript;               /* Script to cleanup the worker */
     int minWorkers;                 /* Minimum number or worker threads */
     int maxWorkers;                 /* Maximum number of worker threads */
     int numWorkers;                 /* Current number of worker threads */
@@ -189,13 +190,14 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
 {
     unsigned int tpoolId;
     int ii, minw, maxw, idle, len;
-    char buf[16], *cmd = NULL;
+    char buf[16], *exs = NULL, *cmd = NULL;
     ThreadPool *tpoolPtr;
 
     /* 
      * Syntax:  tpool::create ?-minworkers count?
      *                        ?-maxworkers count?
      *                        ?-initscript script?
+     *                        ?-exitscript script?
      *                        ?-idletime seconds?
      */
 
@@ -233,6 +235,9 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
         } else if (OPT_CMP(opt, "-initscript")) {
             char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
             cmd  = strcpy(Tcl_Alloc(len+1), val);
+        } else if (OPT_CMP(opt, "-exitscript")) {
+            char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
+            exs  = strcpy(Tcl_Alloc(len+1), val);
         } else {
             goto usage;
         }
@@ -263,6 +268,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     tpoolPtr->maxWorkers  = maxw;
     tpoolPtr->idleTime    = idle;
     tpoolPtr->initScript  = cmd;
+    tpoolPtr->exitScript  = exs;
     Tcl_InitHashTable(&tpoolPtr->jobsDone, TCL_ONE_WORD_KEYS);
 
     /*
@@ -980,6 +986,10 @@ TpoolWorker(clientData)
      * Tear down the worker
      */
 
+    if (tpoolPtr->exitScript) {
+        TpoolEval(interp, tpoolPtr->exitScript, -1, NULL);
+    }
+
     tpoolPtr->numWorkers--;
     SignalWaiter(tpoolPtr);
     Tcl_MutexUnlock(&tpoolPtr->mutex);
@@ -1399,6 +1409,9 @@ TpoolRelease(tpoolPtr)
     
     if (tpoolPtr->initScript) {
         Tcl_Free(tpoolPtr->initScript);
+    }
+    if (tpoolPtr->exitScript) {
+        Tcl_Free(tpoolPtr->exitScript);
     }
 
     /*
