@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.3 2000/04/10 23:39:51 welch Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.4 2000/04/11 01:31:42 welch Exp $
  */
 
 #include "tcl.h"
@@ -122,6 +122,20 @@ TCL_DECLARE_MUTEX(threadMutex)
 #define TCL_STORAGE_CLASS DLLEXPORT
 
 EXTERN int	Thread_Init _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int	ThreadCreateObjCmd _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
+EXTERN int	ThreadSendObjCmd _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
+EXTERN int	ThreadExitObjCmd _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
+EXTERN int	ThreadWaitObjCmd _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
+EXTERN int	ThreadIdObjCmd _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
+EXTERN int	ThreadNamesObjCmd _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
+EXTERN int	ThreadErrorProcObjCmd _ANSI_ARGS_((ClientData clientData,
+	Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
 EXTERN int	ThreadObjCmd _ANSI_ARGS_((ClientData clientData,
 	Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
 EXTERN int	Thread_Create _ANSI_ARGS_((Tcl_Interp *interp,
@@ -184,10 +198,23 @@ Thread_Init(interp)
 	    (Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_ERROR)
 	    && boolVar) {
 	/*
-	 * Seem to have a Tcl core compiled with threads enabled.
+	 * We seem to have a Tcl core compiled with threads enabled,
+	 * so let's initialize ourselves.  This uses the thread:: namespace.
 	 */
 
-	Tcl_CreateObjCommand(interp,"thread", ThreadObjCmd, 
+	Tcl_CreateObjCommand(interp,"thread::create", ThreadCreateObjCmd, 
+		(ClientData)NULL ,NULL);
+	Tcl_CreateObjCommand(interp,"thread::send", ThreadSendObjCmd, 
+		(ClientData)NULL ,NULL);
+	Tcl_CreateObjCommand(interp,"thread::exit", ThreadExitObjCmd, 
+		(ClientData)NULL ,NULL);
+	Tcl_CreateObjCommand(interp,"thread::id", ThreadIdObjCmd, 
+		(ClientData)NULL ,NULL);
+	Tcl_CreateObjCommand(interp,"thread::names", ThreadNamesObjCmd, 
+		(ClientData)NULL ,NULL);
+	Tcl_CreateObjCommand(interp,"thread::wait", ThreadWaitObjCmd, 
+		(ClientData)NULL ,NULL);
+	Tcl_CreateObjCommand(interp,"thread::errorproc", ThreadErrorProcObjCmd, 
 		(ClientData)NULL ,NULL);
 	if (Tcl_PkgProvide(interp, "Thread", "2.0" ) != TCL_OK) {
 	    return TCL_ERROR;
@@ -204,18 +231,40 @@ Thread_Init(interp)
 /*
  *----------------------------------------------------------------------
  *
- * ThreadObjCmd --
+ * Init --
  *
- *	This procedure is invoked to process the "thread" Tcl command.
+ *	Make sure our internal list of threads is created.
+ *
+ * Results:
+ *	None
+ *
+ * Side effects:
+ *	The list of threads is initialzied to include the current thread.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+Init(interp)
+    Tcl_Interp *interp;			/* Current interpreter. */
+{
+    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+    if (tsdPtr->interp == NULL) {
+	Tcl_MutexLock(&threadMutex);
+	tsdPtr->interp = interp;
+	ListUpdateInner(tsdPtr);
+	Tcl_CreateThreadExitHandler(ThreadExitProc, NULL);
+	Tcl_MutexUnlock(&threadMutex);
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadCreateObjCmd --
+ *
+ *	This procedure is invoked to process the "thread::create" Tcl command.
  *	See the user documentation for details on what it does.
- *
- *	thread create
- *	thread send id ?-async? script
- *	thread exit
- *	thread info id
- *	thread names
- *	thread wait
- *	thread errorproc proc
  *
  * Results:
  *	A standard Tcl result.
@@ -228,135 +277,268 @@ Thread_Init(interp)
 
 	/* ARGSUSED */
 int
-ThreadObjCmd(dummy, interp, objc, objv)
+ThreadCreateObjCmd(dummy, interp, objc, objv)
     ClientData dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int objc;				/* Number of arguments. */
     Tcl_Obj *CONST objv[];		/* Argument objects. */
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
-    int option;
-    static char *threadOptions[] = {"create", "exit", "id", "names",
-				    "send", "wait", "errorproc", (char *) NULL};
-    enum options {THREAD_CREATE, THREAD_EXIT, THREAD_ID, THREAD_NAMES,
-		  THREAD_SEND, THREAD_WAIT, THREAD_ERRORPROC};
+    char *script;
 
-    if (objc < 2) {
-	Tcl_WrongNumArgs(interp, 1, objv, "option ?args?");
+    Init(interp);
+    if (objc == 1) {
+	script = "thread::wait";	/* Just enter the event loop */
+    } else if (objc == 2) {
+	script = Tcl_GetString(objv[1]);
+    } else {
+	Tcl_WrongNumArgs(interp, 1, objv, "?script?");
 	return TCL_ERROR;
     }
-    if (Tcl_GetIndexFromObj(interp, objv[1], threadOptions,
-	    "option", 0, &option) != TCL_OK) {
+    return Thread_Create(interp, script, 0);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadExitObjCmd --
+ *
+ *	This procedure is invoked to process the "thread::exit" Tcl command.
+ *	See the user documentation for details on what it does.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	See the user documentation.
+ *
+ *----------------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+int
+ThreadExitObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int objc;				/* Number of arguments. */
+    Tcl_Obj *CONST objv[];		/* Argument objects. */
+{
+    Init(interp);
+    if (objc > 1) {
+	Tcl_WrongNumArgs(interp, 1, objv, NULL);
 	return TCL_ERROR;
     }
-
-    /* 
-     * Make sure the initial thread is on the list before doing anything.
-     */
-
-    if (tsdPtr->interp == NULL) {
-	Tcl_MutexLock(&threadMutex);
-	tsdPtr->interp = interp;
-	ListUpdateInner(tsdPtr);
-	Tcl_CreateThreadExitHandler(ThreadExitProc, NULL);
-	Tcl_MutexUnlock(&threadMutex);
-    }
-
-    switch ((enum options)option) {
-	case THREAD_CREATE: {
-	    char *script;
-	    if (objc == 2) {
-		script = "thread wait";	/* Just enter the event loop */
-	    } else if (objc == 3) {
-		script = Tcl_GetString(objv[2]);
-	    } else {
-		Tcl_WrongNumArgs(interp, 2, objv, "?script?");
-		return TCL_ERROR;
-	    }
-	    return Thread_Create(interp, script, 0);
-	}
-	case THREAD_EXIT: {
-	    if (objc > 2) {
-		Tcl_WrongNumArgs(interp, 1, objv, NULL);
-		return TCL_ERROR;
-	    }
-	    ListRemove(NULL);
-	    Tcl_ExitThread(0);
-	    return TCL_OK;
-	}
-	case THREAD_ID:
-	    if (objc == 2) {
-		Tcl_Obj *idObj = Tcl_NewLongObj((long)Tcl_GetCurrentThread());
-		Tcl_SetObjResult(interp, idObj);
-		return TCL_OK;
-	    } else {
-		Tcl_WrongNumArgs(interp, 2, objv, NULL);
-		return TCL_ERROR;
-	    }
-	case THREAD_NAMES: {
-	    if (objc > 2) {
-		Tcl_WrongNumArgs(interp, 2, objv, NULL);
-		return TCL_ERROR;
-	    }
-	    return Thread_List(interp);
-	}
-	case THREAD_SEND: {
-	    long id;
-	    char *script;
-	    int wait, arg;
-
-	    if ((objc != 4) && (objc != 5)) {
-		Tcl_WrongNumArgs(interp, 1, objv, "send ?-async? id script");
-		return TCL_ERROR;
-	    }
-	    if (objc == 5) {
-		if (strcmp("-async", Tcl_GetString(objv[2])) != 0) {
-		    Tcl_WrongNumArgs(interp, 1, objv, "send ?-async? id script");
-		    return TCL_ERROR;
-		}
-		wait = 0;
-		arg = 3;
-	    } else {
-		wait = 1;
-		arg = 2;
-	    }
-	    if (Tcl_GetLongFromObj(interp, objv[arg], &id) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    arg++;
-	    script = Tcl_GetString(objv[arg]);
-	    return Thread_Send(interp, (Tcl_ThreadId) id, script, wait);
-	}
-	case THREAD_WAIT: {
-	    while (1) {
-		(void) Tcl_DoOneEvent(TCL_ALL_EVENTS);
-	    }
-	}
-	case THREAD_ERRORPROC: {
-	    /*
-	     * Arrange for this proc to handle thread death errors.
-	     */
-
-	    char *proc;
-	    if (objc != 3) {
-		Tcl_WrongNumArgs(interp, 1, objv, "errorproc proc");
-		return TCL_ERROR;
-	    }
-	    Tcl_MutexLock(&threadMutex);
-	    errorThreadId = Tcl_GetCurrentThread();
-	    if (errorProcString) {
-		ckfree(errorProcString);
-	    }
-	    proc = Tcl_GetString(objv[2]);
-	    errorProcString = ckalloc(strlen(proc)+1);
-	    strcpy(errorProcString, proc);
-	    Tcl_MutexUnlock(&threadMutex);
-	    return TCL_OK;
-	}
-    }
+    ListRemove(NULL);
+    Tcl_ExitThread(0);
     return TCL_OK;
 }
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadIdObjCmd --
+ *
+ *	This procedure is invoked to process the "thread::id" Tcl command.
+ *	This returns the ID of the current thread.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
 
+	/* ARGSUSED */
+int
+ThreadIdObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int objc;				/* Number of arguments. */
+    Tcl_Obj *CONST objv[];		/* Argument objects. */
+{
+    Tcl_Obj *idObj;
+    Init(interp);
+    if (objc > 1) {
+	Tcl_WrongNumArgs(interp, 1, objv, NULL);
+	return TCL_ERROR;
+    }
+    idObj = Tcl_NewLongObj((long)Tcl_GetCurrentThread());
+    Tcl_SetObjResult(interp, idObj);
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadNamesObjCmd --
+ *
+ *	This procedure is invoked to process the "thread::names" Tcl command.
+ *	This returns a list of all known thread IDs.  These are only
+ #	threads created via this module (e.g., not driver threads or
+ *	the notifier).
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+int
+ThreadNamesObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int objc;				/* Number of arguments. */
+    Tcl_Obj *CONST objv[];		/* Argument objects. */
+{
+    Init(interp);
+    if (objc > 1) {
+	Tcl_WrongNumArgs(interp, 1, objv, NULL);
+	return TCL_ERROR;
+    }
+    return Thread_List(interp);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadSendObjCmd --
+ *
+ *	This procedure is invoked to process the "thread::send" Tcl command.
+ *	This sends a script to another thread for execution.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+int
+ThreadSendObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int objc;				/* Number of arguments. */
+    Tcl_Obj *CONST objv[];		/* Argument objects. */
+{
+    long id;
+    char *script;
+    int wait, arg;
+
+    Init(interp);
+    if ((objc != 3) && (objc != 4)) {
+	Tcl_WrongNumArgs(interp, 1, objv, "?-async? id script");
+	return TCL_ERROR;
+    }
+    if (objc == 4) {
+	if (strcmp("-async", Tcl_GetString(objv[1])) != 0) {
+	    Tcl_WrongNumArgs(interp, 1, objv, "?-async? id script");
+	    return TCL_ERROR;
+	}
+	wait = 0;
+	arg = 2;
+    } else {
+	wait = 1;
+	arg = 1;
+    }
+    if (Tcl_GetLongFromObj(interp, objv[arg], &id) != TCL_OK) {
+	return TCL_ERROR;
+    }
+    arg++;
+    script = Tcl_GetString(objv[arg]);
+    return Thread_Send(interp, (Tcl_ThreadId) id, script, wait);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadWaitObjCmd --
+ *
+ *	This procedure is invoked to process the "thread::wait" Tcl command.
+ *	This enters the event loop and never returns
+ *
+ * Results:
+ *	Nothing.
+ *
+ * Side effects:
+ *	Enters the event loop.
+ *
+ *----------------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+int
+ThreadWaitObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int objc;				/* Number of arguments. */
+    Tcl_Obj *CONST objv[];		/* Argument objects. */
+{
+    Init(interp);
+    while (1) {
+	(void) Tcl_DoOneEvent(TCL_ALL_EVENTS);
+    }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadErrorProcObjCmd --
+ *
+ *	This procedure is invoked to process the "thread::errorproc" command.
+ *	This registers a procedure to handle thread death.
+ *
+ * Results:
+ *	A standard Tcl result.
+ *
+ * Side effects:
+ *	Registers an errorproc.
+ *
+ *----------------------------------------------------------------------
+ */
+
+	/* ARGSUSED */
+int
+ThreadErrorProcObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;			/* Not used. */
+    Tcl_Interp *interp;			/* Current interpreter. */
+    int objc;				/* Number of arguments. */
+    Tcl_Obj *CONST objv[];		/* Argument objects. */
+{
+    /*
+     * Arrange for this proc to handle thread death errors.
+     */
+
+    char *proc;
+    Init(interp);
+    if (objc > 2) {
+	Tcl_WrongNumArgs(interp, 1, objv, "?proc?");
+	return TCL_ERROR;
+    }
+    Tcl_MutexLock(&threadMutex);
+    if (objc == 1) {
+	if (errorProcString) {
+	    Tcl_SetResult(interp, errorProcString, TCL_VOLATILE);
+	}
+    } else {
+	errorThreadId = Tcl_GetCurrentThread();
+	if (errorProcString) {
+	    ckfree(errorProcString);
+	}
+	proc = Tcl_GetString(objv[1]);
+	errorProcString = ckalloc(strlen(proc)+1);
+	strcpy(errorProcString, proc);
+    }
+    Tcl_MutexUnlock(&threadMutex);
+    return TCL_OK;
+}
 
 /*
  *----------------------------------------------------------------------
