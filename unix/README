@@ -26,7 +26,18 @@ configure option to specify the directory containing the AOLserver
 distribution. To fine-tune, you might also want to make the 
 tsv::* commands replace the AOLserver built-in nsv_* family of 
 commands, since they are API compatible and provide richer command
-set plus advanced shared-object storage of shared data.
+set plus advanced shared-object storage of shared data. Go to the
+generic/threadSvCmd.h file and look at the beginning of the file
+for the:
+
+/*
+ * Uncomment following line to get command-line
+ * compatibility with AOLserver nsv_* commands
+ */
+
+/* #define NSV_COMPAT 1 */
+
+So, uncomment the define and there you go.
 
 The CONFIG script has an example, you might want to check-out.
 Note, however, that "make install" and "make test" targets are

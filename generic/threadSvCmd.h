@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.8 2002/12/05 15:14:07 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.9 2002/12/14 11:58:05 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -31,7 +31,7 @@
  * compatibility with AOLserver nsv_* commands
  */
 
-#define NSV_COMPAT 1
+/* #define NSV_COMPAT 1 */
 
 /*
  * Uncomment following line to force command-line
