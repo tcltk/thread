@@ -5,8 +5,8 @@ a makefile for building and installing the package in your system.
 
 Currently, following packages are supplied:
 
-   tpool/        thread pools
-   phttpd/       simple mt-enabled httpd server
+   tpool/        thread pools library
+   phttpd/       mt-enabled httpd server (requires tpool)
    cmdsrv/       socket command-line server
 
 - EOF
