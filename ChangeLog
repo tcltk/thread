@@ -1,3 +1,9 @@
+2001-04-26  David Gravereaux <davygrvy@pobox.com>
+
+	* generic/threadCmd.c (ThreadEventProc): ThreadErrorProc now
+	supported in asyncronous sends when Tcl_Eval returns other than
+	TCL_OK.  It silently failed prior to this.
+
 2001-04-25  David Gravereaux <davygrvy@pobox.com>
 
 	* generic/threadCmd.c (ThreadWait)(NewThread): Removed the event

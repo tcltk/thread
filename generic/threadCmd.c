@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.22 2001/04/26 01:23:35 davygrvy Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.23 2001/04/26 08:24:38 davygrvy Exp $
  */
 
 #include "thread.h"
@@ -1679,6 +1679,13 @@ ThreadEventProc(evPtr, mask)
 	}
 	Tcl_ConditionNotify(&resultPtr->done);
 	Tcl_MutexUnlock(&threadMutex);
+    } else if (code != TCL_OK) {
+	/*
+	 * Only pass errors onto the registered error handler when we don't
+	 * have a result target for this event.
+	 */
+
+	ThreadErrorProc(interp);
     }
     if (interp != NULL) {
 	Tcl_Release((ClientData) interp);
