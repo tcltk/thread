@@ -5,7 +5,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.1 2002/01/19 23:13:54 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.2 2002/01/20 00:48:02 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -21,14 +21,17 @@
  * compatibility with AOLserver nsv_* commands
  */
 
-/* #define NSV_COMPAT */
+/* #define NSV_COMPAT 1 */
 
 /*
- * Uncomment following line to get command-line
+ * Uncomment following line to force command-line
  * compatibility with older thread::sv_ commands
+ * If you leave it commented-out, the older style
+ * command is going to be included in addition to
+ * the new tsv::* style.
  */
 
-/* #define OLD_COMPAT */
+/* #define OLD_COMPAT 1 */
 
 #ifdef NS_AOLSERVER
 # ifdef NSV_COMPAT
