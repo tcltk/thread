@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.12 2002/03/09 12:14:41 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.13 2002/05/04 16:23:27 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1624,15 +1624,6 @@ Sv_Init (interp)
     register int i;
     Bucket *bucketPtr;
     SvCmdInfo *cmdPtr;
-
-#ifdef NS_AOLSERVER
-    /*
-     * Add some custom datatypes
-     */
-
-    Dictionary_Init(interp);
-    TclX_KeyedListInit(interp);
-#endif
 
     /*
      * Register commands
