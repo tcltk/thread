@@ -1,9 +1,11 @@
-2003-04-02 Zoran Vasiljevic <zoran@archiware.com>
+2003-04-10 Zoran Vasiljevic <zoran@archiware.com>
 
 	* threadCmd.c: removed checking of stopped flag
 	during walk of the list of active threads. This
 	solves some subtle thread reservation problems
 	with threads marked to unwind on error.
+	Also, added new "-errorstate" configuration option
+	to set/get error state of reserved unwinding thread.
 	
 2003-04-02 Zoran Vasiljevic <zoran@archiware.com>
 

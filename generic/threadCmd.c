@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.73 2003/04/10 13:39:24 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.74 2003/04/10 14:05:48 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -2838,7 +2838,7 @@ ThreadGetOption(interp, threadId, option, dsPtr)
         Tcl_SetResult(interp, "invalid thread id", TCL_STATIC);
         return TCL_ERROR;
     }
-    if (len == 0 || (len > 2 && option[1] == 'e' 
+    if (len == 0 || (len > 3 && option[1] == 'e' && option[2] == 'v'
                      && !strncmp(option,"-eventmark", len))) {
         char buf[16];
         if (len == 0) {
@@ -2856,6 +2856,18 @@ ThreadGetOption(interp, threadId, option, dsPtr)
         int flag = tsdPtr->flags & THREAD_FLAGS_UNWINDONERROR;
         if (len == 0) {
             Tcl_DStringAppendElement(dsPtr, "-unwindonerror");
+        }
+        Tcl_DStringAppendElement(dsPtr, flag ? "1" : "0");
+        if (len) {
+            Tcl_MutexUnlock(&threadMutex);
+            return TCL_OK;
+        }
+    }
+    if (len == 0 || (len > 3 && option[1] == 'e' && option[2] == 'r'
+                     && !strncmp(option,"-errorstate", len))) {
+        int flag = tsdPtr->flags & THREAD_FLAGS_INERROR;
+        if (len == 0) {
+            Tcl_DStringAppendElement(dsPtr, "-errorstate");
         }
         Tcl_DStringAppendElement(dsPtr, flag ? "1" : "0");
         if (len) {
@@ -2899,7 +2911,7 @@ ThreadSetOption(interp, threadId, option, value)
         Tcl_SetResult(interp, "invalid thread id", TCL_STATIC);
         return TCL_ERROR;
     }
-    if (len > 2 && option[1] == 'e' 
+    if (len > 3 && option[1] == 'e' && option[2] == 'v'
         && !strncmp(option,"-eventmark", len)) {
         if (sscanf(value, "%d", &tsdPtr->maxEventsCount) != 1) {
             Tcl_AppendResult(interp, "expected integer but got \"",
@@ -2918,6 +2930,18 @@ ThreadSetOption(interp, threadId, option, value)
             tsdPtr->flags |=  THREAD_FLAGS_UNWINDONERROR;
         } else {
             tsdPtr->flags &= ~THREAD_FLAGS_UNWINDONERROR;
+        }
+    } else if (len > 3 && option[1] == 'e' && option[2] == 'r'
+               && !strncmp(option,"-errorstate", len)) {
+        int flag = 0;
+        if (Tcl_GetBoolean(interp, value, &flag) != TCL_OK) {
+            Tcl_MutexUnlock(&threadMutex);
+            return TCL_ERROR;
+        }
+        if (flag) {
+            tsdPtr->flags |=  THREAD_FLAGS_INERROR;
+        } else {
+            tsdPtr->flags &= ~THREAD_FLAGS_INERROR;
         }
     }
         
