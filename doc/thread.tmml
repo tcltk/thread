@@ -1,0 +1,113 @@
+<manpage cat="core_extensions" id="thread" title="thread" version="8.4">
+
+<namesection>
+<name>thread</name>
+<desc>Create and manipulate threads with Tcl interpreters in them.</desc>
+</namesection>
+
+<synopsis>
+<syntax>
+<cmd>thread::create</cmd> ?<m>-joinable</m>? ?<m>script</m>?
+<cmd>thread::id</cmd>
+<cmd>thread::exists</cmd> <m>id</m>
+<cmd>thread::errorproc</cmd> <m>procname</m>
+<cmd>thread::exit</cmd>
+<cmd>thread::names</cmd>
+<cmd>thread::send</cmd> ?<m>-async</m>? <m>id</m> <m>script</m>
+<cmd>thread::wait</cmd>
+<cmd>thread::join</cmd> <m>id</m>
+<cmd>thread::transfer</cmd> <m>id</m> <m>channel</m>
+</syntax>
+</synopsis>
+
+<section>
+<title>DESCRIPTION</title>
+<p>The <cmd>thread</cmd> extension creates threads that contain Tcl
+interpreters, and it lets you send scripts to those threads.
+</p>
+<p><cmd>thread::create</cmd> creates a thread that contains a Tcl interpreter.
+The Tcl interpreter either evaluates the <i>script</i>, if specified,
+or it waits in the event loop for scripts that arrive via the
+<cmd>thread::send</cmd> command.
+The result of <cmd>thread::create</cmd> is the ID of the thread.
+The result, if any, of <i>script</i> is ignored. Using flag
+<b>-joinable</b> it is possible to create a joinable thread, i.e. one
+upon whose exit can be waited upon (by using <cmd>thread::join</cmd>).
+<p><cmd>thread::id</cmd> returns the ID of the current thread.
+</p>
+<p><cmd>thread::errorproc</cmd> sets a handler for errors that occur in other
+threads. Or, if no procedure is specified, the current handler is returned.
+By default, an uncaught error in a thread terminates that thread
+and causes an error message to be sent to the standard error channel.
+You can change the default reporting scheme by registering a procedure
+that is called to report the error.
+The <i>proc</i> is called in the interpreter that invoked the
+<cmd>thread::errorproc</cmd> command.  The original thread that has the
+uncaught error is terminated in any case.
+</p>
+<p>The <i>proc</i> is called like this:
+<ul>
+<pre>
+myerrorproc thread_id errorInfo
+</pre>
+</ul>
+</p>
+<p><cmd>thread::exit</cmd> terminates the current thread.
+There is no way to force another thread to exit - you can only
+ask it to terminate by sending it a command.
+</p>
+<p><cmd>thread::names</cmd> returns a list of thread IDs.
+These are only for threads that have been created via <b>thread::create</b>.
+If your application creates other threads at the C level, they
+are not reported by <b>thread::names</b>.
+</p>
+<p><cmd>thread::exists</cmd> returns true (1) if thread given by the ID parameter
+exists, false (0) otherwise. This applies only for threads that have been
+created via <cmd>thread::create</cmd>.
+</p>
+<p><cmd>thread::send</cmd> passes a <i>script</i> to another thread and,
+optionally, waits for the result.  If the <b>-async</b> flag is specified
+then the caller does not wait for the result.  The target thread must
+enter its event loop in order to receive script messages.  This is done
+by default for threads created without a startup script.  Threads can
+enter the event loop explicitly by calling <cmd>thread::wait</cmd>.
+<cmd>vwait</cmd> should not be used as it breaks the ability to unwind the
+thread for a <cmd>thread::exit</cmd>.
+</p>
+<p><cmd>thread::wait</cmd> enters the event loop so a thread can receive
+messages from <cmd>thread::send</cmd>.
+</p>
+<p><cmd>thread::join</cmd> waits for the thread with id <i>id</i> to exit and
+then returns its exit code. Errors will be returned for threads which
+are not joinable or already waited upon by another thread.
+</p>
+<p><cmd>thread::transfer</cmd> moves the specified <i>channel</i> from the
+current thread and interpreter to the main interpreter of the thread
+with the given <i>id</i>. After the move the current interpreter has
+no access to the channel anymore, but the main interpreter of the
+target thread will be able to use it from now on.
+</section>
+
+<section>
+<title>DISCUSSION</title>
+<p>The fundamental threading model in Tcl is that there can be one or more
+Tcl interpreters per thread, but each Tcl interpreter should only be used
+by a single thread.  A "shared memory" abstraction is awkward to provide
+in Tcl because Tcl makes assumptions about variable and data ownership.
+Therefore this extension supports a simple form of threading where
+the main thread can manage several background, or "worker" threads.
+For example, an event-driven server can pass requests to worker threads,
+and then await responses from worker threads or new client requests.
+Everything goes through the common Tcl event loop, so message
+passing between threads works naturally with event-driven I/O,
+<cmd>vwait</cmd> on variables, and so forth. For the transfer of bulk
+information it is possible to move channels between the threads.
+</section>
+
+<seealso>
+<a href=http://www.scriptics.com/support/howto/thread_model.html>
+A Guide to the Tcl Threading Model</a>.
+<ref>Tcl_CreateThread(3)</ref>
+</seealso>
+
+</manpage>
