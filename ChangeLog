@@ -1,7 +1,11 @@
+2002-07-03  Zoran Vasiljevic <zoran@archiware.com>  
+
+	* generic/threadSvCmd.c: simplified object duplicator
+
 2002-06-17  Zoran Vasiljevic <zoran@archiware.com>  
 
 	* generic/threadCmd.c: cleanup of some unused variables
-	* generic/threadSv.c:
+	* generic/threadSvCmd.c:
 	* generic/ThreadSpCmd.c:
 	* generic/threadSvList.c: added CONST qualifiers to avoid warnings
 	when compiling against 8.4 core. 
