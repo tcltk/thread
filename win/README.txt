@@ -2,77 +2,36 @@
 I. Building the Tcl thread extension for Windows
 ================================================
 
-Thread extension supports two build scenarios under Windows:
+Thread extension supports two build options:
 
 
-o. Microsoft MSVC++ build:
---------------------------
+o. MinGW builds:
+----------------
 
-You should use the makefile.vc and config.vc files for the
-MSVC++ in the vc/ directory. Please edit the config.vc to
-match your environment and then run:
+The extension can be compiled under Windows using the
+MinGW (http://www.mingw.org) environment. You can also
+download the ready-to-go copy of the MinGW from the
+same place you've downloaded this extension.
 
-    nmake -f makefile.vc
-
-Please consult the vc/README.txt file for more details.
-
-This is the preferred way of building the extension for the
-Windows platform. It works out of the box and somebody says
-that MSVC compiler produces better/faster code. Maybe true.
-
-
-o. Cygwin/MinGW builds:
------------------------
-
-The extension can be compiled under Windows using either 
-MinGW (http://www.mingw.org) or The Cygwin environment. 
-(http://www.cygwin.com). Note that the Cygwin-supplied gcc
-compiler is not supported. You should use the gcc compiler
-as provided with the MinGW environment.
-
-Please note that Cygwin/MinGW builds are working only for 
-Tcl 8.4b1 or later. Earlier versions of Tcl core had many 
-problems when building under one of those environments.
-
-You should compile the Tcl core first. After that, you can
-compile the extension by running the configure/make from
-this directory. You can also use the CONFIG script to do
-this. You might want to edit the CONFIG script to match
-your environment and then just do:
+You should compile the Tcl core with MinGW first. After
+that, you can compile the extension by running the
+configure/make from this directory. You can also use the
+CONFIG script to do this. You might want to edit the
+script to match your environment and then just do:
 
     sh CONFIG
 
 This should go smoothly, once you got Tcl core compiled ok.
 
-There are also some (pretty promising) efforts in using 
-MinGW on Linux to cross-compile the Tcl core for Windows 
-under Linux operating system.
-In general, you might want to take following steps:
 
-  1. Install the MinGW cross compiler. Use the binaries from
-     http://www.stats.ox.ac.uk/pub/Rtools/mingw-cross.tar.bz2
-     You need a Linux with at least gnu libc 2.2 for that.
+o. Microsoft MSVC++ build:
+--------------------------
 
-  2. Go to win directory of the tcl8.4b1 source distribution.
-
-  3. Create the "config.site" file with the following contents:
-
-     CC=mingw32-gcc
-     AR=mingw32-ar
-     RANLIB=mingw32-ranlib
-     RC=mingw32-windres
-
-  4. Run "CONFIG_SITE=config.site ./configure --enable-threads"
-
-  5. Run "make"
-
-After some (noisy) warnings you will get a set of *.exe and
-*.dll files you can transfer to a Windows machine. 
-Don't forget to copy Tcl libraries as well, otherwise Tcl 
-shell won't start correctly.
-
-After building the Tcl core, repeat steps 3-5 above from this
-directory for building the Threading extension.
+You should use the makefile.vc file for the MSVC++ located
+in the vc/ directory. Please consult the vc/README.txt and
+vc/makefile.vc files for more details.
+Alternatively, you can use the MSVC++ IDE and open the 
+thread_win.dsw workspace file.
 
 
 II. Building optional support libraries
