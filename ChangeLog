@@ -1,3 +1,8 @@
+2003-01-22 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: fixed reference to errorInfo
+	when reporting error from the passed script.
+
 2003-01-21  Mo DeJong  <mdejong@users.sourceforge.net>
 
 	* configure: Regenerate to include recent fixes
