@@ -1,3 +1,13 @@
+2003-03-28 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadSvList.c
+	* generic/threadSvCmd.c: fixed some rare cases
+	where we incorrectly deep-copied the list object
+	having zero elements.
+
+	* generic/threadCmd.c: fixed broken AOLserver 3.x
+	compatibility mode introduced by last 4.x changes.
+
 2003-03-17 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadSvCmd.c: fixed incompatibility 
