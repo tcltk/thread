@@ -7,6 +7,8 @@ this extension to gain script-level access to Tcl threading capabilities.
 The extension can be used with Tcl cores starting from Tcl8.3 and later.
 To get full functionality, though, it is advised to use at least Tcl 8.4
 core since it has much better support for threads.
+Also, this extension supports, i.e. can be used as a loadable module of,
+AOLserver 3.x series of the highly-scalable web server from America Online. 
 
 You need to have your Tcl core compiled with "--enable-threads" in order
 to turn on internal directives supporting thread-specific details of the
