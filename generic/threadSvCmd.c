@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.9 2002/01/22 00:03:24 davygrvy Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.10 2002/01/27 04:56:00 davygrvy Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -971,7 +971,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
             }
         } else {
             lobjc = objc - 3;
-            lobjv = objv + 3;
+            lobjv = (Tcl_Obj **) &objv[3];
         }
         if (lobjc & 1) {
             Tcl_AppendResult(interp, "list must have an even number"
