@@ -20,15 +20,16 @@ builtin(include,aolserver.m4)
 AC_DEFUN(TCLTHREAD_WITH_GDBM, [
     AC_MSG_CHECKING([for GNU gdbm library])
     AC_ARG_WITH(gdbm,
-	[  --with-gdbm           link with optional gdbm support],\
+	[  --with-gdbm             link with optional gdbm support],\
 	with_gdbm=${withval})
 
     AC_CACHE_VAL(ac_cv_c_gdbm,[
-    if test x"${with_gdbm}" != x ; then
+    if test x"${with_gdbm}" != x -a "${with_gdbm}" != "yes"; then
         if test -f "${with_gdbm}/gdbm.h" -a x"`ls ${with_gdbm}/libgdbm* 2>/dev/null`" != x; then
             ac_cv_c_gdbm=`(cd ${with_gdbm}; pwd)`
             gincdir=$ac_cv_c_gdbm
             glibdir=$ac_cv_c_gdbm
+            AC_MSG_RESULT([found in $glibdir])
         else
             AC_MSG_ERROR([${with_gdbm} directory doesn't contain gdbm library])
         fi
@@ -57,7 +58,7 @@ AC_DEFUN(TCLTHREAD_WITH_GDBM, [
         if test x"$glibdir" = x -o x"$gincdir" = x ; then
             AC_MSG_ERROR([none found])
         else
-            AC_MSG_RESULT([yes])
+            AC_MSG_RESULT([found in $glibdir, includes in $gincdir])
             AC_DEFINE(HAVE_GDBM)
             GDBM_CFLAGS="-I\"$gincdir\""
             GDBM_LIBS="-L\"$glibdir\" -lgdbm"
