@@ -1,3 +1,8 @@
+2002-04-01  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* Makefile.in (install-lib-binaries): ensure that binary files are
+	installed with executable bit set (use INSTALL_PROGRAM)
+
 2002-03-28  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* configure:

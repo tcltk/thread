@@ -22,7 +22,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: Makefile.in,v 1.11 2002/03/28 02:38:40 hobbs Exp $
+# RCS: @(#) $Id: Makefile.in,v 1.12 2002/04/01 21:30:30 hobbs Exp $
 
 #========================================================================
 # Enumerate the names of the source files included in this package.
@@ -318,8 +318,8 @@ distclean: clean
 install-lib-binaries: installdirs
 	@list='$(lib_BINARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(pkglibdir)/$$p"; \
-	    $(INSTALL_DATA) $$p $(DESTDIR)$(pkglibdir)/$$p; \
+	    echo " $(INSTALL_PROGRAM) $$p $(DESTDIR)$(pkglibdir)/$$p"; \
+	    $(INSTALL_PROGRAM) $$p $(DESTDIR)$(pkglibdir)/$$p; \
 	    echo " $(RANLIB) $(DESTDIR)$(pkglibdir)/$$p"; \
 	    $(RANLIB) $(DESTDIR)$(pkglibdir)/$$p; \
 	    ext=`echo $$p|sed -e "s/.*\.//"`; \
@@ -330,7 +330,7 @@ install-lib-binaries: installdirs
 	            $(INSTALL_DATA) $$lib $(DESTDIR)$(pkglibdir)/$$lib; \
 		fi; \
 	    fi; \
-	  else :; fi; \
+	  fi; \
 	done
 
 #========================================================================
@@ -342,9 +342,9 @@ install-lib-binaries: installdirs
 install-bin-binaries: installdirs
 	@list='$(bin_BINARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(bindir)/$$p"; \
-	    $(INSTALL_DATA) $$p $(DESTDIR)$(bindir)/$$p; \
-	  else :; fi; \
+	    echo " $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/$$p"; \
+	    $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/$$p; \
+	  fi; \
 	done
 
 .SUFFIXES: .c .$(OBJEXT)
