@@ -1,10 +1,71 @@
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
 '\"
-'\" Generated from thread.tmml
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
 '\"
-'\" BEGIN man.macros
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: thread.n,v 1.14 2003/11/25 18:18:28 vasiljevic Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
 .nr ^l \n(.l
 .ad b
+'\"	# Start an argument description
 .de AP
 .ie !"\\$4"" .TP \\$4
 .el \{\
@@ -26,6 +87,7 @@
 .\}
 .\}
 ..
+'\"	# define tabbing values for .AP
 .de AS
 .nr )A 10n
 .if !"\\$1"" .nr )A \\w'\\$1'u+3n
@@ -35,6 +97,9 @@
 .nr )C \\n()Bu+\\w'(in/out)'u+2n
 ..
 .AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
 .de BS
 .br
 .mk ^y
@@ -44,6 +109,7 @@
 .if n \l'\\n(.lu\(ul'
 .if n .fi
 ..
+'\"	# BE - end boxed text (draw box now)
 .de BE
 .nf
 .ti 0
@@ -63,12 +129,16 @@
 .br
 .nr ^b 0
 ..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
 .de VS
 .if !"\\$2"" .br
 .mk ^Y
 .ie n 'mc \s12\(br\s0
 .el .nr ^v 1u
 ..
+'\"	# VE - end of vertical sidebar
 .de VE
 .ie n 'mc
 .el \{\
@@ -83,6 +153,9 @@
 .\}
 .nr ^v 0
 ..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
 .de ^B
 .ev 2
 'ti 0
@@ -109,16 +182,19 @@
 .mk ^Y
 .\}
 ..
+'\"	# DS - begin display
 .de DS
 .RS
 .nf
 .sp
 ..
+'\"	# DE - end display
 .de DE
 .fi
 .RE
 .sp
 ..
+'\"	# SO - start of list of standard options
 .de SO
 .SH "STANDARD OPTIONS"
 .LP
@@ -126,12 +202,14 @@
 .ta 5.5c 11c
 .ft B
 ..
+'\"	# SE - end of list of standard options
 .de SE
 .fi
 .ft R
 .LP
 See the \\fBoptions\\fR manual entry for details on the standard options.
 ..
+'\"	# OP - start of full description for a single option
 .de OP
 .LP
 .nf
@@ -142,12 +220,14 @@ Database Class:	\\fB\\$3\\fR
 .fi
 .IP
 ..
+'\"	# CS - begin code excerpt
 .de CS
 .RS
 .nf
 .ta .25i .5i .75i 1i
 .if t .ft C
 ..
+'\"	# CE - end code excerpt
 .de CE
 .fi
 .if t .ft R
@@ -156,329 +236,364 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-'\" END man.macros
-.TH "Tcl Threading" n "2.5" Tcl ""
+
+'\"
+'\" Generated from file '' by tcllib/doctools with format 'nroff'
+'\"
+'\" -*- tcl -*- doctools manpage
+.so man.macros
+.TH "thread" n 2.6  "Tcl Threading"
 .BS
-.SH NAME
-thread \- A Tcl extension implementing script level access to Tcl threading capabilities.
-.SH SYNOPSIS
-.nf
-
-
-.PP
-
-\&\fBpackage require Thread ?2.5?\fP
-
-\&\fBthread::create\fP ?\fI-joinable\fR? ?\fI-preserved\fR? ?\fIscript\fR?
-\&\fBthread::preserve\fP \fIid\fR
-\&\fBthread::release\fP ?\fI-wait\fR? \fIid\fR
-\&\fBthread::id\fP
-\&\fBthread::errorproc\fP ?\fIprocname\fR?
-\&\fBthread::unwind\fP
-\&\fBthread::exit\fP
-\&\fBthread::names\fP
-\&\fBthread::exists\fP \fIid\fR
-\&\fBthread::send\fP ?\fI-async\fR? \fIid\fR \fIscript\fR ?\fIvarname\fR?
-\&\fBthread::wait\fP
-\&\fBthread::eval\fP ?\fI-lock mutex\fR? \fIarg\fR ?\fIarg ...\fR?
-\&\fBthread::join\fP \fIid\fR
-\&\fBthread::configure\fP \fIid\fR ?\fIoption\fR? ?\fIvalue\fR\fI? ?\fR\fIoption value\fR\fI?...\fR
-\&\fBthread::transfer\fP \fIid\fR \fIchannel\fR
-\&\fBthread::detach\fP \fIchannel\fR
-\&\fBthread::attach\fP \fIchannel\fR
-\&\fBthread::cond\fP \fIoptions\fR
-\&\fBthread::mutex\fP \fIoptions\fR
-
-.fi
+.SH "NAME"
+thread \- Extension for script access to Tcl threading
+.SH "SYNOPSIS"
+package require \fBTcl  8.3\fR
+.sp
+package require \fBThread  ?2.6?\fR
+.sp
+\fBthread::create\fR ?-joinable? ?-preserved? ?script?\fR
+.sp
+\fBthread::preserve\fR ?id?\fR
+.sp
+\fBthread::release\fR ?-wait? ?id?\fR
+.sp
+\fBthread::id\fR \fR
+.sp
+\fBthread::errorproc\fR ?procname?\fR
+.sp
+\fBthread::unwind\fR \fR
+.sp
+\fBthread::exit\fR \fR
+.sp
+\fBthread::names\fR \fR
+.sp
+\fBthread::exists\fR \fIid\fR\fR
+.sp
+\fBthread::send\fR ?-async? \fIid\fR \fIscript\fR ?varname?\fR
+.sp
+\fBthread::wait\fR \fR
+.sp
+\fBthread::eval\fR ?-lock mutex? \fIarg\fR ?arg ...?\fR
+.sp
+\fBthread::join\fR \fIid\fR\fR
+.sp
+\fBthread::configure\fR \fIid\fR ?option? ?value? ?...?\fR
+.sp
+\fBthread::transfer\fR \fIid\fR \fIchannel\fR\fR
+.sp
+\fBthread::detach\fR \fIchannel\fR\fR
+.sp
+\fBthread::attach\fR \fIchannel\fR\fR
+.sp
+\fBthread::mutex\fR \fR
+.sp
+\fBthread::mutex\fR \fBcreate\fR\fR
+.sp
+\fBthread::mutex\fR \fBdestroy\fR \fImutex\fR\fR
+.sp
+\fBthread::mutex\fR \fBlock\fR \fImutex\fR\fR
+.sp
+\fBthread::mutex\fR \fBunlock\fR \fImutex\fR\fR
+.sp
+\fBthread::cond\fR \fR
+.sp
+\fBthread::cond\fR \fBcreate\fR\fR
+.sp
+\fBthread::cond\fR \fBdestroy\fR \fIcond\fR\fR
+.sp
+\fBthread::cond\fR \fBnotify\fR \fIcond\fR\fR
+.sp
+\fBthread::cond\fR \fBwait\fR \fIcond\fR \fImutex\fR ?ms?\fR
+.sp
 .BE
-.SH DESCRIPTION
-.PP
-The \fBthread\fP extension creates threads that contain Tcl
-interpreters, and it lets you send scripts to those threads for evaluation.
-Additionaly, it provides script-level access to basic thread synchronization
-primitives, like mutexes and condition variables.
-.SH COMMANDS
-.PP
+.SH "DESCRIPTION"
+The \fBthread\fR extension creates threads that contain Tcl
+interpreters, and it lets you send scripts to those threads for
+evaluation.
+Additionaly, it provides script-level access to basic thread
+synchronization primitives, like mutexes and condition variables.
+.SH "COMMANDS"
 This section describes commands for creating and destroying threads
 and sending scripts to threads for evaluation.
 .TP
-\&\fB \fBthread::create\fP ?\fI-joinable\fB? ?\fI-preserved\fB? ?\fIscript\fB?
-\&\fRThis command creates a thread that contains a Tcl interpreter.
-The Tcl interpreter either evaluates the optional \fIscript\fR, if
+\fBthread::create\fR ?-joinable? ?-preserved? ?script?\fR
+This command creates a thread that contains a Tcl interpreter.
+The Tcl interpreter either evaluates the optional \fBscript\fR, if
 specified, or it waits in the event loop for scripts that arrive via
-the \fBthread::send\fP command. The result, if any, of the
-optional \fIscript\fR is never returned to the caller.
-.RS
-.PP
-The result of \fBthread::create\fP is the ID of the thread. This is
-the small integer handle which indentifies the newly created thread for
+the \fBthread::send\fR command. The result, if any, of the
+optional \fBscript\fR is never returned to the caller.
+The result of \fBthread::create\fR is the ID of the thread. This is
+the small integer handle which identifies the newly created thread for
 all other package commands. The handle of the thread goes out of scope
-automatically when thread is marked for exit (see the \fBthread::release\fP
-command below).
-If the optional \fIscript\fR argument contains the \fBthread::wait\fP
-command the thread will enter into the event loop. If such command is not found
-in the \fIscript\fR the thread will run the \fIscript\fR to the end and exit.
-In that case, the handle may be safely ignored since it refers to a thread
-which does not exists any more at the time when the command returns.
-Using flag \fI-joinable\fR it is possible to create a joinable
+automatically when thread is marked for exit
+(see the \fBthread::release\fR command below).
+.sp
+If the optional \fBscript\fR argument contains the \fBthread::wait\fR
+command the thread will enter into the event loop. If such command is not
+found  in the \fBscript\fR the thread will run the \fBscript\fR to
+the end and exit. In that case, the handle may be safely ignored since it
+refers to a thread which does not exists any more at the time when the
+command returns.
+.sp
+Using flag \fB-joinable\fR it is possible to create a joinable
 thread, i.e. one upon whose exit can be waited upon by using
-\&\fBthread::join\fP command. Note that only Tcl8.4+ core supports joinable
-threads. Note also that failure to join a thread created with
-\&\fB-joinable\fP flag results in resource and memory leaks.
-.PP
-Threads created by the \fBthread::create\fP cannot be destroyed forcefully.
-Consequently, there is no corresponding destroy-type command. A thread may only
-be "released" using the \fBthread::release\fP and if its internal reference
-count drops to zero, the thread is marked for exit. This kicks the thread out
-of the event loop servicing and the thread continues to execute commands passed
-in the \fIscript\fR argument, following the \fBthread::wait\fP command.
-If this was the last command in the script, as usualy the case, the thread will
-exit.
-It is possible to create a situation in which it may be impossible to
-terminate the thread, for example by putting some endless loop after the
-\&\fBthread::wait\fP or entering the event loop again by doing an vwait-type
-of command. In such cases, the thread may never exit. This is considered to
-be a bad practice and should be avoided if possible.
-
-
-.CS
-
-    # You should NEVER do ...
+\fBthread::join\fR command. Note that only Tcl8.4+ core supports
+joinable threads. Note also that failure to join a thread created
+with \fB-joinable\fR flag results in resource and memory leaks.
+.sp
+Threads created by the \fBthread::create\fR cannot be destroyed
+forcefully. Consequently, there is no corresponding thread destroy
+command. A thread may only be released using the \fBthread::release\fR
+and if its internal reference count drops to zero, the thread is
+marked for exit. This kicks the thread out of the event loop
+servicing and the thread continues to execute commands passed in
+the \fBscript\fR argument, following the \fBthread::wait\fR
+command. If this was the last command in the script, as usualy the
+case, the thread will exit.
+.sp
+It is possible to create a situation in which it may be impossible
+to terminate the thread, for example by putting some endless loop
+after the \fBthread::wait\fR or entering the event loop again by
+doing an vwait-type of command. In such cases, the thread may never
+exit. This is considered to be a bad practice and should be avoided
+if possible. This is best illustrated by the example below:
+.sp
+.nf
+    # You should never do ...
     set tid [thread::create {
-        packkage require Http
+        package require Http
         thread::wait
-        vwait forever ; # -- this!
+        vwait forever ; # <-- this!
     }]
-
-.CE
-.PP
+.fi
+.sp
 The thread created in the above example will never be able to exit.
-After it has been released with the last matching \fBthread::release\fP call
-the thread will jump out of the \fBthread::wait\fP and continue to execute
-commands following. It will enter \fBvwait\fP command and wait endlessly for
-events. There is no way one can terminate such thread, so you wouldn't want to do this!
-.PP
-Each newly created has its internal reference counter set to 0 (zero), i.e. it is
-unreserved. This counter gets incremented by a call to \fBthread::preserve\fP
-and decremented by a call to \fBthread::release\fP command. These two commands
-implement simple but effective thread reservation system and offer predictable and
-controllable thread termination capabilities. It is however possible to create
-initialy preserved threads by using flag \fI-preserved\fR. Threads
-created with this flag have the initial value of the reference counter of 1 (one).
-.RE
+After it has been released with the last matching \fBthread::release\fR
+call, the thread will jump out of the \fBthread::wait\fR and continue
+to execute commands following. It will enter \fBvwait\fR command and
+wait endlessly for events. There is no way one can terminate such thread,
+so you wouldn't want to do this!
+.sp
+Each newly created has its internal reference counter set to 0 (zero),
+i.e. it is unreserved. This counter gets incremented by a call to
+\fBthread::preserve\fR and decremented by a call to \fBthread::release\fR
+command. These two commands implement simple but effective thread
+reservation system and offer predictable and controllable thread
+termination capabilities. It is however possible to create initialy
+preserved threads by using flag \fB-preserved\fR of the
+\fBthread::create\fR command. Threads created with this flag have the
+initial value of the reference counter of 1 (one), and are thus
+initially marked reserved.
 .TP
-\&\fB \fBthread::preserve\fP ?\fIid\fB?
-\&\fRThis command increments the thread reference counter. Each call
-to this command increments the reference counter by one (1). Command returns
-the value of the reference counter after the increment.
-If called with the optional thread \fIid\fR, the command preserves the given
-thread. Otherwise the current thread is preserved.\fB\fR
-With reference counting, one can implement controlled access to a shared Tcl
-thread.  By incrementing the reference counter, the caller signalizes that
-he/she wishes to use the thread for a longer period of time. By decrementing
-the counter, caller signalizes that he/she has finished using the thread.
+\fBthread::preserve\fR ?id?\fR
+This command increments the thread reference counter. Each call
+to this command increments the reference counter by one (1).
+Command returns the value of the reference counter after the increment.
+If called with the optional thread \fBid\fR, the command preserves
+the given thread. Otherwise the current thread is preserved.
+.sp
+With reference counting, one can implement controlled access to a
+shared Tcl thread. By incrementing the reference counter, the
+caller signalizes that he/she wishes to use the thread for a longer
+period of time. By decrementing the counter, caller signalizes that
+he/she has finished using the thread.
 .TP
-\&\fB \fBthread::release\fP ?\fI-wait\fB? ?\fIid\fB?
-\&\fRThis command decrements the thread reference counter. Each call to this
-command decrements the reference counter by one (1).
-If called with the optional thread \fIid\fR, the command releases the given
-thread. Otherwise, the current thread is released.
-Command returns the value of the reference counter after the decrement. When the
-reference counter reaches zero (0), the target thread is marked for termination.
-You should not reference the thread after the \fBthread::release\fP command
-returns zero or negative integer. The handle of the thread goes out of scope and
-should not be used any more. Any following reference to the same thread handle
-will result in Tcl error.\fB\fR
-Optional flag \fI-wait\fR instructs the caller thread to wait for the target
-thread to exit, if the effect of the command would result in termination of the
-target thread, i.e. if the return result would be zero (0). Without the flag, the
-caller thread does not wait for the target thread to exit. Care must be taken
-when using the \fI-wait\fR, since this may block the caller thread indefinitely.
+\fBthread::release\fR ?-wait? ?id?\fR
+This command decrements the thread reference counter. Each call to
+this command decrements the reference counter by one (1).
+If called with the optional thread \fBid\fR, the command releases
+the given thread. Otherwise, the current thread is released.
+Command returns the value of the reference counter after the decrement.
+When the reference counter reaches zero (0), the target thread is
+marked for termination. You should not reference the thread after the
+\fBthread::release\fR command returns zero or negative integer.
+The handle of the thread goes out of scope and should not be used any
+more. Any following reference to the same thread handle will result
+in Tcl error.
+.sp
+Optional flag \fB-wait\fR instructs the caller thread to wait for
+the target thread to exit, if the effect of the command would result
+in termination of the target thread, i.e. if the return result would
+be zero (0). Without the flag, the caller thread does not wait for
+the target thread to exit. Care must be taken when using the
+\fB-wait\fR, since this may block the caller thread indefinitely.
+This option has been implemented for users of Tcl 8.3 version only.
+Users of Tcl 8.4 or later should create joinable threads, by using
+the \fB-joinable\fR option of the \fBthread::create\fR command
+and the \fBthread::join\fR to wait for thread exit.
 .TP
-\&\fB\fBthread::id\fP
-\&\fRThis command returns the ID of the current thread.
+\fBthread::id\fR \fR
+This command returns the ID of the current thread.
 .TP
-\&\fB\fBthread::errorproc\fP ?\fIprocname\fB?
-\&\fRThis command sets a handler for errors that occur in scripts sent 
-asynchronously, using the \fB-async\fP flag of the 
-\&\fBthread::send\fP command, to other threads. If no handler is specified,
-the current handler is returned. The empty string resets the handler to default 
-(unspecified) value.
+\fBthread::errorproc\fR ?procname?\fR
+This command sets a handler for errors that occur in scripts sent
+asynchronously, using the \fB-async\fR flag of the
+\fBthread::send\fR command, to other threads. If no handler
+is specified, the current handler is returned. The empty string
+resets the handler to default (unspecified) value.
 An uncaught error in a thread causes an error message to be sent
-to the standard error channel. This default reporting scheme can be
-changed by registering a procedure which is called to report the error.
-The \fIproc\fR is called in the interpreter that invoked the 
-\&\fBthread::errorproc\fP command. The \fIproc\fR is called like this:
-
-.RS
-.CS
-myerrorproc thread_id errorInfo
-.CE
-.RE
+to the standard error channel. This default reporting scheme can
+be changed by registering a procedure which is called to report
+the error. The \fIprocname\fR is called in the interpreter that
+invoked the \fBthread::errorproc\fR command. The \fIprocname\fR
+is called like this:
+.sp
+.nf
+    myerrorproc thread_id errorInfo
+.fi
 .TP
-\&\fB\fBthread::unwind\fP
-\&\fR
-Use of this command is deprecated in favour of more advanced thread reservation
-system implemented with \fBthread::preserve\fP and \fBthread::release\fP
-commands. Support for \fBthread::wait\fP will dissapear in some future
-major release of the extension.
-\&\fB\fR
-This stops a prior \fBthread::wait\fP. Execution of the script will
-continue from the \fBthread::wait\fP command. If \fBthread::wait\fP
-was the last command in the script passed to the thread at the time of its
-creation, the thread will exit. The command usually returns empty result but
-may trigger Tcl error with the message "target thread died" in some situations.
+\fBthread::unwind\fR \fR
+Use of this command is deprecated in favour of more advanced thread
+reservation system implemented with \fBthread::preserve\fR and
+\fBthread::release\fR commands. Support for \fBthread::unwind\fR
+command will dissapear in some future major release of the extension.
+.sp
+This command stops a prior \fBthread::wait\fR command. Execution of
+the script passed to newly created thread will continue from the
+\fBthread::wait\fR command. If \fBthread::wait\fR was the last command
+in the script, the thread will exit. The command returns empty result
+but may trigger Tcl error with the message "target thread died" in some
+situations.
 .TP
-\&\fB\fBthread::exit\fP
-\&\fR
-Use of this command is deprecated in favour of the more advanced thread reservation
-system implemented with \fBthread::preserve\fP and \fBthread::release\fP
-commands. Use on your own risk and with extreme precaution. Support for
-\&\fBthread::exit\fP will dissapear in  some future major release of the extension.
-\&\fB\fR
-This forces a thread stuck in the \fBthread::wait\fP to unconditionaly
-exit. This command is guaranteed to leave the program memory in the unconsistent
-state, produce memory leaks and otherwise affect other subsytem(s) of the Tcl
-application in an unpredictable manner. The command usually  returns empty result.
-but may trigger Tcl error with the message "target thread died" in some situations.
+\fBthread::exit\fR \fR
+Use of this command is deprecated in favour of more advanced thread
+reservation system implemented with \fBthread::preserve\fR and
+\fBthread::release\fR commands. Support for \fBthread::exit\fR
+command will dissapear in some future major release of the extension.
+.sp
+This command forces a thread stuck in the \fBthread::wait\fR
+command to unconditionaly exit. The execution of \fBthread::exit\fR
+command is guaranteed to leave the program memory in the unconsistent
+state, produce memory leaks and otherwise affect other subsytem(s)
+of the Tcl application in an unpredictable manner. The command
+returns empty result but may trigger Tcl error with the message
+"target thread died" in some situations.
 .TP
-\&\fB\fBthread::names\fP
-\&\fRThis command returns a list of thread IDs. These are only for
-threads that have been created via \fBthread::create\fP. If your
-application creates other threads at the C level, they are not
-reported by the \fBthread::names\fP command.
+\fBthread::names\fR \fR
+This command returns a list of thread IDs. These are only for
+threads that have been created via \fBthread::create\fR command.
+If your application creates other threads at the C level, they
+are not reported by this command.
 .TP
-\&\fB\fBthread::exists\fP \fIid\fB
-\&\fRReturns true (1) if thread given by the ID parameter exists, false (0)
-otherwise. This applies only for threads that have been created via
-\&\fBthread::create\fP command.
+\fBthread::exists\fR \fIid\fR\fR
+Returns true (1) if thread given by the \fIid\fR parameter exists,
+false (0) otherwise. This applies only for threads that have
+been created via \fBthread::create\fR command.
 .TP
-\&\fB\fBthread::send\fP ?\fI-async\fB? \fIid\fB \fIscript\fB ?\fIvarname\fB?
-\&\fRThis command passes a \fIscript\fR to another thread and, optionally, waits
-for the result. If the \fB-async\fP flag is specified, the command does
-not wait for the result and it returns empty string. The target thread must
-enter it's event loop in order to receive scripts sent via this command.
-This is done by default for threads created without a startup script. Threads
-can enter the event loop explicitly by calling \fBthread::wait\fP or any other
-relevant Tcl/Tk command, like \fBupdate\fP, \fBvwait\fP, etc.
-.RS
-.PP
-Optional \fIvarname\fR specifies name of the variable to store
-the result of the \fIscript\fR. Without the \fB-async\fP flag, the
-command returns the evaluation code, similarily to the standard Tcl \fBcatch\fP
-command. If, however, the \fB-async\fP flag is specified, the command
-returns  immediately and caller can later \fBvwait\fP on \fIvarname\fR to
-get the result of the passed \fIscript\fR.
-
-
-.CS
-
+\fBthread::send\fR ?-async? \fIid\fR \fIscript\fR ?varname?\fR
+This command passes a \fIscript\fR to another thread and, optionally,
+waits for the result. If the \fB-async\fR flag is specified, the
+command does not wait for the result and it returns empty string.
+The target thread must enter it's event loop in order to receive
+scripts sent via this command. This is done by default for threads
+created without a startup script. Threads can enter the event loop
+explicitly by calling \fBthread::wait\fR or any other relevant Tcl/Tk
+command, like \fBupdate\fR, \fBvwait\fR, etc.
+.sp
+Optional \fBvarname\fR specifies name of the variable to store
+the result of the \fIscript\fR. Without the \fB-async\fR flag,
+the command returns the evaluation code, similarily to the standard
+Tcl \fBcatch\fR command. If, however, the \fB-async\fR flag is
+specified, the command returns immediately and caller can later
+\fBvwait\fR on ?varname? to get the result of the passed \fIscript\fR
+.sp
+.nf
     set t1 [thread::create]
-    set t2 [thread::create] 
+    set t2 [thread::create]
     thread::send -async $t1 "set a 1" result
-    thread::send -async $t2 "set b 2" result 
+    thread::send -async $t2 "set b 2" result
     for {set i 0} {$i < 2} {incr i} {
         vwait result
     }
-
-.CE
-.PP
-In the above example, two threads were fed work and both of them were instructed
-to signalize the same variable "result" in the calling thread. The caller entered
-the event loop twice to get both results. Note, however, that the order of the
-received results may vary, depending on the current system load, type of work done,
-etc, etc.
-.PP
-Many threads can simultaneously send scripts to the target thread for execution.
-All of them are entered into the event queue of the target thread and
-executed on the FIFO basis, intermingled with optional other events pending in
-the event queue of the target thread.
-.RE
+.fi
+.sp
+In the above example, two threads were fed work and both of them were
+instructed to signalize the same variable "result" in the calling thread.
+The caller entered the event loop twice to get both results. Note,
+however, that the order of the received results may vary, depending on
+the current system load, type of work done, etc, etc.
+.sp
+Many threads can simultaneously send scripts to the target thread for
+execution. All of them are entered into the event queue of the target
+thread and executed on the FIFO basis, intermingled with optional other
+events pending in the event queue of the target thread.
 .TP
-\&\fB\fBthread::wait\fP
-\&\fRThis enters the event loop so a thread can receive messages from 
-\&\fBthread::send\fP. This command should only be used within 
-the script passed to the \fBthread::create\fP. It should be the very last 
-command in the script. If this is not the case, the exiting thread will continue
-executing the script lines pass the \fBthread::wait\fP which is not what 
-you usualy want and/or expect.
-
-.RS
-.CS
-
+\fBthread::wait\fR \fR
+This enters the event loop so a thread can receive messages from
+the \fBthread::send\fR command. This command should only be used
+within the script passed to the \fBthread::create\fR. It should
+be the very last command in the script. If this is not the case,
+the exiting thread will continue executing the script lines pass
+the \fBthread::wait\fR which is usually not what you want and/or
+expect.
+.sp
+.nf
     set t1 [thread::create {
         #
-        # Do some initialization work
+        # Do some initialization work here
         #
         thread::wait ; # Enter the event loop
-    }
-
-.CE
-.RE
+    }]
+.fi
 .TP
-\&\fB\fBthread::eval\fP ?\fI-lock mutex\fB? \fIarg\fB ?\fIarg ...\fB?
-\&\fRThis command concatenates passed arguments and evaluates the
-resulting script under the mutex protection. If no mutex is specified,
-using the \fI-lock mutex\fR optional argument, an internal
-static mutex is used.
+\fBthread::eval\fR ?-lock mutex? \fIarg\fR ?arg ...?\fR
+This command concatenates passed arguments and evaluates the
+resulting script under the mutex protection. If no mutex is
+specified by using the ?-lock mutex? optional argument,
+the internal static mutex is used.
 .TP
-\&\fB\fBthread::join\fP \fIid\fB
-\&\fRThis command waits for the thread with ID \fIid\fR to exit and
-then returns it's exit code. Errors will be returned for threads which
-are not joinable or already waited upon by another thread. Upon the join
-the handle of the thread has gone out of scope and should not be used
-any more.
-.RS
-.PP
-NOTE: This command is available only when loaded into the Tcl8.4+ shell.
-.RE
+\fBthread::join\fR \fIid\fR\fR
+This command waits for the thread with ID \fIid\fR to exit and
+then returns it's exit code. Errors will be returned for threads
+which are not joinable or already waited upon by another thread.
+Upon the join the handle of the thread has gone out of scope and
+should not be used any more.
+.sp
+NOTE: This command is available only when loaded into the
+Tcl8.4+ shell.
 .TP
-\&\fB\fBthread::configure\fP \fIid\fB ?\fIoption\fB? ?\fIvalue\fB\fI? ?\fB\fIoption value\fB\fI?...\fB
-\&\fRThis command configures various low-level aspects of the thread with ID
-\&\fIid\fR in the similar way as the standard Tcl command \fBfconfigure\fP
-configures some Tcl channel options.
-.RS
-.PP
-Options currently supported are: \fB-eventmark\fP and \fB-unwindonerror\fP.
-.PP
-The \fB-eventmark\fP option, when set, limits the number of asynchronously
-posted scripts to the thread event loop. The \fBthread::send -async\fR
-command will block until the number of pending scripts in the event
-loop does not drop below the value configured with \fB-eventmark\fP.
-Default value for the \fB-eventmark\fP is 0 (zero) which effectively
-disables the checking, i.e. allows for unlimited number of posted scripts.
-.PP
-The boolean \fB-unwindonerror\fP option, when set, causes the target thread
-to unwind if the result of the script processing resulted in error.
-Default value for the \fB-unwindonerror\fP is 0 (false), i.e. thread continues
-to process scripts after one of the posted scripts fails.
-.RE
+\fBthread::configure\fR \fIid\fR ?option? ?value? ?...?\fR
+This command configures various low-level aspects of the thread with
+ID \fIid\fR in the similar way as the standard Tcl command
+\fBfconfigure\fR configures some Tcl channel options. Options currently
+supported are: \fB-eventmark\fR and \fB-unwindonerror\fR.
+.sp
+The \fB-eventmark\fR option, when set, limits the number of
+asynchronously posted scripts to the thread event loop.
+The \fBthread::send -async\fR command will block until the number
+of pending scripts in the event loop does not drop below the value
+configured with \fB-eventmark\fR. Default value for the
+\fB-eventmark\fR is 0 (zero) which effectively disables the checking,
+i.e. allows for unlimited number of posted scripts.
+.sp
+The boolean \fB-unwindonerror\fR option, when set, causes the
+target thread to unwind if the result of the script processing
+resulted in error. Default value for the \fB-unwindonerror\fR
+is 0 (false), i.e. thread continues to process scripts after one
+of the posted scripts fails.
 .TP
-\&\fB\fBthread::transfer\fP \fIid\fB \fIchannel\fB
-\&\fRThis moves the specified \fIchannel\fR from the
-current thread and interpreter to the main interpreter of the thread
-with the given \fIid\fR. After the move the current interpreter has no
-access to the channel anymore, but the main interpreter of the target
-thread will be able to use it from now on.
+\fBthread::transfer\fR \fIid\fR \fIchannel\fR\fR
+This moves the specified \fIchannel\fR from the current thread
+and interpreter to the main interpreter of the thread with the
+given \fIid\fR. After the move the current interpreter has no
+access to the channel any more, but the main interpreter of the
+target thread will be able to use it from now on.
 The command waits until the other thread has incorporated the
-channel. Because of this it is possible to deadlock the participating
-threads by commanding the other through a synchronous
-\&\fBthread::send\fP to transfer a channel to us. This easily extends
-into longer loops of threads waiting for each other.
-Other restrictions: the channel in question must not be shared among
-multiple interpreters running in the sending thread. This
-automatically excludes the special channels for standard input, output
-and error.
-.RS
-.PP
-
-Due to the internal Tcl core implementation and the restriction on 
+channel. Because of this it is possible to deadlock the
+participating threads by commanding the other through a
+synchronous \fBthread::send\fR to transfer a channel to us.
+This easily extends into longer loops of threads waiting for
+each other. Other restrictions: the channel in question must
+not be shared among multiple interpreters running in the
+sending thread. This automatically excludes the special channels
+for standard input, output and error.
+.sp
+Due to the internal Tcl core implementation and the restriction on
 transferring shared channels, one has to take extra measures when
 transferring socket channels created by accepting the connection
-out of the \fBsocket\fP commands callback procedures:
-
-.CS
-
+out of the \fBsocket\fR commands callback procedures:
+.sp
+.nf
     socket -server _Accept 2200
     proc _Accept {s ipaddr port} {
         after idle [list Accept $s $ipaddr $port]
@@ -487,143 +602,138 @@ out of the \fBsocket\fP commands callback procedures:
         set tid [thread::create]
         thread::transfer $tid $s
     }
-
-.CE
-.PP
+.fi
+.sp
 NOTE: this command is available only when loaded into the Tcl8.4+ shell.
-.RE
 .TP
-\&\fB\fBthread::detach\fP \fIchannel\fB
-\&\fRThis detaches the specified \fIchannel\fR from the
-current thread and interpreter. After that, the current interpreter
-has no access to the channel anymore. The channel is in the parked
-state until some other (or the same) thread attaches the channel
-again with \fBthread::attach\fP.
+\fBthread::detach\fR \fIchannel\fR\fR
+This detaches the specified \fIchannel\fR from the current thread and
+interpreter. After that, the current interpreter has no access to the
+channel any more. The channel is in the parked state until some other
+(or the same) thread attaches the channel again with \fBthread::attach\fR.
 Restrictions: same as for transferring shared channels with the
-\&\fBthread::transfer\fP command.
-.RS
-.PP
+\fBthread::transfer\fR command.
+.sp
 NOTE: this command is available only when loaded into the Tcl8.4+ shell.
-.RE
 .TP
-\&\fB\fBthread::attach\fP \fIchannel\fB
-\&\fRThis attaches the previously detached \fIchannel\fR in the
+\fBthread::attach\fR \fIchannel\fR\fR
+This attaches the previously detached \fIchannel\fR in the
 current thread/interpreter. For already existing channels,
 the command does nothing, i.e. it is not an error to attach the
 same channel more than once. The first operation will actualy
 perform the operation, while all subsequent operation will just
-do nothing.
-Command throws error if the \fIchannel\fR cannot be found in the
-list of detached channels and/or in the current interpreter.
-.RS
-.PP
+do nothing. Command throws error if the \fIchannel\fR cannot be
+found in the list of detached channels and/or in the current
+interpreter.
+.sp
 NOTE: this command is available only when loaded into the Tcl8.4+ shell.
-.RE
 .TP
-\&\fB \fBthread::mutex\fP \fIoptions\fB
-\&\fRThis command provides script-level access to mutexes. Mutexes are most
+\fBthread::mutex\fR \fR
+This command provides script-level access to mutexes. Mutexes are most
 common thread synchronization primitives. They are used to synchronize
-access from two or more threads to one or more shared resources. Care has to
-be taken when using mutexes in an multithreading program. Improper use of
-mutexes may lead to various deadlock situations.
+access from two or more threads to one or more shared resources. Care
+has to be taken when using mutexes in an multithreading program.
+Improper use of mutexes may lead to various deadlock situations.
+.sp
+The \fBthread::mutex\fR command supports following subcommands and options:
 .RS
-.PP
-The \fBthread::mutex\fP command supports following subcommands and options:
 .TP
-\&\fB\fBthread::mutex create\fP
-\&\fRCreates the mutex and returns it's opaque handle. This handle
+\fBthread::mutex\fR \fBcreate\fR\fR
+Creates the mutex and returns it's opaque handle. This handle
 should be used for any future reference to the newly created mutex.
 .TP
-\&\fB\fBthread::mutex destroy\fP \fImutex\fB
-\&\fRDestroys the mutex \fImutex\fR. Extreme care has to be taken that
-nobody is using the \fImutex\fR, otherwise unexpected errors may happen.
-.TP
-\&\fB\fBthread::mutex lock\fP \fImutex\fB
-\&\fRLocks the mutex \fImutex\fR. Locking the mutex may deadlock the program
-if same thread attempts to lock the same mutex twice without unlocking it
-in between.
-.TP
-\&\fB\fBthread::mutex unlock\fP \fImutex\fB
-\&\fRUnlocks the mutex \fImutex\fR so some other thread may lock it again.
-.RE
-.TP
-\&\fB \fBthread::cond\fP \fIoptions\fB
-\&\fRThis command provides script-level access to condition variables. A condition
-variable creates a safe environment for the program to test some condition, sleep
-on it when false and be awakened when it might have become true. A condition variable
-is always used in the conjuction with a mutex.
-.RS
-.PP
-The \fBthread::cond\fP supports following subcommands and options:
-.TP
-\&\fB\fBthread::cond create\fP
-\&\fRCreates the condition variable and returns it's opaque handle. This handle
-should be used for any future reference to newly created condition variable.
-.TP
-\&\fB\fBthread::cond destroy\fP \fIcond\fB
-\&\fRDestroys condition variable \fIcond\fR. Extreme care has to be taken that nobody
-is using (i.e. waiting on) the condition variable, otherwise unexpected
+\fBthread::mutex\fR \fBdestroy\fR \fImutex\fR\fR
+Destroys the \fImutex\fR. Extreme care has to be taken that
+nobody is currently using the \fImutex\fR, otherwise unexpected
 errors may happen.
 .TP
-\&\fB\fBthread::cond notify\fP \fIcond\fB
-\&\fRWakes up all threads waiting on the condition variable \fIcond\fR.
+\fBthread::mutex\fR \fBlock\fR \fImutex\fR\fR
+Locks the \fImutex\fR. Locking the mutex may deadlock the program
+if the same thread attempts to lock the same mutex twice without
+unlocking it in between.
 .TP
-\&\fB\fBthread::cond wait\fP \fIcond\fB \fImutex ?\fB\fIms?\fB
-\&\fRThis command is used to suspend program execution until the condition
-variable \fIcond\fR has been signalled (see \fBthread::cond notify\fR) or the
-optional timer has expired. The \fImutex\fR must be locked by the calling
-thread on entrance to \fBthread::cond wait\fR. While waiting on the \fIcond\fR,
-the command releases \fImutex\fR. Before returning to the calling
-thread, the command re-acquires \fImutex\fR again. Unlocking the \fImutex\fR
-and waiting on the condition variable \fIcond\fR is done atomically.
+\fBthread::mutex\fR \fBunlock\fR \fImutex\fR\fR
+Unlocks the \fImutex\fR so some other thread may lock it again.
+.RE
+.TP
+\fBthread::cond\fR \fR
+This command provides script-level access to condition variables.
+A condition variable creates a safe environment for the program
+to test some condition, sleep on it when false and be awakened
+when it might have become true. A condition variable is always
+used in the conjuction with a mutex.
+.sp
+The command supports following subcommands and options:
 .RS
-.PP
-The \fIms\fR command option, if given,  must be an integer specifying time
-interval in milliseconds the command waits to be signalled. Otherwise
-the command waits forever.
-.PP
+.TP
+\fBthread::cond\fR \fBcreate\fR\fR
+Creates the condition variable and returns it's opaque handle.
+This handle should be used for any future reference to newly
+created condition variable.
+.TP
+\fBthread::cond\fR \fBdestroy\fR \fIcond\fR\fR
+Destroys condition variable \fIcond\fR. Extreme care has to be taken that
+nobody is using (i.e. waiting on) the condition variable, otherwise
+unexpected errors may happen.
+.TP
+\fBthread::cond\fR \fBnotify\fR \fIcond\fR\fR
+Wakes up all threads waiting on the condition variable \fIcond\fR.
+.TP
+\fBthread::cond\fR \fBwait\fR \fIcond\fR \fImutex\fR ?ms?\fR
+This command is used to suspend program execution until the condition
+variable \fIcond\fR has been signalled or the optional timer has expired.
+The \fImutex\fR must be locked by the calling thread on entrance to
+this command.
+While waiting on the \fIcond\fR, the command releases \fImutex\fR.
+Before returning to the calling thread, the command re-acquires the
+\fImutex\fR again. Unlocking the \fImutex\fR and waiting on the
+condition variable \fIcond\fR is done atomically.
+.sp
+The \fBms\fR command option, if given, must be an integer specifying
+time interval in milliseconds the command waits to be signalled.
+Otherwise the command waits on condition notify forever.
+.sp
 In multithreading programs, there are many situations where a thread has
 to wait for some event to happen until it is allowed to proceed.
 This is usually accomplished by repeatedly testing a condition under the
 mutex protection and waiting on the condition variable until the condition
 evaluates to true:
+.sp
+.nf
+    set mutex [thread::mutex create]
+    set cond  [thread::cond  create]
 
-
-.CS
-
-set mutex [thread::mutex create]
-set cond  [thread::cond  create]
-
-thread::mutex lock
-while {<some_condition_is_true>} {
-   thread::cond wait $cond $mutex
-}
-thread::mutex unlock
-.CE
-.PP
+    thread::mutex lock
+    while {<some_condition_is_true>} {
+        thread::cond wait $cond $mutex
+    }
+    # Do some work under mutex protection
+    thread::mutex unlock
+.fi
+.sp
 Repeated testing of the condition is needed since the condition variable
 may get signalled without the condition being actually changed (spurious
 thread wake-ups, for example).
 .RE
-.RE
-.SH DISCUSSION
-.PP
+.SH "DISCUSSION"
 The fundamental threading model in Tcl is that there can be one or
-more Tcl interpreters per thread, but each Tcl interpreter should only
-be used by a single thread which created it.
-A "shared memory" abstraction is awkward to provide in Tcl because Tcl
-makes assumptions about variable and data ownership. Therefore this extension
-supports a simple form of threading where the main thread can manage several
-background, or "worker" threads. For example, an event-driven server can pass
-requests to worker threads, and then await responses from worker threads or
-new client requests. Everything goes through the common Tcl event loop, so
+more Tcl interpreters per thread, but each Tcl interpreter should
+only be used by a single thread which created it.
+A "shared memory" abstraction is awkward to provide in Tcl because
+Tcl makes assumptions about variable and data ownership. Therefore
+this extension supports a simple form of threading where the main
+thread can manage several background, or "worker" threads.
+For example, an event-driven server can pass requests to worker
+threads, and then await responses from worker threads or new client
+requests. Everything goes through the common Tcl event loop, so
 message passing between threads works naturally with event-driven I/O,
-\&\fBvwait\fP on variables, and so forth. For the transfer of bulk information
-it is possible to move channels between the threads.
+\fBvwait\fR on variables, and so forth. For the transfer of bulk
+information it is possible to move channels between the threads.
 .PP
-For advanced multithreading scripts, script-level access to two basic
-synchronization primitives, mutex and condition variables, is also supported.
+For advanced multithreading scripts, script-level access to two
+basic synchronization primitives, mutex and condition variables,
+is also supported.
 .SH "SEE ALSO"
-Guide to the Tcl threading model
-.SH KEYWORDS
-threads, events, message passing, synchronization, mutex, condition variable
+\fIhttp://www.tcl.tk/doc/howto/thread_model.html\fR
+.SH "KEYWORDS"
+events, message passing, mutex, synchronization, thread
