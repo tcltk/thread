@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.2 2000/07/14 22:27:14 zoran Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.3 2000/08/10 01:55:07 davidg Exp $
  */
 
 #include "thread.h"
@@ -138,7 +138,7 @@ ThreadSvGetObjCmd(arg, interp, objc, objv)
     if (cmd == 'e') {
         valObj = Tcl_NewIntObj(1);
     } else {
-        valObj = Tcl_NewStringObj(Tcl_GetHashValue(hPtr),-1);
+        valObj = Tcl_NewStringObj((char *) Tcl_GetHashValue(hPtr), -1);
     }
     Tcl_SetObjResult(interp, valObj);
     UnlockArray(arrayPtr);
@@ -248,7 +248,7 @@ ThreadSvIncrObjCmd(dummy, interp, objc, objv)
     key = Tcl_GetString(objv[2]);
     hPtr = Tcl_FindHashEntry(&arrayPtr->vars, key);
     if (hPtr != NULL) {
-        value  = Tcl_GetHashValue(hPtr);
+        value  = (char *) Tcl_GetHashValue(hPtr);
         result = Tcl_GetInt(interp, value, &current);
         if (result == TCL_OK) {
             current += count;
@@ -309,7 +309,7 @@ ThreadSvAppendObjCmd(arg, interp, objc, objv)
     key = Tcl_GetString(objv[2]);
     hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &i);
     if (!i) {
-        Tcl_SetResult(interp, Tcl_GetHashValue(hPtr), TCL_VOLATILE);
+        Tcl_SetResult(interp, (char *) Tcl_GetHashValue(hPtr), TCL_VOLATILE);
     }
     for (i = 3; i < objc; ++i) {
         char *elem = Tcl_GetString(objv[i]);
@@ -442,7 +442,7 @@ ThreadSvArrayObjCmd(dummy, interp, objc, objv)
             if (pattern == NULL || Tcl_StringMatch(key, pattern)) {
                 Tcl_AppendElement(interp, key);
                 if (index == AGET) {
-                    Tcl_AppendElement(interp, Tcl_GetHashValue(hPtr));
+                    Tcl_AppendElement(interp, (char *) Tcl_GetHashValue(hPtr));
                 }
             }
             hPtr = Tcl_NextHashEntry(&search);
@@ -569,9 +569,9 @@ LockArray(interp, array, flags)
     if (flags & FLAGS_CREATE) {
         hPtr = Tcl_CreateHashEntry(&bucketPtr->arrays, array, &new);
         if (!new) {
-            arrayPtr = Tcl_GetHashValue(hPtr);
+            arrayPtr = (Array *) Tcl_GetHashValue(hPtr);
         } else {
-            arrayPtr = (Array *)Tcl_Alloc(sizeof(Array));
+            arrayPtr = (Array *) Tcl_Alloc(sizeof(Array));
             arrayPtr->bucketPtr = bucketPtr;
             arrayPtr->entryPtr = hPtr;
             Tcl_InitHashTable(&arrayPtr->vars, TCL_STRING_KEYS);
@@ -586,7 +586,7 @@ LockArray(interp, array, flags)
             }
             return NULL;
         }
-        arrayPtr = Tcl_GetHashValue(hPtr);
+        arrayPtr = (Array *) Tcl_GetHashValue(hPtr);
     }
     return arrayPtr;
 }
@@ -611,18 +611,18 @@ UpdateVar(hPtr, value)
     Tcl_HashEntry *hPtr;                /* Hash entry of var to update */
     char *value;                        /* Value to set for variable */
 {
-    char *old, *new;
+    char *oldVar, *newVar;
     size_t size;
     
     size = strlen(value) + 1;
-    old = Tcl_GetHashValue(hPtr);
-    if (old == NULL) {
-        new = Tcl_Alloc(size);
+    oldVar = (char *) Tcl_GetHashValue(hPtr);
+    if (oldVar == NULL) {
+        newVar = Tcl_Alloc(size);
     } else {
-        new = Tcl_Realloc(old, size);
+        newVar = Tcl_Realloc(oldVar, size);
     }
-    memcpy(new, value, size);
-    Tcl_SetHashValue(hPtr, new);
+    memcpy(newVar, value, size);
+    Tcl_SetHashValue(hPtr, newVar);
 }
 
 /*
