@@ -8,9 +8,9 @@
 # This file is for example purposes only. The efficient C-level
 # threadpool implementation is already a part of the threading
 # extension starting with 2.5 version. Both implementations have
-# the same Tcl API so both can be used interchageably. Goal of this 
-# implementation is to serve as an example of using the Tcl extension
-# to solve some very common threading cases.
+# the same Tcl API so both can be used interchageably. Goal of 
+# this implementation is to serve as an example of using the Tcl
+# extension to implement some very common threading paradigms.
 #
 # Copyright (c) 2002 by Zoran Vasiljevic.
 #
@@ -18,12 +18,10 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: tpool.tcl,v 1.4 2002/12/05 23:22:22 vasiljevic Exp $
+# RCS: @(#) $Id: tpool.tcl,v 1.5 2002/12/13 20:55:09 vasiljevic Exp $
 #
 
-#package require Tcl    8.4
-#package require Thread 2.5
-
+package require Thread 2.5
 set thisScript [info script]
 
 namespace eval tpool {
@@ -58,8 +56,9 @@ namespace eval tpool {
 #
 #        -minworkers  minimum # of worker threads (def:0)
 #        -maxworkers  maximum # of worker threads (def:4)
-#        -workeridle  # of sec worker is idle before exiting (def:0 = never)
-#        -initscript  script used to initialize new worker thread
+#        -idletime    # of sec worker is idle before exiting (def:0 = never)
+#        -initcmd     script used to initialize new worker thread
+#        -exitcmd     script run at worker thread exit
 #
 # Side Effects:
 #   Might create many new threads if "-minworkers" option is > 0.
@@ -76,6 +75,11 @@ proc tpool::create {args} {
     #
     # Get next threadpool handle and create the pool array.
     #
+
+    set usage "wrong \# args: should be \"[lindex [info level 1] 0]\
+               ?-minworkers count? ?-maxworkers count?\
+               ?-initcmd script? ?-exitcmd script?\
+               ?-idletime seconds?\""
 
     set ns [namespace current]
     set tpid [namespace tail $ns][tsv::incr $ns count]
@@ -96,27 +100,30 @@ proc tpool::create {args} {
          numworkers  0
         -minworkers  0
         -maxworkers  4
-        -workeridle  0
+        -idletime    0
+        -initcmd    ""
+        -exitcmd    ""
     }
 
-    tsv::set $tpid -initscript  "source $thisScript"
+    tsv::set $tpid -initcmd  "source $thisScript"
 
     #
     # Override with user-supplied data
     #
 
     if {[llength $args] % 2} {
-        error "requires even number of arguments"
+        error $usage
     }
 
     foreach {arg val} $args {
         switch -- $arg {
             -minworkers -
             -maxworkers {tsv::set $tpid $arg $val}
-            -workeridle {tsv::set $tpid $arg [expr {$val*1000}]}
-            -initscript {tsv::append $tpid $arg \n $val}
+            -idletime   {tsv::set $tpid $arg [expr {$val*1000}]}
+            -initcmd    {tsv::append $tpid $arg \n $val}
+            -exitcmd    {tsv::append $tpid $arg \n $val}
             default {
-                error "unsupported pool option \"$arg\""
+                error $usage
             }
         }
     }
@@ -163,13 +170,12 @@ proc tpool::create {args} {
 proc tpool::post {args} {
 
     #
-    # Parse the command arguments. This command syntax 
-    # closely resembles the thread::send command.
+    # Parse command arguments.
     #
     
     set ns [namespace current]
-    set usage "wrong \# of args: should be \"\
-               [info level 1] ?-detached? tpid cmd\""
+    set usage "wrong \# args: should be \"[lindex [info level 1] 0]\
+               ?-detached? tpoolId script\""
 
     if {[llength $args] == 2} {
         set detached 0
@@ -397,7 +403,7 @@ proc tpool::Worker {tpid} {
 
     set tid [thread::create]
 
-    thread::send $tid [tsv::set $tpid -initscript]
+    thread::send $tid [tsv::set $tpid -initcmd]
     thread::preserve $tid
 
     tsv::incr  $tpid numworkers
@@ -447,6 +453,10 @@ proc tpool::Timer {tpid} {
             if {$x >= 0} {
                 tsv::lreplace $tpid thrworkers $x $x
                 tsv::incr $tpid numworkers -1
+                set exitcmd [tsv::set $tpid -exitcmd]
+                if {$exitcmd != ""} {
+                    catch {eval $exitcmd}
+                }
                 thread::release
             }
         }
@@ -524,7 +534,7 @@ proc tpool::Run {tpid jid cmd} {
     # Register the idle timer again.
     #
 
-    if {[set idle [tsv::set $tpid -workeridle]]} {
+    if {[set idle [tsv::set $tpid -idletime]]} {
         set afterevent [after $idle [subst {
             ${ns}::Timer $tpid
         }]]

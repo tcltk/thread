@@ -7,13 +7,33 @@
 # Modified to use namespaces and direct url-to-procedure access (zv).
 # Eh, due to this, and nicer indenting, it's now 150 lines longer :-)
 #
+# Usage:
+#    phttpd::create port
+# 
+#    port         Tcp port where the server listens
+#
+# Example:
+#
+#    # tclsh8.4
+#    % source uhttpd.tcl
+#    % uhttpd::create 5000
+#    % vwait forever
+#
+#    Starts the server on the port 5000. Also, look at the Httpd array
+#    definition in the "uhttpd" namespace declaration to find out 
+#    about other options you may put on the command line.
+#
+#    You can use: http://localhost:5000/monitor URL to test the
+#    server functionality.
+#
+# Copyright (c) Stephen Uhler / Brent Welch (c) 1996 Sun Microsystems.
 # Copyright (c) 2002 by Zoran Vasiljevic.
 #
 # See the file "license.terms" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
 # -----------------------------------------------------------------------------
-# Rcsid: @(#)$Id: uhttpd.tcl,v 1.2 2002/12/05 15:14:11 vasiljevic Exp $
+# Rcsid: @(#)$Id: uhttpd.tcl,v 1.3 2002/12/13 20:55:08 vasiljevic Exp $
 #
 
 namespace eval uhttpd {
@@ -53,9 +73,9 @@ namespace eval uhttpd {
     }
 }
 
-proc uhttpd::server {port args} {
+proc uhttpd::create {port args} {
 
-    # Start the server by listening for connections on the desired port.
+    # @c Start the server by listening for connections on the desired port.
 
     variable Httpd 
     set arglen [llength $args]
@@ -378,6 +398,7 @@ proc /monitor {array} {
     puts $data(sock) [subst {
         <html>
         <body>
+        <h3>[clock format [clock seconds]]</h3>
     }]
 
     after 1 ; # Simulate blocking call
