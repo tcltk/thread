@@ -6,7 +6,7 @@
         the Thread package into an executable that has
         also loaded Tcl. The previous approach used a hack
         under Windows, we now use this same hack on all systems.
-	[Tcl bug 584123]
+	[Tcl patch 584123]
 
 2002-07-19  Zoran Vasiljevic <zoran@archiware.com>  
 
