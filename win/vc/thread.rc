@@ -1,4 +1,4 @@
-// RCS: @(#) $Id: thread.rc,v 1.6 2000/08/20 21:04:44 davidg Exp $
+// RCS: @(#) $Id: thread.rc,v 1.7 2001/04/27 01:38:47 davygrvy Exp $
 //
 // Version resource script
 //
@@ -13,7 +13,7 @@ VS_VERSION_INFO VERSIONINFO
  FILEVERSION     THREAD_MAJOR_VERSION,THREAD_MINOR_VERSION,0,0
  PRODUCTVERSION THREAD_MAJOR_VERSION,THREAD_MINOR_VERSION,0,0
  FILEFLAGSMASK     0x3fL
-#if NODEBUG == 0
+#if DEBUG
  FILEFLAGS 0x1L
 #else
  FILEFLAGS 0x0L
@@ -27,17 +27,18 @@ BEGIN
         BLOCK "040904b0" /* LANG_ENGLISH/SUBLANG_ENGLISH_US, Unicode CP */
         BEGIN
             VALUE "FileDescription", "Threading extension library for Tcl\0"
-#if NODEBUG == 0
+#if DEBUG
             VALUE "OriginalFilename", "thread" STRINGIFY(JOIN(THREAD_MAJOR_VERSION,THREAD_MINOR_VERSION)) "d.dll\0"
 #else
             VALUE "OriginalFilename", "thread" STRINGIFY(JOIN(THREAD_MAJOR_VERSION,THREAD_MINOR_VERSION)) ".dll\0"
 #endif
-            VALUE "CompanyName", "Ajuba Solutions\0"
+            VALUE "CompanyName", "NONE! opensourced with no owner\0"
             VALUE "FileVersion", THREAD_VERSION
-            VALUE "LegalCopyright", "Copyright (c) 2000 by Ajuba Solutions\0"
+            VALUE "LegalCopyright", "Under BSD license\0"
             VALUE "ProductName", "Tcl for Windows\0"
             VALUE "ProductVersion", THREAD_VERSION
-        END            
+            VALUE "Authors", "Brent Welch <welch@panasas.com>,\r\n" "Andreas Kupries <a.kupries@westend.com>, \r\n" "David Gravereaux <davygrvy@pobox.com>,\r\n" "Zoran Vasiljevic<zoran@munich.com>" "\0"
+        END
     END
     BLOCK "VarFileInfo"
     BEGIN
