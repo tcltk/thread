@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.24 2001/04/27 01:43:50 davygrvy Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.25 2001/04/28 21:56:15 davygrvy Exp $
  */
 
 #include "thread.h"
@@ -960,12 +960,25 @@ NewThread(clientData)
     Tcl_Release((ClientData) tsdPtr->interp);
 
     /*
-     * Clean up. Note: add something like TlistRemove for trasfer list.
+     * Clean up. Note: add something like TlistRemove for transfer list.
      */
 
     ListRemove(tsdPtr);
+
+    /*
+     * It is up to all other extensions, including Tk, to be responsible
+     * for their own events when they receive their Tcl_CallWhenDeleted
+     * notice when we delete this interp.
+     */
+
     Tcl_DeleteInterp(tsdPtr->interp);
-    Tcl_FinalizeThread();
+
+    /*
+     * Tcl_ExitThread calls Tcl_FinalizeThread() indirectly which calls all
+     * ThreadExitHandlers and cleans the notifier as well as other sub-
+     * systems that save thread state data.
+     */
+
     Tcl_ExitThread(result);
 
     TCL_THREAD_CREATE_RETURN;
@@ -1577,10 +1590,10 @@ ThreadWait()
     ListRemove(tsdPtr);
 
     /*
-     * Delete all pending thread::send and thread::transfer events.
-     * These events are owned by us.  It is up to all other extensions,
-     * including Tk, to be responsible for their own events when they
-     * receive a Tcl_CallWhenDeleted notice.
+     * Now that the event processor for this thread is closing,
+     * delete all pending thread::send and thread::transfer events.
+     * These events are owned by us.  We don't delete anyone else's
+     * events, but ours.
      */
 
     Tcl_DeleteEvents((Tcl_EventDeleteProc *) ThreadDeleteEvent, NULL);
@@ -1897,7 +1910,7 @@ ThreadExitProc(clientData)
      * lengthly user script. It is very unlikely to happen, though.
      */ 
 
-    Tcl_DeleteEvents((Tcl_EventDeleteProc *)ThreadDeleteEvent, NULL);
+    Tcl_DeleteEvents((Tcl_EventDeleteProc *) ThreadDeleteEvent, NULL);
 
     /*
      * Walk the list of threads waiting for result from us 
@@ -1969,7 +1982,7 @@ ThreadExitProc(clientData)
 	    /*
 	     * Dang.  The target is going away.  Unblock the caller and
 	     *	      deliver a failure notice.
-         *
+	     *
 	     * The result string must be dynamically allocated because
 	     * the main thread is going to call free on it.
 	     */
