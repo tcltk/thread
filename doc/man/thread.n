@@ -1,0 +1,459 @@
+'\"
+'\" Generated from thread.tmml
+'\"
+.so man.macros
+.TH "Tcl Threading" n "2.4" Tcl ""
+.BS
+.SH NAME
+thread \- A Tcl extension implementing script level access to Tcl threading capabilities.
+.SH SYNOPSIS
+.nf
+
+\&\fBthread::create\fP ?\fI-joinable\fR? ?\fIscript\fR?
+\&\fBthread::preserve\fP \fIid\fR
+\&\fBthread::release\fP \fIid\fR
+\&\fBthread::id\fP
+\&\fBthread::errorproc\fP ?\fIprocname\fR?
+\&\fBthread::unwind\fP
+\&\fBthread::exit\fP
+\&\fBthread::names\fP
+\&\fBthread::exists\fP
+\&\fBthread::send\fP \fIid\fR ?\fI-async\fR? \fIscript\fR ?\fIvarname\fR?
+\&\fBthread::wait\fP
+\&\fBthread::join\fP \fIid\fR
+\&\fBthread::configure\fP \fIid\fR ?\fIoption\fR? ?\fIvalue\fR\fI? ?\fR\fIoption value\fR\fI?...\fR
+\&\fBthread::transfer\fP \fIid\fR \fIchannel\fR
+
+\&\fBthread::cond\fP \fIoptions\fR
+\&\fBthread::mutex\fP \fIoptions\fR
+
+\&\fBtsv::names\fP ?\fIpattern\fR?
+\&\fBtsv::object\fP \fIarray\fR \fIelement\fR
+\&\fBtsv::set\fP \fIarray\fR \fIelement\fR \fIvalue\fR 
+\&\fBtsv::get\fP \fIarray\fR \fIelement\fR ?\fIvarname\fR?
+\&\fBtsv::unset\fP \fIarray\fR ?\fIelement\fR?
+\&\fBtsv::exists\fP \fIarray\fR ?\fIelement\fR?
+\&\fBtsv::pop\fP \fIarray\fR \fIelement\fR
+\&\fBtsv::move\fP \fIarray\fR \fIold\fR \fInew\fR
+\&\fBtsv::incr\fP \fIarray\fR \fIelement\fR ?\fIincrement\fR?
+\&\fBtsv::append\fP \fIarray\fR \fIelement\fR \fIvalue\fR ?\fIvalue\fR ...?
+\&\fBtsv::lappend\fP \fIarray\fR \fIelement\fR \fIvalue\fR ?\fIvalue\fR ...?
+\&\fBtsv::linsert\fP \fIarray\fR \fIelement\fR \fIindex\fR \fIvalue\fR ?\fIvalue\fR ...?
+\&\fBtsv::lreplace\fP \fIarray\fR \fIelement\fR \fIfirst\fR \fIlast\fR ?\fIvalue\fR ...?
+\&\fBtsv::llength\fP \fIarray\fR \fIelement\fR
+\&\fBtsv::lindex\fP \fIarray\fR \fIelement\fR \fIindex\fR
+\&\fBtsv::lrange\fP \fIarray\fR \fIelement\fR \fIfirst\fR \fIlast\fR
+\&\fBtsv::lsearch\fP \fIarray\fR \fIelement\fR ?\fImode\fR? \fIpattern\fR
+\&\fBtsv::lpop\fP \fIarray\fR \fIelement\fR ?\fIindex\fR?
+\&\fBtsv::lpush\fP \fIarray\fR \fIelement\fR \fIvalue\fR ?\fIindex\fR?
+
+.fi
+.BE
+.SH DESCRIPTION
+.PP
+The \fBthread\fP extension creates threads that contain Tcl interpreters,
+and it lets you send scripts to those threads for evaluation. It also enables you to share data
+between threads in a safe, protected fashion. Additionaly, it provides script-level access
+to basic thread synchronization primitives, like mutexes and condition variables.
+.SH COMMANDS
+.PP
+This section describes commands for creating and destroying threads
+and sending scripts to threads for evaluation.
+.TP
+\&\fB \fBthread::create\fP ?\fI-joinable\fB? ?\fIscript\fB?
+\&\fRThis command creates a thread that contains a Tcl interpreter.
+The Tcl interpreter either evaluates the \fIscript\fR, if
+specified, or it waits in the event loop for scripts that arrive via
+the \fBthread::send\fP command. The result of \fBthread::create\fP is
+the ID of the thread. The result, if any, of \fIscript\fR is
+ignored. Using flag \fB-joinable\fP it is possible to create a
+joinable thread, i.e. one upon whose exit can be waited upon (by using
+\&\fBthread::join\fP command).
+.TP
+\&\fB \fBthread::preserve\fP \fIid\fB
+\&\fRThis procedure increments the thread reference counter. Each call
+to this command increments the reference counter by one (1). Command returns the value
+of the reference counter after the increment.
+.RS
+.PP
+With reference counting, one can implement controlled access to a shared Tcl thread.
+By incrementing the reference counter, the caller signalizes that he/she wishes to use
+the thread for a longer period of time. By decrementing the counter, using the
+\&\fBthread::release\fP command, caller signalizes that he/she has finished using
+the thread.
+.RE
+.TP
+\&\fB \fBthread::release\fP \fIid\fB
+\&\fRThis procedure decrements the thread reference counter. Each call to this
+command decrements the reference counter by one (1). Command returns
+the value of the reference counter after the decrement. When the reference counter
+reaches zero (0), the target thread is terminated.
+.TP
+\&\fB\fBthread::id\fP
+\&\fRThis command returns the ID of the current thread.
+.TP
+\&\fB\fBthread::errorproc\fP
+\&\fRThis command sets a handler for errors that occur in scripts sent 
+asynchronously, using the \fB-async\fP flag of the \fBthread::send\fP
+command, to other threads. If no handler is specified, the current 
+handler is returned. The empty string resets the handler to default 
+(unspecified) value.
+An uncaught error in a thread causes an error message to be sent
+to the standard error channel. This default reporting scheme can be
+changed by registering a procedure which is called to report the error.
+The \fIproc\fR is called in the interpreter that invoked the 
+\&\fBthread::errorproc\fP command. The \fIproc\fR is called like this:
+
+.RS
+.CS
+myerrorproc thread_id errorInfo
+.CE
+.RE
+.TP
+\&\fB\fBthread::unwind\fP
+\&\fRThis stops a prior \fBthread::wait\fP. Execution of the script will continue
+from the \fBthread::wait\fP command. If \fBthread::wait\fP was the last command
+in a thread, the thread will exit. The command usually returns empty result but
+may trigger Tcl error with the message "target thread died" in some situations.
+.TP
+\&\fB\fBthread::exit\fP
+\&\fRThis forces a thread stuck in the \fBthread::wait\fP to unconditionaly
+exit. This command is guaranteed to leave the program memory in the
+unconsistent state, produce memory leaks and otherwise affect other
+subsytem(s) of the Tcl application in an unpredictable manner.
+.RS
+.PP
+Use of this command is deprecated in favour of the \fBthread::unwind\fP command
+or more advanced thread reservation system implemented with \fBthread::preserve\fP
+and \fBthread::release\fP commands. Use on your own risk and with extreme precaution.
+The command usually  returns empty result but may trigger Tcl error with the message
+"target thread died" in some situations.
+.RE
+.TP
+\&\fB\fBthread::names\fP
+\&\fRThis command returns a list of thread IDs. These are only for
+threads that have been created via \fBthread::create\fP. If your
+application creates other threads at the C level, they are not
+reported by the \fBthread::names\fP command.
+.TP
+\&\fB\fBthread::exists\fP
+\&\fRReturns true (1) if thread given by the ID parameter exists, false (0)
+otherwise. This applies only for threads that have been created via
+\&\fBthread::create\fP command.
+.TP
+\&\fB\fBthread::send\fP
+\&\fRThis command passes a \fIscript\fR to another thread and, optionally, waits
+for the result. If the \fB-async\fP flag is specified, the command does
+not wait for the result and it returns empty string. The target thread must
+enter it's event loop in order to receive scripts sent via this command.
+This is done by default for threads created without a startup script. Threads
+can enter the event loop explicitly by calling \fBthread::wait\fP or
+\&\fBvwait\fP.
+.RS
+.PP
+Optional \fIvarname\fR specifies name of the variable to store
+the result of the \fIscript\fR. Without the \fB-async\fP flag, the command
+returns the evaluation code, similarily to the standard Tcl \fBcatch\fP
+command.
+If, however, the \fB-async\fP flag is specified, the command returns
+immediately and caller can later \fBvwait\fP on \fIvarname\fR to get the
+result of the passed \fIscript\fR.
+.RE
+.TP
+\&\fB\fBthread::wait\fP
+\&\fRThis enters the event loop so a thread can receive messages from \fBthread::send\fP.
+This is equivalent to \fBvwait \fIunusedvariable\fB\fR except that thread::unwind will
+not unblock a \fBvwait\fP.
+.TP
+\&\fB\fBthread::join\fP
+\&\fRThis command waits for the thread with ID \fIid\fR to exit and
+then returns it's exit code. Errors will be returned for threads which
+are not joinable or already waited upon by another thread.
+.TP
+\&\fB\fBthread::configure\fP
+\&\fRThis command configures various low-level aspects of the thread with ID
+\&\fIid\fR in the similar way as the standard Tcl command \fBfconfigure\fP
+configures some Tcl channel options.
+.RS
+.PP
+Options currently supported are: \fB-eventmark\fP and \fB-unwindonerror\fP.
+.PP
+The \fB-eventmark\fP option, when set, limits the number of asynchronously
+posted scripts to the thread event loop. The \fBthread::send -async\fR
+command will block until the number of pending scripts in the event
+loop does not drop below the value configured with \fB-eventmark\fP.
+Default value for the \fB-eventmark\fP is 0 (zero) which effectively
+disables the checking, i.e. allows for unlimited number of posted scripts.
+.PP
+The boolean \fB-unwindonerror\fP option, when set, causes the target thread
+to unwind if the result of the script processing resulted in error.
+Default value for the \fB-unwindonerror\fP is 0 (false), i.e. thread continues
+to process scripts after one of the posted scripts fails.
+.RE
+.TP
+\&\fB\fBthread::transfer\fP
+\&\fRThis moves the specified \fIchannel\fR from the
+current thread and interpreter to the main interpreter of the thread
+with the given \fIid\fR. After the move the current interpreter has no
+access to the channel anymore, but the main interpreter of the target
+thread will be able to use it from now on.
+The command waits until the other thread has incorporated the
+channel. Because of this it is possible to deadlock the participating
+threads by commanding the other through a synchronous
+\&\fBthread::send\fP to transfer a channel to us. This easily extends
+into longer loops of threads waiting for each other.
+Other restrictions: The channel in question must not be shared among
+multiple interpreters running in the sending thread. This
+automatically excludes the special channels for standard input, output
+and error.
+.PP
+This section describes commands used for script-level access to
+most common and basic thread synchronization primitives: mutexes and
+condition variables.
+.TP
+\&\fB \fBthread::mutex\fP \fIoptions\fB
+\&\fRThis command provides script-level access to mutexes. Mutexes are most
+common thread synchronization primitives. They are used to synchronize
+access from two or more threads to one or more shared resources. Care has to
+be taken when using mutexes in an multithreading program. Improper use of
+mutexes may lead to various deadlock situations.
+.RS
+.PP
+The \fBthread::mutex\fP command supports following subcommands and options:
+.TP
+\&\fB\fBthread::mutex create\fP
+\&\fRCreates the mutex and returns it's opaque handle. This handle
+should be used for any future reference to the newly created mutex.
+.TP
+\&\fB\fBthread::mutex destroy\fP \fImutex\fB
+\&\fRDestroys the mutex \fImutex\fR. Extreme care has to be taken that
+nobody is using the \fImutex\fR, otherwise unexpected errors may happen.
+.TP
+\&\fB\fBthread::mutex lock\fP \fImutex\fB
+\&\fRLocks the mutex \fImutex\fR. Locking the mutex may deadlock the program
+if same thread attempts to lock the same mutex twice without unlocking it
+in between.
+.TP
+\&\fB\fBthread::mutex unlock\fP \fImutex\fB
+\&\fRUnlocks the mutex \fImutex\fR so some other thread may lock it again.
+.RE
+.TP
+\&\fB \fBthread::cond\fP \fIoptions\fB
+\&\fRThis command provides script-level access to condition variables. A condition
+variable creates a safe environment for the program to test some condition, sleep
+on it when false and be awakened when it might have become true. A condition variable
+is always used in the conjuction with a mutex.
+.RS
+.PP
+The \fBthread::cond\fP supports following subcommands and options:
+.TP
+\&\fB\fBthread::cond create\fP
+\&\fRCreates the condition variable and returns it's opaque handle. This handle
+should be used for any future reference to newly created condition variable.
+.TP
+\&\fB\fBthread::cond destroy\fP \fIcond\fB
+\&\fRDestroys condition variable \fIcond\fR. Extreme care has to be taken that nobody
+is using (i.e. waiting on) the condition variable, otherwise unexpected
+errors may happen.
+.TP
+\&\fB\fBthread::cond notify\fP \fIcond\fB
+\&\fRWakes up all threads waiting on the condition variable \fIcond\fR.
+.TP
+\&\fB\fBthread::cond wait\fP \fIcond\fB \fImutex ?\fB\fIms?\fB
+\&\fRThis command is used to suspend program execution until the condition
+variable \fIcond\fR has been signalled (see \fBthread::cond notify\fR) or the
+optional timer has expired. The \fImutex\fR must be locked by the calling
+thread on entrance to \fBthread::cond wait\fR. While waiting on the \fIcond\fR,
+the command releases \fImutex\fR. Before returning to the calling
+thread, the command re-acquires \fImutex\fR again. Unlocking the \fImutex\fR
+and waiting on the condition variable \fIcond\fR is done atomically.
+.RS
+.PP
+The \fIms\fR command option, if given,  must be an integer specifying time
+interval in milliseconds the command waits to be signalled. Otherwise
+the command waits forever.
+.PP
+In multithreading programs, there are many situations where a thread has
+to wait for some event to happen until it is allowed to proceed.
+This is usually accomplished by repeatedly testing a condition under the
+mutex protection and waiting on the condition variable until the condition
+evaluates to true:
+
+
+.CS
+
+set mutex [thread::mutex create]
+set cond  [thread::cond  create]
+
+thread::mutex lock
+while {<some_condition_is_true>} {
+   thread::cond wait $cond $mutex
+}
+thread::mutex unlock
+.CE
+.PP
+Repeated testing of the condition is needed since the condition variable
+may get signalled without the condition being actually changed (spurious
+thread wake-ups, for example).
+.RE
+.RE
+.PP
+This section describes commands implementing thread shared variables. A thread
+shared variable is very similar to a Tcl array but in contrast to a Tcl array
+it is created in thread-shared memory and can be accessed from many threads at
+the same time. Important feature of thread shared variable is that each access
+to the variable is internaly protected by a mutex so script programmer does not have
+to take care about locking the variable himself.
+.TP
+\&\fB\fBtsv::names\fP
+\&\fRReturns names of shared variables matching optional \fIpattern\fR or all known
+variables if pattern is ommited.
+.TP
+\&\fB\fBtsv::object\fP
+\&\fRCreates object accessor command for the \fIelement\fR in the given shared 
+\&\fIarray\fR. Using this command, one can apply most of the other shared variable
+commands as method functions of the element object command:
+
+.RS
+.CS
+
+% tsv::set foo bar "A shared string"
+% set string [tsv::object foo bar]
+% $string append " appended"
+=> A shared string appended
+.CE
+.RE
+.TP
+\&\fB\fBtsv::set\fP
+\&\fRSets the value of the \fIelement\fR  in the shared \fIarray\fR to
+\&\fIvalue\fR and returns the value. The \fIvalue\fR may be ommited, and
+the command will return the current value of the \fIelement\fR. If the
+element cannot be found, error is triggered.
+.TP
+\&\fB\fBtsv::get\fP
+\&\fRRetrieves a value of the \fIelement\fR located in the shared \fIarray\fR.
+The command triggers error if the \fIelement\fR is not found. If the optional
+\&\fIvarname\fR is given, the value  is stored in the named variable. In this case,
+the command returns true (1) if \fIelement\fR is found or false (0) if the
+\&\fIelement\fR is not found.
+.TP
+\&\fB\fBtsv::unset\fP
+\&\fRDeletes the \fIelement\fR in the shared \fIarray\fR. If the \fIelement\fR
+is not given, it deletes the whole \fIarray\fR.
+.TP
+\&\fB\fBtsv::exists\fP
+\&\fRChecks wether the \fIelement\fR exists in the shared \fIarray\fR.
+If the \fIelement\fR is not given it tests the existence of the
+\&\fIarray\fR itself. Returns true (1) if the item exists,
+false (0) if not.
+.TP
+\&\fB\fBtsv::pop\fP
+\&\fRReturns value of the \fIelement\fR in the shared \fIarray\fR variable
+and unsets the \fIelement\fR in one atomic operation.
+.TP
+\&\fB\fBtsv::move\fP
+\&\fRRenames the element \fIold\fR to \fInew\fR in the shared \fIarray\fR.
+This effectively performs an get/unset/set sequence of operations
+but in one atomic step.
+.TP
+\&\fB\fBtsv::incr\fP
+\&\fRSimilar to standard Tcl \fBincr\fP but increments the value of the
+\&\fIelement\fR in shared \fIarray\fR instead of the Tcl variable.
+.TP
+\&\fB\fBtsv::append\fP
+\&\fRSimilar to standard Tcl \fBappend\fP but appends one or more values
+to the \fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
+.TP
+\&\fB\fBtsv::lappend\fP
+\&\fRSimilar to standard Tcl \fBlappend\fP but appends one or more values
+to the list \fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
+.TP
+\&\fB\fBtsv::linsert\fP
+\&\fRSimilar to standard Tcl \fBlinsert\fP but inserts one or more values at the
+\&\fIindex\fR list position in the list \fIelement\fR in the shared \fIarray\fR
+instead of the Tcl variable.
+.TP
+\&\fB\fBtsv::lreplace\fP
+\&\fRSimilar to standard Tcl \fBlreplace\fP but replaces one or more values
+from the list \fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
+.TP
+\&\fB\fBtsv::llength\fP
+\&\fRSimilar to standard Tcl \fBllength\fP but returns length of the list
+\&\fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
+.TP
+\&\fB\fBtsv::lindex\fP
+\&\fRSimilar to standard Tcl \fBlindex\fP but returns value at the \fIindex\fR
+list position from the list \fIelement\fR in the shared \fIarray\fR
+instead of the Tcl variable.
+.TP
+\&\fB\fBtsv::lrange\fP
+\&\fRSimilar to standard Tcl \fBlrange\fP but returns values between \fIfirst\fR
+and \fIlast\fR list position from the list \fIelement\fR in the shared \fIarray\fR
+instead of the Tcl variable.
+.TP
+\&\fB\fBtsv::lsearch\fP
+\&\fRSimilar to standard Tcl \fBlsearch\fP but searches the list \fIelement\fR
+in the shared \fIarray\fR instead of the Tcl variable.
+.TP
+\&\fB\fBtsv::lpop\fP
+\&\fRSplices out the value at the \fIindex\fR list position from the list \fIelement\fR
+in the shared \fIarray\fR. If \fIindex\fR is not specified, it defaults to zero.
+.TP
+\&\fB\fBtsv::lpush\fP
+\&\fRInserts the \fIvalue\fR at the \fIindex\fR list position in the list \fIelement\fR
+in the shared \fIarray\fR. If \fIindex\fR is not specified, it defaults to zero.
+.TP
+\&\fB\fBtsv::array\fP
+\&\fRThis command supports most of the options of the standard Tcl \fBarray\fP
+command like:
+.RS
+.TP
+\&\fB\fBtsv::array set\fP
+\&\fRDoes the same as standard Tcl \fBarray set\fR
+.TP
+\&\fB\fBtsv::array get\fP
+\&\fRDoes the same as standard Tcl \fBarray get\fR
+.TP
+\&\fB\fBtsv::array names\fP
+\&\fRDoes the same as standard Tcl \fBarray names\fR
+.TP
+\&\fB\fBtsv::array size\fP
+\&\fRDoes the same as standard Tcl \fBarray size\fR
+.TP
+\&\fB\fBtsv::array reset\fP
+\&\fRDoes the same as standard Tcl \fBarray set\fR but
+it clears the array and sets new values atomically.
+.RE
+.SH DISCUSSION
+.PP
+The fundamental threading model in Tcl is that there can be one or
+more Tcl interpreters per thread, but each Tcl interpreter should only
+be used by a single thread which created it.
+A "shared memory" abstraction is awkward to provide in Tcl because Tcl
+makes assumptions about variable and data ownership. Therefore this extension
+supports a simple form of threading where the main thread can manage several
+background, or "worker" threads. For example, an event-driven server can pass
+requests to worker threads, and then await responses from worker threads or
+new client requests. Everything goes through the common Tcl event loop, so
+message passing between threads works naturally with event-driven I/O,
+\&\fBvwait\fP on variables, and so forth. For the transfer of bulk information
+it is possible to move channels between the threads.
+.PP
+In addition, this extension provides simple but effective way of
+threads to access thread-shared data without the need of explicit locking.
+This is implemented with shared variable arrays. Shared variable array
+is a data structure similar to Tcl array but internaly protected with mutex.
+Several threads can access array elements without synchronizing themselves.
+Script programmer can create any number of such arrays and access them
+or their elements from any thread, without explicit locking.
+.PP
+For advanced multithreading scripts, script-level access to two basic
+synchronization primitives, mutex and condition variables, is also supported.
+.SH CREDITS
+.PP
+Shared variable arrays are inspired by the nsv interface found in
+AOLserver 3.+ highly scalable Web server from America Online.
+.SH "SEE ALSO"
+Guide to the Tcl threading model
+.SH KEYWORDS
+threads, events, message passing, synchronization, shared variables, mutex, condition variable
