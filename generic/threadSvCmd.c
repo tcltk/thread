@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.20 2002/07/20 10:11:12 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.21 2002/07/20 10:48:41 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -760,8 +760,7 @@ Sv_DuplicateObj(objPtr)
     }
 
     /*
-     * Handle the string rep. Assure copied object always get
-     * the valid string rep (why we'd like to do that really?)
+     * Handle the string rep.
      */
 
     if (objPtr->bytes == NULL) {
