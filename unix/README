@@ -16,4 +16,18 @@ files and/or "make distclean" to additionaly remove local config files.
 You might want to do "make test" before doing the "make install" in order
 to run the regression tests on the package. 
 
+
+Note for AOLserver users
+------------------------
+
+The extension can be compiled as loadable module for the AOLserver 
+version 3.3 or higher. In order to do this, use "--with-aolserver"
+configure option to specify the directory containing the AOLserver
+distribution. To fine-tune, you might want also to make the 
+tsv::* commands replace the AOLserver built-in nsv_* family of 
+commands, since they are API compatible and provide richer command
+set plus advanced shared-object storage of shared data.
+
+The CONFIG script has an example, you might want to check-out.
+
 -EOF-
