@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.26 2004/08/02 20:27:11 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.27 2004/08/14 20:30:11 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -89,9 +89,8 @@ static Tcl_ThreadDataKey dataKey;
  * This global list maintains thread pools.
  */
 
-static ThreadPool * tpoolList    = NULL;
-static int          tpoolCounter = 0;
-static Tcl_Mutex    listMutex    = (Tcl_Mutex)0;
+static ThreadPool *tpoolList;
+static Tcl_Mutex listMutex;
 
 /*
  * Used to represent the empty result.
@@ -294,7 +293,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
 
     Tcl_MutexUnlock(&listMutex);
 
-    sprintf(buf, "%s%lu", TPOOL_HNDLPREFIX, (unsigned long)tpoolPtr);
+    sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
     Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, -1));
 
     return TCL_OK;
@@ -885,7 +884,7 @@ TpoolNamesObjCmd(dummy, interp, objc, objv)
     Tcl_MutexLock(&listMutex);
     for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
         char buf[32];
-        sprintf(buf, "%s%u", TPOOL_HNDLPREFIX, (unsigned long)tpoolPtr);
+        sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
         Tcl_ListObjAppendElement(interp, listObj, Tcl_NewStringObj(buf,-1));
     }
     Tcl_MutexUnlock(&listMutex);
@@ -1322,14 +1321,14 @@ static ThreadPool*
 GetTpoolUnl (tpoolName) 
     char *tpoolName;
 {
-    unsigned long tpool;
+    ThreadPool *tpool;
     ThreadPool *tpoolPtr = NULL;
 
-    if (sscanf(tpoolName, TPOOL_HNDLPREFIX"%lu", tpool) != 1) {
+    if (sscanf(tpoolName, TPOOL_HNDLPREFIX"%p", &tpool) != 1) {
         return NULL;
     }
     for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
-        if (tpoolPtr == (ThreadPool*)tpool) {
+        if (tpoolPtr == tpool) {
             break;
         }
     }

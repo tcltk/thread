@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.84 2004/08/02 20:27:11 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.85 2004/08/14 20:30:11 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -3461,7 +3461,7 @@ ThreadGetHandle(thrId, handlePtr)
     Tcl_ThreadId thrId;
     char *handlePtr;
 {
-    sprintf(handlePtr, THREAD_HNDLPREFIX"%lu", (unsigned long)thrId);
+    sprintf(handlePtr, THREAD_HNDLPREFIX"%p", thrId);
 }
 
 /*
@@ -3488,8 +3488,7 @@ ThreadGetId(interp, handleObj, thrIdPtr)
 {
     char *thrHandle = Tcl_GetStringFromObj(handleObj, NULL);
 
-    if (sscanf(thrHandle, THREAD_HNDLPREFIX"%lu", 
-               (unsigned long)thrIdPtr) == 1) {
+    if (sscanf(thrHandle, THREAD_HNDLPREFIX"%p", thrIdPtr) == 1) {
         return TCL_OK;
     }
 
