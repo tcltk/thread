@@ -1,3 +1,9 @@
+2002-07-19  Zoran Vasiljevic <zoran@archiware.com>  
+
+	* threadCmd.c: added some macros to simplify
+	adding and removing result structure in and  
+	out of the corresponding lists
+
 2002-07-18  Zoran Vasiljevic <zoran@archiware.com>  
 
 	* threadCmd.c: modified thread::release to allow
