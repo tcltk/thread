@@ -1,4 +1,4 @@
-2000-08-21  David Gravereaux <davygrvy@ajubasolutions.com>
+2000-08-28  David Gravereaux <davygrvy@ajubasolutions.com>
 
 	* generic/threadCmds.c (Thread_Init): Added logic to enable
 	thread::join and thread::transfer when loaded into an 8.4+ core.
