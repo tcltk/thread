@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.55 2002/11/23 12:19:02 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.56 2002/11/24 17:03:42 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -49,16 +49,16 @@ static int   tclIs83 = 0;
  * multiple interpreters. The interpreter identified by this structure is
  * the main interpreter for the thread. The main interpreter is the one that
  * will process any messages received by a thread. Any interpreter can send
- * messages but only the main interpreter can receive them.
- * Unless you're not doing asynchronous script backfiring, but this is
- * another story. 
+ * messages but only the main interpreter can receive them, unless you're 
+ * not doing asynchronous script backfiring. In such cases the caller might
+ * signal the thread to which interpreter the result should be delivered.
  */
 
 typedef struct ThreadSpecificData {
     Tcl_ThreadId threadId;                /* The ID of this thread */
     Tcl_Interp *interp;                   /* Main interp for this thread */
     Tcl_Condition doOneEvent;             /* Signalled just before running 
-                                           * an event from the event loop */
+                                             an event from the event loop */
     int flags;                            /* One of the ThreadFlags below */
     int refCount;                         /* Used for thread reservation */
     int eventsPending;                    /* # of unprocessed events */
@@ -143,7 +143,6 @@ static ThreadEventResult *resultList;
     if ((a)->nextPtr != NULL)                  \
         (a)->nextPtr->prevPtr = (a)->prevPtr;
 
-
 /*
  * This is the event used to send commands to other threads.
  */
@@ -201,10 +200,10 @@ typedef struct TransferEvent {
 typedef struct TransferResult {
     Tcl_Condition done;                   /* Set when transfer is done */
     int resultCode;                       /* Set to TCL_OK or TCL_ERROR when
-                                           * the transfer is done. Def = -1 */
+                                             the transfer is done. Def = -1 */
     char *resultMsg;                      /* Initialized to NULL. Set to a
-                                           * allocated string by the targer
-                                           * thread in case of an error  */
+                                             allocated string by the targer
+                                             thread in case of an error  */
     Tcl_ThreadId srcThreadId;             /* Id of src thread, if it dies */
     Tcl_ThreadId dstThreadId;             /* Id of tgt thread, if it dies */
     struct TransferEvent *eventPtr;       /* Back pointer */
@@ -309,6 +308,12 @@ ThreadTransfer    _ANSI_ARGS_((Tcl_Interp *interp,
                                Tcl_ThreadId id,
                                Tcl_Channel chan));
 static int 
+ThreadDetach      _ANSI_ARGS_((Tcl_Interp *interp,
+                               Tcl_Channel chan));
+static int 
+ThreadAttach      _ANSI_ARGS_((Tcl_Interp *interp,
+                               char *chanName));
+static int 
 TransferEventProc _ANSI_ARGS_((Tcl_Event *evPtr, 
                                int mask));
 
@@ -332,6 +337,8 @@ static Tcl_ObjCmdProc ThreadErrorProcObjCmd;
 /* 8.4 only */
 static Tcl_ObjCmdProc ThreadJoinObjCmd;
 static Tcl_ObjCmdProc ThreadTransferObjCmd;
+static Tcl_ObjCmdProc ThreadDetachObjCmd;
+static Tcl_ObjCmdProc ThreadAttachObjCmd;
 
 
 /*
@@ -411,8 +418,10 @@ Thread_Init(interp)
     TCL_CMD(interp, NS"release",   ThreadReleaseObjCmd);
 
     if (!tclIs83) {
-        TCL_CMD(interp, NS"join",      ThreadJoinObjCmd);
-        TCL_CMD(interp, NS"transfer",  ThreadTransferObjCmd);
+    TCL_CMD(interp, NS"join",      ThreadJoinObjCmd);
+    TCL_CMD(interp, NS"transfer",  ThreadTransferObjCmd);
+    TCL_CMD(interp, NS"detach",    ThreadDetachObjCmd);
+    TCL_CMD(interp, NS"attach",    ThreadAttachObjCmd);
     }
 
     /*
@@ -466,13 +475,13 @@ Thread_SafeInit(interp)
  *
  * Init --
  *
- *  Make sure internal list of threads is created.
+ *  Make sure internal list of threads references the current thread.
  *
  * Results:
  *  None
  *
  * Side effects:
- *  The list of threads is initialzied to include the current thread.
+ *  The list of threads is initialized to include the current thread.
  *
  *----------------------------------------------------------------------
  */
@@ -584,16 +593,18 @@ ThreadReserveObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
-    long id;
+    long id = 0;
 
     Init(interp);
 
-    if (objc != 2) {
-        Tcl_WrongNumArgs(interp, 1, objv, "threadId");
+    if (objc > 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "?threadId?");
         return TCL_ERROR;
     }
-    if (Tcl_GetLongFromObj(interp, objv[1], &id) != TCL_OK) {
-        return TCL_ERROR;
+    if (objc == 2) {
+        if (Tcl_GetLongFromObj(interp, objv[1], &id) != TCL_OK) {
+            return TCL_ERROR;
+        }
     }
 
     return ThreadReserve(interp, (Tcl_ThreadId)id, THREAD_RESERVE, 0);
@@ -625,31 +636,26 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
     int wait = 0;
-    long id;
+    long id = 0;
 
     Init(interp);
 
-    if (objc < 2 || objc > 3) {
-        goto usage;
+    if (objc > 3) {
+        Tcl_WrongNumArgs(interp, 1, objv, "?-wait? ?threadId?");
+        return TCL_ERROR; 
     }
-    if (objc == 3) {
+    if (objc > 1) {
         if (OPT_CMP(Tcl_GetString(objv[1]), "-wait")) {
             wait = 1;
-        } else {
-            goto usage;
-        }
-        if (Tcl_GetLongFromObj(interp, objv[2], &id) != TCL_OK) {
+            if (Tcl_GetLongFromObj(interp, objv[2], &id) != TCL_OK) {
+                return TCL_ERROR;
+            }
+        } else if (Tcl_GetLongFromObj(interp, objv[1], &id) != TCL_OK) {
             return TCL_ERROR;
         }
-    } else if (Tcl_GetLongFromObj(interp, objv[1], &id) != TCL_OK) {
-        return TCL_ERROR;
     }
-
+    
     return ThreadReserve(interp, (Tcl_ThreadId)id, THREAD_RELEASE, wait);
-
- usage:
-    Tcl_WrongNumArgs(interp, 1, objv, "?-wait? threadId");
-    return TCL_ERROR;    
 }
 
 /*
@@ -683,7 +689,7 @@ ThreadUnwindObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    return ThreadReserve(interp, 0, THREAD_RELEASE, /* Wait for thread */1);
+    return ThreadReserve(interp, 0, THREAD_RELEASE, 0);
 }
 
 /*
@@ -713,6 +719,7 @@ ThreadExitObjCmd(dummy, interp, objc, objv)
 {
 
     Init(interp);
+
     ListRemove(NULL);
     Tcl_ExitThread(666);
 
@@ -1104,6 +1111,96 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
 /*
  *----------------------------------------------------------------------
  *
+ * ThreadDetachObjCmd --
+ *
+ *  This procedure is invoked to process the "thread::detach" Tcl
+ *  command. See the user documentation for details on what it does.
+ *
+ * Results:
+ *  A standard Tcl result.
+ *
+ * Side effects:
+ *  See the user documentation.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+ThreadDetachObjCmd(dummy, interp, objc, objv)
+    ClientData  dummy;          /* Not used. */
+    Tcl_Interp *interp;         /* Current interpreter. */
+    int         objc;           /* Number of arguments. */
+    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+{
+    Tcl_Channel chan;
+
+    Init(interp);
+
+    /*
+     * Syntax: thread::detach channel
+     */
+
+    if (objc != 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "channel");
+        return TCL_ERROR;
+    }
+
+    chan = Tcl_GetChannel(interp, Tcl_GetString(objv[1]), NULL);
+    if (chan == (Tcl_Channel)NULL) {
+        return TCL_ERROR;
+    }
+    
+    return ThreadDetach(interp, chan);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadAttachObjCmd --
+ *
+ *  This procedure is invoked to process the "thread::attach" Tcl
+ *  command. See the user documentation for details on what it does.
+ *
+ * Results:
+ *  A standard Tcl result.
+ *
+ * Side effects:
+ *  See the user documentation.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+ThreadAttachObjCmd(dummy, interp, objc, objv)
+    ClientData  dummy;          /* Not used. */
+    Tcl_Interp *interp;         /* Current interpreter. */
+    int         objc;           /* Number of arguments. */
+    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+{
+    char *chanName;
+
+    Init(interp);
+
+    /*
+     * Syntax: thread::attach channel
+     */
+
+    if (objc != 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "channel");
+        return TCL_ERROR;
+    }
+
+    chanName = Tcl_GetString(objv[1]);
+    if (Tcl_IsChannelExisting(chanName)) {
+        return TCL_OK;
+    }
+
+    return ThreadAttach(interp, chanName);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * ThreadExistsObjCmd --
  *
  *  This procedure is invoked to process the "thread::exists" Tcl
@@ -1462,7 +1559,7 @@ NewThread(clientData)
      */
 
     Tcl_Preserve((ClientData)tsdPtr->interp);
-    result = Tcl_EvalEx(tsdPtr->interp, evalScript, scriptLen, TCL_EVAL_GLOBAL);
+    result = Tcl_EvalEx(tsdPtr->interp, evalScript,scriptLen,TCL_EVAL_GLOBAL);
     if (result != TCL_OK) {
         ThreadErrorProc(tsdPtr->interp);
     }
@@ -1645,7 +1742,7 @@ ListRemoveInner(tsdPtr)
         tsdPtr = TCL_TSD_INIT(&dataKey);
     }
     if (tsdPtr->prevPtr == NULL && tsdPtr->nextPtr == NULL) {
-        return;
+        return; /* Already spliced out */
     }
     if (tsdPtr->prevPtr) {
         tsdPtr->prevPtr->nextPtr = tsdPtr->nextPtr;
@@ -1806,7 +1903,7 @@ ThreadJoin(interp, threadId)
  *  main interp of the specified thread.
  *
  * Results:
- * *    A standard Tcl result.
+ *  A standard Tcl result.
  *
  * Side effects:
  *  The thread-global lists of all known channels of both threads
@@ -1853,6 +1950,14 @@ ThreadTransfer(interp, id, chan)
         return TCL_ERROR;
     }
 
+    /*
+     * Short circut transfers to ourself.  Nothing to do.
+     */
+
+    if (id == Tcl_GetCurrentThread()) {
+        return TCL_OK;
+    }
+
     /* 
      * Verify the thread exists.
      */
@@ -1865,15 +1970,6 @@ ThreadTransfer(interp, id, chan)
         return TCL_ERROR;
     }
 
-    /*
-     * Short circut transfers to ourself.  Nothing to do.
-     */
-
-    if (id == Tcl_GetCurrentThread()) {
-        Tcl_MutexUnlock(&threadMutex);
-        return TCL_OK;
-    }
-    
     /*
      * Cut channel out of interp and current thread.
      */
@@ -1970,6 +2066,159 @@ ThreadTransfer(interp, id, chan)
     if (resultPtr->resultMsg) {
         Tcl_Free(resultPtr->resultMsg);
     }
+
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadDetach --
+ *
+ *  Detaches the specified channel which must not be shared and has
+ *  to be registered in the given interp. The detached channel is
+ *  left in the transfer list until some other thread attaches it
+ +  by calling the "thread::attach" command.
+ *
+ * Results:
+ *  A standard Tcl result.
+ *
+ * Side effects:
+ *  The thread-global lists of all known channels (transferList)
+ *  is modified. All event handling for the channel is killed.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+ThreadDetach(interp, chan)
+    Tcl_Interp *interp;         /* The current interpreter. */
+    Tcl_Channel chan;           /* The channel to detach */
+{
+    TransferEvent *evPtr;
+    TransferResult *resultPtr;
+
+    if (!Tcl_IsChannelRegistered(interp, chan)) {
+        Tcl_SetResult(interp, "channel is not registered here", TCL_STATIC);
+    }
+    if (Tcl_IsChannelShared(chan)) {
+        Tcl_SetResult(interp, "channel is shared", TCL_STATIC);
+        return TCL_ERROR;
+    }
+    
+    /*
+     * Cut channel out of the interpreter
+     */
+
+    Tcl_ClearChannelHandlers(chan);
+    Tcl_RegisterChannel((Tcl_Interp *) NULL, chan); /* prevent closing */
+    Tcl_UnregisterChannel(interp, chan);
+    Tcl_CutChannel(chan);
+    
+    /*
+     * Wrap it into the list of transfered channels. We generate no
+     * events associated with the detached channel, thus really not
+     * needing the transfer event structure allocated here. This 
+     * is done purely to avoid having yet another wrapper.
+     */
+
+    resultPtr = (TransferResult*)Tcl_Alloc(sizeof(TransferResult));
+    evPtr     = (TransferEvent*)Tcl_Alloc(sizeof(TransferEvent));
+
+    evPtr->chan       = chan;
+    evPtr->event.proc = NULL;
+    evPtr->resultPtr  = resultPtr;
+
+    /*
+     * Initialize the result fields. This is not used.
+     */
+
+    resultPtr->done       = (Tcl_Condition)NULL;
+    resultPtr->resultCode = -1;
+    resultPtr->resultMsg  = (char*)NULL;
+
+    /* 
+     * Maintain the cleanup list. By setting the dstThreadId to zero
+     * we signal the code in ThreadAttach that this is the detached
+     * channel. Therefore it should not be mistaken for some reguilar 
+     * TransferChannel operation underway.
+     */
+
+    resultPtr->srcThreadId = Tcl_GetCurrentThread();
+    resultPtr->dstThreadId = (Tcl_ThreadId)0;
+    resultPtr->eventPtr    = evPtr;
+
+    Tcl_MutexLock(&threadMutex);
+    SpliceInResult(resultPtr, transferList);
+    Tcl_MutexUnlock(&threadMutex);
+
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadAttach --
+ *
+ *  Attaches the previously detached channel into the current
+ *  interpreter. 
+ *
+ * Results:
+ *  A standard Tcl result.
+ *
+ * Side effects:
+ *  The thread-global lists of all known channels (transferList)
+ *  is modified.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+ThreadAttach(interp, chanName)
+    Tcl_Interp *interp;         /* The current interpreter. */
+    char *chanName;             /* The name of the channel to detach */
+{
+    int found = 0;
+    Tcl_Channel chan = NULL;
+    TransferResult *resPtr;
+
+    /*
+     * Locate the channel to attach by looking up its name in 
+     * the list of transfered channels. Watch that we don't
+     * hit the regular channel transfer event.
+     */
+    
+    Tcl_MutexLock(&threadMutex);
+    for (resPtr = transferList; resPtr; resPtr = resPtr->nextPtr) {
+        chan = resPtr->eventPtr->chan;
+        if (!strcmp(Tcl_GetChannelName(chan),chanName)
+                && !resPtr->dstThreadId) {
+            if (Tcl_IsChannelExisting(chanName)) {
+                Tcl_AppendResult(interp, "channel already exists", NULL);
+                Tcl_MutexUnlock(&threadMutex);
+                return TCL_ERROR;
+            }
+            SpliceOutResult(resPtr, transferList);
+            Tcl_Free((char*)resPtr->eventPtr);
+            Tcl_Free((char*)resPtr);
+            found = 1;
+            break;
+        }
+    }
+    Tcl_MutexUnlock(&threadMutex);
+
+    if (found == 0) {
+        Tcl_AppendResult(interp, "channel not detached", NULL);
+        return TCL_ERROR;
+    }
+
+    /*
+     * Splice channel into the current interpreter
+     */
+    
+    Tcl_SpliceChannel(chan);
+    Tcl_RegisterChannel(interp, chan);
+    Tcl_UnregisterChannel((Tcl_Interp *)NULL, chan);
 
     return TCL_OK;
 }
@@ -2283,7 +2532,8 @@ ThreadReserve(interp, threadId, operation, wait)
              */
             
             if (dowait) {
-                resultPtr = (ThreadEventResult*)Tcl_Alloc(sizeof(ThreadEventResult));
+                resultPtr = (ThreadEventResult*)
+                    Tcl_Alloc(sizeof(ThreadEventResult));
                 resultPtr->done        = (Tcl_Condition)NULL;
                 resultPtr->result      = NULL;
                 resultPtr->code        = TCL_OK;
@@ -2299,7 +2549,7 @@ ThreadReserve(interp, threadId, operation, wait)
             evPtr->sendData   = NULL;
             evPtr->clbkData   = NULL;
             evPtr->resultPtr  = resultPtr;
-            
+
             Tcl_ThreadQueueEvent(threadId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL);
             Tcl_ThreadAlert(threadId);
 
@@ -2383,12 +2633,14 @@ ThreadEventProc(evPtr, mask)
         if (sendPtr) {
             Tcl_CreateThreadExitHandler(ThreadFreeProc, (ClientData)sendPtr);
             if (clbkPtr) {
-                Tcl_CreateThreadExitHandler(ThreadFreeProc, (ClientData)clbkPtr);
+                Tcl_CreateThreadExitHandler(ThreadFreeProc,
+                                            (ClientData)clbkPtr);
             }   
             code = (*sendPtr->execProc)(interp, (ClientData)sendPtr);
             Tcl_DeleteThreadExitHandler(ThreadFreeProc, (ClientData)sendPtr);
             if (clbkPtr) {
-                Tcl_DeleteThreadExitHandler(ThreadFreeProc, (ClientData)clbkPtr);
+                Tcl_DeleteThreadExitHandler(ThreadFreeProc,
+                                            (ClientData)clbkPtr);
             }
         } else {
             code = TCL_OK;
@@ -2692,7 +2944,6 @@ TransferEventProc(evPtr, mask)
          * Add channel to current thread and interp.
          * See ThreadTransfer for more explanations.
          */
-        
         if (Tcl_IsChannelExisting(Tcl_GetChannelName(eventPtr->chan))) {
             /*
              * Reject transfer. Channel of same name already exists in target.
