@@ -49,6 +49,8 @@
 	to me than NODEBUG=0.  Not that I didn't think you wouldn't have
 	disagreed it was confusing, no?
 
+	* win/vc/thread.rc: Added authors and removed the Ajuba branding.
+
 2001-04-25  David Gravereaux <davygrvy@pobox.com>
 
 	* generic/threadCmd.c (ThreadWait)(NewThread): Removed the event
