@@ -269,7 +269,7 @@ events pending in the event queue of the target thread.
 
 This command passes a [arg script] to all threads created by the
 package for execution. It does not wait for response from any of
-the treads.
+the threads.
 
 [call [cmd thread::wait]]
 
