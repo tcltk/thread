@@ -1,3 +1,19 @@
+2002-12-03 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/tclthread.h: added SpliceIn/SpliceOut macros.
+	Fixed to include exports from threadPoolCmd.c
+
+	* generic/threadSpCmd.c: does regular namespace handling
+	over the NS variable instead of hard-coding the "thread"
+	prefix for mutex/cond commands.
+
+	* generic/threadCmd.c: rewritten to use SpliceIn/SpliceOut
+        macros instead of hand-fiddling with linked lists.
+
+	* generic/threadPoolCmd.c: new file
+
+	* Makefile.in: added threadPoolCmd.c to list of source files.
+
 2002-11-25 Zoran Vasiljevic <zoran@archiware.com>
 
 	* tcl/phttpd/phttpd.tcl: added raw file; no thread support
