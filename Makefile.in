@@ -22,27 +22,27 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: Makefile.in,v 1.10 2002/03/20 02:08:01 hobbs Exp $
+# RCS: @(#) $Id: Makefile.in,v 1.11 2002/03/28 02:38:40 hobbs Exp $
 
 #========================================================================
 # Enumerate the names of the source files included in this package.
 # This will be used when a dist target is added to the Makefile.
 #========================================================================
 
-thread_SOURCES = threadCmd.c threadSvCmd.c threadSpCmd.c threadSvListCmd.c
+thread_SOURCES	= threadCmd.c threadSvCmd.c threadSpCmd.c threadSvListCmd.c
 
 #========================================================================
 # Magic macro to identify the object files
 #========================================================================
 
-thread_OBJECTS = $(thread_SOURCES:.c=.@OBJEXT@)
-thread_LIB_FILE = @thread_LIB_FILE@
+thread_OBJECTS	= $(thread_SOURCES:.c=.@OBJEXT@)
+thread_LIB_FILE	= @thread_LIB_FILE@
 
 #========================================================================
 # This is a list of header files to be installed
 #========================================================================
 
-GENERIC_HDRS=$(srcdir)/generic/tclThread.h
+GENERIC_HDRS	= $(srcdir)/generic/tclThread.h
 
 #========================================================================
 # Nothing of the variables below this line need to be changed.  Please
@@ -56,8 +56,8 @@ GENERIC_HDRS=$(srcdir)/generic/tclThread.h
 # library that we are building.
 #========================================================================
 
-lib_BINARIES=$($(PACKAGE)_LIB_FILE)
-BINARIES=$(lib_BINARIES)
+lib_BINARIES	= $($(PACKAGE)_LIB_FILE)
+BINARIES	= $(lib_BINARIES)
 
 SHELL		= @SHELL@
 
@@ -108,23 +108,26 @@ SHLIB_LD	= @SHLIB_LD@
 SHLIB_LDFLAGS	= @SHLIB_LDFLAGS@
 SHLIB_LD_LIBS	= @SHLIB_LD_LIBS@
 STLIB_LD	= @STLIB_LD@
-TCL_BIN_DIR	= @TCL_BIN_DIR@
 TCL_DEFS	= @TCL_DEFS@
-TCL_EXTRA_CFLAGS = @TCL_EXTRA_CFLAGS@
-TCL_LD_FLAGS	= @TCL_LD_FLAGS@
-TCL_LIBS	= @TCL_LIBS@
-TCL_SHLIB_LD_LIBS = @TCL_SHLIB_LD_LIBS@
 TCL_SRC_DIR	= @TCL_SRC_DIR@
-TCL_DBGX	= @TCL_DBGX@
-TCL_STUB_LIB_FILE = @TCL_STUB_LIB_FILE@
-TCL_STUB_LIB_SPEC = @TCL_STUB_LIB_SPEC@
-TCLSH_PROG	= TCL_LIBRARY=`@CYGPATH@ $(TCL_SRC_DIR)/library` @TCLSH_PROG@
+TCL_BIN_DIR	= @TCL_BIN_DIR@
+# Not used, but retained for reference of what libs Tcl required
+TCL_LIBS	= @TCL_LIBS@
 
-INCLUDES = @TCL_INCLUDES@
+EXTRA_PATH	= $(top_builddir):$(TCL_BIN_DIR)
+TCLSH_PROG	= TCL_LIBRARY=`@CYGPATH@ $(TCL_SRC_DIR)/library` \
+		  LD_LIBRARY_PATH="$(EXTRA_PATH):$(LD_LIBRARY_PATH)" \
+		  LIBPATH="$(EXTRA_PATH):${LIBPATH}" \
+		  SHLIB_PATH="$(EXTRA_PATH):${SHLIB_PATH}" \
+		  TCLLIBPATH="$(top_builddir)" \
+		  PATH="$(EXTRA_PATH):$(PATH)" \
+		  @TCLSH_PROG@
 
-EXTRA_CFLAGS	= $(TCL_DEFS) $(PROTO_FLAGS) $(SECURITY_FLAGS) $(MEM_DEBUG_FLAGS) $(KEYSYM_FLAGS) $(NO_DEPRECATED_FLAGS) $(TCL_EXTRA_CFLAGS)
+INCLUDES	= @TCL_INCLUDES@
 
-DEFS = @DEFS@ $(EXTRA_CFLAGS)
+EXTRA_CFLAGS	= $(MEM_DEBUG_FLAGS) @EXTRA_CFLAGS@
+
+DEFS		= @DEFS@ $(TCL_DEFS) $(EXTRA_CFLAGS)
 
 CONFIG_CLEAN_FILES = Makefile pkgIndex.tcl
 
@@ -201,11 +204,6 @@ install-doc: doc
 	    done
 
 test: binaries libraries
-	LD_LIBRARY_PATH="$(top_builddir):$(TCL_BIN_DIR):$(LD_LIBRARY_PATH)" \
-	LIBPATH="$(top_builddir):$(TCL_BIN_DIR):${LIBPATH}" \
-	SHLIB_PATH="$(top_builddir):$(TCL_BIN_DIR):${SHLIB_PATH}" \
-	TCLLIBPATH=$(top_builddir) \
-	PATH="$(top_builddir):$(TCL_BIN_DIR):$(PATH)" \
 	$(TCLSH_PROG) `@CYGPATH@ $(srcdir)/tests/all.tcl` $(TESTFLAGS)
 
 depend:
