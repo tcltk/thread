@@ -2,7 +2,8 @@
 
 	* generic/*:
 	* win/threadWin.c (new): updated for a new threadWin.c and finished
-	replacing use of thread.h with tclThread.h
+	replacing use of thread.h with tclThread.h.  threadWin.c is an
+	experiment to add a 'thread::kill' command.  Not done yet.
 
 	* win/vc/thread.rc (removed):
 	* win/thread.rc (new): moved it up a directory.
