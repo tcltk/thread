@@ -16,10 +16,10 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.27 2001/09/04 23:39:52 davygrvy Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.28 2001/09/04 23:43:09 davygrvy Exp $
  */
 
-#include "thread.h"
+#include "tclThread.h"
 
 /*
  * Each thread has an single instance of the following structure.  There
