@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.20 2003/03/17 09:01:26 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.21 2003/04/02 12:57:47 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1516,7 +1516,7 @@ InitWaiter ()
         tsdPtr->waitPtr->prevPtr  = NULL;
         tsdPtr->waitPtr->nextPtr  = NULL;
         tsdPtr->waitPtr->threadId = Tcl_GetCurrentThread();
-        Tcl_CreateThreadExitHandler(ThrExitHandler, NULL);
+        Tcl_CreateThreadExitHandler(ThrExitHandler, (ClientData)tsdPtr);
     }
 }
 
@@ -1539,7 +1539,7 @@ static void
 ThrExitHandler(clientData)
     ClientData clientData;
 {
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)clientData;
 
     Tcl_Free((char*)tsdPtr->waitPtr);
 }
@@ -1640,7 +1640,7 @@ Tpool_Init (interp)
     if (initialized == 0) {
         Tcl_MutexLock(&listMutex);
         if (initialized == 0) {
-            Tcl_CreateExitHandler(AppExitHandler, NULL);
+            Tcl_CreateExitHandler(AppExitHandler, (ClientData)-1);
             initialized = 1;
         }
         Tcl_MutexUnlock(&listMutex);
