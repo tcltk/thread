@@ -1,3 +1,10 @@
+2001-05-27  David Gravereaux <davygrvy@pobox.com>
+
+	* configure:
+	* configure.in:
+	* Makefile.in:
+		Added package versions to the compile flags. [bug #421246]
+
 2001-04-28  David Gravereaux <davygrvy@pobox.com>
 
 	* generic/threadCmd.c (NewThread): removed the previous addition of
