@@ -1,5 +1,10 @@
 2001-09-04  David Gravereaux <davygrvy@pobox.com>
 
+	* generic/thread.h (deleted):
+	* generic/tclThread.h (new):
+	* generic/threadCmd.c:  decided to change the name of 'thread.h' to
+	'tclThread.h', per request.
+
 	* generic/thread.h:
 	* generic/threadCmd.c:  Re-added original implimentation of [thread::exit].
 	for `emergency use only`.  You have been warned ;)
