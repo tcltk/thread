@@ -1,5 +1,19 @@
 2005-01-03 Zoran Vasiljevic <zv@archiware.com>
 
+	* generic/threadPoolCmd.c: fixed Tcl Bug #1095370.
+	We were wrongly tearing down workers on idle timer
+	expiry *below* the number of workers set by the
+	"-minworkers" option.
+
+	* lib/ttrace.tcl: added [ttrace::config] to control
+	some runtime options. The only option it allows now
+	is "-doepochs". This is a boolean flag turning the
+        epoch generation off/on.
+	Also, improved handling of XOTcl introspections in
+	regard to namespaced objects/classes.
+
+2005-01-03 Zoran Vasiljevic <zv@archiware.com>
+
 	* lib/ttrace.tcl: added [ttrace::isenabled] and modified
 	the [ttrace::addtrace] to dynamically activate the tracer
 	if the tracing is already enabled. This way we can dynamically
