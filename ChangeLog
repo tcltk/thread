@@ -1,3 +1,22 @@
+2000-10-26  David Gravereaux <davygrvy@ajubasolutions.com>
+
+	* generic/thread.h:
+	* win/vc/config.vc:
+	* win/vc/makefile.vc:
+	* win/vc/thread.dsp: upped version numbers to 2.2 along with adding
+	a new macro (THREAD_VERSION_SUBSET83) defining the version when
+	loaded into an 8.3 core.  Which happens to be "2.1.1" at this time.
+
+	* generic/threadCmd.c (Thread_Init): Added logic to allow setting
+	the package version at runtime to "2.2" when compiled against 8.4
+	and loaded into 8.4.  When compiled against 8.4, yet loaded into
+	8.3, thread::join and thread::transfer are not added to the interp
+	and the package version is set to "2.1.1" instead from the single
+	binary.  [ie. multiple interfaces in one binary]  When compiled
+	against 8.3, thread::join and thread::transfer are non-existant and
+	the package version is always "2.1.1" to maintain a consistent
+	interface in all combinations (as per discussions with Don Porter).
+
 2000-10-16  Zoran Vasiljevic <zoran@munich.com>
 
 	* generic/threadSvCmd.c ThreadSvUnsetObjCmd(): deadlocked.
