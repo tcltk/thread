@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.58 2002/12/05 15:14:02 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.59 2002/12/08 13:20:21 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -215,7 +215,8 @@ static int
 ThreadCreate      _ANSI_ARGS_((Tcl_Interp *interp,
                                CONST char *script,
                                int stacksize,
-                               int flags));
+                               int flags,
+                               int preserve));
 static int  
 ThreadSend        _ANSI_ARGS_((Tcl_Interp *interp, 
                                Tcl_ThreadId id, 
@@ -509,14 +510,14 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
-    int argc;
+    int argc, rsrv = 0;
     char *arg, *script;
     int flags = TCL_THREAD_NOFLAGS;
 
     Init(interp);
 
     /* 
-     * Syntax: thread::create ?-joinable? ?script?
+     * Syntax: thread::create ?-joinable? ?-preserved? ?script?
      */
 
     script = NS"wait";
@@ -533,6 +534,8 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
             break;
         } else if (OPT_CMP(arg, "-joinable")) {
             flags |= TCL_THREAD_JOINABLE;
+        } else if (OPT_CMP(arg, "-preserved")) {
+            rsrv = 1;
         } else if ((argc + 1) == objc) {
             script = Tcl_GetStringFromObj(objv[argc], NULL);
         } else {
@@ -540,7 +543,7 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
         }
     }
 
-    return ThreadCreate(interp, script, TCL_THREAD_STACK_DEFAULT, flags);
+    return ThreadCreate(interp, script, TCL_THREAD_STACK_DEFAULT, flags, rsrv);
 
  usage:
     Tcl_WrongNumArgs(interp, 1, objv, "?-joinable? ?script?");
@@ -1407,14 +1410,16 @@ ThreadClbkSetVar(interp, clientData)
  */
 
 static int
-ThreadCreate(interp, script, stacksize, flags)
+ThreadCreate(interp, script, stacksize, flags, preserve)
     Tcl_Interp *interp;         /* Current interpreter. */
     CONST char *script;         /* Script to evaluate */
     int         stacksize;      /* Zero for default size */
     int         flags;          /* Zero for no flags */
+    int         preserve;       /* If true, reserve the thread */
 {
     ThreadCtrl ctrl;
     Tcl_ThreadId id;
+    ThreadSpecificData *tsdPtr;
 
     ctrl.script   = (char *)script;
     ctrl.condWait = NULL;
@@ -1435,6 +1440,9 @@ ThreadCreate(interp, script, stacksize, flags)
 
     while (ctrl.script != NULL) {
         Tcl_ConditionWait(&ctrl.condWait, &threadMutex, NULL);
+    }
+    if (preserve) {
+        (ThreadExistsInner(id))->refCount++;
     }
     Tcl_MutexUnlock(&threadMutex);
     Tcl_ConditionFinalize(&ctrl.condWait);
