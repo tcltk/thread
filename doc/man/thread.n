@@ -59,7 +59,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: thread.n,v 1.14 2003/11/25 18:18:28 vasiljevic Exp $
+'\" RCS: @(#) $Id: thread.n,v 1.15 2003/11/25 18:55:34 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
