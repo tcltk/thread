@@ -1,3 +1,34 @@
+2004-07-21 Zoran Vasiljevic <zoran@archiware.com>
+
+	* doc/*: reformatted docs and added some clarifications 
+	about mutex handling.
+
+	* generic/threadCmd.c: rewritten handling of thread handles
+	as passed to Tcl. Instead of casting Tcl_ThreadId to unsigned int
+	which brought some problems on Cray machines, we're now generating
+	opaque handles and match them to Tcl_ThreadId internally.
+
+	NOTE: this is not supposed to be a compatibility issue since
+	thread-handles should have been treated as opaque anyways.
+
+	* generic/threadSpCmd.*: improved behaviour when destroying locked
+	mutexes and locking the same mutex twice from the same thread.
+	In both cases we throw Tcl error instead of coring  the process
+	or deadlocking the (naive) application.
+
+	* generic/threadSvCmd.*: number of tsv buckets is now compile
+	time constant.
+
+	* lib/ttrace.tcl: Fixed error in unknown wrapper when the passed
+	command was empty string.
+
+	* tests/all.tcl
+	* tests/thread.test: rewritten from scratch.
+
+	* tests/tpool.test:
+	* tests/ttrace.test:
+	* tests/tsv.test: new files, currently no-ops.
+
 2004-01-31 Zoran Vasiljevic <zoran@archiware.com>
 
 	* lib/ttrace.tcl: added unconditional "package require"
