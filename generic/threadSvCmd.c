@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.11 2002/03/07 07:24:20 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.12 2002/03/09 12:14:41 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -740,6 +740,7 @@ Sv_DuplicateObj(objPtr)
                     if (objPtr->typePtr == regPtr->typePtr) {
                         (*regPtr->dupIntRepProc)(objPtr, dupPtr);
                         duped = 1;
+                        break;
                     }
                 }
                 /*

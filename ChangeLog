@@ -1,3 +1,9 @@
+2002-03-09  Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadSvCmd.c: fixed memory leak when copying objects
+	using custom object duplicator. If a duplicator was registered
+	more than once, we were leaking memory.
+
 2002-03-08  Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: added thread::configure -unwindonerror
@@ -7,7 +13,7 @@
 	
 2002-03-07  Zoran Vasiljevic <zoran@archiware.com>
 
-	* generic/threadSv.c: tsv::names will skip reporting shared
+	* generic/threadSvCmd.c: tsv::names will skip reporting shared
 	arrays with leading dot in their names. This is turned-on 
 	only for AOLserver builds with the HIDE_DOTNAMES. For the
 	regular Tcl builds, all arrays are reported, regardless of
