@@ -1,12 +1,29 @@
 
-This directory contain collection of Tcl packages written using 
-the Tcl thread extension. Each subdirectory holds a package and
-a makefile for building and installing the package in your system. 
-
+Software here is provided as example of making some interesting things
+and applications using the Tcl threading extension.
 Currently, following packages are supplied:
 
-   tpool/        thread pools library
-   phttpd/       mt-enabled httpd server (requires tpool)
-   cmdsrv/       socket command-line server
+   tpool/        Example Tcl-only implementation of thread pools
+                 The threading extension includes the efficient
+                 threadpool implementation in C. This file is 
+                 provided as fully functional example how this
+                 functionality may be implemented in Tcl alone.
+
+   phttpd/       MT-enabled httpd server. It uses the threadpool
+                 capability and distributes incoming requests among
+                 several worker threads in the threadpool. This way
+                 blocking requests may be handled much better, w/o
+                 halting the event loop of the main responder thread.
+                 In this directory you will also find the uhttpd file.
+                 This is the same variant but operating in event-loop
+                 mode alone. Good for comparison purposes.
+
+   cmdsrv/       Socket command-line server. Each new connection gets
+                 new thread thus allowing multiple outstanding blocking
+                 calls w/o halting the event loop.
+
+To use them, change to the corresponding directory and source files
+in the Tcl8.4 (or later) Tcl shell. Be sure to have the latest Tcl
+threading extension installed in your package path.
 
 - EOF
