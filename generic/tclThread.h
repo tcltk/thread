@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.7 2002/07/02 15:46:56 vasiljevic Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.8 2002/07/18 16:09:09 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -66,9 +66,6 @@ EXTERN void Sp_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 #define TCL_CMD(a,b,c) \
   Tcl_CreateObjCommand((a), (b), (c), (ClientData)NULL, NULL);
-
-#define TCL_CMD1(a,b,c,d) \
-  Tcl_CreateObjCommand((a), (b), (c), (ClientData)(d), NULL);
 
 #define OPT_CMP(a,b) \
   ((a) && (b) && (*(a)==*(b)) && (*(a+1)==*(b+1)) && (!strcmp((a),(b))))
