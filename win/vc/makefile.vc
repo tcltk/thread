@@ -5,7 +5,7 @@
 # maintenance utility -> nmake.exe that builds the Tcl thread
 # extension.  See README.txt for commandline options and instructions.
 #
-# RCS: @(#) $Id: makefile.vc,v 1.14 2000/08/20 21:00:23 davidg Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.15 2000/08/24 01:13:06 welch Exp $
 ######################################################################
 
 
@@ -79,7 +79,7 @@ NOMSVCRT	= 0
 
 # remember to change thread.h as well when this changes
 #
-VER	= 20
+VER	= 21
 
 !if $(NODEBUG)
 TMPDIRNAMEPREFIX = Release
