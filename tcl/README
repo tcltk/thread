@@ -1,0 +1,12 @@
+
+This directory contain collection of Tcl packages written using 
+the Tcl thread extension. Each subdirectory holds a package and
+a makefile for building and installing the package in your system. 
+
+Currently, following packages are supplied:
+
+   tpool/        thread pools
+   phttpd/       simple mt-enabled httpd server
+   cmdsrv/       socket command-line server
+
+- EOF
