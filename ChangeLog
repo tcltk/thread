@@ -1,3 +1,37 @@
+2000-05-04  Andreas Kupries <a.kupries@westend.com>
+
+	* Overall changes:
+	  (1) Added joinable threads.
+	  (2) Added transfer of channels between threads.
+
+	* generic/threadCmd.c: Added functions Thread_Join and
+	  ThreadJoinObjCmd.
+
+	  Extended function ThreadCreateObjCmd to handle a
+	  -joinable flag.
+
+	  Fixed bug in Thread_Create, the argument 'stacksize' was not
+	  used.
+
+	  Removed declaration of ThreadObjCmd, which was not used anywhere
+	  else in the code.
+
+	  Added functions Thread_Transfer, ThreadTransferEventProc and
+	  ThreadTransferObjCmd. Extended behaviour of ThreadDeleteEvent
+	  and ThreadExitProc to deal with the new class of events.
+
+	  Changed usage of ckfree to the more canonical Tcl_Free. Same for
+	  ckalloc and Tcl_Alloc.
+
+	* Makefile.in: Fixed bug with regard to the installation of
+	  documentation.
+
+	* doc/thread.*: Added documentation of create -joinable,
+	  thread::join and thread::transfer.
+
+	* tests/thread.test: Added tests for joining of threads and moving
+	  channels between threads.
+
 2000-04-19  Brent Welch <welch@scriptics.com>
 
 	* win/vc/config.rc, Makefile.vc: Fixes from David Gravereaux

@@ -2,13 +2,15 @@
 <H3><A NAME="M2">NAME</A></H3>
 thread - Create and manipulate threads with Tcl interpreters in them.
 <H3><A NAME="M3">SYNOPSIS</A></H3>
-<B>thread::create</B><I>?script?</I><BR>
+<B>thread::create</B> <I>?-joinable?</I> <I>?script?</I><BR>
 <B>thread::id</B><BR>
 <B>thread::errorproc</B> <I>procname</I><BR>
 <B>thread::exit</B><BR>
 <B>thread::names</B><BR>
 <B>thread::send</B> <I>id </I><B>?-async?</B><I> script</I><BR>
 <B>thread::wait</B><BR>
+<B>thread::join</B>  <I>id</I><BR>
+<B>thread::transfer</B> <I>id</I> <I>channel</I><BR>
 
 <H3><A NAME="M4">DESCRIPTION</A></H3>
 The
@@ -21,7 +23,9 @@ The Tcl interpreter either evaluates the <i>script</i>, if specified,
 or it waits in the event loop for scripts that arrive via the
 <b>thread::send</b> command.
 The result of <b>thread::create</b> is the ID of the thread.
-The result, if any, of <i>script</i> is ignored.
+The result, if any, of <i>script</i> is ignored. Using flag
+<b>-joinable</b> it is possible to create a joinable thread, i.e. one
+upon whose exit can be waited upon (by using <b>thread::join</b>).
 <p>
 <b>thread::id</b> returns the ID of the current thread.
 <p>
@@ -61,6 +65,16 @@ enter the event loop explicitly by calling
 <b>thread::wait</b> enters the event loop so a thread can receive
 messages from <b>thread::send</b>.  This is equivalent to
 <b>vwait</b> <i>unusedvariable</i>.
+<p>
+<b>thread::join</b> waits for the thread with id <i>id</i> to exit and
+then returns its exit code. Errors will be returned for threads which
+are not joinable or already waited upon by another thread.
+<p>
+<b>thread::transfer</b> moves the specified <i>channel</i> from the
+current thread and interpreter to the main interpreter of the thread
+with the given <i>id</i>. After the move the current interpreter has
+no access to the channel anymore, but the main interpreter of the
+target thread will be able to use it from now on.
 
 <H3><A NAME="M4">DISCUSSION</A></H3>
 
@@ -75,7 +89,8 @@ For example, an event-driven server can pass requests to worker threads,
 and then await responses from worker threads or new client requests.
 Everything goes through the common Tcl event loop, so message
 passing between threads works naturally with event-driven I/O,
-<b>vwait</b> on variables, and so forth.
+<b>vwait</b> on variables, and so forth. For the transfer of bulk
+information it is possible to move channels between the threads.
 
 <h3>SEE ALSO</h3>
 <a href=http://www.scriptics.com/support/howto/thread_model.html>
