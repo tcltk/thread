@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.17 2002/12/14 16:14:46 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.18 2002/12/18 18:22:23 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -153,7 +153,10 @@ static ThreadPool*
 GetTpoolUnl    _ANSI_ARGS_((char *tpoolName));
 
 static void
-ExitHandler    _ANSI_ARGS_((ClientData clientData));
+ThrExitHandler _ANSI_ARGS_((ClientData clientData));
+
+static void
+AppExitHandler _ANSI_ARGS_((ClientData clientData));
 
 static int
 TpoolReserve   _ANSI_ARGS_((ThreadPool *tpoolPtr));
@@ -873,9 +876,8 @@ TpoolWorker(clientData)
     TpoolResult         *rPtr  = (TpoolResult*)clientData;
     ThreadPool       *tpoolPtr = rPtr->tpoolPtr;
 
-    int maj, min, ptch, type, n, tout = 0;
+    int maj, min, ptch, type, tout = 0;
     Tcl_Interp *interp;
-    Tcl_HashEntry *hPtr;
     Tcl_Time waitTime, *idlePtr;
     char *errMsg = "can't create new Tcl interpreter";
 
@@ -974,8 +976,14 @@ TpoolWorker(clientData)
         TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
         Tcl_Free(rPtr->script);
         Tcl_MutexLock(&tpoolPtr->mutex);
-        hPtr = Tcl_CreateHashEntry(&tpoolPtr->jobsDone,(char*)rPtr->jobId,&n);
-        Tcl_SetHashValue(hPtr, (ClientData)rPtr);
+        if (rPtr->detached) {
+            Tcl_Free((char*)rPtr);
+        } else {
+            int new;
+            Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone, 
+                                                 (char*)rPtr->jobId, &new), 
+                             (ClientData)rPtr);
+        }
     }
 
     /*
@@ -1250,7 +1258,7 @@ TpoolEval(interp, script, scriptLen, rPtr)
     char *result, *errorCode, *errorInfo;
     
     ret = Tcl_EvalEx(interp, script, scriptLen, TCL_EVAL_GLOBAL);
-    if (rPtr == NULL) {
+    if (rPtr == NULL || rPtr->detached) {
         return ret;
     }
     rPtr->retcode = ret;
@@ -1508,14 +1516,14 @@ InitWaiter ()
         tsdPtr->waitPtr->prevPtr  = NULL;
         tsdPtr->waitPtr->nextPtr  = NULL;
         tsdPtr->waitPtr->threadId = Tcl_GetCurrentThread();
-        Tcl_CreateThreadExitHandler(ExitHandler, NULL);
+        Tcl_CreateThreadExitHandler(ThrExitHandler, NULL);
     }
 }
 
 /*
  *----------------------------------------------------------------------
  *
- * ExitHandler --
+ * ThrExitHandler --
  *
  *  Performs cleanup when a caller (poster) thread exits.
  *
@@ -1527,9 +1535,8 @@ InitWaiter ()
  *
  *----------------------------------------------------------------------
  */
-
 static void
-ExitHandler(clientData)
+ThrExitHandler(clientData)
     ClientData clientData;
 {
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
@@ -1540,9 +1547,37 @@ ExitHandler(clientData)
 /*
  *----------------------------------------------------------------------
  *
+ * AppExitHandler 
+ *
+ *  Deletes all threadpools on application exit.
+ *
+ * Results:
+ *  None. 
+ *
+ * Side effects:
+ *  None.
+ *
+ *----------------------------------------------------------------------
+ */
+static void
+AppExitHandler(clientData)
+    ClientData clientData;
+{
+    ThreadPool *tpoolPtr;
+
+    Tcl_MutexLock(&listMutex);
+    for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
+        TpoolRelease(tpoolPtr);
+    }
+    Tcl_MutexUnlock(&listMutex);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * GetTime --
  *
- *  Wrapper for the Tcl_GetTime which is not available for 8.3
+ *  Wrapper for the Tcl_GetTime which is not available for 8.3.
  *
  * Results:
  *  None.
@@ -1556,27 +1591,19 @@ static void
 GetTime(timePtr)
     Tcl_Time *timePtr;
 {
-    int maj, min, patch, type;
-
-    Tcl_GetVersion(&maj, &min, &patch, &type);
-
-    if ((maj == 8) && (min <= 3)) {
 #ifdef __WIN32__
 #include <sys/timeb.h>
-        struct timeb tb;
-        (void)ftime(&tb);
-        timePtr->sec  = tb.time;
-        timePtr->usec = tb.millitm * 1000;
+    struct timeb tb;
+    (void)ftime(&tb);
+    timePtr->sec  = tb.time;
+    timePtr->usec = tb.millitm * 1000;
 #else
 #include <sys/time.h>
-        struct timeval tv;
-        (void)gettimeofday(&tv, NULL);
-        timePtr->sec  = tv.tv_sec;
-        timePtr->usec = tv.tv_usec;
-#endif  
-    } else {
-        Tcl_GetTime(timePtr);
-    }
+    struct timeval tv;
+    (void)gettimeofday(&tv, NULL);
+    timePtr->sec  = tv.tv_sec;
+    timePtr->usec = tv.tv_usec;
+#endif
 }
 
 /*
@@ -1590,7 +1617,8 @@ GetTime(timePtr)
  *  None.
  *
  * Side effects:
- *  None.
+ *  On first load, creates application exit handler to clean up
+ *  any threadpools left.
  *
  *----------------------------------------------------------------------
  */
@@ -1599,6 +1627,8 @@ void
 Tpool_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
 {
+    static initialized;
+
     TCL_CMD(interp, "tpool::create",   TpoolCreateObjCmd);
     TCL_CMD(interp, "tpool::names",    TpoolNamesObjCmd);
     TCL_CMD(interp, "tpool::post",     TpoolPostObjCmd);
@@ -1606,6 +1636,15 @@ Tpool_Init (interp)
     TCL_CMD(interp, "tpool::get",      TpoolGetObjCmd);
     TCL_CMD(interp, "tpool::preserve", TpoolReserveObjCmd);
     TCL_CMD(interp, "tpool::release",  TpoolReleaseObjCmd);
+
+    if (initialized == 0) {
+        Tcl_MutexLock(&listMutex);
+        if (initialized == 0) {
+            Tcl_CreateExitHandler(AppExitHandler, NULL);
+            initialized = 1;
+        }
+        Tcl_MutexUnlock(&listMutex);
+    }
 }
 
 /* EOF $RCSfile: threadPoolCmd.c,v $ */
