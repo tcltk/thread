@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.42 2002/05/25 21:39:05 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.43 2002/06/17 20:22:55 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1466,7 +1466,8 @@ ThreadErrorProc(interp)
     Tcl_Interp *interp;         /* Interp that failed */
 {
     ThreadSendData *sendPtr;
-    char *errorInfo, *argv[3], buf[10];
+    char *argv[3], buf[10];
+    CONST char *errorInfo;
 
     sprintf(buf, "%ld", (long) Tcl_GetCurrentThread());
     errorInfo = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
@@ -1486,12 +1487,12 @@ ThreadErrorProc(interp)
     } else {
         argv[0] = errorProcString;
         argv[1] = buf;
-        argv[2] = errorInfo;
+        argv[2] = (char*)errorInfo;
 
         sendPtr = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
         sendPtr->execProc   = ThreadSendEval;
         sendPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
-        sendPtr->clientData = (ClientData) Tcl_Merge(3, argv);
+        sendPtr->clientData = (ClientData) Tcl_Merge(3, (CONST char**)argv);
 
         ThreadSend(interp, errorThreadId, sendPtr, NULL, 0);
     }
@@ -1775,7 +1776,6 @@ ThreadTransfer(interp, id, chan)
      *      transfer. This allows this thread then to proceed.
      */
 
-    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
     TransferEvent *evPtr;
     TransferResult *resultPtr;
 
@@ -1945,8 +1945,7 @@ ThreadSend(interp, id, send, clbk, wait)
     ThreadClbkData *clbk;        /* Opt. callback structure (may be NULL) */
     int             wait;        /* If 1, we block for the result. */
 {
-    ThreadSpecificData *tsdPtr  = TCL_TSD_INIT(&dataKey); /* our own */
-    ThreadSpecificData *ttsdPtr = NULL; /* ... of the target thread */
+    ThreadSpecificData *tsdPtr = NULL; /* ... of the target thread */
 
     int code;
     ThreadEvent *eventPtr;
@@ -1958,9 +1957,9 @@ ThreadSend(interp, id, send, clbk, wait)
      */
 
     Tcl_MutexLock(&threadMutex);
-    ttsdPtr = ThreadExistsInner(threadId);
+    tsdPtr = ThreadExistsInner(threadId);
 
-    if (ttsdPtr == (ThreadSpecificData*)NULL) {
+    if (tsdPtr == (ThreadSpecificData*)NULL) {
         Tcl_MutexUnlock(&threadMutex);
         ThreadFreeProc((ClientData)send);
         if (clbk) {
@@ -2000,8 +1999,8 @@ ThreadSend(interp, id, send, clbk, wait)
      * another event
      */
 
-    if (ttsdPtr->maxEventsCount) {
-        ttsdPtr->eventsPending++;
+    if (tsdPtr->maxEventsCount) {
+        tsdPtr->eventsPending++;
     }
 
     /*
@@ -2052,9 +2051,9 @@ ThreadSend(interp, id, send, clbk, wait)
          * Might potentially spend some time here, until the
          * worker thread clean's up it's queue a little bit.
          */ 
-        while (ttsdPtr->maxEventsCount &&
-               ttsdPtr->eventsPending > ttsdPtr->maxEventsCount) {
-            Tcl_ConditionWait(&ttsdPtr->doOneEvent, &threadMutex, NULL);
+        while (tsdPtr->maxEventsCount &&
+               tsdPtr->eventsPending > tsdPtr->maxEventsCount) {
+            Tcl_ConditionWait(&tsdPtr->doOneEvent, &threadMutex, NULL);
         }
         Tcl_MutexUnlock(&threadMutex);
         return TCL_OK;
@@ -2408,7 +2407,7 @@ ThreadSetResult(interp, code, resultPtr)
     ThreadEventResult *resultPtr;
 {
     int resLen;
-    char *errorCode, *errorInfo, *result;
+    CONST char *errorCode, *errorInfo, *result;
 
     if (interp == NULL) {
         code      = TCL_ERROR;
