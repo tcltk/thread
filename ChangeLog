@@ -1,3 +1,11 @@
+2002-07-13  Zoran Vasiljevic <zoran@archiware.com>  
+
+	* doc/man:
+	* doc/html: added two directories with TMML generated files
+	* doc/thread.tmml: fixed for the final 2.4 release
+	* Makefile.in: updated install-doc target to look for man files
+	under doc/man instead only under doc directory
+
 2002-07-12  Zoran Vasiljevic <zoran@archiware.com>  
 
 	* generic/threadSvCmd.s: fixed handling of string rep
