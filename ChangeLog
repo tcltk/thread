@@ -1,6 +1,11 @@
+2002-07-12  Zoran Vasiljevic <zoran@archiware.com>  
+
+	* generic/threadSvCmd.s: fixed handling of string rep
+	in shared var object duplicator
+
 2002-07-09  Zoran Vasiljevic <zoran@archiware.com>  
 	* README: added this file
- 	* license.tems: added this file
+ 	* license.terms: added this file
 
 2002-07-05  Zoran Vasiljevic <zoran@archiware.com>  
 
