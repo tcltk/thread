@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.13 2002/05/04 16:23:27 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.14 2002/06/17 20:22:55 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -932,7 +932,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
     Tcl_Obj **lobjv = NULL;
     Container *svObj, *elObj = NULL;
 
-    static char *opts[] = {
+    static CONST char *opts[] = {
         "set", "reset", "get", "names", "size", "exists", NULL};
     enum options {
         ASET,  ARESET,  AGET,  ANAMES,  ASIZE,  AEXISTS
@@ -952,8 +952,8 @@ SvArrayObjCmd(arg, interp, objc, objv)
         argx = 3;
     }
 
-    if (Tcl_GetIndexFromObj(interp, objv[1], opts, "option", 0, &index)
-            != TCL_OK) {
+    if (Tcl_GetIndexFromObj(interp, objv[1], opts, 
+            "option", 0, &index) != TCL_OK) {
         ret = TCL_ERROR;
         goto cmdExit;
     } else if (index == AEXISTS) {
