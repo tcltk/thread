@@ -1,3 +1,9 @@
+2004-10-20 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c (ThreadSetResult): adjusted handling of
+	  interp result to accomodate for recent changes in Tcl core.
+	  This closes Tcl Bug# 1050490.
+ 
 2004-10-19  Andreas Kupries <andreask@activestate.com>
 
 	* generic/threadSvCmd.c: Added a prototype for
