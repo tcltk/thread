@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.20 2000/11/03 00:04:25 davidg Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.21 2001/04/25 23:12:17 davygrvy Exp $
  */
 
 #include "thread.h"
@@ -965,6 +965,7 @@ NewThread(clientData)
 
     ListRemove(tsdPtr);
     Tcl_DeleteInterp(tsdPtr->interp);
+    Tcl_FinalizeThread();
     Tcl_ExitThread(result);
 
     TCL_THREAD_CREATE_RETURN;
@@ -1579,23 +1580,13 @@ ThreadWait()
     ListRemove(tsdPtr);
 
     /*
-     * Delete all pending thread::send events.
-     * By doing this here, we avoid processing them below.
+     * Delete all pending thread::send events.  These are events
+     * owned by us.  It is up to all other extensions (including Tk)
+     * to be responsible for there own events when they recieve a
+     * Tcl_CallWhenDeleted notice. 
      */
 
     Tcl_DeleteEvents((Tcl_EventDeleteProc *)ThreadDeleteEvent, NULL);
-
-    /*
-     * Run all other pending events which we can not sink otherwise.
-     * We assume that no runnable event will block us indefinitely
-     * or kick us into a infinite loop, otherwise we're stuck.
-     */
-
-    eventFlags |= TCL_DONT_WAIT;
-    i=100;
-    while (Tcl_DoOneEvent(eventFlags) && (--i > 0)) {
-        ; /* empty loop */
-    }
 
     return TCL_OK;
 }
