@@ -60,7 +60,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: thread.n,v 1.5 2002/07/21 14:13:58 vasiljevic Exp $
+'\" RCS: @(#) $Id: thread.n,v 1.6 2002/07/22 19:44:36 mdejong Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -420,7 +420,8 @@ not unblock a \fBvwait\fP.
 \&\fB\fBthread::join\fP
 \&\fRThis command waits for the thread with ID \fIid\fR to exit and
 then returns it's exit code. Errors will be returned for threads which
-are not joinable or already waited upon by another thread.
+are not joinable or already waited upon by another thread. This command
+is only available when compiling with Tcl 8.4 or newer.
 .TP
 \&\fB\fBthread::configure\fP
 \&\fRThis command configures various low-level aspects of the thread with ID
@@ -457,7 +458,8 @@ into longer loops of threads waiting for each other.
 Other restrictions: The channel in question must not be shared among
 multiple interpreters running in the sending thread. This
 automatically excludes the special channels for standard input, output
-and error.
+and error. This command is only available when compile with Tcl 8.4
+or newer.
 .PP
 This section describes commands used for script-level access to
 most common and basic thread synchronization primitives: mutexes and
