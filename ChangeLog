@@ -1,3 +1,8 @@
+2003-01-21  Mo DeJong  <mdejong@users.sourceforge.net>
+
+	* configure: Regenerate to include recent fixes
+	for mingw build support in tclconfig module.
+
 2002-12-18 Zoran Vasiljevic <zoran@archiware.com>
 
 	* README: added some AOLserver info
