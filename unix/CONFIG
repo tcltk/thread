@@ -23,9 +23,9 @@
 #
 # AOLserver 4.X; Uses public Tcl library.
 # ----------------------------------------------------
-# ../configure --enable-threads \
-#   --prefix=/usr/local/aolserver \
-#   --with-aolserver=/usr/local/aolserver
+# aoldir="/usr/local/aolserver"
+# ../configure --enable-threads --with-aolserver=$aoldir
+#   --prefix=$aoldir --exec-prefix=$aoldir
 #
 # AOLserver uses its own package loading mechanism.
 # To load, just do "ns_eval package require Thread"
