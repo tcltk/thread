@@ -18,8 +18,8 @@
 	* win/vc/thread.dsp: Added new files from Zoran's patch.
 
 	* win/.cvsignore(deleted):
-	* win/vc/.cvsignore(added): moved file to help to keep a
-	cleaner build environment.
+	* win/vc/.cvsignore(added): moved file to help keep a cleaner
+	build environment.
 
 	* generic/threadSvCmd.c: Added some additional casting of
 	Tcl_GetHashValue to prevent compiler warnings.
@@ -30,7 +30,9 @@
 	loop.  Any other extension that's queueing events must be
 	responsible for it's own cleanup and should be aware of when
 	the interp (ie. this thread) is going away when we fall-out
-	to Tcl_DeleteInterp from the Tcl_Eval in NewThread().
+	to Tcl_DeleteInterp from the Tcl_Eval in NewThread().  If other
+	extensions (like Tk) don't become aware, then they need to add
+	a Tcl_CallWhenDeleted handler.
 
 2000-07-14 Zoran Vasiljevic <zoran@munich.com>
 
