@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: ttrace.html,v 1.4 2004/07/21 20:51:05 vasiljevic Exp $ ttrace.n
+<! -- CVS: $Id: ttrace.html,v 1.5 2004/12/19 11:45:18 vasiljevic Exp $ ttrace.n
    -->
 
 <body>
@@ -18,9 +18,18 @@
 
 
 
+<h2><a name="table_of_contents">TABLE OF CONTENTS</a></h2>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#table_of_contents">TABLE OF CONTENTS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#synopsis">SYNOPSIS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#description">DESCRIPTION</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#user_commands">USER COMMANDS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#callback_commands">CALLBACK COMMANDS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#discussion">DISCUSSION</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#see_also">SEE ALSO</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#keywords">KEYWORDS</a><br>
 <h2><a name="synopsis">SYNOPSIS</a></h2>
 <p>
-package require <b>Tcl 8.3</b><br>
+package require <b>Tcl 8.4</b><br>
 package require <b>Thread ?2.6?</b><br>
 <br><table border=1 width=100% cellspacing=0 cellpadding=0><tr            bgcolor=lightyellow><td bgcolor=lightyellow><table 0 width=100% cellspacing=0 cellpadding=0><tr valign=top ><td ><a href="#1"><b class='cmd'>ttrace::eval</b> <i class='arg'>arg</i> ?arg ...?</a></td></tr>
 <tr valign=top ><td ><a href="#2"><b class='cmd'>ttrace::enable</b> </a></td></tr>
@@ -50,7 +59,7 @@ The package requires Tcl threading extension but can be alternatively
 used stand-alone within the AOLserver, a scalable webserver from 
 America Online.
 
-<h2><a name="usercommands">USER COMMANDS</a></h2>
+<h2><a name="user_commands">USER COMMANDS</a></h2>
 <p>
 This section describes user-level commands. Those commands can be
 used by script writers to control the execution of the tracing
@@ -118,7 +127,7 @@ is automatically invoked by other higher-level commands like
 
 </dl>
 
-<h2><a name="callbackcommands">CALLBACK COMMANDS</a></h2>
+<h2><a name="callback_commands">CALLBACK COMMANDS</a></h2>
 <p>
 A word upfront: the package already includes callbacks for tracing 
 following Tcl commands: <b class='cmd'>proc</b>, <b class='cmd'>namespace</b>, <b class='cmd'>variable</b>,
@@ -269,7 +278,7 @@ replicated from the master to other Tcl thread/interpreters.
 
 
 
-<h2><a name="seealso">SEE ALSO</a></h2>
+<h2><a name="see_also">SEE ALSO</a></h2>
 <p>
 thread, tpool, tsv
 <h2><a name="keywords">KEYWORDS</a></h2>

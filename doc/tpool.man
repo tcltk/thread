@@ -93,6 +93,8 @@ on the worker thread exit.
 
 [list_end]
 
+[nl] 
+
 [call [cmd tpool::names]]
 
 This command returns a list of IDs of threadpools created with the 

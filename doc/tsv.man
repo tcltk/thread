@@ -40,8 +40,6 @@ of the other shared variable commands as method functions of
 the element object command. The object command is automatically
 deleted when the element which this command is pointing to is unset.
 
-[nl]
-
 [example {
     % tsv::set foo bar "A shared string"
     % set string [tsv::object foo bar]
@@ -109,8 +107,6 @@ variable commands within the script, internal locking is disabled
 so no deadlock can occur. It is also allowed to unset the shared
 variable from within the script. The shared variable is automatically
 created if it did not exists at the time of the first lock operation.
-
-[nl]
 
 [example {
     % tsv::lock foo {
@@ -254,9 +250,7 @@ key-value pairs are referred to as fields.  This is an example of a
 keyed list:
 
 [example {
-
     {{NAME  {Frank  Zappa}} {JOB {musician and composer}}}
-
 }]
 
 Fields may contain subfields; `.' is the separator character. Subfields 
@@ -265,9 +259,7 @@ following list has the top level fields ID and NAME, and subfields
 NAME.FIRST and NAME.LAST:
 
 [example {
-
     {ID 106} {NAME {{FIRST Frank} {LAST Zappa}}}
-
 }]
 
 There is no limit to the recursive depth of subfields,

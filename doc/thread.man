@@ -30,7 +30,7 @@ specified, or it waits in the event loop for scripts that arrive via
 the [cmd thread::send] command. The result, if any, of the
 optional [option script] is never returned to the caller.
 The result of [cmd thread::create] is the ID of the thread. This is
-the small integer handle which identifies the newly created thread for
+the opaque handle which identifies the newly created thread for
 all other package commands. The handle of the thread goes out of scope
 automatically when thread is marked for exit
 (see the [cmd thread::release] command below).
@@ -48,9 +48,10 @@ command returns.
 
 Using flag [option -joinable] it is possible to create a joinable
 thread, i.e. one upon whose exit can be waited upon by using 
-[cmd thread::join] command. Note that only Tcl8.4+ core supports
-joinable threads. Note also that failure to join a thread created
-with [option -joinable] flag results in resource and memory leaks. 
+[cmd thread::join] command. 
+Note that failure to join a thread created with [option -joinable] flag
+results in resource and memory leaks. 
+
 
 [nl]
 
@@ -73,8 +74,6 @@ doing an vwait-type of command. In such cases, the thread may never
 exit. This is considered to be a bad practice and should be avoided 
 if possible. This is best illustrated by the example below:
 
-[nl]
-
 [example {
     # You should never do ...
     set tid [thread::create {
@@ -83,8 +82,6 @@ if possible. This is best illustrated by the example below:
         vwait forever ; # <-- this!
     }]
 }]
-
-[nl]
 
 The thread created in the above example will never be able to exit.
 After it has been released with the last matching [cmd thread::release]
@@ -167,7 +164,7 @@ be changed by registering a procedure which is called to report
 the error. The [arg procname] is called in the interpreter that
 invoked the [cmd thread::errorproc] command. The [arg procname]
 is called like this:
-[nl]
+
 [example {
     myerrorproc thread_id errorInfo
 }]
@@ -237,8 +234,6 @@ Tcl [cmd catch] command. If, however, the [option -async] flag is
 specified, the command returns immediately and caller can later 
 [cmd vwait] on [opt varname] to get the result of the passed [arg script]
 
-[nl]
-
 [example {
     set t1 [thread::create]
     set t2 [thread::create] 
@@ -248,8 +243,6 @@ specified, the command returns immediately and caller can later
         vwait result
     }
 }]
-
-[nl]
 
 In the above example, two threads were fed work and both of them were
 instructed to signalize the same variable "result" in the calling thread.
@@ -281,8 +274,6 @@ the exiting thread will continue executing the script lines pass
 the [cmd thread::wait] which is usually not what you want and/or
 expect.
 
-[nl]
-
 [example {
     set t1 [thread::create {
         #
@@ -291,7 +282,6 @@ expect.
         thread::wait ; # Enter the event loop
     }]
 }]
-
 
 [call [cmd thread::eval] [opt {-lock mutex}] [arg arg] [opt {arg ...}]]
 
@@ -309,10 +299,6 @@ which are not joinable or already waited upon by another thread.
 Upon the join the handle of the thread has gone out of scope and
 should not be used any more.
 
-[nl]
-
-NOTE: This command is available only when loaded into the 
-Tcl8.4+ shell.
 
 [call [cmd thread::configure] [arg id] [opt option] [opt value] [opt ...]]
 
@@ -363,7 +349,6 @@ Due to the internal Tcl core implementation and the restriction on
 transferring shared channels, one has to take extra measures when
 transferring socket channels created by accepting the connection
 out of the [cmd socket] commands callback procedures:
-[nl]
 
 [example {
     socket -server _Accept 2200
@@ -376,11 +361,6 @@ out of the [cmd socket] commands callback procedures:
     }
 }]
 
-[nl]
-
-NOTE: this command is available only when loaded into the Tcl8.4+ shell.
-
-
 [call [cmd thread::detach] [arg channel]]
 
 This detaches the specified [arg channel] from the current thread and 
@@ -389,11 +369,6 @@ channel any more. The channel is in the parked state until some other
 (or the same) thread attaches the channel again with [cmd thread::attach].
 Restrictions: same as for transferring shared channels with the
 [cmd thread::transfer] command.
-
-[nl]
-
-NOTE: this command is available only when loaded into the Tcl8.4+ shell.
-
 
 [call [cmd thread::attach] [arg channel]]
 
@@ -406,11 +381,8 @@ do nothing. Command throws error if the [arg channel] cannot be
 found in the list of detached channels and/or in the current
 interpreter.
 
-[nl]
-
-NOTE: this command is available only when loaded into the Tcl8.4+ shell.
-
 [call [cmd thread::mutex]]
+
 Mutexes are most common thread synchronization primitives. 
 They are used to synchronize access from two or more threads to one or 
 more shared resources. This command provides script-level access to 
@@ -444,7 +416,6 @@ Destroys the [arg mutex]. Mutex should be in unlocked state before
 the destroy attempt. If the mutex is locked, the command will throw 
 Tcl error. 
 
-
 [call [cmd thread::mutex] [method lock] [arg mutex]]
 
 Locks the [arg mutex]. Locking the exclusive mutex may throw Tcl 
@@ -460,7 +431,10 @@ Attempt to unlock the already unlocked mutex will throw Tcl error.
 
 [list_end]
 
+[nl]
+
 [call [cmd thread::rwmutex]]
+
 This command creates many-readers/single-writer mutexes. Reader/writer
 mutexes allow you to serialize access to a shared resource more optimally. 
 In situations where a shared resource gets mostly read and seldom modified, 
@@ -510,6 +484,8 @@ Unlocks the [arg mutex] so some other thread may lock it again.
 Attempt to unlock already unlocked [arg mutex] will throw Tcl error.
 
 [list_end]
+
+[nl]
 
 [call [cmd thread::cond]]
 
@@ -568,8 +544,6 @@ This is usually accomplished by repeatedly testing a condition under the
 mutex protection and waiting on the condition variable until the condition
 evaluates to true:
 
-[nl]
-
 [example {
     set mutex [thread::mutex create]
     set cond  [thread::cond  create]
@@ -581,8 +555,6 @@ evaluates to true:
     # Do some work under mutex protection
     thread::mutex unlock $mutex
 }]
-
-[nl]
 
 Repeated testing of the condition is needed since the condition variable 
 may get signalled without the condition being actually changed (spurious 

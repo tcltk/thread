@@ -63,7 +63,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: ttrace.n,v 1.4 2004/07/21 20:51:05 vasiljevic Exp $
+'\" RCS: @(#) $Id: ttrace.n,v 1.5 2004/12/19 11:45:18 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -246,43 +246,43 @@ Database Class:	\\fB\\$3\\fR
 .SH "NAME"
 ttrace \- Trace-based interpreter initialization
 .SH "SYNOPSIS"
-package require \fBTcl  8.3\fR
+package require \fBTcl  8.4\fR
 .sp
 package require \fBThread  ?2.6?\fR
 .sp
-\fBttrace::eval\fR \fIarg\fR ?arg ...?\fR
+\fBttrace::eval\fR \fIarg\fR ?arg ...?
 .sp
-\fBttrace::enable\fR \fR
+\fBttrace::enable\fR
 .sp
-\fBttrace::disable\fR \fR
+\fBttrace::disable\fR
 .sp
-\fBttrace::cleanup\fR \fR
+\fBttrace::cleanup\fR
 .sp
-\fBttrace::update\fR ?epoch?\fR
+\fBttrace::update\fR ?epoch?
 .sp
-\fBttrace::getscript\fR \fR
+\fBttrace::getscript\fR
 .sp
-\fBttrace::atenable\fR \fIcmd\fR \fIarglist\fR \fIbody\fR\fR
+\fBttrace::atenable\fR \fIcmd\fR \fIarglist\fR \fIbody\fR
 .sp
-\fBttrace::atdisable\fR \fIcmd\fR \fIarglist\fR \fIbody\fR\fR
+\fBttrace::atdisable\fR \fIcmd\fR \fIarglist\fR \fIbody\fR
 .sp
-\fBttrace::addtrace\fR \fIcmd\fR \fIarglist\fR \fIbody\fR\fR
+\fBttrace::addtrace\fR \fIcmd\fR \fIarglist\fR \fIbody\fR
 .sp
-\fBttrace::addscript\fR \fIname\fR \fIbody\fR\fR
+\fBttrace::addscript\fR \fIname\fR \fIbody\fR
 .sp
-\fBttrace::addresolver\fR \fIcmd\fR \fIarglist\fR \fIbody\fR\fR
+\fBttrace::addresolver\fR \fIcmd\fR \fIarglist\fR \fIbody\fR
 .sp
-\fBttrace::addcleanup\fR \fIbody\fR\fR
+\fBttrace::addcleanup\fR \fIbody\fR
 .sp
-\fBttrace::addentry\fR \fIcmd\fR \fIvar\fR \fIval\fR\fR
+\fBttrace::addentry\fR \fIcmd\fR \fIvar\fR \fIval\fR
 .sp
-\fBttrace::getentry\fR \fIcmd\fR \fIvar\fR\fR
+\fBttrace::getentry\fR \fIcmd\fR \fIvar\fR
 .sp
-\fBttrace::getentries\fR \fIcmd\fR ?pattern?\fR
+\fBttrace::getentries\fR \fIcmd\fR ?pattern?
 .sp
-\fBttrace::delentry\fR \fIcmd\fR\fR
+\fBttrace::delentry\fR \fIcmd\fR
 .sp
-\fBttrace::preload\fR \fIcmd\fR\fR
+\fBttrace::preload\fR \fIcmd\fR
 .sp
 .BE
 .SH "DESCRIPTION"
@@ -298,7 +298,7 @@ This section describes user-level commands. Those commands can be
 used by script writers to control the execution of the tracing
 framework.
 .TP
-\fBttrace::eval\fR \fIarg\fR ?arg ...?\fR
+\fBttrace::eval\fR \fIarg\fR ?arg ...?
 This command concatenates given arguments and evaluates the resulting
 Tcl command with trace framework enabled. If the command execution
 was ok, it takes necessary steps to automatically propagate the
@@ -314,25 +314,25 @@ simplifies things, because user need to learn just this (one)
 command in order to effectively use the package. Other commands,
 as desribed below, are included mostly for the sake of completeness.
 .TP
-\fBttrace::enable\fR \fR
+\fBttrace::enable\fR
 Activates all registered callbacks in the framework
 and starts a new trace epoch. The trace epoch encapsulates all
 changes done to the interpreter during the time traces are activated.
 .TP
-\fBttrace::disable\fR \fR
+\fBttrace::disable\fR
 Deactivates all registered callbacks in the framework
 and closes the current trace epoch.
 .TP
-\fBttrace::cleanup\fR \fR
+\fBttrace::cleanup\fR
 Used to clean-up all on-demand loaded resources in the interpreter.
 It effectively brings Tcl interpreter to its pristine state.
 .TP
-\fBttrace::update\fR ?epoch?\fR
+\fBttrace::update\fR ?epoch?
 Used to refresh the state of the interpreter to match the optional
 trace ?epoch?. If the optional ?epoch? is not given, it takes
 the most recent trace epoch.
 .TP
-\fBttrace::getscript\fR \fR
+\fBttrace::getscript\fR
 Returns a synthesized Tcl script which may be sourced in any interpreter.
 This script sets the stage for the Tcl \fBunknown\fR command so it can
 load traced resources from the in-memory database. Normally, this command
@@ -354,7 +354,7 @@ invoked by the framework in order to gather interpreter state
 changes, build in-memory database, perform custom-cleanups and
 various other tasks.
 .TP
-\fBttrace::atenable\fR \fIcmd\fR \fIarglist\fR \fIbody\fR\fR
+\fBttrace::atenable\fR \fIcmd\fR \fIarglist\fR \fIbody\fR
 Registers Tcl callback to be activated at \fBttrace::enable\fR.
 Registered callbacks are activated on FIFO basis. The callback
 definition includes the name of the callback, \fIcmd\fR, a list
@@ -362,7 +362,7 @@ of callback arguments, \fIarglist\fR and the \fIbody\fR of the
 callback. Effectively, this actually resembles the call interface
 of the standard Tcl \fBproc\fR command.
 .TP
-\fBttrace::atdisable\fR \fIcmd\fR \fIarglist\fR \fIbody\fR\fR
+\fBttrace::atdisable\fR \fIcmd\fR \fIarglist\fR \fIbody\fR
 Registers Tcl callback to be activated at \fBttrace::disable\fR.
 Registered callbacks are activated on FIFO basis. The callback
 definition includes the name of the callback, \fIcmd\fR, a list
@@ -370,7 +370,7 @@ of callback arguments, \fIarglist\fR and the \fIbody\fR of the
 callback. Effectively, this actually resembles the call interface
 of the standard Tcl \fBproc\fR command.
 .TP
-\fBttrace::addtrace\fR \fIcmd\fR \fIarglist\fR \fIbody\fR\fR
+\fBttrace::addtrace\fR \fIcmd\fR \fIarglist\fR \fIbody\fR
 Registers Tcl callback to be activated for tracing the Tcl
 \fBcmd\fR command. The callback definition includes the name of
 the Tcl command to trace, \fIcmd\fR, a list of callback arguments,
@@ -378,7 +378,7 @@ the Tcl command to trace, \fIcmd\fR, a list of callback arguments,
 this actually resembles the call interface of the standard Tcl
 \fBproc\fR command.
 .TP
-\fBttrace::addscript\fR \fIname\fR \fIbody\fR\fR
+\fBttrace::addscript\fR \fIname\fR \fIbody\fR
 Registers Tcl callback to be activated for building a Tcl
 script to be passed to other interpreters. This script is
 used to set the stage for the Tcl \fBunknown\fR command.
@@ -386,30 +386,30 @@ Registered callbacks are activated on FIFO basis.
 The callback definition includes the name of the callback,
 \fIname\fR and the \fIbody\fR of the callback.
 .TP
-\fBttrace::addresolver\fR \fIcmd\fR \fIarglist\fR \fIbody\fR\fR
+\fBttrace::addresolver\fR \fIcmd\fR \fIarglist\fR \fIbody\fR
 Registers Tcl callback to be activated by the overloaded Tcl
 \fBunknown\fR command.
 Registered callbacks are activated on FIFO basis.
 This callback is used to resolve the resource and load the
 resource in the current interpreter.
 .TP
-\fBttrace::addcleanup\fR \fIbody\fR\fR
+\fBttrace::addcleanup\fR \fIbody\fR
 Registers Tcl callback to be activated by the \fBtrace::cleanup\fR.
 Registered callbacks are activated on FIFO basis.
 .TP
-\fBttrace::addentry\fR \fIcmd\fR \fIvar\fR \fIval\fR\fR
+\fBttrace::addentry\fR \fIcmd\fR \fIvar\fR \fIval\fR
 Adds one entry to the named in-memory database.
 .TP
-\fBttrace::getentry\fR \fIcmd\fR \fIvar\fR\fR
+\fBttrace::getentry\fR \fIcmd\fR \fIvar\fR
 Returns the value of the entry from the named in-memory database.
 .TP
-\fBttrace::getentries\fR \fIcmd\fR ?pattern?\fR
+\fBttrace::getentries\fR \fIcmd\fR ?pattern?
 Returns names of all entries from the named in-memory database.
 .TP
-\fBttrace::delentry\fR \fIcmd\fR\fR
+\fBttrace::delentry\fR \fIcmd\fR
 Deletes an entry from the named in-memory database.
 .TP
-\fBttrace::preload\fR \fIcmd\fR\fR
+\fBttrace::preload\fR \fIcmd\fR
 Registers the Tcl command to be loaded in the interpreter.
 Commands registered this way will always be the part of
 the interpreter and not be on-demand loaded by the Tcl

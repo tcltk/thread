@@ -63,7 +63,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: tpool.n,v 1.7 2004/07/21 20:51:05 vasiljevic Exp $
+'\" RCS: @(#) $Id: tpool.n,v 1.8 2004/12/19 11:45:18 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -247,25 +247,25 @@ Database Class:	\\fB\\$3\\fR
 tpool \-
 Part of the Tcl threading extension implementing pools of worker threads.
 .SH "SYNOPSIS"
-package require \fBTcl  8.3\fR
+package require \fBTcl  8.4\fR
 .sp
 package require \fBThread  ?2.6?\fR
 .sp
-\fBtpool::create\fR ?options?\fR
+\fBtpool::create\fR ?options?
 .sp
-\fBtpool::names\fR \fR
+\fBtpool::names\fR
 .sp
-\fBtpool::post\fR ?-detached? ?-nowait? \fItpool\fR \fIscript\fR\fR
+\fBtpool::post\fR ?-detached? ?-nowait? \fItpool\fR \fIscript\fR
 .sp
-\fBtpool::wait\fR \fItpool\fR \fIjoblist\fR ?varname?\fR
+\fBtpool::wait\fR \fItpool\fR \fIjoblist\fR ?varname?
 .sp
-\fBtpool::cancel\fR \fItpool\fR \fIjoblist\fR ?varname?\fR
+\fBtpool::cancel\fR \fItpool\fR \fIjoblist\fR ?varname?
 .sp
-\fBtpool::get\fR \fItpool\fR \fIjob\fR\fR
+\fBtpool::get\fR \fItpool\fR \fIjob\fR
 .sp
-\fBtpool::preserve\fR \fItpool\fR\fR
+\fBtpool::preserve\fR \fItpool\fR
 .sp
-\fBtpool::release\fR \fItpool\fR\fR
+\fBtpool::release\fR \fItpool\fR
 .sp
 .BE
 .SH "DESCRIPTION"
@@ -278,7 +278,7 @@ enter the event loop and allow for servicing of other pending file or
 timer (or any other supported) events.
 .SH "COMMANDS"
 .TP
-\fBtpool::create\fR ?options?\fR
+\fBtpool::create\fR ?options?
 This command creates new threadpool. It accepts several options as
 key-value pairs. Options are used to tune some threadpool parameters.
 The command returns the ID of the newly created threadpool.
@@ -344,13 +344,14 @@ cleanup memory and such.
 Default value for this option is unspecified, thus no Tcl script will run
 on the worker thread exit.
 .RE
+.sp
 .TP
-\fBtpool::names\fR \fR
+\fBtpool::names\fR
 This command returns a list of IDs of threadpools created with the
 \fBtpool::create\fR command. If no threadpools were found, the
 command will return empty list.
 .TP
-\fBtpool::post\fR ?-detached? ?-nowait? \fItpool\fR \fIscript\fR\fR
+\fBtpool::post\fR ?-detached? ?-nowait? \fItpool\fR \fIscript\fR
 This command sends a \fIscript\fR to the target \fItpool\fR threadpool
 for execution. The script will be executed in the first available idle
 worker thread. If there are no idle worker threads available, the command
@@ -374,7 +375,7 @@ If the threadpool \fItpool\fR is not found in the list of active
 thread pools, the command will throw error. The error will also be triggered
 if the newly created worker thread fails to initialize.
 .TP
-\fBtpool::wait\fR \fItpool\fR \fIjoblist\fR ?varname?\fR
+\fBtpool::wait\fR \fItpool\fR \fIjoblist\fR ?varname?
 This command waits for one or many jobs, whose job IDs are given in the
 \fIjoblist\fR to get processed by the worker thread(s). If none of the
 specified jobs are ready, the command will enter the event loop, service
@@ -385,7 +386,7 @@ The command returns the list of completed job IDs. If the optional variable
 \fIjoblist\fR which are still pending. If the threadpool \fItpool\fR
 is not found in the list of active thread pools, the command will throw error.
 .TP
-\fBtpool::cancel\fR \fItpool\fR \fIjoblist\fR ?varname?\fR
+\fBtpool::cancel\fR \fItpool\fR \fIjoblist\fR ?varname?
 This command cancels the previously posted jobs given by the \fIjoblist\fR
 to the pool \fItpool\fR. Job cancellation succeeds only for job still
 waiting to be processed. If the job is already being executed by one of
@@ -395,7 +396,7 @@ The command returns the list of cancelled job IDs. If the optional variable
 \fIjoblist\fR which were not cancelled. If the threadpool \fItpool\fR
 is not found in the list of active thread pools, the command will throw error.
 .TP
-\fBtpool::get\fR \fItpool\fR \fIjob\fR\fR
+\fBtpool::get\fR \fItpool\fR \fIjob\fR
 This command retrieves the result of the previously posted \fIjob\fR.
 Only results of jobs waited upon with the \fBtpool::wait\fR command
 can be retrieved. If the execution of the script resulted in error,
@@ -405,14 +406,14 @@ is not found in the list of threadpools, the command will throw error.
 If the job \fIjob\fR is not ready for retrieval, because it is currently
 being executed by the worker thread, the command will throw error.
 .TP
-\fBtpool::preserve\fR \fItpool\fR\fR
+\fBtpool::preserve\fR \fItpool\fR
 Each call to this command increments the reference counter of the
 threadpool \fItpool\fR by one (1). Command returns the value of the
 reference counter after the increment.
 By incrementing the reference counter, the caller signalizes that
 he/she wishes to use the resource for a longer period of time.
 .TP
-\fBtpool::release\fR \fItpool\fR\fR
+\fBtpool::release\fR \fItpool\fR
 Each call to this command decrements the reference counter of the
 threadpool \fItpool\fR by one (1).Command returns the value of the
 reference counter after the decrement.
