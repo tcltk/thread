@@ -1,6 +1,6 @@
 
 The files in this vc subdirectory may be useful if you have not set
-up your TEA (i.e., Cygwin) environment.  They have been contributed
+up your TEA (i.e., MinGW) environment.  They have been contributed
 by David Gravereaux <davygrvy@pobox.com>
 
 The MSVC++ v5 project files (thread.dsw/thread.dsp) are just for convienience.
