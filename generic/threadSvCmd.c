@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.10 2002/01/27 04:56:00 davygrvy Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.11 2002/03/07 07:24:20 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -18,6 +18,7 @@
 
 #ifdef NS_AOLSERVER
 # include "aolstub.cpp"
+# define HIDE_DOTNAMES       /* tsv::names cmd does not list .<name> arrays */
 #endif
 
 /*
@@ -1127,7 +1128,12 @@ SvNamesObjCmd(dummy, interp, objc, objv)
         hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
         while (hPtr) {
             char *key = Tcl_GetHashKey(&bucketPtr->arrays, hPtr);
-            if (pattern == NULL || Tcl_StringMatch(key, pattern)) {
+#ifdef HIDE_DOTNAMES
+            if (*key != '.' /* Hide .<name> arrays */ &&
+#else
+            if (1 &&
+#endif
+                (pattern == NULL || Tcl_StringMatch(key, pattern))) {
                 Tcl_ListObjAppendElement(interp, resObj,
                         Tcl_NewStringObj(key, -1));
             }
