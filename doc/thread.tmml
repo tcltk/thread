@@ -14,6 +14,8 @@
 
 <synopsis>
 <syntax>
+<p>
+<cmd>package require Thread ?2.4?</cmd></p>
 <cmd>thread::create</cmd> ?<m>-joinable</m>? ?<m>script</m>?
 <cmd>thread::preserve</cmd> <m>id</m>
 <cmd>thread::release</cmd> ?<m>-wait</m>? <m>id</m>

@@ -1,3 +1,4 @@
+'\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
 '\"
@@ -59,7 +60,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: thread.n,v 1.4 2002/07/21 13:22:13 vasiljevic Exp $
+'\" RCS: @(#) $Id: thread.n,v 1.5 2002/07/21 14:13:58 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -239,12 +240,18 @@ Database Class:	\\fB\\$3\\fR
 '\"
 '\" Generated from thread.tmml
 '\"
+.so man.macros
 .TH "Tcl Threading" n "2.4" Tcl ""
 .BS
 .SH NAME
 thread \- A Tcl extension implementing script level access to Tcl threading capabilities.
 .SH SYNOPSIS
 .nf
+
+
+.PP
+
+\&\fBpackage require Thread ?2.4?\fP
 
 \&\fBthread::create\fP ?\fI-joinable\fR? ?\fIscript\fR?
 \&\fBthread::preserve\fP \fIid\fR

@@ -1,10 +1,10 @@
 <html>
 <head>
-<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.2 $">
+<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.3 $">
 </head><body>
 <div class="header">
 <div class="navbar" align="center">
-<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode362">DESCRIPTION</a> · <a href="#SECTnode374">COMMANDS</a> · <a href="#SECTnode1428">DISCUSSION</a> · <a href="#SECTnode1446">CREDITS</a> · <a href="#SECTnode1455">SEE ALSO</a> · <a href="#SECTnode1461">KEYWORDS</a>
+<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode367">DESCRIPTION</a> · <a href="#SECTnode379">COMMANDS</a> · <a href="#SECTnode1433">DISCUSSION</a> · <a href="#SECTnode1451">CREDITS</a> · <a href="#SECTnode1460">SEE ALSO</a> · <a href="#SECTnode1466">KEYWORDS</a>
 </div><hr class="navsep">
 </div><div class="body">
 
@@ -13,6 +13,9 @@
 <b class="names">thread - </b><br>A Tcl extension implementing script level access to Tcl threading capabilities.</p>
 
 <h2><a name="SECTnode14">SYNOPSIS</a></h2><pre class="syntax">
+<p>
+<b class="cmd">package require Thread ?2.4?</b>
+</p>
 <b class="cmd">thread::create</b> ?<i class="m">-joinable</i>? ?<i class="m">script</i>?
 <b class="cmd">thread::preserve</b> <i class="m">id</i>
 <b class="cmd">thread::release</b> ?<i class="m">-wait</i>? <i class="m">id</i>
@@ -52,13 +55,13 @@
 <b class="cmd">tsv::lpush</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> ?<i class="m">index</i>?
 </pre>
 
-<h2><a name="SECTnode362">DESCRIPTION</a></h2><p>The <b class="package">thread</b> extension creates threads that contain Tcl interpreters, 
+<h2><a name="SECTnode367">DESCRIPTION</a></h2><p>The <b class="package">thread</b> extension creates threads that contain Tcl interpreters, 
 and it lets you send scripts to those threads for evaluation. It also enables you to share data
 between threads in a safe, protected fashion. Additionaly, it provides script-level access
 to basic thread synchronization primitives, like mutexes and condition variables.
 </p>
 
-<h2><a name="SECTnode374">COMMANDS</a></h2><dl class="commandlist">
+<h2><a name="SECTnode379">COMMANDS</a></h2><dl class="commandlist">
 
 <p>
 This section describes commands for creating and destroying threads
@@ -575,7 +578,7 @@ it clears the array and sets new values atomically.
 
 </dl>
 
-<h2><a name="SECTnode1428">DISCUSSION</a></h2><p>The fundamental threading model in Tcl is that there can be one or
+<h2><a name="SECTnode1433">DISCUSSION</a></h2><p>The fundamental threading model in Tcl is that there can be one or
 more Tcl interpreters per thread, but each Tcl interpreter should only
 be used by a single thread which created it.
 A &quot;shared memory&quot; abstraction is awkward to provide in Tcl because Tcl
@@ -597,12 +600,12 @@ or their elements from any thread, without explicit locking.
 </p><p>For advanced multithreading scripts, script-level access to two basic 
 synchronization primitives, mutex and condition variables, is also supported.
 </p>
-<h2><a name="SECTnode1446">CREDITS</a></h2><p>Shared variable arrays are inspired by the nsv interface found in 
+<h2><a name="SECTnode1451">CREDITS</a></h2><p>Shared variable arrays are inspired by the nsv interface found in 
 AOLserver 3.+ highly scalable Web server from America Online.
 </p>
-<h2><a name="SECTnode1455">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
+<h2><a name="SECTnode1460">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
 </a></p>
-<h2><a name="SECTnode1461">KEYWORDS</a></h2><p class="keywords">
+<h2><a name="SECTnode1466">KEYWORDS</a></h2><p class="keywords">
 <a class="keyword" href="keyword-index.html#KW-threads">threads</a>, <a class="keyword" href="keyword-index.html#KW-events">events</a>, <a class="keyword" href="keyword-index.html#KW-messagepassing">message passing</a>, <a class="keyword" href="keyword-index.html#KW-synchronization">synchronization</a>, <a class="keyword" href="keyword-index.html#KW-sharedvariables">shared variables</a>, <a class="keyword" href="keyword-index.html#KW-mutex">mutex</a>, <a class="keyword" href="keyword-index.html#KW-conditionvariable">condition variable</a>
 </p>
 </div><div class="footer">
