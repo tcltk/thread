@@ -1,3 +1,19 @@
+2002-10-20 Zoran Vasiljevic <zoran@archiware.com>
+
+	* doc/html/thread.html
+	* doc/man/thread.n
+	* doc/thread.tmml: fixed "thread::send" command summary.
+	It was showing the wrong position of the "-async" argument.
+
+	* generic/threadCmd.c: added thread::eval command.
+	See documentation for syntax and usage.
+
+	* generic/threadSpCmd.c: adjusted mutex/cond handles to
+	use the same format and handling as AOLserver counterparts
+	when compiled for AOLserver support. This way one can mix
+	and match primitives declared with ns_mutex and thread::mutex
+	and/or ns_event and thread::cond commands.
+
 2002-10-15  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* configure:
