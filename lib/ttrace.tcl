@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.6 2005/01/11 15:59:27 vasiljevic Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.7 2005/03/05 14:51:58 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -136,7 +136,10 @@ namespace eval ttrace {
         variable tracers
         variable enables
         variable enabled
-        set enabled 1
+        incr enabled 1
+        if {$enabled > 0} {
+            return
+        }
         if {$config(-doepochs) != 0} {
             variable epoch [_newepoch]
         }
@@ -155,7 +158,10 @@ namespace eval ttrace {
         variable enabled
         variable tracers
         variable disables
-        set enabled 0
+        incr enabled -1
+        if {$enabled > 0} {
+            return
+        }
         set nsp [namespace current]
         foreach disabler $disables {
             disable::_$disabler
@@ -169,7 +175,7 @@ namespace eval ttrace {
 
     proc isenabled {} {
         variable enabled
-        return $enabled
+        expr {$enabled > 0}
     }
 
     proc update {{from -1}} {
@@ -313,16 +319,22 @@ namespace eval ttrace {
 
     proc unknown {args} {
         set cmd [lindex $args 0]
+        if {[uplevel ttrace::_resolve [list $cmd]]} {
+            set c [catch {uplevel $cmd [lrange $args 1 end]} r]
+        } else {
+            set c [catch {::eval ::tcl::unknown $args} r]
+        }
+        return -code $c -errorcode $::errorCode -errorinfo $::errorInfo $r
+    }
+
+    proc _resolve {cmd} {
         variable resolvers
         foreach resolver $resolvers {
             if {[uplevel [info comm resolve::$resolver] [list $cmd]]} {
-                set c [catch {uplevel $cmd [lrange $args 1 end]} r]
-                return -code $c -errorcode $::errorCode \
-                    -errorinfo $::errorInfo $r
+                return 1
             }
         }
-        set c [catch {::eval ::tcl::unknown $args} r]
-        return -code $c -errorcode $::errorCode -errorinfo $::errorInfo $r
+        return 0
     }
 
     proc _getthread {} {
@@ -621,9 +633,9 @@ eval {
             append res "::namespace eval $cns {" \n
             append res "::variable $var"
             if {[array exists $entry]} {
-                append res "\n::array set $var {[array get $entry]}" \n
+                append res "\n::array set $var [list [array get $entry]]" \n
             } elseif {[info exists $entry]} {
-                append res " {[set $entry]}" \n 
+                append res " [list [set $entry]]" \n 
             } else {
                 append res \n
             }
@@ -662,10 +674,10 @@ eval {
             if {![string match "::*" $new]} {
                 set new ${cns}::$new
             }
+            ttrace::addentry rename $old $new
         } else {
             ttrace::delentry proc $old
         }
-        ttrace::addentry rename $old $new
     }
 
     ttrace::addscript rename {
@@ -733,7 +745,14 @@ eval {
             }
             proc ::info args {
                 set cmd [lindex $args 0]
-                if {[lsearch -glob {commands procs} $cmd*] == -1} {
+                set hit [lsearch -glob {commands procs args default body} $cmd*]
+                if {$hit > 1} {
+                    if {[catch {uplevel ::tcl::info $args}]} {
+                        uplevel ttrace::_resolve [list [lindex $args 1]]
+                    }
+                    return [uplevel ::tcl::info $args]
+                }
+                if {$hit == -1} {
                     return [uplevel ::tcl::info $args]
                 }
                 set cns [uplevel namespace current]
