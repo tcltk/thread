@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.68 2003/03/17 09:01:24 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.69 2003/03/28 15:41:18 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1498,7 +1498,7 @@ NewThread(clientData)
 
 #ifdef NS_AOLSERVER
     struct mydata *md = (struct mydata*)ctrlPtr->cd;
-    interp = (Tcl_Interp*)Ns_TclAllocateInterp(md->server);
+    interp = (Tcl_Interp*)Ns_TclAllocateInterp(md ? md->server : NULL);
 #else
     interp = Tcl_CreateInterp();
     result = Tcl_Init(interp);
