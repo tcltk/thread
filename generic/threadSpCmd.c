@@ -15,7 +15,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.15 2003/05/31 10:46:00 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.16 2003/09/03 11:25:56 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -58,7 +58,7 @@ static void SetHandleFromObj _ANSI_ARGS_((Tcl_Interp *interp,
                                           void *addrPtr));
 
 static void DeleteObjHandle  _ANSI_ARGS_((char *id));
-static void FinalizeSp       _ANSI_ARGS_((ClientData clientData));
+static void SpFinalize       _ANSI_ARGS_((ClientData clientData));
 
 
 /*
@@ -212,6 +212,7 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
         }
         optx = 3;
     } else {
+        mutexHandle = "internal";
         optx = 1;
         mutexPtr = &evalMutex;
     }
@@ -563,7 +564,7 @@ Sp_Init (interp)
 /*
  *----------------------------------------------------------------------
  *
- * FinalizeSp --
+ * SpFinalize --
  *
  *      Garbage-collect hash table on application exit. 
  *      NOTE: this function should not be used!
@@ -578,7 +579,7 @@ Sp_Init (interp)
  */
 
 static void
-FinalizeSp (clientData)
+SpFinalize (clientData)
     ClientData clientData;              /* Not used. */
 {
     char *objHdl;
