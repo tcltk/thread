@@ -1,4 +1,4 @@
-# RCS: @(#) $Id: makefile.vc,v 1.1 2000/04/10 20:48:36 welch Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.2 2000/04/11 23:11:02 welch Exp $
 
 !include "config.vc"
 
@@ -10,11 +10,12 @@ TMPDIRNAME = Release
 DBGX =
 !endif
 
-SOURCEROOT = ..
-GENERICDIR = $(SOURCEROOT)\generic
-WINDIR     = $(SOURCEROOT)\win
-TMPDIR     = $(WINDIR)\$(TMPDIRNAME)
-OUTDIR     = $(WINDIR)\$(TMPDIRNAME)
+SOURCEROOT	= ..\..
+GENERICDIR	= $(SOURCEROOT)\generic
+TESTDIR		= $(SOURCEROOT)\tests
+WINDIR		= $(SOURCEROOT)\win\vc
+TMPDIR		= $(WINDIR)\$(TMPDIRNAME)
+OUTDIR		= $(WINDIR)\$(TMPDIRNAME)
 
 THREADLIB  = $(OUTDIR)\thread$(DBGX).dll
 
@@ -52,10 +53,7 @@ ldebug = -opt:ref -release
 # declarations common to all linker options
 lcommon = -nologo -incremental:no -machine:$(MACHINE) $(ldebug)
 
-conlflags = $(lcommon) -subsystem:console
-guilflags = $(lcommon) -subsystem:windows
 dlllflags = $(lcommon) -subsystem:windows -dll
-reslflags = -noentry -dll
 
 
 ######################################################################
@@ -63,6 +61,10 @@ reslflags = -noentry -dll
 ######################################################################
 
 all : $(THREADLIB)
+
+test: $(THREADLIB)
+	$(TCLSH_PROG) "$(TESTDIR)/thread.test"
+
 
 $(THREADLIB) : $(TMPDIR)\nul $(OUTDIR)\nul $(THREADOBJS)
   @echo Linking...

@@ -12,10 +12,15 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.4 2000/04/11 01:31:42 welch Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.5 2000/04/11 23:10:54 welch Exp $
  */
 
+#include "thread.h"
 #include "tcl.h"
+
+#ifdef __WIN32__
+#include <string.h>
+#endif
 
 /*
  * Each thread has an single instance of the following structure.  There
@@ -216,7 +221,7 @@ Thread_Init(interp)
 		(ClientData)NULL ,NULL);
 	Tcl_CreateObjCommand(interp,"thread::errorproc", ThreadErrorProcObjCmd, 
 		(ClientData)NULL ,NULL);
-	if (Tcl_PkgProvide(interp, "Thread", "2.0" ) != TCL_OK) {
+	if (Tcl_PkgProvide(interp, "Thread", THREAD_VERSION) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	return TCL_OK;
@@ -481,10 +486,16 @@ ThreadWaitObjCmd(dummy, interp, objc, objv)
     int objc;				/* Number of arguments. */
     Tcl_Obj *CONST objv[];		/* Argument objects. */
 {
+    if (objc > 1) {
+	Tcl_WrongNumArgs(interp, 1, objv, NULL);
+	return TCL_ERROR;
+    }
     Init(interp);
     while (1) {
 	(void) Tcl_DoOneEvent(TCL_ALL_EVENTS);
     }
+    /*NOTREACHED*/
+    return TCL_OK;
 }
 
 /*

@@ -9,13 +9,17 @@
 # ALPHA|ARM|IX86|MIPS|MIPS16|MIPSR41XX|PPC|SH3|SH4
 MACHINE   = IX86
 
-MSDEVROOT = C:\Dev\DevStudio
-TCLROOT   = ..\..\MainTclTrunk
+MSDEVROOT	= C:\Dev\DevStudio
+TCLROOT		= ..\..\..\tcl8.3
 TCLSTUBSLIB = "$(TCLROOT)\win\release\tclstub83.lib"
+TCLSH_PROG	= "$(TCLROOT)\win\release\tclsh83.exe"
 
-# Set NODEBUG to 0 to compile with symbols
-NODEBUG   = 0
 
+# Set NODEBUG to 0 to compile with symbols.
+# check if the macro was set on the commandline.
+!ifdef NODEBUG
+NODEBUG   = 1
+!endif
 
 MSDEVBIN  = $(MSDEVROOT)\vc\bin
 libpath32 = /libpath:"$(MSDEVROOT)\vc\lib"

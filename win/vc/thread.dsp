@@ -38,10 +38,10 @@ CFG=thread - Win32 Debug
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
-# PROP Cmd_Line "NMAKE /f thread.mak"
+# PROP Cmd_Line "NMAKE -nologo /f makefile.vc NODEBUG=1"
 # PROP Rebuild_Opt "/a"
-# PROP Target_File "thread.exe"
-# PROP Bsc_Name "thread.bsc"
+# PROP Target_File "thread.dll"
+# PROP Bsc_Name ""
 # PROP Target_Dir ""
 
 !ELSEIF  "$(CFG)" == "thread - Win32 Debug"
@@ -57,7 +57,7 @@ CFG=thread - Win32 Debug
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
-# PROP Cmd_Line "NMAKE -nologo -f makefile.vc"
+# PROP Cmd_Line "NMAKE -nologo /f makefile.vc NODEBUG=0"
 # PROP Rebuild_Opt "/a"
 # PROP Target_File "threadd.dll"
 # PROP Bsc_Name "threadd.bsc"
@@ -86,7 +86,7 @@ SOURCE=.\makefile.vc
 # End Source File
 # Begin Source File
 
-SOURCE=..\generic\thread.h
+SOURCE=..\..\generic\thread.h
 # End Source File
 # Begin Source File
 
@@ -94,7 +94,7 @@ SOURCE=.\thread.rc
 # End Source File
 # Begin Source File
 
-SOURCE=..\generic\threadCmd.c
+SOURCE=..\..\generic\threadCmd.c
 # End Source File
 # End Target
 # End Project

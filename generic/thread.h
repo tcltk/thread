@@ -1,5 +1,5 @@
-/* RCS: @(#) $Id: thread.h,v 1.1 2000/04/10 23:39:51 welch Exp $ */
+/* RCS: @(#) $Id: thread.h,v 1.2 2000/04/11 23:10:54 welch Exp $ */
 
 #define THREAD_MAJOR_VERSION  2
 #define THREAD_MINOR_VERSION  0
-#define THREAD_PATCH_LEVEL   "2.0"
+#define THREAD_VERSION   "2.0"
