@@ -3,7 +3,7 @@
 #  Edit for your local configuration.
 #
 ######################################################################
-# RCS: @(#) $Id: config.vc,v 1.11 2000/08/20 18:48:15 davidg Exp $
+# RCS: @(#) $Id: config.vc,v 1.12 2000/08/20 21:00:23 davidg Exp $
 
 # only affects the linker and resource compiler
 # pick from:
@@ -26,6 +26,11 @@ TCLROOT		= ..\..\..\tcl
 # Does the above Tcl path point to the install or sources ?
 #
 ISTCLINSTALL	= 0
+
+# What Tcl version are we grabbing ?
+#
+TCLMAJOR	= 8
+TCLMINOR	= 4
 
 !if "$(MACHINE)" == "IA64"
 # untested logic path
