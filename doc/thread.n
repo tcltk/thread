@@ -7,7 +7,7 @@
 '\" SCCS: @(#) thread.n
 '\" 
 .so man.macros
-.TH "thread" n 2.0 Tcl "Tcl Threading"
+.TH "thread" n 2.2 Tcl "Tcl Threading"
 .BS
 '\" Note:  do not modify the .SH NAME line immediately below!
 .SH NAME
@@ -16,7 +16,7 @@ thread \- Script level threading
 \fB thread::create ?-joinable? ?\fIscript\fR?
 \fB thread::id\fR
 \fB thread::errorproc ?\fIprocname\fR?
-\fB thread::exit\fR
+\fB thread::unwind\fR
 \fB thread::names\fR
 \fB thread::exists\fR
 \fB thread::send id ?\fI-async\fR? \fIscript\fR
@@ -52,9 +52,11 @@ in any case. The \fIproc\fR is called like this:
 
      myerrorproc thread_id errorInfo
 
-\fBthread::exit\fR terminates the current thread. There is no way to force
-another thread to exit - you can only ask it to terminate by sending
-it a command.
+\fBthread::unwind\fR stops a prior thread::wait. There is no way to force
+another thread to exit - you can only ask it to stop waiting by sending
+it a thread::unwind.  Execution of the script will continue from the
+thread::wait.  If thread::wait was the last command in a thread, the
+thread will exit.
 
 \fBthread::names\fR returns a list of thread IDs. These are only for
 threads that have been created via \fBthread::create\fR. If your
@@ -75,7 +77,7 @@ startup script. Threads can enter the event loop explicitly by calling
 
 \fBthread::wait\fR enters the event loop so a thread can receive
 messages from \fBthread::send\fR. This is equivalent to \fBvwait\fR
-\fIunusedvariable\fR.
+\fIunusedvariable\fR except that thread::unwind will not unblock a vwait.
 
 \fBthread::join\fR waits for the thread with id \fIid\fR to exit and
 then returns its exit code. Errors will be returned for threads which
