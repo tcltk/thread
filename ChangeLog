@@ -1,13 +1,20 @@
+2000-08-29  David Gravereaux <davygrvy@ajubasolutions.com>
+
+	* generic/threadCmd.c (NewThread): Tcl_Init return value wasn't
+	being verified.  Added a check and failure logic to fall-out.
+	[Bug: 5301]
+
 2000-08-28  David Gravereaux <davygrvy@ajubasolutions.com>
 
 	* generic/threadCmds.c (Thread_Init): Added logic to enable
 	thread::join and thread::transfer when loaded into an 8.4+ core.
-	We don't don't want a seg fault when the Stubs tables don't
-	match.
+	We don't want a seg fault when the Stubs tables don't match for
+	the functions that don't exist in an 8.3 core.
 
 2000-08-23  Brent Welch <welch@ajubasolutions.com>
 
-	* configure.in: Changed to version 2.1
+	* configure.in:
+	* win/vc/makefile.vc: Changed to version 2.1
 	* generic/threadCmds.c: Made the code that uses new Tcl 8.4 APIs
 	conditional using #ifdef.  Tested with 8.3.2
 	* Applied thread-2-1 tag for use with tclhttpd bundled release.
