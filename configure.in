@@ -3,7 +3,7 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
 #
-# RCS: @(#) $Id: configure.in,v 1.14 2002/11/24 17:10:14 vasiljevic Exp $
+# RCS: @(#) $Id: configure.in,v 1.15 2002/12/06 22:19:53 vasiljevic Exp $
 
 #--------------------------------------------------------------------
 # This configure.in is based on the Tcl Extension Architecture (TEA)
@@ -164,6 +164,19 @@ TEA_MAKE_LIB
 #--------------------------------------------------------------------
 
 TEA_PROG_TCLSH
+
+#--------------------------------------------------------------------
+# Locate the AOLserver dir for compilation as AOLserver module
+#--------------------------------------------------------------------
+
+THREAD_PATH_AOLSERVER
+if test x"${AOL_DIR}" != "x" ; then
+    AOL_INCLUDES="-I${AOL_DIR}/include"
+else
+    AOL_INCLUDES=
+fi
+AC_SUBST(AOL_DIR)
+AC_SUBST(AOL_INCLUDES)
 
 #--------------------------------------------------------------------
 # Finally, substitute all of the various values into the Makefile.
