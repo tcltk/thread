@@ -574,12 +574,12 @@ evaluates to true:
     set mutex [thread::mutex create]
     set cond  [thread::cond  create]
 
-    thread::mutex lock
+    thread::mutex lock $mutex
     while {<some_condition_is_true>} {
         thread::cond wait $cond $mutex
     }
     # Do some work under mutex protection
-    thread::mutex unlock
+    thread::mutex unlock $mutex
 }]
 
 [nl]
