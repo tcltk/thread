@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.25 2003/11/27 19:54:19 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.26 2004/08/02 20:27:11 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -29,7 +29,6 @@ typedef struct TpoolWaiter {
  */
 
 typedef struct ThreadPool {
-    unsigned int tpoolId;           /* Pool id number */
     unsigned int jobId;             /* Job counter */
     int idleTime;                   /* Time in secs a worker thread idles */
     int tearDown;                   /* Set to 1 to tear down the pool */
@@ -196,7 +195,6 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
-    unsigned int tpoolId;
     int ii, minw, maxw, idle, len;
     char buf[16], *exs = NULL, *cmd = NULL;
     ThreadPool *tpoolPtr;
@@ -292,13 +290,11 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
         }
     }
 
-    tpoolPtr->tpoolId = tpoolCounter++;
-    tpoolId = tpoolPtr->tpoolId;
     SpliceIn(tpoolPtr, tpoolList);
 
     Tcl_MutexUnlock(&listMutex);
 
-    sprintf(buf, "%s%u", TPOOL_HNDLPREFIX, tpoolId);
+    sprintf(buf, "%s%lu", TPOOL_HNDLPREFIX, (unsigned long)tpoolPtr);
     Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, -1));
 
     return TCL_OK;
@@ -888,8 +884,8 @@ TpoolNamesObjCmd(dummy, interp, objc, objv)
     
     Tcl_MutexLock(&listMutex);
     for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
-        char buf[16];
-        sprintf(buf, "%s%u", TPOOL_HNDLPREFIX, tpoolPtr->tpoolId);
+        char buf[32];
+        sprintf(buf, "%s%u", TPOOL_HNDLPREFIX, (unsigned long)tpoolPtr);
         Tcl_ListObjAppendElement(interp, listObj, Tcl_NewStringObj(buf,-1));
     }
     Tcl_MutexUnlock(&listMutex);
@@ -1326,20 +1322,14 @@ static ThreadPool*
 GetTpoolUnl (tpoolName) 
     char *tpoolName;
 {
-    unsigned int tpoolId, len = strlen(TPOOL_HNDLPREFIX);
-    char *end;
-    ThreadPool *tpoolPtr;
+    unsigned long tpool;
+    ThreadPool *tpoolPtr = NULL;
 
-    if (strncmp(tpoolName, TPOOL_HNDLPREFIX, len) != 0) {
+    if (sscanf(tpoolName, TPOOL_HNDLPREFIX"%lu", tpool) != 1) {
         return NULL;
     }
-    tpoolName += len;
-    tpoolId = strtoul(tpoolName, &end, 10);
-    if ((end == tpoolName) || (*end != 0)) {
-        return NULL; 
-    }
     for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
-        if (tpoolPtr->tpoolId == tpoolId) {
+        if (tpoolPtr == (ThreadPool*)tpool) {
             break;
         }
     }
