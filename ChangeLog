@@ -1,3 +1,9 @@
+2000-08-21  David Gravereaux <davygrvy@ajubasolutions.com>
+
+	* win/vc/makefile.vc:
+	* win/vc/thread.rc: added version numbers to filename to follow
+	Tcl standards.
+
 2000-08-20  David Gravereaux <davygrvy@ajubasolutions.com>
 
 	* win/vc/config.vc:
