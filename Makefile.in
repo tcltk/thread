@@ -22,7 +22,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: Makefile.in,v 1.13 2002/04/04 07:44:38 hobbs Exp $
+# RCS: @(#) $Id: Makefile.in,v 1.14 2002/07/13 21:27:00 vasiljevic Exp $
 
 #========================================================================
 # Enumerate the names of the source files included in this package.
@@ -204,7 +204,7 @@ install-libraries: libraries
 install-doc: doc
 	@mkdir -p $(DESTDIR)$(mandir)/mann
 	@echo "Installing documentation in $(DESTDIR)$(mandir)"
-	@for i in $(srcdir)/doc/*.n; do \
+	@for i in $(srcdir)/doc/man/*.n; do \
 	    echo "Installing $$i"; \
 	    rm -f $(DESTDIR)$(mandir)/mann/`basename $$i`; \
 	    $(INSTALL_DATA) $$i $(DESTDIR)$(mandir)/mann ; \
