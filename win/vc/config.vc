@@ -3,7 +3,7 @@
 #  Edit for your local configuration.
 #
 ######################################################################
-# RCS: @(#) $Id: config.vc,v 1.9 2000/08/20 07:24:09 davidg Exp $
+# RCS: @(#) $Id: config.vc,v 1.10 2000/08/20 07:40:12 davidg Exp $
 
 # only affects the linker and resource compiler
 # pick from:
@@ -31,3 +31,7 @@ cc32		= cl
 link32		= link
 lib32		= lib
 cvtres32	= cvtres
+
+# Comment this line to see invoking commands to stdout for debugging purposes.
+.SILENT :
+
