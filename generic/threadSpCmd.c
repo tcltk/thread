@@ -11,7 +11,8 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.3 2001/09/05 23:02:01 davygrvy Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.4 2002/01/19 23:16:58 vasiljevic Exp $
+ * ----------------------------------------------------------------------------
  */
 
 #include "tclThread.h"
@@ -23,6 +24,7 @@
 
 static Tcl_HashTable syncHandles;       /* Handles/pointers to sync objects */
 static Tcl_Mutex syncHandlesMutex;      /* Protects the above table */
+
 static int syncHandlesInitialized;      /* Flag, table initalized or not */
 static unsigned int syncHandlesCounter; /* Counter for unique object id's */
 
@@ -33,13 +35,25 @@ static unsigned int syncHandlesCounter; /* Counter for unique object id's */
 #define CONDID  'c' /* First letter of the condition-variable handle */
 
 /*
+ * Functions implementing Tcl commands
+ */
+
+static Tcl_ObjCmdProc ThreadMutexObjCmd;
+static Tcl_ObjCmdProc ThreadCondObjCmd;
+
+/*
  * Forward declaration of functions used only within this file
  */
 
-static int  GetObjFromHandle _ANSI_ARGS_((Tcl_Interp *interp, char type, 
-                                          char *id, void **addrPtrPtr));
-static void SetHandleFromObj _ANSI_ARGS_((Tcl_Interp *interp, char type, 
+static int  GetObjFromHandle _ANSI_ARGS_((Tcl_Interp *interp, 
+                                          char type, 
+                                          char *id, 
+                                          void **addrPtrPtr));
+
+static void SetHandleFromObj _ANSI_ARGS_((Tcl_Interp *interp, 
+                                          char type, 
                                           void *addrPtr));
+
 static void DeleteObjHandle  _ANSI_ARGS_((char *id));
 static void FinalizeSp       _ANSI_ARGS_((ClientData clientData));
 
@@ -61,15 +75,14 @@ static void FinalizeSp       _ANSI_ARGS_((ClientData clientData));
  *----------------------------------------------------------------------
  */
 
-    /* ARGSUSED */
-int
+static int
 ThreadMutexObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
     Tcl_Obj *CONST objv[];              /* Argument objects. */
 {
-    int opt;
+    int opt, ret;
     char *mutexHandle;
     Tcl_Mutex *mutexPtr = NULL;
 
@@ -80,19 +93,21 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
         m_CREATE, m_DESTROY, m_LOCK, m_UNLOCK
     };
     
-    /* Syntax:
-          thread::mutex create
-          thread::mutex destroy <mutexHandle>
-          thread::mutex lock <mutexHandle>
-          thread::mutex unlock <mutexHandle>
-    */
+    /* 
+     * Syntax:
+     *
+     *     thread::mutex create
+     *     thread::mutex destroy <mutexHandle>
+     *     thread::mutex lock <mutexHandle>
+     *     thread::mutex unlock <mutexHandle>
+     */
 
     if (objc < 2) {
         Tcl_WrongNumArgs(interp, 1, objv, "option ?args?");
         return TCL_ERROR;
     }
-    if (Tcl_GetIndexFromObj(interp, objv[1], cmdOpts, "option", 0, &opt)
-        != TCL_OK) {
+    ret = Tcl_GetIndexFromObj(interp, objv[1], cmdOpts, "option", 0, &opt);
+    if (ret != TCL_OK) {
         return TCL_ERROR;
     }
 
@@ -101,10 +116,9 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
      */
 
     if (opt == (int)m_CREATE) {
-        mutexPtr = (Tcl_Mutex *) Tcl_Alloc(sizeof(Tcl_Mutex));
+        mutexPtr = (Tcl_Mutex*)Tcl_Alloc(sizeof(Tcl_Mutex));
         *mutexPtr = 0;
-        /* Tcl_MutexInitialize(mutexPtr);  (will appear in core?) */
-        SetHandleFromObj(interp, MUTEXID, (void *)mutexPtr);
+        SetHandleFromObj(interp, MUTEXID, (void*)mutexPtr);
         return TCL_OK;
     }
 
@@ -117,8 +131,8 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     mutexHandle = Tcl_GetString(objv[2]);
-    if (GetObjFromHandle(interp, MUTEXID, mutexHandle, (void **) &mutexPtr)
-        != TCL_OK) {
+    ret = GetObjFromHandle(interp, MUTEXID, mutexHandle, (void**) &mutexPtr);
+    if (ret != TCL_OK) {
         return TCL_ERROR;
     }
 
@@ -127,24 +141,16 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
      */
 
     switch ((enum options)opt) {
-    case m_LOCK:    
-        Tcl_MutexLock(mutexPtr);
-        break;
-    
-    case m_UNLOCK:
-        Tcl_MutexUnlock(mutexPtr);
-        break;
-
-    case m_DESTROY: 
+    case m_CREATE: /* Already did above */    break;
+    case m_LOCK:   Tcl_MutexLock(mutexPtr);   break;
+    case m_UNLOCK: Tcl_MutexUnlock(mutexPtr); break;
+    case m_DESTROY:
         Tcl_MutexFinalize(mutexPtr);
-        Tcl_Free((char *)mutexPtr);
+        Tcl_Free((char*)mutexPtr);
         DeleteObjHandle(mutexHandle);
         break;
-
-    case m_CREATE:
-        /* Did cover this one; just to satisfy the compiler */
-        break;
     }
+
     return TCL_OK;
 }
 
@@ -165,15 +171,14 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
  *----------------------------------------------------------------------
  */
 
-    /* ARGSUSED */
-int
+static int
 ThreadCondObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
     Tcl_Obj *CONST objv[];              /* Argument objects. */
 {
-    int opt;
+    int opt, ret;
     char *condHandle, *mutexHandle;
     Tcl_Time waitTime;
     Tcl_Mutex *mutexPtr = NULL;
@@ -186,19 +191,21 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
         c_CREATE, c_DESTROY, c_NOTIFY, c_WAIT
     };
 
-    /* Syntax:
-          thread::cond create
-          thread::cond destroy <condHandle>
-          thread::cond broadcast <condHandle>
-          thread::cond wait <condHandle> <mutexHandle> ?timeout?
-    */
+    /* 
+     * Syntax:
+     *
+     *    thread::cond create
+     *    thread::cond destroy <condHandle>
+     *    thread::cond broadcast <condHandle>
+     *    thread::cond wait <condHandle> <mutexHandle> ?timeout?
+     */
 
     if (objc < 2) {
         Tcl_WrongNumArgs(interp, 1, objv, "option ?args?");
         return TCL_ERROR;
     }
-    if (Tcl_GetIndexFromObj(interp, objv[1], cmdOpts, "option", 0, &opt)
-        != TCL_OK) {
+    ret = Tcl_GetIndexFromObj(interp, objv[1], cmdOpts, "option", 0, &opt);
+    if (ret != TCL_OK) {
         return TCL_ERROR;
     }
 
@@ -207,10 +214,9 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
      */
 
     if (opt == (int)c_CREATE) {
-        condPtr = (Tcl_Condition *) Tcl_Alloc(sizeof(Tcl_Condition));
+        condPtr = (Tcl_Condition*)Tcl_Alloc(sizeof(Tcl_Condition));
         *condPtr = 0;
-        /* Tcl_ConditionInitialize(condPtr);  (will appear in core?) */
-        SetHandleFromObj(interp, CONDID, (void *)condPtr);
+        SetHandleFromObj(interp, CONDID, (void*)condPtr);
         return TCL_OK;
     }
 
@@ -223,12 +229,13 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     condHandle = Tcl_GetString(objv[2]);
-    if (GetObjFromHandle(interp, CONDID, condHandle, (void **)&condPtr) 
-        != TCL_OK) {
+    ret = GetObjFromHandle(interp, CONDID, condHandle, (void**)&condPtr);
+    if (ret != TCL_OK) {
         return TCL_ERROR;
     }
 
     switch ((enum options)opt) {
+    case c_CREATE: break;
     case c_WAIT:
 
         /*
@@ -243,8 +250,8 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
             return TCL_ERROR;
         }
         mutexHandle = Tcl_GetString(objv[3]);
-        if (GetObjFromHandle(interp, MUTEXID, mutexHandle, (void **)&mutexPtr) 
-            != TCL_OK) {
+        ret = GetObjFromHandle(interp,MUTEXID,mutexHandle,(void**)&mutexPtr);
+        if (ret != TCL_OK) {
             return TCL_ERROR;
         }
         if (objc == 5) {
@@ -266,14 +273,11 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
 
     case c_DESTROY: 
         Tcl_ConditionFinalize(condPtr);
-        Tcl_Free((char *)condPtr);
+        Tcl_Free((char*)condPtr);
         DeleteObjHandle(condHandle);
         break;
-
-    case c_CREATE:
-        /* Did cover this one; just to satisfy the compiler */
-        break;
     }
+
     return TCL_OK;
 }
 
@@ -293,6 +297,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
  *
  *----------------------------------------------------------------------
  */
+
 static void
 SetHandleFromObj(interp, type, addrPtr)
     Tcl_Interp *interp;                 /* Interpreter to set result. */
@@ -335,6 +340,7 @@ SetHandleFromObj(interp, type, addrPtr)
  *
  *----------------------------------------------------------------------
  */
+
 static int
 GetObjFromHandle(interp, type, handle, addrPtrPtr)
     Tcl_Interp *interp;                 /* Interpreter for error msg. */
@@ -379,6 +385,7 @@ GetObjFromHandle(interp, type, handle, addrPtrPtr)
  *
  *----------------------------------------------------------------------
  */
+
 static void
 DeleteObjHandle(handle)
     char *handle;                       /* Tcl string handle */
@@ -396,7 +403,7 @@ DeleteObjHandle(handle)
 /*
  *----------------------------------------------------------------------
  *
- * Initialize_Sp --
+ * Sp_Init --
  *
  *      Create the thread::mutex and thread::cond commands in current
  *      interpreter.
@@ -411,15 +418,11 @@ DeleteObjHandle(handle)
  *
  *----------------------------------------------------------------------
  */
+
 void
-Initialize_Sp (interp)
+Sp_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
 {
-    Tcl_CreateObjCommand(interp,"thread::mutex", ThreadMutexObjCmd,
-            (ClientData)NULL, NULL);
-    Tcl_CreateObjCommand(interp,"thread::cond", ThreadCondObjCmd,
-            (ClientData)NULL, NULL);
-
     if (!syncHandlesInitialized) {
         GRAB_SYNCMUTEX;
         if (!syncHandlesInitialized) {
@@ -429,6 +432,9 @@ Initialize_Sp (interp)
         }
         RELEASE_SYNCMUTEX;
     }
+
+    TCL_CMD(interp, "thread::mutex", ThreadMutexObjCmd);
+    TCL_CMD(interp, "thread::cond",  ThreadCondObjCmd);
 }
 
 /*
@@ -446,6 +452,7 @@ Initialize_Sp (interp)
  *
  *----------------------------------------------------------------------
  */
+
 static void
 FinalizeSp (clientData)
     ClientData clientData;              /* Not used. */
@@ -458,15 +465,14 @@ FinalizeSp (clientData)
     GRAB_SYNCMUTEX;
 
     for (entryPtr = Tcl_FirstHashEntry(&syncHandles, &search);
-            entryPtr != (Tcl_HashEntry *) NULL; 
-            entryPtr = Tcl_NextHashEntry(&search)) {
-        objHdl = (char *)Tcl_GetHashKey(&syncHandles, entryPtr);
-        objPtr = (void *)Tcl_GetHashValue(entryPtr);
+            entryPtr; entryPtr = Tcl_NextHashEntry(&search)) {
+        objHdl = (char*)Tcl_GetHashKey(&syncHandles, entryPtr);
+        objPtr = (void*)Tcl_GetHashValue(entryPtr);
         switch((char)*objHdl) {
-        case MUTEXID: Tcl_MutexFinalize((Tcl_Mutex *)objPtr);
-        case CONDID:  Tcl_ConditionFinalize((Tcl_Condition *)objPtr);
+        case MUTEXID: Tcl_MutexFinalize((Tcl_Mutex*)objPtr);
+        case CONDID:  Tcl_ConditionFinalize((Tcl_Condition*)objPtr);
         }
-        Tcl_Free((char *)objPtr);
+        Tcl_Free((char*)objPtr);
         Tcl_DeleteHashEntry(entryPtr);
     }
     Tcl_DeleteHashTable(&syncHandles);
@@ -474,3 +480,11 @@ FinalizeSp (clientData)
     RELEASE_SYNCMUTEX;
 }
 
+/* EOF $RCSfile: threadSpCmd.c,v $ */
+
+/* Emacs Setup Variables */
+/* Local Variables:      */
+/* mode: C               */
+/* indent-tabs-mode: nil */
+/* c-basic-offset: 4     */
+/* End:                  */
