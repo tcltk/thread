@@ -1,13 +1,41 @@
-2004-12-22 Zoran Vasiljevic <zv@archiware.com>
+2005-01-33 Zoran Vasiljevic <zv@archiware.com>
 
-	* tcl/cmdsrv/cmdsrv.tcl: command server listens on loopback
-	interface (127.0.0.1) only.
+        **** RELEASE: 2.6.1 Tagged ****
 
+	* aolserver.m4:
+	* configure.in:
+	* configure: rebuild and include conditional compilation
+	for AOLserver which was wrongly ommited since the switch
+	to the TEA3 build system.
+	Also, we will now revert to <major>.<minor>.<patch>
+	version numbers for all releases.
+
+	* generic/threadCmd.c: added new option "-head" to the
+	[thread::send] command so scripts can be placed on the
+	head of the thread event queue instead of the tail only. 
+
+	* doc: rebuild html/nroff files from doctools sources
+
+	* generic/threadPoolCmd.c:
+	* generic/threadSvCmd.h:
+	* generic/tclThread.h: removed compat macros for 8.3 core
+
+	* test/thread.test: added case for [thread::send -head]
+
+2004-12-23 Zoran Vasiljevic <zv@archiware.com>
+
+        **** RELEASE: 2.6 Tagged ****
+
+	* tcl/cmdsrv/cmdsrv.tcl: example command server listens on
+	loopback interface (127.0.0.1) only
+
+	* README: removed stuff about (now unsupported) Tcl8.3 core
 	* unix/README: clarified usage of the CONFIG file
+	* win/vc: adjusted MSVC files for changes introduced by TEA3
 
 2004-12-18 Zoran Vasiljevic <zv@archiware.com>
 
-	**** COMPATIBILITY: Dropped support for Tcl 8.3 ****
+	**** COMPATIBILITY: Dropped support for Tcl8.3 ****
 	
 	* aclocal.m4: Adjusted for TEA3
 	* Makefile.in:

@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.28 2004/11/27 06:11:02 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.29 2005/01/03 09:00:06 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -166,9 +166,6 @@ TpoolRelease   _ANSI_ARGS_((ThreadPool *tpoolPtr));
 
 static void
 InitWaiter     _ANSI_ARGS_((void));
-
-static void
-GetTime        _ANSI_ARGS_((Tcl_Time *timePtr));
 
 
 /*
@@ -974,7 +971,7 @@ TpoolWorker(clientData)
     TpoolResult         *rPtr  = (TpoolResult*)clientData;
     ThreadPool       *tpoolPtr = rPtr->tpoolPtr;
 
-    int maj, min, ptch, type, tout = 0;
+    int tout = 0;
     Tcl_Interp *interp;
     Tcl_Time waitTime, *idlePtr;
     char *errMsg = "can't create new Tcl interpreter";
@@ -990,22 +987,8 @@ TpoolWorker(clientData)
     rPtr->retcode = TCL_OK;
 #else
     interp = Tcl_CreateInterp();
-    rPtr->retcode = Tcl_Init(interp);
- 
-    /*
-     *  Tcl_Init() under 8.3.[1,2] and 8.4a1 doesn't work under threads.
-     */
-
-    Tcl_GetVersion(&maj, &min, &ptch, &type);
-    if (!((maj == 8) && (min == 3) && (ptch <= 2))
-        && !((maj == 8) && (min == 4) && (ptch == 1)
-             && (type == TCL_ALPHA_RELEASE)) && (rPtr->retcode != TCL_OK)) {
-        rPtr->result = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
-        Tcl_ConditionNotify(&tpoolPtr->cond);
-        Tcl_MutexUnlock(&startMutex);
-        goto out;
-    }
-    rPtr->retcode = Thread_Init(interp);
+    rPtr->retcode |= Tcl_Init(interp);
+    rPtr->retcode |= Thread_Init(interp);
 #endif
     
     if (rPtr->retcode != TCL_OK) {
@@ -1063,9 +1046,9 @@ TpoolWorker(clientData)
         SignalWaiter(tpoolPtr); /* Another worker available */
         while (!tpoolPtr->tearDown && !tout && !(rPtr = PopWork(tpoolPtr))) {
             Tcl_Time t1,t2;
-            GetTime(&t1);
+            Tcl_GetTime(&t1);
             Tcl_ConditionWait(&tpoolPtr->cond, &tpoolPtr->mutex, idlePtr);
-            GetTime(&t2);
+            Tcl_GetTime(&t2);
             if (tpoolPtr->idleTime) {
                 if ((t2.sec - t1.sec) >= tpoolPtr->idleTime) {
                     tout = 1;
@@ -1676,40 +1659,6 @@ AppExitHandler(clientData)
         TpoolRelease(tpoolPtr);
     }
     Tcl_MutexUnlock(&listMutex);
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * GetTime --
- *
- *  Wrapper for the Tcl_GetTime which is not available for 8.3.
- *
- * Results:
- *  None.
- *
- * Side effects:
- *  None.
- *
- *----------------------------------------------------------------------
- */
-static void
-GetTime(timePtr)
-    Tcl_Time *timePtr;
-{
-#ifdef __WIN32__
-#include <sys/timeb.h>
-    struct timeb tb;
-    (void)ftime(&tb);
-    timePtr->sec  = tb.time;
-    timePtr->usec = tb.millitm * 1000;
-#else
-#include <sys/time.h>
-    struct timeval tv;
-    (void)gettimeofday(&tv, NULL);
-    timePtr->sec  = tv.tv_sec;
-    timePtr->usec = tv.tv_usec;
-#endif
 }
 
 /*
