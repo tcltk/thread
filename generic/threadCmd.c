@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.62 2002/12/19 09:55:43 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.63 2003/01/22 14:47:16 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -273,6 +273,9 @@ static void
 ListRemoveInner   _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 
 static void 
+ListUpdate        _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
+
+static void 
 ListUpdateInner   _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 
 static int 
@@ -474,15 +477,10 @@ Init(interp)
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     if (tsdPtr->interp == (Tcl_Interp*)NULL) {
-        Tcl_MutexLock(&threadMutex);
-
         memset(tsdPtr, 0, sizeof(ThreadSpecificData));
         tsdPtr->interp = interp;
-
-        ListUpdateInner(tsdPtr);
-        Tcl_CreateThreadExitHandler(ThreadExitProc, NULL);   
-
-        Tcl_MutexUnlock(&threadMutex);
+        ListUpdate(tsdPtr);
+        Tcl_CreateThreadExitHandler(ThreadExitProc, NULL);
     }
 }
 
@@ -702,8 +700,8 @@ ThreadExitObjCmd(dummy, interp, objc, objv)
 {
 
     Init(interp);
-
     ListRemove(NULL);
+
     Tcl_ExitThread(666);
 
     return TCL_OK; /* NOT REACHED */
@@ -1610,8 +1608,10 @@ ThreadErrorProc(interp)
     char *argv[3], buf[10];
     CONST char *errorInfo;
 
-    sprintf(buf, "%ld", (long) Tcl_GetCurrentThread());
     errorInfo = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
+    if (errorInfo == NULL) {
+        errorInfo = "";
+    }
 
     if (errorProcString == NULL) {
 #ifdef NS_AOLSERVER
@@ -1623,6 +1623,7 @@ ThreadErrorProc(interp)
              * Wojciech Kocjan <wojciech@kocjan.org> */
             return;
         }
+        sprintf(buf, "%ld", (long) Tcl_GetCurrentThread());
         Tcl_WriteChars(errChannel, "Error from thread ", -1);
         Tcl_WriteChars(errChannel, buf, -1);
         Tcl_WriteChars(errChannel, "\n", 1);
@@ -1630,6 +1631,7 @@ ThreadErrorProc(interp)
         Tcl_WriteChars(errChannel, "\n", 1);
 #endif
     } else {
+        sprintf(buf, "%ld", (long) Tcl_GetCurrentThread());
         argv[0] = errorProcString;
         argv[1] = buf;
         argv[2] = (char*)errorInfo;
@@ -1641,6 +1643,36 @@ ThreadErrorProc(interp)
 
         ThreadSend(interp, errorThreadId, sendPtr, NULL, 0);
     }
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ListUpdate --
+ *
+ *  Add the thread local storage to the list. This grabs the
+ *  mutex to protect the list.
+ *
+ * Results:
+ *  None
+ *
+ * Side effects:
+ *  None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+ListUpdate(tsdPtr)
+    ThreadSpecificData *tsdPtr;
+{
+    if (tsdPtr == NULL) {
+        tsdPtr = TCL_TSD_INIT(&dataKey);
+    }
+
+    Tcl_MutexLock(&threadMutex);
+    ListUpdateInner(tsdPtr);
+    Tcl_MutexUnlock(&threadMutex);
 }
 
 /*
@@ -1664,18 +1696,14 @@ static void
 ListUpdateInner(tsdPtr)
     ThreadSpecificData *tsdPtr;
 {
-    if (tsdPtr == NULL) {
-        tsdPtr = TCL_TSD_INIT(&dataKey);
-    }
-
-    tsdPtr->threadId = Tcl_GetCurrentThread();
-    tsdPtr->nextPtr  = threadList;
-
     if (threadList) {
         threadList->prevPtr = tsdPtr;
     }
 
-    tsdPtr->prevPtr = NULL;
+    tsdPtr->nextPtr  = threadList;
+    tsdPtr->prevPtr  = NULL;
+    tsdPtr->threadId = Tcl_GetCurrentThread();
+
     threadList = tsdPtr;
 }
 
@@ -1700,6 +1728,10 @@ static void
 ListRemove(tsdPtr)
     ThreadSpecificData *tsdPtr;
 {
+    if (tsdPtr == NULL) {
+        tsdPtr = TCL_TSD_INIT(&dataKey);
+    }
+
     Tcl_MutexLock(&threadMutex);
     ListRemoveInner(tsdPtr);
     Tcl_MutexUnlock(&threadMutex);
@@ -1725,22 +1757,18 @@ static void
 ListRemoveInner(tsdPtr)
     ThreadSpecificData *tsdPtr;
 {
-    if (tsdPtr == NULL) {
-        tsdPtr = TCL_TSD_INIT(&dataKey);
+    if (tsdPtr->prevPtr || tsdPtr->nextPtr) {
+        if (tsdPtr->prevPtr) {
+            tsdPtr->prevPtr->nextPtr = tsdPtr->nextPtr;
+        } else {
+            threadList = tsdPtr->nextPtr;
+        }
+        if (tsdPtr->nextPtr) {
+            tsdPtr->nextPtr->prevPtr = tsdPtr->prevPtr;
+        }
+        tsdPtr->nextPtr = NULL;
+        tsdPtr->prevPtr = NULL;
     }
-    if (tsdPtr->prevPtr == NULL && tsdPtr->nextPtr == NULL) {
-        return; /* Already spliced out */
-    }
-    if (tsdPtr->prevPtr) {
-        tsdPtr->prevPtr->nextPtr = tsdPtr->nextPtr;
-    } else {
-        threadList = tsdPtr->nextPtr;
-    }
-    if (tsdPtr->nextPtr) {
-        tsdPtr->nextPtr->prevPtr = tsdPtr->prevPtr;
-    }
-
-    tsdPtr->nextPtr = tsdPtr->prevPtr = NULL;
 }
 
 /*
@@ -2416,7 +2444,7 @@ ThreadWait()
          * About to service another event.
          * Wake-up eventual sleepers.
          */
-        
+
         if (tsdPtr->maxEventsCount) {
             Tcl_MutexLock(&threadMutex);
             tsdPtr->eventsPending--;
@@ -3084,6 +3112,7 @@ ThreadExitProc(clientData)
     char *diemsg = "target thread died";
     ThreadEventResult *resultPtr, *nextPtr;
     Tcl_ThreadId self = Tcl_GetCurrentThread();
+    ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     /* Only used in 8.4+ interps */
     TransferResult *tResultPtr, *tNextPtr;
@@ -3095,14 +3124,12 @@ ThreadExitProc(clientData)
     Tcl_MutexLock(&threadMutex);
 
     /*
-     * AOLserver threads get started/stopped 
-     * outside the thread package, so this 
-     * is the first chance to splice them out.
-     * Also, threadpool worker threads are 
-     * tracked outside thread::* interface and
-     * need to be spliced out here as well.
+     * AOLserver and threadpool threads get started/stopped
+     * out of the control of this interface so this is
+     * the first chance to split them out of the thread list.
      */
-    ListRemoveInner(NULL);
+
+    ListRemoveInner(tsdPtr);
 
     /* 
      * Delete events posted to our queue while we were running.
