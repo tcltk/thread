@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.81 2003/12/01 19:54:43 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.82 2004/01/31 14:21:18 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1475,7 +1475,7 @@ ThreadClbkSetVar(interp, clientData)
      * In case of error, trigger the bgerror mechansim
      */
 
-    if (resultPtr->code != TCL_OK) {
+    if (resultPtr->code == TCL_ERROR) {
         if (resultPtr->errorCode) {
             var = "errorCode";
             Tcl_SetVar(interp, var, resultPtr->errorCode, TCL_GLOBAL_ONLY);
@@ -2501,7 +2501,7 @@ ThreadSend(interp, id, send, clbk, wait)
      * Return result to caller
      */
 
-    if (resultPtr->code != TCL_OK) {
+    if (resultPtr->code == TCL_ERROR) {
         if (resultPtr->errorCode) {
             Tcl_SetErrorCode(interp, resultPtr->errorCode, NULL);
             Tcl_Free(resultPtr->errorCode);
@@ -2805,14 +2805,14 @@ ThreadEventProc(evPtr, mask)
          * Do not wait for the result.
          */
 
-        if (code != TCL_OK) {
+        if (code == TCL_ERROR) {
             ThreadErrorProc(interp);
         }
 
         ThreadSetResult(interp, code, &clbkPtr->result);
         ThreadSend(interp, clbkPtr->threadId, tmpPtr, NULL, 0);
 
-    } else if (code != TCL_OK) {
+    } else if (code == TCL_ERROR) {
         /*
          * Only pass errors onto the registered error handler 
          * when we don't have a result target for this event.
