@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.23 2003/08/26 10:28:21 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.24 2003/08/27 12:08:50 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1059,10 +1059,10 @@ TpoolWorker(clientData)
      */
 
     Tcl_MutexLock(&tpoolPtr->mutex);
-    while (tpoolPtr->tearDown == 0) {
+    while (!tpoolPtr->tearDown) {
         tpoolPtr->idleWorkers++;
         SignalWaiter(tpoolPtr); /* Another worker available */
-        while (!tpoolPtr->tearDown && !(rPtr = PopWork(tpoolPtr))) {
+        while (!tpoolPtr->tearDown && !tout && !(rPtr = PopWork(tpoolPtr))) {
             Tcl_Time t1,t2;
             GetTime(&t1);
             Tcl_ConditionWait(&tpoolPtr->cond, &tpoolPtr->mutex, idlePtr);
