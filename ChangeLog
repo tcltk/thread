@@ -1,3 +1,19 @@
+2002-04-03  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* Makefile.in: improved use of DESTDIR in install targets.
+	Removed need for installdirs target.
+	Broke TCLSH_PROG into TCLSH_ENV and TCLSH_PROG with TCLSH var and
+	added comments about TCLSH_ENV.
+	Added default shell and gdb targets.
+
+	* configure: 
+	* configure.in: updated to new TEA base that: prefixes all macros
+	with TEA_* instead of SC_*; adds TEA_PREFIX, which defaults the
+	prefix and exec_prefix values to what Tcl used; adds
+	TEA_SETUP_COMPILER, which handles basic compiler / support program
+	checks and simplifies the configure.in.  Turn on --enable-threads
+	by default and do sanity checking as well.
+
 2002-04-01  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* Makefile.in (install-lib-binaries): ensure that binary files are
