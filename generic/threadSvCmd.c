@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.4 2000/10/16 21:18:24 zoran Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.5 2000/10/16 21:27:26 zoran Exp $
  */
 
 #include "thread.h"
@@ -478,7 +478,7 @@ ThreadSvUnsetObjCmd(dummy, interp, objc, objv)
     int objc;                           /* Number of arguments. */
     Tcl_Obj *CONST objv[];              /* Argument objects. */
 {
-    Tcl_HashEntry *hPtr;
+    Tcl_HashEntry *hPtr = NULL;
     Array *arrayPtr;
     char *key, *arrayName;
     
@@ -511,8 +511,9 @@ ThreadSvUnsetObjCmd(dummy, interp, objc, objv)
         Tcl_AppendResult(interp, "no key \"", key, "\" in array ",
                 arrayName, NULL);
         return TCL_ERROR;
+    } else {
+        UnlockArray(arrayPtr);
     }
-    UnlockArray(arrayPtr);
     return TCL_OK;
 }
 
