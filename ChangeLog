@@ -1,3 +1,45 @@
+
+2000-07-03 Zoran Vasiljevic <zoran@munich.com>
+	
+   	Summary of changes:
+
+	* generic/threadSpCmd.c: new file with implementation of 
+	  "thread::mutex" and "thread::cond" commands. Documentation 
+	  and tests are still pending.
+	
+	* generic/threadSvCmd.c: new file with implementation of 
+	  "thread::sv_*" family of commands modeled after AOLserver
+	  nsv_* ones. Documentation and tests are still pending.
+
+	* Makefile.in: fixed for the two above
+
+	* doc/thread.html 
+	* doc/thread.n: added 'thread::exists' docs
+
+	* generic/thread.h added declarations for new commands (above)
+	
+	* generic/threadCmd.c:
+	
+	  Added "thread::exists" command.
+
+	  Moved most of internal functions in threadCmd.c to statics,
+          except the Thread*ObjCmd(). 
+
+	  Changed behaviour of "thread::exit". It now simply flips the
+          bit to signal thread stuck in thread::wait to gracefuly exit.
+          Consequence: command now does not trigger error on thread exit.
+          Also, thread event queue in now properly cleared.
+          ThreadWait() and ThreadStop() are newly added to support this.
+          Also the ThreadSpecificData has one more integer: "stopped"
+
+	  Replaced ref's to obsolete Tcl_GlobalEval() with Tcl_EvalEx().
+
+	  Fixed broken 'thread::create -joinable script';
+          was missing initialization of script variable
+
+	  Added calls to initialize new commands in threadSpCmd.c
+	  and threadSvCmd.c files.
+
 2000-05-18 Brent Welch <welch@scriptics.com>
 
 	* Restored Andreas' changes for transferring sockets.
