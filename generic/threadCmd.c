@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.72 2003/04/10 13:14:18 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.73 2003/04/10 13:39:24 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -2287,7 +2287,7 @@ ThreadSend(interp, id, send, clbk, wait)
 
     if (tsdPtr == (ThreadSpecificData*)NULL
             || (tsdPtr->flags & THREAD_FLAGS_INERROR)) {
-        int inerror = tsdPtr->flags & THREAD_FLAGS_INERROR;
+        int inerror = tsdPtr && (tsdPtr->flags & THREAD_FLAGS_INERROR);
         Tcl_MutexUnlock(&threadMutex);
         ThreadFreeProc((ClientData)send);
         if (clbk) {
