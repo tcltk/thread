@@ -1,9 +1,29 @@
 
 2002-01-02  Zoran Vasiljevic <zoran@archiware.com>
 
-	* generic/threadCmd.c:
-	* generic/threadSvCmd.c:
-	* generic/threadSvListCmd.c (new):
+        * generic/threadSvListCmd.* (new): added for the new implementation
+        of the thread-shared-variable (tsv) interface.
+        * generic/threadSvCmd.c: now uses shared Tcl objects instead of strings
+        for storing data in shared arrays. This improves performance on large
+        shared data structures.
+        Added new tsv::* syntax, per request. This replaces older thread::sv_*
+        interface. Older commands are still present but will be removed as
+        soon we hit the 3.0 version.
+        * generic/threadCmd.c: revamped to support asynchronous backfiring
+        of scripts so we can vwait on the results of thread processing.
+        This also corrected the bug #464340. Affected command is thread::send.
+        * doc/thread.n: added docs for all thread::* and tsv::* commands.
+        This fixes #416850 bug report. The html/tmml files are still out of date.
+        * configure: built with autoconf 2.52
+        * config/config.guess (new): needed for the new configure
+        * config/config.sub (new): needed for the new configure
+        * Makefile.in: added lines for new generic/threadSvListCmd.c
+        * configure.in: moving to 2.4 version.
+        * unix/threadUnix.c: removed traces of ThreadKill. It is still not clear
+        wether we should implement this functionality or not.
+        * win/threadWin.c: see above.
+        * pkgIndex.tcl.in: fixed to correctly handle version for different Tcl core
+        versions.
 
 2001-09-05  David Gravereaux <davygrvy@pobox.com>
 
