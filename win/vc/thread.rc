@@ -1,4 +1,4 @@
-// RCS: @(#) $Id: thread.rc,v 1.5 2000/08/10 01:35:59 davidg Exp $
+// RCS: @(#) $Id: thread.rc,v 1.6 2000/08/20 21:04:44 davidg Exp $
 //
 // Version resource script
 //
@@ -28,9 +28,9 @@ BEGIN
         BEGIN
             VALUE "FileDescription", "Threading extension library for Tcl\0"
 #if NODEBUG == 0
-            VALUE "OriginalFilename", "threadd.dll\0"
+            VALUE "OriginalFilename", "thread" STRINGIFY(JOIN(THREAD_MAJOR_VERSION,THREAD_MINOR_VERSION)) "d.dll\0"
 #else
-            VALUE "OriginalFilename", "thread.dll\0"
+            VALUE "OriginalFilename", "thread" STRINGIFY(JOIN(THREAD_MAJOR_VERSION,THREAD_MINOR_VERSION)) ".dll\0"
 #endif
             VALUE "CompanyName", "Ajuba Solutions\0"
             VALUE "FileVersion", THREAD_VERSION
