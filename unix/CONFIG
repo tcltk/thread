@@ -1,0 +1,9 @@
+#
+# You may add --enable-symbols when compiling 
+# with debugging symbols. For list of other 
+# supported options to configure, run
+#   ../configure --help 
+#
+
+sh ../configure --enable-gcc --enable-threads
+
