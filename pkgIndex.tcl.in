@@ -16,5 +16,7 @@ if {$ver >= 83} {
     } else {
 	set provides {@VERSION@}
     }
-    package ifneeded Thread $provides [list load [file join $dir @RELPATH@ @thread_LIB_FILE@]]
+    set library [file join $dir @RELPATH@ @thread_LIB_FILE@]
+    package ifneeded Thread $provides [list load $library]
 }
+
