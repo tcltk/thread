@@ -6,3 +6,4 @@ Release_Static
 Release_StaticX
 *.opt
 *.ncb
+*.plg
