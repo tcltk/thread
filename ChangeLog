@@ -1,3 +1,6 @@
+2002-07-09  Zoran Vasiljevic <zoran@archiware.com>  
+	* README: added this file
+
 2002-07-05  Zoran Vasiljevic <zoran@archiware.com>  
 
         * tclconfig/tcl.m4: fixed reference to MINGW so we can
