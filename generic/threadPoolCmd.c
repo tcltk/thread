@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.16 2002/12/14 14:14:20 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.17 2002/12/14 16:14:46 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -253,7 +253,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
         maxw = TPOOL_MAXWORKERS;
     }
     if (minw > maxw) {
-        minw = maxw;
+        maxw = minw;
     }
 
     /*
