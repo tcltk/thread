@@ -1,3 +1,9 @@
+2000-10-16  Zoran Vasiljevic <zoran@munich.com>
+
+	* generic/threadSvCmd.c ThreadSvUnsetObjCmd(): deadlocked.
+        Forgot to release shared-array lock which resulted in
+        deadlock after first successful unset of the variable.
+
 2000-08-29  David Gravereaux <davygrvy@ajubasolutions.com>
 
 	* generic/threadCmd.c (NewThread): Tcl_Init return value wasn't
