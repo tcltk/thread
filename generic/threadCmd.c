@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.52 2002/10/20 10:22:32 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.53 2002/10/23 09:48:15 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1290,9 +1290,7 @@ ThreadClbkSetVar(interp, clientData)
     }
 
     /*
-     * FIXME: what should be the proper way of informing the waiter
-     * thread which might be vwait'ing for (this) result that the
-     * error is pending ? Should we trigger the background error stuff ?
+     * In case of error, trigger the bgerror mechansim
      */
 
     if (resultPtr->code != TCL_OK) {
@@ -1306,6 +1304,8 @@ ThreadClbkSetVar(interp, clientData)
             Tcl_SetVar(interp, var, resultPtr->errorInfo, TCL_GLOBAL_ONLY);
             Tcl_Free((char*)resultPtr->errorInfo);
         }
+        Tcl_SetObjResult(interp, valObj);
+        Tcl_BackgroundError(interp);
     }
 
     return TCL_OK;
