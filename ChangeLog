@@ -1,3 +1,16 @@
+2003-11-25 Zoran Vasiljevic <zoran@archiware.com>
+
+	* doc/format.tcl: new file with a simple poor man's
+	documentation formatter.
+
+	* doc/thread.man
+	* doc/tpool.man
+	* doc/tsv.man: new doctools source files for building
+	the package documentation.
+
+	* Makefile.in: added support for building nroff and html
+	files out of doctools sources found in doc directory.
+
 2003-11-18 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: added implementation of the 
