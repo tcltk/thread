@@ -1,5 +1,13 @@
 2002-12-06 Zoran Vasiljevic <zoran@archiware.com>
 
+	* configure.in
+	* configure
+	* Makefile.in
+	* aolserver.m4: added support for compilation under
+	AOLserver as loadable module.
+
+2002-12-06 Zoran Vasiljevic <zoran@archiware.com>
+
 	* generic/threadSvCmd.c: the tsv::lock now allows
 	for unsetting the shared array within the script argument.
 
