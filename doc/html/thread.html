@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: thread.html,v 1.12 2003/11/25 18:55:34 vasiljevic Exp $ thread.n
+<! -- CVS: $Id: thread.html,v 1.13 2003/12/22 21:21:37 vasiljevic Exp $ thread.n
    -->
 
 <body>
@@ -32,23 +32,30 @@ package require <b>Thread ?2.6?</b><br>
 <tr valign=top ><td ><a href="#8"><b class='cmd'>thread::names</b> </a></td></tr>
 <tr valign=top ><td ><a href="#9"><b class='cmd'>thread::exists</b> <i class='arg'>id</i></a></td></tr>
 <tr valign=top ><td ><a href="#10"><b class='cmd'>thread::send</b> ?-async? <i class='arg'>id</i> <i class='arg'>script</i> ?varname?</a></td></tr>
-<tr valign=top ><td ><a href="#11"><b class='cmd'>thread::wait</b> </a></td></tr>
-<tr valign=top ><td ><a href="#12"><b class='cmd'>thread::eval</b> ?-lock mutex? <i class='arg'>arg</i> ?arg ...?</a></td></tr>
-<tr valign=top ><td ><a href="#13"><b class='cmd'>thread::join</b> <i class='arg'>id</i></a></td></tr>
-<tr valign=top ><td ><a href="#14"><b class='cmd'>thread::configure</b> <i class='arg'>id</i> ?option? ?value? ?...?</a></td></tr>
-<tr valign=top ><td ><a href="#15"><b class='cmd'>thread::transfer</b> <i class='arg'>id</i> <i class='arg'>channel</i></a></td></tr>
-<tr valign=top ><td ><a href="#16"><b class='cmd'>thread::detach</b> <i class='arg'>channel</i></a></td></tr>
-<tr valign=top ><td ><a href="#17"><b class='cmd'>thread::attach</b> <i class='arg'>channel</i></a></td></tr>
-<tr valign=top ><td ><a href="#18"><b class='cmd'>thread::mutex</b> </a></td></tr>
-<tr valign=top ><td ><a href="#19"><b class='cmd'>thread::mutex</b> <strong>create</strong></a></td></tr>
-<tr valign=top ><td ><a href="#20"><b class='cmd'>thread::mutex</b> <strong>destroy</strong> <i class='arg'>mutex</i></a></td></tr>
-<tr valign=top ><td ><a href="#21"><b class='cmd'>thread::mutex</b> <strong>lock</strong> <i class='arg'>mutex</i></a></td></tr>
-<tr valign=top ><td ><a href="#22"><b class='cmd'>thread::mutex</b> <strong>unlock</strong> <i class='arg'>mutex</i></a></td></tr>
-<tr valign=top ><td ><a href="#23"><b class='cmd'>thread::cond</b> </a></td></tr>
-<tr valign=top ><td ><a href="#24"><b class='cmd'>thread::cond</b> <strong>create</strong></a></td></tr>
-<tr valign=top ><td ><a href="#25"><b class='cmd'>thread::cond</b> <strong>destroy</strong> <i class='arg'>cond</i></a></td></tr>
-<tr valign=top ><td ><a href="#26"><b class='cmd'>thread::cond</b> <strong>notify</strong> <i class='arg'>cond</i></a></td></tr>
-<tr valign=top ><td ><a href="#27"><b class='cmd'>thread::cond</b> <strong>wait</strong> <i class='arg'>cond</i> <i class='arg'>mutex</i> ?ms?</a></td></tr>
+<tr valign=top ><td ><a href="#11"><b class='cmd'>thread::broadcast</b> <i class='arg'>id</i> <i class='arg'>script</i></a></td></tr>
+<tr valign=top ><td ><a href="#12"><b class='cmd'>thread::wait</b> </a></td></tr>
+<tr valign=top ><td ><a href="#13"><b class='cmd'>thread::eval</b> ?-lock mutex? <i class='arg'>arg</i> ?arg ...?</a></td></tr>
+<tr valign=top ><td ><a href="#14"><b class='cmd'>thread::join</b> <i class='arg'>id</i></a></td></tr>
+<tr valign=top ><td ><a href="#15"><b class='cmd'>thread::configure</b> <i class='arg'>id</i> ?option? ?value? ?...?</a></td></tr>
+<tr valign=top ><td ><a href="#16"><b class='cmd'>thread::transfer</b> <i class='arg'>id</i> <i class='arg'>channel</i></a></td></tr>
+<tr valign=top ><td ><a href="#17"><b class='cmd'>thread::detach</b> <i class='arg'>channel</i></a></td></tr>
+<tr valign=top ><td ><a href="#18"><b class='cmd'>thread::attach</b> <i class='arg'>channel</i></a></td></tr>
+<tr valign=top ><td ><a href="#19"><b class='cmd'>thread::mutex</b> </a></td></tr>
+<tr valign=top ><td ><a href="#20"><b class='cmd'>thread::mutex</b> <strong>create</strong> ?-recursive?</a></td></tr>
+<tr valign=top ><td ><a href="#21"><b class='cmd'>thread::mutex</b> <strong>destroy</strong> <i class='arg'>mutex</i></a></td></tr>
+<tr valign=top ><td ><a href="#22"><b class='cmd'>thread::mutex</b> <strong>lock</strong> <i class='arg'>mutex</i></a></td></tr>
+<tr valign=top ><td ><a href="#23"><b class='cmd'>thread::mutex</b> <strong>unlock</strong> <i class='arg'>mutex</i></a></td></tr>
+<tr valign=top ><td ><a href="#24"><b class='cmd'>thread::rwmutex</b> </a></td></tr>
+<tr valign=top ><td ><a href="#25"><b class='cmd'>thread::rwmutex</b> <strong>create</strong></a></td></tr>
+<tr valign=top ><td ><a href="#26"><b class='cmd'>thread::rwmutex</b> <strong>destroy</strong> <i class='arg'>mutex</i></a></td></tr>
+<tr valign=top ><td ><a href="#27"><b class='cmd'>thread::rwmutex</b> <strong>rlock</strong> <i class='arg'>mutex</i></a></td></tr>
+<tr valign=top ><td ><a href="#28"><b class='cmd'>thread::rwmutex</b> <strong>wlock</strong> <i class='arg'>mutex</i></a></td></tr>
+<tr valign=top ><td ><a href="#29"><b class='cmd'>thread::rwmutex</b> <strong>unlock</strong> <i class='arg'>mutex</i></a></td></tr>
+<tr valign=top ><td ><a href="#30"><b class='cmd'>thread::cond</b> </a></td></tr>
+<tr valign=top ><td ><a href="#31"><b class='cmd'>thread::cond</b> <strong>create</strong></a></td></tr>
+<tr valign=top ><td ><a href="#32"><b class='cmd'>thread::cond</b> <strong>destroy</strong> <i class='arg'>cond</i></a></td></tr>
+<tr valign=top ><td ><a href="#33"><b class='cmd'>thread::cond</b> <strong>notify</strong> <i class='arg'>cond</i></a></td></tr>
+<tr valign=top ><td ><a href="#34"><b class='cmd'>thread::cond</b> <strong>wait</strong> <i class='arg'>cond</i> <i class='arg'>mutex</i> ?ms?</a></td></tr>
 </table></td></tr></table>
 <h2><a name="description">DESCRIPTION</a></h2>
 <p>
@@ -330,8 +337,17 @@ execution. All of them are entered into the event queue of the target
 thread and executed on the FIFO basis, intermingled with optional other
 events pending in the event queue of the target thread.
 
+
 <br><br>
-<dt><a name="11"><b class='cmd'>thread::wait</b> </a><dd>
+<dt><a name="11"><b class='cmd'>thread::broadcast</b> <i class='arg'>id</i> <i class='arg'>script</i></a><dd>
+
+
+This command passes a <i class='arg'>script</i> to all threads created by the
+package for execution. It does not wait for response from any of
+the treads.
+
+<br><br>
+<dt><a name="12"><b class='cmd'>thread::wait</b> </a><dd>
 
 
 This enters the event loop so a thread can receive messages from 
@@ -355,7 +371,7 @@ expect.
 
 
 <br><br>
-<dt><a name="12"><b class='cmd'>thread::eval</b> ?-lock mutex? <i class='arg'>arg</i> ?arg ...?</a><dd>
+<dt><a name="13"><b class='cmd'>thread::eval</b> ?-lock mutex? <i class='arg'>arg</i> ?arg ...?</a><dd>
 
 
 This command concatenates passed arguments and evaluates the 
@@ -365,7 +381,7 @@ the internal static mutex is used.
 
 
 <br><br>
-<dt><a name="13"><b class='cmd'>thread::join</b> <i class='arg'>id</i></a><dd>
+<dt><a name="14"><b class='cmd'>thread::join</b> <i class='arg'>id</i></a><dd>
 
 
 This command waits for the thread with ID <i class='arg'>id</i> to exit and
@@ -380,7 +396,7 @@ NOTE: This command is available only when loaded into the
 Tcl8.4+ shell.
 
 <br><br>
-<dt><a name="14"><b class='cmd'>thread::configure</b> <i class='arg'>id</i> ?option? ?value? ?...?</a><dd>
+<dt><a name="15"><b class='cmd'>thread::configure</b> <i class='arg'>id</i> ?option? ?value? ?...?</a><dd>
 
 
 This command configures various low-level aspects of the thread with
@@ -400,7 +416,7 @@ i.e. allows for unlimited number of posted scripts.
 
 <br><br>
 
-The boolean <strong>-unwindonerror</strong> option, when set, causes the 
+The <strong>-unwindonerror</strong> option, when set, causes the 
 target thread to unwind if the result of the script processing 
 resulted in error. Default value for the <strong>-unwindonerror</strong>
 is 0 (false), i.e. thread continues to process scripts after one
@@ -408,7 +424,7 @@ of the posted scripts fails.
 
 
 <br><br>
-<dt><a name="15"><b class='cmd'>thread::transfer</b> <i class='arg'>id</i> <i class='arg'>channel</i></a><dd>
+<dt><a name="16"><b class='cmd'>thread::transfer</b> <i class='arg'>id</i> <i class='arg'>channel</i></a><dd>
 
 
 This moves the specified <i class='arg'>channel</i> from the current thread 
@@ -451,7 +467,7 @@ NOTE: this command is available only when loaded into the Tcl8.4+ shell.
 
 
 <br><br>
-<dt><a name="16"><b class='cmd'>thread::detach</b> <i class='arg'>channel</i></a><dd>
+<dt><a name="17"><b class='cmd'>thread::detach</b> <i class='arg'>channel</i></a><dd>
 
 
 This detaches the specified <i class='arg'>channel</i> from the current thread and 
@@ -467,7 +483,7 @@ NOTE: this command is available only when loaded into the Tcl8.4+ shell.
 
 
 <br><br>
-<dt><a name="17"><b class='cmd'>thread::attach</b> <i class='arg'>channel</i></a><dd>
+<dt><a name="18"><b class='cmd'>thread::attach</b> <i class='arg'>channel</i></a><dd>
 
 
 This attaches the previously detached <i class='arg'>channel</i> in the
@@ -483,16 +499,21 @@ interpreter.
 
 NOTE: this command is available only when loaded into the Tcl8.4+ shell.
 
-
 <br><br>
-<dt><a name="18"><b class='cmd'>thread::mutex</b> </a><dd>
+<dt><a name="19"><b class='cmd'>thread::mutex</b> </a><dd>
 
-
-This command provides script-level access to mutexes. Mutexes are most 
-common thread synchronization primitives. They are used to synchronize
-access from two or more threads to one or more shared resources. Care 
-has to be taken when using mutexes in an multithreading program.
-Improper use of mutexes may lead to various deadlock situations.
+Mutexes are most common thread synchronization primitives. 
+They are used to synchronize access from two or more threads to one or 
+more shared resources. This command provides script-level access to 
+exclusive and/or recursive mutexes. Exclusive mutexes can be locked 
+only once by one thread, while recursive mutexes can be locked many 
+times by the same thread. For recursive mutexes, number of lock and 
+unlock operations must match, otherwise, the mutex will never be 
+released, which would lead to various deadlock situations.
+<br><br>
+Care has to be taken when using mutexes in an multithreading program.
+Improper use of mutexes may lead to various deadlock situations, 
+especially when using exclusive mutexes.
 
 <br><br>
 
@@ -501,14 +522,17 @@ The <b class='cmd'>thread::mutex</b> command supports following subcommands and 
 <br><br>
 <dl>
 
-<dt><a name="19"><b class='cmd'>thread::mutex</b> <strong>create</strong></a><dd>
+<dt><a name="20"><b class='cmd'>thread::mutex</b> <strong>create</strong> ?-recursive?</a><dd>
 
 
 Creates the mutex and returns it's opaque handle. This handle
 should be used for any future reference to the newly created mutex.
+If no optional ?-recursive? argument was specified, the command
+creates the exclusive mutex. With the ?-recursive? argument,
+the command creates a recursive mutex.
 
 <br><br>
-<dt><a name="20"><b class='cmd'>thread::mutex</b> <strong>destroy</strong> <i class='arg'>mutex</i></a><dd>
+<dt><a name="21"><b class='cmd'>thread::mutex</b> <strong>destroy</strong> <i class='arg'>mutex</i></a><dd>
 
 
 Destroys the <i class='arg'>mutex</i>. Extreme care has to be taken that 
@@ -516,29 +540,95 @@ nobody is currently using the <i class='arg'>mutex</i>, otherwise unexpected
 errors may happen.
 
 <br><br>
-<dt><a name="21"><b class='cmd'>thread::mutex</b> <strong>lock</strong> <i class='arg'>mutex</i></a><dd>
+<dt><a name="22"><b class='cmd'>thread::mutex</b> <strong>lock</strong> <i class='arg'>mutex</i></a><dd>
 
 
-Locks the <i class='arg'>mutex</i>. Locking the mutex may deadlock the program
-if the same thread attempts to lock the same mutex twice without 
-unlocking it in between.
+Locks the <i class='arg'>mutex</i>. Locking the exclusive mutex may deadlock the
+program if the same thread attempts to lock the same mutex twice 
+without unlocking it in between. If your program logic forces you
+to lock the same mutex twice or more from the same thread (this 
+may happen in recursive procedure invocations) you should use
+the recursive mutex. 
 
 <br><br>
-<dt><a name="22"><b class='cmd'>thread::mutex</b> <strong>unlock</strong> <i class='arg'>mutex</i></a><dd>
+<dt><a name="23"><b class='cmd'>thread::mutex</b> <strong>unlock</strong> <i class='arg'>mutex</i></a><dd>
 
 
 Unlocks the <i class='arg'>mutex</i> so some other thread may lock it again.
 
 </dl>
 
-<dt><a name="23"><b class='cmd'>thread::cond</b> </a><dd>
+<dt><a name="24"><b class='cmd'>thread::rwmutex</b> </a><dd>
+
+This command creates many-readers/single-writer mutexes. Reader/writer
+mutexes allow you to serialize access to a shared resource more optimally. 
+In situations where a shared resource gets mostly read and seldomly 
+modified, you might gain some performace by using reader/writer mutexes 
+instead of exclusive or recursive mutexes. 
+<br><br>
+For reading the resource, thread should obtain a read lock on the resource.
+Read lock is non-exclusive, meaning that more than one thread can
+obtain a read lock to the same resource, without waiting on other readers.
+For changing the resource, however, a thread must obtain a exclusive
+write lock. This lock effectively blocks all threads from gaining the
+read-lock while the resource is been modified by the writer thread.
+Only after the write lock has been released, the resource may be read-locked
+again. 
+
+<br><br>
+
+The <b class='cmd'>thread::rwmutex</b> command supports following subcommands and options:
+
+<br><br>
+<dl>
+
+<dt><a name="25"><b class='cmd'>thread::rwmutex</b> <strong>create</strong></a><dd>
+
+
+Creates the reader/writer mutex and returns it's opaque handle.
+This handle should be used for any future reference to the newly 
+created mutex.
+
+<br><br>
+<dt><a name="26"><b class='cmd'>thread::rwmutex</b> <strong>destroy</strong> <i class='arg'>mutex</i></a><dd>
+
+
+Destroys the reader/writer <i class='arg'>mutex</i>. Extreme care has to be taken
+that nobody is currently using the <i class='arg'>mutex</i>, otherwise unexpected
+errors may happen.
+
+<br><br>
+<dt><a name="27"><b class='cmd'>thread::rwmutex</b> <strong>rlock</strong> <i class='arg'>mutex</i></a><dd>
+
+
+Locks the <i class='arg'>mutex</i> for reading. More than one thread may read-lock
+the same <i class='arg'>mutex</i> at the same time.
+
+<br><br>
+<dt><a name="28"><b class='cmd'>thread::rwmutex</b> <strong>wlock</strong> <i class='arg'>mutex</i></a><dd>
+
+
+Locks the <i class='arg'>mutex</i> for writing. Only one thread may write-lock
+the same <i class='arg'>mutex</i> at the same time.
+
+<br><br>
+<dt><a name="29"><b class='cmd'>thread::rwmutex</b> <strong>unlock</strong> <i class='arg'>mutex</i></a><dd>
+
+
+Unlocks the <i class='arg'>mutex</i> so some other thread may lock it again.
+
+</dl>
+
+<dt><a name="30"><b class='cmd'>thread::cond</b> </a><dd>
 
 
 This command provides script-level access to condition variables.
 A condition variable creates a safe environment for the program 
 to test some condition, sleep on it when false and be awakened 
 when it might have become true. A condition variable is always 
-used in the conjuction with a mutex.
+used in the conjuction with an exclusive mutex. If you attempt
+to use other type of mutex in conjuction with the condition 
+variable, a Tcl error will be triggered.
 
 <br><br>
 
@@ -547,7 +637,7 @@ The command supports following subcommands and options:
 <br><br>
 <dl>
 
-<dt><a name="24"><b class='cmd'>thread::cond</b> <strong>create</strong></a><dd>
+<dt><a name="31"><b class='cmd'>thread::cond</b> <strong>create</strong></a><dd>
 
 
 Creates the condition variable and returns it's opaque handle.
@@ -555,7 +645,7 @@ This handle should be used for any future reference to newly
 created condition variable.
 
 <br><br>
-<dt><a name="25"><b class='cmd'>thread::cond</b> <strong>destroy</strong> <i class='arg'>cond</i></a><dd>
+<dt><a name="32"><b class='cmd'>thread::cond</b> <strong>destroy</strong> <i class='arg'>cond</i></a><dd>
 
 
 Destroys condition variable <i class='arg'>cond</i>. Extreme care has to be taken that
@@ -563,19 +653,19 @@ nobody is using (i.e. waiting on) the condition variable, otherwise
 unexpected errors may happen.
 
 <br><br>
-<dt><a name="26"><b class='cmd'>thread::cond</b> <strong>notify</strong> <i class='arg'>cond</i></a><dd>
+<dt><a name="33"><b class='cmd'>thread::cond</b> <strong>notify</strong> <i class='arg'>cond</i></a><dd>
 
 
 Wakes up all threads waiting on the condition variable <i class='arg'>cond</i>.
 
 <br><br>
-<dt><a name="27"><b class='cmd'>thread::cond</b> <strong>wait</strong> <i class='arg'>cond</i> <i class='arg'>mutex</i> ?ms?</a><dd>
+<dt><a name="34"><b class='cmd'>thread::cond</b> <strong>wait</strong> <i class='arg'>cond</i> <i class='arg'>mutex</i> ?ms?</a><dd>
 
 
 This command is used to suspend program execution until the condition
 variable <i class='arg'>cond</i> has been signalled or the optional timer has expired.
-The <i class='arg'>mutex</i> must be locked by the calling thread on entrance to 
-this command.
+The exclusive <i class='arg'>mutex</i> must be locked by the calling thread on entrance
+to this command.
 While waiting on the <i class='arg'>cond</i>, the command releases <i class='arg'>mutex</i>. 
 Before returning to the calling thread, the command re-acquires the 
 <i class='arg'>mutex</i> again. Unlocking the <i class='arg'>mutex</i> and waiting on the 
@@ -647,7 +737,7 @@ is also supported.
 
 <h2><a name="seealso">SEE ALSO</a></h2>
 <p>
-<a href="http://www.tcl.tk/doc/howto/thread_model.html">http://www.tcl.tk/doc/howto/thread_model.html</a>
+<a href="http://www.tcl.tk/doc/howto/thread_model.html">http://www.tcl.tk/doc/howto/thread_model.html</a>, tpool, tsv, ttrace
 <h2><a name="keywords">KEYWORDS</a></h2>
 <p>
 events, message passing, mutex, synchronization, thread

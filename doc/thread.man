@@ -264,6 +264,13 @@ execution. All of them are entered into the event queue of the target
 thread and executed on the FIFO basis, intermingled with optional other
 events pending in the event queue of the target thread.
 
+
+[call [cmd thread::broadcast] [arg id] [arg script]]
+
+This command passes a [arg script] to all threads created by the
+package for execution. It does not wait for response from any of
+the treads.
+
 [call [cmd thread::wait]]
 
 This enters the event loop so a thread can receive messages from 
@@ -326,7 +333,7 @@ i.e. allows for unlimited number of posted scripts.
 
 [nl]
 
-The boolean [option -unwindonerror] option, when set, causes the 
+The [option -unwindonerror] option, when set, causes the 
 target thread to unwind if the result of the script processing 
 resulted in error. Default value for the [option -unwindonerror]
 is 0 (false), i.e. thread continues to process scripts after one
@@ -403,14 +410,19 @@ interpreter.
 
 NOTE: this command is available only when loaded into the Tcl8.4+ shell.
 
-
 [call [cmd thread::mutex]]
-
-This command provides script-level access to mutexes. Mutexes are most 
-common thread synchronization primitives. They are used to synchronize
-access from two or more threads to one or more shared resources. Care 
-has to be taken when using mutexes in an multithreading program.
-Improper use of mutexes may lead to various deadlock situations.
+Mutexes are most common thread synchronization primitives. 
+They are used to synchronize access from two or more threads to one or 
+more shared resources. This command provides script-level access to 
+exclusive and/or recursive mutexes. Exclusive mutexes can be locked 
+only once by one thread, while recursive mutexes can be locked many 
+times by the same thread. For recursive mutexes, number of lock and 
+unlock operations must match, otherwise, the mutex will never be 
+released, which would lead to various deadlock situations.
+[nl]
+Care has to be taken when using mutexes in an multithreading program.
+Improper use of mutexes may lead to various deadlock situations, 
+especially when using exclusive mutexes.
 
 [nl]
 
@@ -418,10 +430,13 @@ The [cmd thread::mutex] command supports following subcommands and options:
 
 [list_begin definitions]
 
-[call [cmd thread::mutex] [method create]]
+[call [cmd thread::mutex] [method create] [opt -recursive]]
 
 Creates the mutex and returns it's opaque handle. This handle
 should be used for any future reference to the newly created mutex.
+If no optional [opt -recursive] argument was specified, the command
+creates the exclusive mutex. With the [opt -recursive] argument,
+the command creates a recursive mutex.
 
 [call [cmd thread::mutex] [method destroy] [arg mutex]]
 
@@ -431,11 +446,64 @@ errors may happen.
 
 [call [cmd thread::mutex] [method lock] [arg mutex]]
 
-Locks the [arg mutex]. Locking the mutex may deadlock the program
-if the same thread attempts to lock the same mutex twice without 
-unlocking it in between.
+Locks the [arg mutex]. Locking the exclusive mutex may deadlock the
+program if the same thread attempts to lock the same mutex twice 
+without unlocking it in between. If your program logic forces you
+to lock the same mutex twice or more from the same thread (this 
+may happen in recursive procedure invocations) you should use
+the recursive mutex. 
 
 [call [cmd thread::mutex] [method unlock] [arg mutex]]
+
+Unlocks the [arg mutex] so some other thread may lock it again.
+
+[list_end]
+
+[call [cmd thread::rwmutex]]
+This command creates many-readers/single-writer mutexes. Reader/writer
+mutexes allow you to serialize access to a shared resource more optimally. 
+In situations where a shared resource gets mostly read and seldomly 
+modified, you might gain some performace by using reader/writer mutexes 
+instead of exclusive or recursive mutexes. 
+[nl]
+For reading the resource, thread should obtain a read lock on the resource.
+Read lock is non-exclusive, meaning that more than one thread can
+obtain a read lock to the same resource, without waiting on other readers.
+For changing the resource, however, a thread must obtain a exclusive
+write lock. This lock effectively blocks all threads from gaining the
+read-lock while the resource is been modified by the writer thread.
+Only after the write lock has been released, the resource may be read-locked
+again. 
+
+[nl]
+
+The [cmd thread::rwmutex] command supports following subcommands and options:
+
+[list_begin definitions]
+
+[call [cmd thread::rwmutex] [method create]]
+
+Creates the reader/writer mutex and returns it's opaque handle.
+This handle should be used for any future reference to the newly 
+created mutex.
+
+[call [cmd thread::rwmutex] [method destroy] [arg mutex]]
+
+Destroys the reader/writer [arg mutex]. Extreme care has to be taken
+that nobody is currently using the [arg mutex], otherwise unexpected
+errors may happen.
+
+[call [cmd thread::rwmutex] [method rlock] [arg mutex]]
+
+Locks the [arg mutex] for reading. More than one thread may read-lock
+the same [arg mutex] at the same time.
+
+[call [cmd thread::rwmutex] [method wlock] [arg mutex]]
+
+Locks the [arg mutex] for writing. Only one thread may write-lock
+the same [arg mutex] at the same time.
+
+[call [cmd thread::rwmutex] [method unlock] [arg mutex]]
 
 Unlocks the [arg mutex] so some other thread may lock it again.
 
@@ -447,7 +515,9 @@ This command provides script-level access to condition variables.
 A condition variable creates a safe environment for the program 
 to test some condition, sleep on it when false and be awakened 
 when it might have become true. A condition variable is always 
-used in the conjuction with a mutex.
+used in the conjuction with an exclusive mutex. If you attempt
+to use other type of mutex in conjuction with the condition 
+variable, a Tcl error will be triggered.
 
 [nl]
 
@@ -475,8 +545,8 @@ Wakes up all threads waiting on the condition variable [arg cond].
 
 This command is used to suspend program execution until the condition
 variable [arg cond] has been signalled or the optional timer has expired.
-The [arg mutex] must be locked by the calling thread on entrance to 
-this command.
+The exclusive [arg mutex] must be locked by the calling thread on entrance
+to this command.
 While waiting on the [arg cond], the command releases [arg mutex]. 
 Before returning to the calling thread, the command re-acquires the 
 [arg mutex] again. Unlocking the [arg mutex] and waiting on the 
@@ -541,7 +611,7 @@ For advanced multithreading scripts, script-level access to two
 basic synchronization primitives, mutex and condition variables,
 is also supported.
 
-[see_also [uri http://www.tcl.tk/doc/howto/thread_model.html]]
+[see_also tsv tpool ttrace [uri http://www.tcl.tk/doc/howto/thread_model.html]]
 
 [keywords thread events {message passing} synchronization mutex]
 

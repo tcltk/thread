@@ -11,7 +11,8 @@ interpreter state accross threads in an multithreading application.
 It relies on the mechanics of the Tcl [cmd unknown] command mechanism.
 [para]
 The package requires Tcl threading extension but can be alternatively
-used stand-alone in the AOLserver, a scalable webserver from America Online.
+used stand-alone within the AOLserver, a scalable webserver from 
+America Online.
 
 [section {USER COMMANDS}]
 This section describes user-level commands. Those commands can be
@@ -125,7 +126,7 @@ script to be passed to other interpreters. This script is
 used to set the stage for the Tcl [cmd unknown] command.
 Registered callbacks are activated on FIFO basis.
 The callback definition includes the name of the callback,
-[cmd name] and the [arg body] of the callback.
+[arg name] and the [arg body] of the callback.
 
 [call [cmd ttrace::addresolver] [arg cmd] [arg arglist] [arg body]]
 
@@ -142,11 +143,11 @@ Registered callbacks are activated on FIFO basis.
 
 [call [cmd ttrace::addentry] [arg cmd] [arg var] [arg val]]
 
-Adds one entry to the framework in-memory database.
+Adds one entry to the named in-memory database.
 
 [call [cmd ttrace::getentry] [arg cmd] [arg var]]
 
-Returns the value of the entry from the in-memory database. 
+Returns the value of the entry from the named in-memory database. 
 
 [call [cmd ttrace::getentries] [arg cmd] [opt pattern]]
 
@@ -181,9 +182,19 @@ thread and replicate that interpreter state (or part of it) to other
 threads/interpreters in the process.
 [para]
 Immediate benefit of such approach is the much smaller memory footprint
-of the application and much faster thread creation. Other benefits
-include much finer control about what (and when) gets replicated from
-the master to other Tcl thread/interpreters.
+of the application and much faster thread creation. By not actually 
+loading all necessary procedures (and other resources) in every thread
+at the thread initialization time, but by deffering this to the time the
+resource is actually referenced, significant improvements in both
+memory consumption and thread initialization time can be achieved. Some
+tests have shown that memory footprint of an multithreading Tcl application
+went down more than three times and thread startup time was reduced for
+about 50 times. Note that your mileage may vary.
+
+Other benefits include much finer control about what (and when) gets 
+replicated from the master to other Tcl thread/interpreters.
+
+[see_also tsv tpool thread]
 
 [keywords {command tracing} introspection]
 
