@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.47 2002/07/18 16:09:09 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.48 2002/07/19 17:32:50 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -123,6 +123,28 @@ typedef struct ThreadEventResult {
 static ThreadEventResult *resultList;
 
 /*
+ * Macros for splicing the result structure
+ * in and out of the list defined above and
+ * the similar list for tracking transfer
+ * of channels (defined below)
+ */
+
+#define SpliceInResult(a,b)                    \
+    (a)->nextPtr = (b);                        \
+    if ((b) != NULL)                           \
+        (b)->prevPtr = (a);                    \
+    (a)->prevPtr = NULL, (b) = (a);
+
+#define SpliceOutResult(a,b)                   \
+    if ((a)->prevPtr != NULL)                  \
+        (a)->prevPtr->nextPtr = (a)->nextPtr;  \
+    else                                       \
+        (b) = (a)->nextPtr;                    \
+    if ((a)->nextPtr != NULL)                  \
+        (a)->nextPtr->prevPtr = (a)->prevPtr;
+
+
+/*
  * This is the event used to send commands to other threads.
  */
 
@@ -186,15 +208,14 @@ typedef struct TransferResult {
     Tcl_ThreadId srcThreadId;             /* Id of src thread, if it dies */
     Tcl_ThreadId dstThreadId;             /* Id of tgt thread, if it dies */
     struct TransferEvent *eventPtr;       /* Back pointer */
-    struct TransferResult *nextPtr;
-    struct TransferResult *prevPtr;
+    struct TransferResult *nextPtr;       /* Next in the linked list */
+    struct TransferResult *prevPtr;       /* Previous in the linked list */
 } TransferResult;
 
 static TransferResult *transferList;
 
 /*
- * This is for simple error handling 
- * when a thread script exits badly.
+ * This is for simple error handling when a thread script exits badly.
  */
 
 static Tcl_ThreadId errorThreadId; /* Id of thread to post error message */
@@ -1893,14 +1914,8 @@ ThreadTransfer(interp, id, chan)
     resultPtr->srcThreadId = Tcl_GetCurrentThread();
     resultPtr->dstThreadId = id;
     resultPtr->eventPtr    = evPtr;
-    resultPtr->nextPtr     = transferList;
 
-    if (transferList) {
-      transferList->prevPtr = resultPtr;
-    }
-
-    resultPtr->prevPtr = NULL;
-    transferList       = resultPtr;
+    SpliceInResult(resultPtr, transferList);
 
     /*
      * Queue the event and poke the other thread's notifier.
@@ -1922,14 +1937,7 @@ ThreadTransfer(interp, id, chan)
      * Unlink result from the result list.
      */
 
-    if (resultPtr->prevPtr) {
-        resultPtr->prevPtr->nextPtr = resultPtr->nextPtr;
-    } else {
-        transferList = resultPtr->nextPtr;
-    }
-    if (resultPtr->nextPtr) {
-        resultPtr->nextPtr->prevPtr = resultPtr->prevPtr;
-    }
+    SpliceOutResult(resultPtr, transferList);
 
     resultPtr->eventPtr = NULL;
     resultPtr->nextPtr  = NULL;
@@ -2076,16 +2084,7 @@ ThreadSend(interp, id, send, clbk, wait)
         resultPtr->eventPtr    = eventPtr;
         eventPtr->resultPtr    = resultPtr;
 
-        /* 
-         * Maintain the cleanup list.
-         */
-
-        resultPtr->nextPtr = resultList;
-        if (resultList) {
-            resultList->prevPtr = resultPtr;
-        }
-        resultPtr->prevPtr = NULL;
-        resultList         = resultPtr;
+        SpliceInResult(resultPtr, resultList);
     }
 
     /*
@@ -2119,19 +2118,8 @@ ThreadSend(interp, id, send, clbk, wait)
         Tcl_ConditionWait(&resultPtr->done, &threadMutex, NULL);
     }
 
-    /*
-     * Unlink result from the result list.
-     */
+    SpliceOutResult(resultPtr, resultList);
 
-    if (resultPtr->prevPtr) {
-        resultPtr->prevPtr->nextPtr = resultPtr->nextPtr;
-    } else {
-        resultList = resultPtr->nextPtr;
-    }
-    if (resultPtr->nextPtr) {
-        resultPtr->nextPtr->prevPtr = resultPtr->prevPtr;
-    }
-    
     Tcl_MutexUnlock(&threadMutex);
 
     /*
@@ -2309,12 +2297,7 @@ ThreadReserve(interp, threadId, operation, wait)
                 resultPtr->dstThreadId = threadId;
                 resultPtr->srcThreadId = Tcl_GetCurrentThread();
 
-                resultPtr->nextPtr = resultList;
-                if (resultList) {
-                    resultList->prevPtr = resultPtr;
-                }
-                resultPtr->prevPtr = NULL;
-                resultList = resultPtr;
+                SpliceInResult(resultPtr, resultList);
             }
 
             evPtr = (ThreadEvent*)Tcl_Alloc(sizeof(ThreadEvent));
@@ -2330,14 +2313,7 @@ ThreadReserve(interp, threadId, operation, wait)
                 while (resultPtr->result == NULL) {
                     Tcl_ConditionWait(&resultPtr->done, &threadMutex, NULL);
                 }
-                if (resultPtr->prevPtr) {
-                    resultPtr->prevPtr->nextPtr = resultPtr->nextPtr;
-                } else {
-                    resultList = resultPtr->nextPtr;
-                }
-                if (resultPtr->nextPtr) {
-                    resultPtr->nextPtr->prevPtr = resultPtr->prevPtr;
-                }
+                SpliceOutResult(resultPtr, resultList);
                 Tcl_ConditionFinalize(&resultPtr->done);
                 if (resultPtr->result != threadEmptyResult) {
                     Tcl_Free(resultPtr->result); /* Will be ignored anyway */
@@ -2873,6 +2849,7 @@ ThreadExitProc(clientData)
     ClientData clientData;
 {
     char *threadEvalScript = (char*)clientData;
+    char *diemsg = "target thread died";
     ThreadEventResult *resultPtr, *nextPtr;
     Tcl_ThreadId self = Tcl_GetCurrentThread();
 
@@ -2920,16 +2897,7 @@ ThreadExitProc(clientData)
              * to the other thread we don't care about the result.
              */
             
-            if (resultPtr->prevPtr) {
-                resultPtr->prevPtr->nextPtr = resultPtr->nextPtr;
-            } else {
-                resultList = resultPtr->nextPtr;
-            }
-            if (resultPtr->nextPtr) {
-                resultPtr->nextPtr->prevPtr = resultPtr->prevPtr;
-            }
-            resultPtr->nextPtr = resultPtr->prevPtr = NULL;
-            resultPtr->eventPtr->resultPtr = NULL;
+            SpliceOutResult(resultPtr, resultList);
             Tcl_Free((char*)resultPtr);
 
         } else if (resultPtr->dstThreadId == self) {
@@ -2939,10 +2907,8 @@ ThreadExitProc(clientData)
              * The result string must be dynamically allocated
              * because the main thread is going to call free on it.
              */
-            
-            char *msg = "target thread died";
 
-            resultPtr->result = strcpy(Tcl_Alloc(1+strlen(msg)), msg);
+            resultPtr->result = strcpy(Tcl_Alloc(1+strlen(diemsg)), diemsg);
             resultPtr->code = TCL_ERROR;
             resultPtr->errorCode = resultPtr->errorInfo = NULL;
             Tcl_ConditionNotify(&resultPtr->done);
@@ -2960,17 +2926,8 @@ ThreadExitProc(clientData)
                  * ThreadTransfer at location (*).
                  */
 
-                if (tResultPtr->prevPtr) {
-                    tResultPtr->prevPtr->nextPtr = tResultPtr->nextPtr;
-                } else {
-                    transferList = tResultPtr->nextPtr;
-                }
-                if (tResultPtr->nextPtr) {
-                    tResultPtr->nextPtr->prevPtr = tResultPtr->prevPtr;
-                }
-                tResultPtr->nextPtr = tResultPtr->prevPtr = 0;
-                tResultPtr->eventPtr->resultPtr = NULL;
-                Tcl_Free((char *)tResultPtr);
+                SpliceOutResult(tResultPtr, transferList);
+                Tcl_Free((char*)tResultPtr);
 
             } else if (tResultPtr->dstThreadId == self) {
                 /*
@@ -2980,10 +2937,10 @@ ThreadExitProc(clientData)
                  * The result string must be dynamically allocated because
                  * the main thread is going to call free on it.
                  */
-                char *msg = "target thread died";
 
-                tResultPtr->resultMsg  = strcpy(Tcl_Alloc(1+strlen(msg)), msg);
+                tResultPtr->resultMsg  = strcpy(Tcl_Alloc(1+strlen(diemsg)), diemsg);
                 tResultPtr->resultCode = TCL_ERROR;
+                resultPtr->errorCode = resultPtr->errorInfo = NULL;
                 Tcl_ConditionNotify(&tResultPtr->done);
             }
         }
