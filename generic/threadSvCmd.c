@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.24 2002/08/20 18:37:48 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.25 2002/11/24 17:06:39 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -89,6 +89,7 @@ static Tcl_ObjCmdProc SvNamesObjCmd;
 
 static Tcl_ObjCmdProc SvPopObjCmd;
 static Tcl_ObjCmdProc SvMoveObjCmd;
+static Tcl_ObjCmdProc SvEvalObjCmd;
 
 /*
  * Forward declarations for functions to
@@ -472,13 +473,13 @@ LockArray(interp, array, flags)
      * The bucket will be left locked on success.
      */
 
-    Tcl_MutexLock(&bucketPtr->lock); /* Note: no matching unlock below ! */
+    LOCK_BUCKET(bucketPtr); /* Note: no matching unlock below ! */
     if (flags & FLAGS_CREATEARRAY) {
         arrayPtr = CreateArray(bucketPtr, array);
     } else {
         Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&bucketPtr->arrays, array);
         if (hPtr == NULL) {
-            Tcl_MutexUnlock(&bucketPtr->lock);
+            UNLOCK_BUCKET(bucketPtr);
             if (!(flags & FLAGS_NOERRMSG)) {
                 Tcl_AppendResult(interp, "\"", array,
                                  "\" is not a thread shared array", NULL);
@@ -1123,7 +1124,7 @@ SvNamesObjCmd(dummy, interp, objc, objv)
 
     for (i = 0; i < svconf.numbuckets; i++) {
         Bucket *bucketPtr = &buckets[i];
-        Tcl_MutexLock(&bucketPtr->lock);
+        LOCK_BUCKET(bucketPtr);
         hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
         while (hPtr) {
             char *key = Tcl_GetHashKey(&bucketPtr->arrays, hPtr);
@@ -1138,7 +1139,7 @@ SvNamesObjCmd(dummy, interp, objc, objv)
             }
             hPtr = Tcl_NextHashEntry(&search);
         }
-        Tcl_MutexUnlock(&bucketPtr->lock);
+        UNLOCK_BUCKET(bucketPtr);
     }
 
     Tcl_SetObjResult(interp, resObj);
@@ -1571,6 +1572,82 @@ SvMoveObjCmd(arg, interp, objc, objv)
 }
 
 /*
+ *----------------------------------------------------------------------
+ *
+ * SvEvalObjCmd --
+ *
+ *    This procedure is invoked to process "tsp::eval" Tcl command.
+ *    See the user documentation for details on what it does.
+ *
+ * Results:
+ *    A standard Tcl result.
+ *
+ * Side effects:
+ *    See the user documentation.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+SvEvalObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;                   /* Not used. */
+    Tcl_Interp *interp;                 /* Current interpreter. */
+    int objc;                           /* Number of arguments. */
+    Tcl_Obj *CONST objv[];              /* Argument objects. */
+{
+    int ret;
+    Tcl_Obj *scriptObj;
+    Tcl_Mutex savelock = (Tcl_Mutex)-1;
+    Array *arrayPtr = NULL;
+
+    /* 
+     * Syntax:
+     *
+     *     tsv::eval array arg ?arg ...?
+     */
+
+    if (objc < 3) {
+        Tcl_AppendResult(interp, "wrong # args: should be \"",
+                         Tcl_GetString(objv[0]), "array arg ?arg...?\"", NULL);
+        return TCL_ERROR;
+    }
+
+    arrayPtr = LockArray(interp, Tcl_GetString(objv[1]), FLAGS_CREATEARRAY);
+    if (arrayPtr->bucketPtr->lock != (Tcl_Mutex)-1) {
+        savelock = arrayPtr->bucketPtr->lock;
+        arrayPtr->bucketPtr->lock = (Tcl_Mutex)-1;
+    }
+
+    /*
+     * Evaluate passed arguments as Tcl script. Note that
+     * Tcl_EvalObjEx throws away the passed object by 
+     * doing an decrement reference count on it. This also
+     * means we need not build object bytecode rep.
+     */
+    
+    if (objc == 3) {
+        scriptObj = Tcl_DuplicateObj(objv[2]);
+    } else {
+        scriptObj = Tcl_ConcatObj(objc-2, objv + 2);
+    }
+
+    ret = Tcl_EvalObjEx(interp, scriptObj, TCL_EVAL_DIRECT);
+
+    if (ret == TCL_ERROR) {
+        char msg[32 + TCL_INTEGER_SPACE];   
+        sprintf(msg, "\n    (\"eval\" body line %d)", interp->errorLine);
+        Tcl_AddObjErrorInfo(interp, msg, -1);
+    }
+
+    if (savelock != (Tcl_Mutex)-1) {
+        arrayPtr->bucketPtr->lock = savelock;
+    }
+    Sv_Unlock(arrayPtr);
+
+    return ret;
+}
+
+/*
  *-----------------------------------------------------------------------------
  *
  * Sv_RegisterStdCommands --
@@ -1606,6 +1683,7 @@ SvRegisterStdCommands(void)
             Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL, NULL);
             Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL, NULL);
             Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL, NULL);
+            Sv_RegisterCommand("eval",   SvEvalObjCmd,   NULL, NULL);
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);
@@ -1712,6 +1790,7 @@ Sv_Init (interp)
 
     return TCL_OK;
 }
+
 
 /*
  *-----------------------------------------------------------------------------
