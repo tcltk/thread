@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.14 2002/06/17 20:22:55 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.15 2002/06/25 13:30:38 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -331,11 +331,13 @@ LocateContainer(arrayPtr, key, flags)
     Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&arrayPtr->vars, varName);
 
     if (hPtr == NULL) {
+        Tcl_Obj *newObj;
         if (!(flags & FLAGS_CREATEVAR)) {
             return NULL;
         }
-        hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, varName, &new);
-        Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, Tcl_NewObj()));
+        newObj = Tcl_NewStringObj("", 0);
+        hPtr   = Tcl_CreateHashEntry(&arrayPtr->vars, varName, &new);
+        Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, newObj));
     }
 
     return (Container*)Tcl_GetHashValue(hPtr);
