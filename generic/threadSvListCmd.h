@@ -1,8 +1,10 @@
 /*
+ * Copyright (c) 2002 by Zoran Vasiljevic.
+ *
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvListCmd.h,v 1.1 2002/01/19 23:10:41 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvListCmd.h,v 1.2 2002/12/05 15:14:09 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 

@@ -1,28 +1,31 @@
 #
 # cmdsrv.tcl --
 #
-#   Simple socket command server. Supports many simultaneous sessions.
-#   Works in thread mode with each new connection receiving a new thread.
+# Simple socket command server. Supports many simultaneous sessions.
+# Works in thread mode with each new connection receiving a new thread.
 #  
-#   Usage:
-#      cmdsrv::create port ?-idletimer value? ?-initcmd cmd?
+# Usage:
+#    cmdsrv::create port ?-idletimer value? ?-initcmd cmd?
 # 
-#      port         Tcp port where the server listens
-#      -idletimer   # of ms to idle before tearing down socket (def: 300 sec)
-#      -initcmd     script to initialize new worker thread (def: empty)
+#    port         Tcp port where the server listens
+#    -idletimer   # of ms to idle before tearing down socket (def: 300 sec)
+#    -initcmd     script to initialize new worker thread (def: empty)
 #
-#   Example:
+# Example:
 #
-#      % cmdsrv::create 5000 -idletimer 60
-#      % vwait forever
+#    % cmdsrv::create 5000 -idletimer 60
+#    % vwait forever
 #
-#      Starts the server on the port 5000, sets idle timer
-#      to 1 minute. You can now use "telnet" utility to connect.
+#    Starts the server on the port 5000, sets idle timer
+#    to 1 minute. You can now use "telnet" utility to connect.
 #
-#   See the file "license.terms" for information on usage and
-#   redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+# Copyright (c) 2002 by Zoran Vasiljevic.
+#
+# See the file "license.terms" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+#
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: cmdsrv.tcl,v 1.3 2002/12/03 07:15:51 vasiljevic Exp $
+# RCS: @(#) $Id: cmdsrv.tcl,v 1.4 2002/12/05 15:14:10 vasiljevic Exp $
 #
 
 #package require Thread 2.5

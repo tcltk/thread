@@ -10,13 +10,12 @@
  * to take care about unlocking some mutex after evaluating a protected
  * part of code.
  *
- * Copyright (c) 1998 by Sun Microsystems, Inc.
- * Copyright (c) 1999,2000 by Scriptics Corporation.
+ * Copyright (c) 2002 by Zoran Vasiljevic.
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.9 2002/12/02 18:23:17 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.10 2002/12/05 15:14:06 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 

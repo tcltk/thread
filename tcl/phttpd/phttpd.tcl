@@ -1,38 +1,34 @@
 #
 # phttpd.tcl --
 #
-#   Simple Sample httpd/1.0 server in 250 lines of Tcl.
-#   Stephen Uhler / Brent Welch (c) 1996 Sun Microsystems.
+# Simple Sample httpd/1.0 server in 250 lines of Tcl.
+# Stephen Uhler / Brent Welch (c) 1996 Sun Microsystems.
 #
-#   Modified to use namespaces and direct url-to-procedure access
-#   and thread pool package.
-#   Eh, due to this, and nicer indenting, it's now 150 lines longer :-)
+# Modified to use namespaces and direct url-to-procedure access
+# and thread pool package. Grown little larger since ;)
 #
-#   Usage:
-#      phttpd::create port
+# Usage:
+#    phttpd::create port
 # 
-#      port         Tcp port where the server listens
+#    port         Tcp port where the server listens
 #
-#   Example:
+# Example:
 #
-#      % cmdsrv::create 5000
-#      % vwait forever
+#    % cmdsrv::create 5000
+#    % vwait forever
 #
-#      Starts the server on the port 5000
+#    Starts the server on the port 5000.
 #
-#   See the file "license.terms" for information on usage and
-#   redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+# Copyright (c) 2002 by Zoran Vasiljevic.
 #
-#   See the file "license.terms" for information on usage and
-#   redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+# See the file "license.terms" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+#
 # -----------------------------------------------------------------------------
-# Rcsid: @(#)$Id: phttpd.tcl,v 1.2 2002/12/03 07:15:51 vasiljevic Exp $
+# Rcsid: @(#)$Id: phttpd.tcl,v 1.3 2002/12/05 15:14:10 vasiljevic Exp $
 #
 
-#package requier Thread 2.5
-#package provide Phttpd 1.0
-
-load ../libthread2.5.so
+package require Thread 2.5
 
 namespace eval phttpd {
 

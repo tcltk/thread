@@ -1,20 +1,20 @@
-
-#############################################################################t
 #
 # uhttpd.tcl --
 #
-#    Simple Sample httpd/1.0 server in 250 lines of Tcl.
-#    Stephen Uhler / Brent Welch (c) 1996 Sun Microsystems.
+# Simple Sample httpd/1.0 server in 250 lines of Tcl.
+# Stephen Uhler / Brent Welch (c) 1996 Sun Microsystems.
 #
-#    Modified to use namespaces and direct url-to-procedure access (zv).
-#    Eh, due to this, and nicer indenting, it's now 150 lines longer :-)
+# Modified to use namespaces and direct url-to-procedure access (zv).
+# Eh, due to this, and nicer indenting, it's now 150 lines longer :-)
 #
-#    See the file "license.terms" for information on usage and
-#    redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+# Copyright (c) 2002 by Zoran Vasiljevic.
 #
-#    Rcsid: @(#)$Id: uhttpd.tcl,v 1.1 2002/12/03 07:17:10 vasiljevic Exp $
+# See the file "license.terms" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-##############################################################################
+# -----------------------------------------------------------------------------
+# Rcsid: @(#)$Id: uhttpd.tcl,v 1.2 2002/12/05 15:14:11 vasiljevic Exp $
+#
 
 namespace eval uhttpd {
 
@@ -53,8 +53,6 @@ namespace eval uhttpd {
     }
 }
 
-#---------------------------------------------------------------------------
-
 proc uhttpd::server {port args} {
 
     # Start the server by listening for connections on the desired port.
@@ -81,8 +79,6 @@ proc uhttpd::server {port args} {
     socket -server [namespace current]::Accept $port
 }
 
-#---------------------------------------------------------------------------
-
 proc uhttpd::respond {s status contype data {length 0}} {
     
     puts $s "HTTP/1.0 $status"
@@ -98,8 +94,6 @@ proc uhttpd::respond {s status contype data {length 0}} {
     puts $s ""
     puts $s $data 
 }
-
-#---------------------------------------------------------------------------
 	
 proc uhttpd::Accept {newsock ipaddr port} {
 
@@ -113,8 +107,6 @@ proc uhttpd::Accept {newsock ipaddr port} {
     set data(ipaddr) $ipaddr
     fileevent $newsock readable [list [namespace current]::Read $newsock]
 }
-
-#---------------------------------------------------------------------------
 
 proc uhttpd::Read {s} {
 
@@ -176,8 +168,6 @@ proc uhttpd::Read {s} {
     }
 }
 
-#---------------------------------------------------------------------------
-
 proc uhttpd::Done {s} {
 
     # @c Close the connection socket and discard token
@@ -185,8 +175,6 @@ proc uhttpd::Done {s} {
     close $s
     unset [namespace current]::Httpd$s
 }
-
-#---------------------------------------------------------------------------
 
 proc uhttpd::Respond {s} {
 
@@ -245,8 +233,6 @@ proc uhttpd::Respond {s} {
     Done $s
 }
 
-#---------------------------------------------------------------------------
-
 proc uhttpd::ContentType {path} {
 
     # @c Convert the file suffix into a mime type.
@@ -258,8 +244,6 @@ proc uhttpd::ContentType {path} {
     
     return $type
 }
-
-#---------------------------------------------------------------------------
 
 proc uhttpd::Error {s code} {
 
@@ -294,8 +278,6 @@ proc uhttpd::Error {s code} {
     }
 }
 
-#---------------------------------------------------------------------------
-
 proc uhttpd::Date {{seconds 0}} {
 
     # @c Generate a date string in HTTP format.
@@ -306,8 +288,6 @@ proc uhttpd::Date {{seconds 0}} {
     clock format $seconds -format {%a, %d %b %Y %T %Z} -gmt 1
 }
 
-#---------------------------------------------------------------------------
-
 proc uhttpd::Log {reason format args} {
     
     # @c Log an httpd transaction.
@@ -317,8 +297,6 @@ proc uhttpd::Log {reason format args} {
 
     puts stderr "\[$stamp\] $reason: $messg"
 }
-
-#---------------------------------------------------------------------------
 
 proc uhttpd::Url2File {url} {
 
@@ -354,8 +332,6 @@ proc uhttpd::Url2File {url} {
     }
 }
 
-#---------------------------------------------------------------------------
-
 proc uhttpd::CgiMap {data} {
 
     # @c Decode url-encoded strings
@@ -366,8 +342,6 @@ proc uhttpd::CgiMap {data} {
 
     return [subst $data]
 }
-
-#---------------------------------------------------------------------------
 
 proc uhttpd::QueryMap {query} {
 
@@ -383,6 +357,7 @@ proc uhttpd::QueryMap {query} {
     }
     return $res
 }
+
 proc /monitor {array} {
 
     upvar $array data ; # Holds the socket to remote client

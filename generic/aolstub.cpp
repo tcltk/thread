@@ -3,10 +3,12 @@
  *
  * Adds interface for loading the extension into the AOLserver.
  *
+ * Copyright (c) 2002 by Zoran Vasiljevic.
+ *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: aolstub.cpp,v 1.1 2002/02/06 18:06:24 vasiljevic Exp $
+ * Rcsid: @(#)$Id: aolstub.cpp,v 1.2 2002/12/05 15:14:01 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 

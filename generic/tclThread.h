@@ -5,11 +5,12 @@
  * Global header file for the thread extension.
  *
  * Copyright (c) 2002 ActiveState Corporation.
+ * Copyright (c) 2002 by Zoran Vasiljevic.
  * 
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.9 2002/12/02 18:19:37 vasiljevic Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.10 2002/12/05 15:14:01 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
