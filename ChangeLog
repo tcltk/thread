@@ -1,3 +1,9 @@
+2004-11-27 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadPoolCmd.c: Fixed race condition which resulted 
+	  in blocking at pool creation with high -minworkers threads.
+	  This fixes the Tcl Bug #933975.
+
 2004-11-25 Zoran Vasiljevic <zoran@archiware.com>
 
 	* tests/thread.tcl: Disabled all tests handling channel transfer
