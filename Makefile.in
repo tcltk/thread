@@ -13,7 +13,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: Makefile.in,v 1.5 2000/07/03 18:47:58 zoran Exp $
+# RCS: @(#) $Id: Makefile.in,v 1.6 2001/05/27 07:30:14 davygrvy Exp $
 
 #========================================================================
 # Edit the following few lines when writing a new extension
@@ -120,7 +120,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 
 PACKAGE = @PACKAGE@
-VERSION = @VERSION@
+THREAD_VERSION = @THREAD_VERSION@
 CC = @CC@
 CFLAGS_DEBUG = @CFLAGS_DEBUG@
 CFLAGS_DEFAULT = @CFLAGS_DEFAULT@
@@ -166,7 +166,8 @@ LDFLAGS = $(LDFLAGS_DEFAULT)
 
 INCLUDES = @TCL_INCLUDES@
 
-EXTRA_CFLAGS = $(TCL_DEFS) $(PROTO_FLAGS) $(SECURITY_FLAGS) $(MEM_DEBUG_FLAGS) $(KEYSYM_FLAGS) $(NO_DEPRECATED_FLAGS)
+EXTRA_CFLAGS = $(TCL_DEFS) $(PROTO_FLAGS) $(SECURITY_FLAGS) $(MEM_DEBUG_FLAGS) $(KEYSYM_FLAGS) \
+	$(NO_DEPRECATED_FLAGS)
 
 DEFS = @DEFS@ $(EXTRA_CFLAGS)
 

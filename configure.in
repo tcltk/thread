@@ -31,23 +31,25 @@ AC_SUBST(CONFIGDIR)
 
 PACKAGE=thread
 
-MAJOR_VERSION=2
-MINOR_VERSION=2
-PATCHLEVEL=
+THREAD_MAJOR=2
+THREAD_MINOR=2
+THREAD_PATCHLEVEL=
 
-VERSION=${MAJOR_VERSION}.${MINOR_VERSION}${PATCHLEVEL}
-NODOT_VERSION=${MAJOR_VERSION}${MINOR_VERSION}
+THREAD_VERSION=${THREAD_MAJOR}.${THREAD_MINOR}${THREAD_PATCHLEVEL}
+THREAD_NODOT_VERSION=${THREAD_MAJOR}${THREAD_MINOR}
 
+THREAD_VERSION_SUBSET83="2.1.1"
 
 AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
+AC_SUBST(THREAD_VERSION)
 
 #--------------------------------------------------------------------
 # We put this here so that you can compile with -DVERSION="1.2" to
 # encode the package version directly into the source files.
 #--------------------------------------------------------------------
 
-eval AC_DEFINE_UNQUOTED(VERSION, "${VERSION}")
+eval AC_DEFINE_UNQUOTED(THREAD_VERSION, "${THREAD_VERSION}")
+eval AC_DEFINE_UNQUOTED(THREAD_VERSION_SUBSET83, "${THREAD_VERSION_SUBSET83}")
 
 #--------------------------------------------------------------------
 # Check whether --enable-gcc or --disable-gcc was given.  Do this 
