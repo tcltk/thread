@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.32 2002/01/22 20:35:01 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.33 2002/01/25 08:24:46 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -728,6 +728,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
      */
 
     sendPtr = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
+    sendPtr->interp     = NULL; /* Signal to use thread main interp */
     sendPtr->execProc   = ThreadSendEval;
     sendPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
     sendPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+len), script);
@@ -1973,16 +1974,28 @@ ThreadEventProc(evPtr, mask)
     int mask;
 {
     ThreadSpecificData* tsdPtr = TCL_TSD_INIT(&dataKey);
-  
-    Tcl_Interp      *interp = tsdPtr->interp;
-    Tcl_ThreadId   threadId = Tcl_GetCurrentThread();
-    ThreadEvent   *eventPtr = (ThreadEvent*)evPtr;
-    ThreadSendData *sendPtr = eventPtr->sendData;
-    ThreadClbkData *clbkPtr = eventPtr->clbkData;
 
+    Tcl_Interp         *interp   = NULL;
+    Tcl_ThreadId        threadId = Tcl_GetCurrentThread();
+    ThreadEvent        *eventPtr = (ThreadEvent*)evPtr;
+    ThreadSendData      *sendPtr = eventPtr->sendData;
+    ThreadClbkData      *clbkPtr = eventPtr->clbkData;
     ThreadEventResult* resultPtr = eventPtr->resultPtr;
 
     int code = TCL_ERROR; /* Pessimistic assumption */
+
+    /*
+     * See wether user has any preferences about which interpreter
+     * to use for running this job. The job structure might indentify
+     * one. If not, just use the thread's main interpreter which is
+     * stored in the thread specific data structure.
+     * Note that later on we might discover that we're running the
+     * aync callback script. In this case, interpreter will be 
+     * changed to one given in the callback.
+     */
+
+    interp = (eventPtr->sendData->interp) ? 
+        eventPtr->sendData->interp : tsdPtr->interp;
 
     if (interp != NULL) {
         if (clbkPtr && clbkPtr->threadId == threadId) {
@@ -2025,7 +2038,8 @@ ThreadEventProc(evPtr, mask)
         ThreadSendData *tmpPtr = (ThreadSendData*)clbkPtr;
         
         /*
-         * Route the callback back to it's originator
+         * Route the callback back to it's originator.
+         * Do not wait for the result.
          */
 
         if (code != TCL_OK) {
@@ -2034,7 +2048,7 @@ ThreadEventProc(evPtr, mask)
 
         ThreadSetResult(interp, code, &clbkPtr->result);
         ThreadSend(interp, clbkPtr->threadId, tmpPtr, NULL, 0);
-        
+
     } else if (code != TCL_OK) {
 
         /*
