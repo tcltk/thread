@@ -1,0 +1,7 @@
+
+To build on Unix-like operating systems, run the CONFIG script:
+    sh CONFIG
+That will create a Makefile which you use to run "make" and "make install".
+You can use "make clean" to clean the directory from temporary compilation
+files and/or "make distclean" to additionaly remove local config files.
+
