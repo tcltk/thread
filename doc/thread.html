@@ -4,6 +4,7 @@ thread - Create and manipulate threads with Tcl interpreters in them.
 <H3><A NAME="M3">SYNOPSIS</A></H3>
 <B>thread::create</B> <I>?-joinable?</I> <I>?script?</I><BR>
 <B>thread::id</B><BR>
+<B>thread::exists</B>  <I>id</I><BR>
 <B>thread::errorproc</B> <I>procname</I><BR>
 <B>thread::exit</B><BR>
 <B>thread::names</B><BR>
@@ -53,6 +54,10 @@ ask it to terminate by sending it a command.
 These are only for threads that have been created via <b>thread::create</b>.
 If your application creates other threads at the C level, they
 are not reported by <b>thread::names</b>.
+<p>
+<b>thread::exists</b> returns true (1) if thread given by the ID parameter
+exists, false (0) otherwise. This applies only for threads that have been
+created via <b>thread::create</b>.
 <p>
 <b>thread::send</b> passes a <i>script</i> to another thread and,
 optionally, waits for the result.  If the <b>-async</b> flag is specified
