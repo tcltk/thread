@@ -1,0 +1,5 @@
+# This is how I run configure.  You'll want to change the
+# pathnames to match your system, of course
+sh ../configure --enable-threads --enable-symbols \
+	--prefix=//z/install --exec-prefix=//z/install/solaris \
+	--with-tcl=//z/cvs/tcl8.3/win/thread
