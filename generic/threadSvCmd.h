@@ -5,7 +5,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.4 2002/02/07 08:10:42 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.5 2002/05/25 21:39:05 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -119,7 +119,7 @@ typedef struct SvCmdInfo {
     char *cmdName;              /* Real (rewritten) name of the command */
     Tcl_ObjCmdProc *objProcPtr; /* The object-based command procedure */
     Tcl_CmdDeleteProc *delProcPtr; /* Pointer to command delete function */
-    ClientData *clientData;     /* Pointer passed to above command */
+    ClientData clientData;     /* Pointer passed to above command */
     struct SvCmdInfo *nextPtr;  /* Next in chain of registered commands */
 } SvCmdInfo;
 
