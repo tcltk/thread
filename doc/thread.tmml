@@ -107,7 +107,7 @@ The thread created in the above example will never be able to exit.
 After it has been released with the last matching <cmd>thread::release</cmd> call
 the thread will jump out of the <cmd>thread::wait</cmd> and continue to execute 
 commands following. It will enter <cmd>vwait</cmd> command and wait endlessly for 
-events. There is no way one can terminate this thread, so you wouldn't want to this!
+events. There is no way one can terminate such thread, so you wouldn't want to do this!
 </p>
 <p>
 Each newly created has its internal reference counter set to 0 (zero), i.e. it is
@@ -182,8 +182,8 @@ The <m>proc</m> is called in the interpreter that invoked the
 <commanddef>
 <command><cmd>thread::unwind</cmd></command>
 <desc>
-This command is deprecated in favour of more advanced thread reservation system 
-implemented with <cmd>thread::preserve</cmd> and <cmd>thread::release</cmd> 
+Use of this command is deprecated in favour of more advanced thread reservation
+system implemented with <cmd>thread::preserve</cmd> and <cmd>thread::release</cmd> 
 commands. Support for <cmd>thread::wait</cmd> will dissapear in some future 
 major release of the extension.
 <b/>

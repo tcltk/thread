@@ -1,6 +1,6 @@
 <html>
 <head>
-<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.9 $">
+<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.10 $">
 </head><body>
 <div class="header">
 <div class="navbar" align="center">
@@ -101,7 +101,7 @@ The thread created in the above example will never be able to exit.
 After it has been released with the last matching <b class="cmd">thread::release</b> call
 the thread will jump out of the <b class="cmd">thread::wait</b> and continue to execute 
 commands following. It will enter <b class="cmd">vwait</b> command and wait endlessly for 
-events. There is no way one can terminate this thread, so you wouldn't want to this!
+events. There is no way one can terminate such thread, so you wouldn't want to do this!
 </p>
 <p>
 Each newly created has its internal reference counter set to 0 (zero), i.e. it is
@@ -177,8 +177,8 @@ The <i class="m">proc</i> is called in the interpreter that invoked the
 
 <dt><b class="cmd">thread::unwind</b></dt>
 <dd>
-This command is deprecated in favour of more advanced thread reservation system 
-implemented with <b class="cmd">thread::preserve</b> and <b class="cmd">thread::release</b> 
+Use of this command is deprecated in favour of more advanced thread reservation
+system implemented with <b class="cmd">thread::preserve</b> and <b class="cmd">thread::release</b> 
 commands. Support for <b class="cmd">thread::wait</b> will dissapear in some future 
 major release of the extension.
 <b></b>
