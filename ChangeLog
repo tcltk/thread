@@ -1,3 +1,23 @@
+2002-03-19  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* generic/tclThread.h: 
+	* generic/threadCmd.c: added stub voodoo magic to allow building
+	against Tcl 8.3 and still get all the 8.4+ functionality when later
+	loaded into an 8.4+ interp.
+
+	* pkgIndex.tcl.in: simplified auto-generated pkgIndex.tcl file.
+
+	* tests/all.tcl:
+	* tests/thread.test: improved to detect 8.3/8.4 pkg differences
+
+	* tclconfig/* (new):
+	* config/* (removed):
+	* aclocal.m4: 
+	* configure: 
+	* configure.in: 
+	* Makefile.in: Updated build system to use tclconfig (TEA 2002)
+	structure.
+
 2002-03-09  Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadSvCmd.c: fixed memory leak when copying objects

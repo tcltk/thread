@@ -1,5 +1,5 @@
 # Pull in the standard Tcl autoconf macros.
-# If you don't have the "config" subdirectory, it is a dependent CVS module.
-# Either "cvs -d <root> checkout config" right here, or re-checkout the
+# If you don't have the "tclconfig" subdirectory, it is a dependent CVS module.
+# Either "cvs -d <root> checkout tclconfig" right here, or re-checkout the
 # thread module
-builtin(include,config/tcl.m4)
+builtin(include,tclconfig/tcl.m4)
