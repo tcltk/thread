@@ -1,4 +1,4 @@
-# RCS: @(#) $Id: makefile.vc,v 1.2 2000/04/11 23:11:02 welch Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.3 2000/04/17 20:37:45 welch Exp $
 
 !include "config.vc"
 
@@ -10,12 +10,12 @@ TMPDIRNAME = Release
 DBGX =
 !endif
 
-SOURCEROOT	= ..\..
-GENERICDIR	= $(SOURCEROOT)\generic
-TESTDIR		= $(SOURCEROOT)\tests
-WINDIR		= $(SOURCEROOT)\win\vc
-TMPDIR		= $(WINDIR)\$(TMPDIRNAME)
-OUTDIR		= $(WINDIR)\$(TMPDIRNAME)
+SOURCEROOT    = ..\..
+GENERICDIR    = $(SOURCEROOT)\generic
+TESTDIR        = $(SOURCEROOT)\tests
+WINDIR        = $(SOURCEROOT)\win\vc
+TMPDIR        = $(WINDIR)\$(TMPDIRNAME)
+OUTDIR        = $(WINDIR)\$(TMPDIRNAME)
 
 THREADLIB  = $(OUTDIR)\thread$(DBGX).dll
 
@@ -34,8 +34,8 @@ cdebug = -Z7 -Od -WX
 cdebug = -O2 -Gs -GD
 !endif
 
-# I have better luck mixing debug/release builds with Tcl this way...
-cvarsmt = -MT$(DBGX)
+# use msvcrt.dll for the C-runtime
+cvarsmt = -MD$(DBGX)
 
 cflags = -c -W3 -nologo -YX $(cdebug) $(cvarsmt) $(include32) \
          -Fp$(TMPDIR)\ -Fo$(TMPDIR)\ -I"$(TCLROOT)\generic"
@@ -47,7 +47,11 @@ cflags = -c -W3 -nologo -YX $(cdebug) $(cvarsmt) $(include32) \
 !if "$(NODEBUG)" == "0"
 ldebug = -opt:noref -debug -debugtype:cv
 !else
-ldebug = -opt:ref -release
+
+# I added -nodefaultlib:msvcrt so we can use just stay with the
+# release built tclstub83.lib.  This little hack doesn't introduce
+# any bugs, by the way.
+ldebug = -opt:ref -release -nodefaultlib:msvcrt
 !endif
 
 # declarations common to all linker options
@@ -62,13 +66,17 @@ dlllflags = $(lcommon) -subsystem:windows -dll
 
 all : $(THREADLIB)
 
-test: $(THREADLIB)
-	$(TCLSH_PROG) "$(TESTDIR)/thread.test"
-
+test: all
+    @$(TCLSH_PROG) <<
+regsub -all {\\} {$(THREADLIB)} {/} threadlib
+package ifneeded Thread 2.0 [list load $$threadlib]
+regsub -all {\\} {$(TESTDIR)} {/} testdir
+source [file join $$testdir all.tcl]
+<<nokeep
 
 $(THREADLIB) : $(TMPDIR)\nul $(OUTDIR)\nul $(THREADOBJS)
   @echo Linking...
-  @$(link32) $(dlllflags) /nodefaultlib:msvcrt -out:$@ $(TCLSTUBSLIB) @<<
+  @$(link32) $(dlllflags) -out:$@ $(TCLSTUBSLIB) @<<
 $(THREADOBJS)
 <<nokeep
 

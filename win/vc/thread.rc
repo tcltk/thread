@@ -1,4 +1,4 @@
-// RCS: @(#) $Id: thread.rc,v 1.3 2000/04/11 23:11:03 welch Exp $
+// RCS: @(#) $Id: thread.rc,v 1.4 2000/04/17 20:37:46 welch Exp $
 //
 // Version resource script
 //
@@ -7,20 +7,20 @@
 
 #include <thread.h>
 
-LANGUAGE 0x9, 0x1	/* LANG_ENGLISH, SUBLANG_DEFAULT */
+LANGUAGE 0x9, 0x1    /* LANG_ENGLISH, SUBLANG_DEFAULT */
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 	THREAD_MAJOR_VERSION,THREAD_MINOR_VERSION,0,0
+ FILEVERSION     THREAD_MAJOR_VERSION,THREAD_MINOR_VERSION,0,0
  PRODUCTVERSION THREAD_MAJOR_VERSION,THREAD_MINOR_VERSION,0,0
- FILEFLAGSMASK 	0x3fL
+ FILEFLAGSMASK     0x3fL
 #if NODEBUG == 0
  FILEFLAGS 0x1L
 #else
  FILEFLAGS 0x0L
 #endif
- FILEOS 	0x4	/* VOS__WINDOWS32 */
- FILETYPE 	0x2	/* VFT_DLL */
- FILESUBTYPE 	0x0L
+ FILEOS     0x4    /* VOS__WINDOWS32 */
+ FILETYPE     0x2    /* VFT_DLL */
+ FILESUBTYPE     0x0L
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
@@ -37,11 +37,10 @@ BEGIN
             VALUE "LegalCopyright", "Copyright (c) 2000 by Scriptics Corporation\0"
             VALUE "ProductName", "Tcl for Windows\0"
             VALUE "ProductVersion", THREAD_VERSION
-        END		    
+        END            
     END
     BLOCK "VarFileInfo"
     BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
-

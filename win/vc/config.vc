@@ -9,10 +9,10 @@
 # ALPHA|ARM|IX86|MIPS|MIPS16|MIPSR41XX|PPC|SH3|SH4
 MACHINE   = IX86
 
-MSDEVROOT	= C:\Dev\DevStudio
-TCLROOT		= ..\..\..\tcl8.3
+MSDEVROOT    = C:\Dev\DevStudio
+TCLROOT        = ..\..\..\tcl8.3
 TCLSTUBSLIB = "$(TCLROOT)\win\release\tclstub83.lib"
-TCLSH_PROG	= "$(TCLROOT)\win\release\tclsh83.exe"
+TCLSH_PROG    = "$(TCLROOT)\win\release\tclsh83.exe"
 
 
 # Set NODEBUG to 0 to compile with symbols.
