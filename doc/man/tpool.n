@@ -1,3 +1,7 @@
+'\"
+'\" Generated from file '' by tcllib/doctools with format 'nroff'
+'\"
+'\" -*- tcl -*- doctools manpage
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
 '\"
@@ -59,7 +63,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: tpool.n,v 1.5 2003/12/22 21:21:47 vasiljevic Exp $
+'\" RCS: @(#) $Id: tpool.n,v 1.6 2004/04/02 09:48:04 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -237,11 +241,6 @@ Database Class:	\\fB\\$3\\fR
 \\$1\l'|0\(ul'\\$2
 ..
 
-'\"
-'\" Generated from file '' by tcllib/doctools with format 'nroff'
-'\"
-'\" -*- tcl -*- doctools manpage
-.so man.macros
 .TH "tpool" n 2.6  "Tcl Threading"
 .BS
 .SH "NAME"
