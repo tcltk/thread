@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.11 2002/12/06 22:21:29 vasiljevic Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.12 2002/12/12 08:16:24 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -162,6 +162,8 @@ thread_IsChannelExisting    _ANSI_ARGS_((CONST char* channelName));
 #define Tcl_SpliceChannel        (*((thread_SpliceChannel**)(SLOT(416))))
 #define Tcl_ClearChannelHandlers (*((thread_ClearChannelHandlers**)(SLOT(417))))
 #define Tcl_IsChannelExisting    (*((thread_IsChannelExisting**)(SLOT(418))))
+
+#define Tcl_GetTime /* See threadPoolCmd.c GetTime() implementation */
 
 #endif /* 8.3 compile compatibility */
 
