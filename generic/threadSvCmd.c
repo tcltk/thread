@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.17 2002/07/03 18:19:10 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.18 2002/07/11 06:26:33 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -907,6 +907,7 @@ SvObjObjCmd(dummy, interp, objc, objv)
 
     sprintf(buf, "::%p", (int*)svObj);
     Tcl_CreateObjCommand(interp, buf, SvObjDispatchObjCmd, (int*)svObj, NULL);
+    Tcl_ResetResult(interp);
     Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
 
     Sv_Unlock(svObj);
@@ -968,8 +969,10 @@ SvArrayObjCmd(arg, interp, objc, objv)
         ret = TCL_ERROR;
         goto cmdExit;
     } else if (index == AEXISTS) {
+        Tcl_ResetResult(interp);
         Tcl_SetBooleanObj(Tcl_GetObjResult(interp), arrayPtr ? 1: 0);
     } else if (index == ASIZE) {
+        Tcl_ResetResult(interp);
         if (arrayPtr == NULL) {
             Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
         } else {
@@ -1199,6 +1202,7 @@ SvGetObjCmd(arg, interp, objc, objv)
         if ((objc - off) == 0) {
             return TCL_ERROR;
         } else {
+            Tcl_ResetResult(interp);
             Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
             return TCL_OK;
         }
@@ -1215,6 +1219,7 @@ SvGetObjCmd(arg, interp, objc, objv)
             Tcl_DecrRefCount(res);
             goto cmd_err;
         }
+        Tcl_ResetResult(interp);
         Tcl_SetIntObj(Tcl_GetObjResult(interp), 1);
     }
 
@@ -1262,6 +1267,7 @@ SvExistsObjCmd(arg, interp, objc, objv)
     ret = Sv_Container(interp, objc, objv, &svObj, &off, 0);
     switch (ret) {
     case TCL_BREAK:
+        Tcl_ResetResult(interp);
         Tcl_SetBooleanObj(Tcl_GetObjResult(interp), 0); 
         return TCL_OK;
     case TCL_ERROR:
@@ -1269,6 +1275,7 @@ SvExistsObjCmd(arg, interp, objc, objv)
     }
 
     Sv_Unlock(svObj);
+    Tcl_ResetResult(interp);
     Tcl_SetBooleanObj(Tcl_GetObjResult(interp), 1);
 
     return TCL_OK;
@@ -1391,6 +1398,7 @@ SvIncrObjCmd(arg, interp, objc, objv)
 
     incrValue += currValue;
     Tcl_SetLongObj(svObj->tclObj, incrValue);
+    Tcl_ResetResult(interp);
     Tcl_SetLongObj(Tcl_GetObjResult(interp), incrValue);
 
     Sv_Unlock(svObj);

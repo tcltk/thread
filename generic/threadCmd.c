@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.44 2002/07/02 15:46:56 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.45 2002/07/11 06:26:33 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -346,6 +346,7 @@ Thread_Init(interp)
          * Truely depends on 8.3.1+ with the new Tcl_CreateThread API
          */
         msg = "The Thread extension requires Tcl 8.3.1+";
+        Tcl_ResetResult(interp);
         Tcl_SetStringObj(Tcl_GetObjResult(interp), msg, -1);
         return TCL_ERROR;
     }
@@ -686,6 +687,7 @@ ThreadIdObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     
+    Tcl_ResetResult(interp);
     Tcl_SetLongObj(Tcl_GetObjResult(interp), (long)Tcl_GetCurrentThread());
 
     return TCL_OK;
@@ -1076,6 +1078,7 @@ ThreadExistsObjCmd(dummy, interp, objc, objv)
     }
 
     threadId = (Tcl_ThreadId)id;
+    Tcl_ResetResult(interp);
     Tcl_SetBooleanObj(Tcl_GetObjResult(interp), ThreadExists(threadId));
     
     return TCL_OK;
@@ -1720,6 +1723,7 @@ ThreadJoin(interp, threadId)
     ret = Tcl_JoinThread(threadId, &state);
 
     if (ret == TCL_OK) {
+        Tcl_ResetResult(interp);
         Tcl_SetIntObj(Tcl_GetObjResult (interp), state);
     } else {
         char buf [20];
@@ -2099,6 +2103,7 @@ ThreadSend(interp, id, send, clbk, wait)
     }
 
     code = resultPtr->code;
+    Tcl_ResetResult(interp);
     Tcl_SetStringObj(Tcl_GetObjResult(interp), resultPtr->result, -1);
 
     /*
@@ -2256,6 +2261,7 @@ ThreadReserve(interp, threadId, operation)
     }
 
     Tcl_MutexUnlock(&threadMutex);
+    Tcl_ResetResult(interp);
     Tcl_SetIntObj(Tcl_GetObjResult(interp), (users > 0) ? users : 0);
 
     return TCL_OK;
