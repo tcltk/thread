@@ -1,3 +1,20 @@
+2000-08-09  David Gravereaux <davygrvy@ajubasolutions.com>
+
+	* win/vc/thread.rc: swapped "Scriptics Corp" for "Ajuba
+	Solutions"
+
+	* win/vc/config.vc:
+	* win/vc/makefile.vc: cleaned-up old cruft.  Added new files
+	from Zoran's patches.  made swapping to MSDev 6.0 easier.
+	Removed the '!if $(_NMAKE_VER) > 162' test for 2 reasons.
+
+	1) batchmode inference rules are valid since MSDev 5.0 and
+	the core can't be built with less.  So don't bother testing.
+
+	2) nmake.exe that comes with MSDev 6.0 has a bug with the
+	meaning of that macro and MS decided to use a string instead
+	breaking the integer comparison test.
+
 2000-07-14 Zoran Vasiljevic <zoran@munich.com>
 
 	* generic/threadCmd.c: improved thread::exit behaviour
