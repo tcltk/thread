@@ -158,6 +158,7 @@ The command usually returns empty result but may trigger Tcl error with the mess
 "target thread died" in some situations.
 This command is deprecated in favour of more advanced thread reservation system 
 implemented with <cmd>thread::preserve</cmd> and <cmd>thread::release</cmd> commands.
+Support for this command will dissapear in some future major release of the extenstion.
 </desc>
 </commanddef>
 
@@ -172,7 +173,9 @@ Use of this command is deprecated in favour of the <cmd>thread::unwind</cmd> com
 or more advanced thread reservation system implemented with <cmd>thread::preserve</cmd>
 and <cmd>thread::release</cmd> commands. Use on your own risk and with extreme precaution.
 The command usually  returns empty result but may trigger Tcl error with the message 
-"target thread died" in some situations.</p>
+"target thread died" in some situations.
+Support for this command will dissapear in some future major release of the extenstion.
+</p>
 </desc>
 </commanddef>
 
@@ -216,7 +219,10 @@ result of the passed <m>script</m>.
 <command><cmd>thread::wait</cmd></command>
 <desc>This enters the event loop so a thread can receive messages from <cmd>thread::send</cmd>. 
 This is equivalent to <samp>vwait <m>unusedvariable</m></samp> except that thread::unwind will
-not unblock a <cmd>vwait</cmd>.
+not unblock a <cmd>vwait</cmd>. This command should only be used within the script passed to
+the <cmd>thread::create</cmd>. It should be the very last command in the script.
+If this is not the case, the exiting thread will continue executing the script lines pass the
+<cmd>thread::wait</cmd> which is not what you usualy want and/or expect.
 </desc>
 </commanddef>
 
@@ -283,7 +289,7 @@ and error.
 current thread and interpreter. After that, the current interpreter 
 has no access to the channel anymore. The channel is in the parked
 state until some other (or the same) thread attaches the channel
-again with <cmd>thread::attach</cmd> command.
+again with <cmd>thread::attach</cmd>.
 Restriction: the channel in question must not be shared among
 multiple interpreters running in the sending thread. This
 automatically excludes the special channels for standard input, output
