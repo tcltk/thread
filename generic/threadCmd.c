@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.50 2002/08/18 20:49:38 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.51 2002/08/23 18:02:07 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1473,7 +1473,6 @@ NewThread(clientData)
     if (result != TCL_OK) {
         ThreadErrorProc(tsdPtr->interp);
     }
-    Tcl_Release((ClientData)tsdPtr->interp);
 
     /*
      * Clean up. Note: add something like TlistRemove for transfer list.
@@ -1497,6 +1496,7 @@ NewThread(clientData)
 #else
     Tcl_DeleteInterp(tsdPtr->interp);
 #endif
+    Tcl_Release((ClientData)tsdPtr->interp);
 
     /*
      * Tcl_ExitThread calls Tcl_FinalizeThread() indirectly which calls
