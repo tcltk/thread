@@ -67,7 +67,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: thread.n,v 1.9 2002/02/09 17:08:37 vasiljevic Exp $
+'\" RCS: @(#) $Id: thread.n,v 1.10 2002/02/12 18:22:23 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -252,6 +252,8 @@ thread \- Script level threading
  Thread manipulation commands:
 
 \fB thread::create\fR ?\fI-joinable\fR? ?\fIscript\fR?
+\fB thread::preserve\fR \fIid\fR
+\fB thread::release\fR \fIid\fR
 \fB thread::id\fR
 \fB thread::errorproc\fR ?\fIprocname\fR?
 \fB thread::unwind\fR
@@ -309,6 +311,17 @@ the ID of the thread. The result, if any, of \fIscript\fR is
 ignored. Using flag \fI-joinable\fR it is possible to create a
 joinable thread, i.e. one upon whose exit can be waited upon (by using
 \fBthread::join\fR).
+.TP
+\fB thread::preserve\fR \fIid\fR
+This procedure increments the thread reference counter. Each call to this 
+command increments the reference counter by one (1). Command returns
+the value of the reference counter after the increment.
+.TP
+\fB thread::release\fR \fIid\fR
+This procedure decrements the thread reference counter. Each call to this
+command decrements the reference counter by one (1). Command returns
+the value of the reference counter after the decrement.
+When the reference counter reaches zero (0), the target thread is terminated.
 .TP
 \fBthread::id\fR 
 This command returns the ID of the current thread. 
