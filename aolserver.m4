@@ -1,5 +1,6 @@
+
 #------------------------------------------------------------------------
-# THREAD_PATH_AOLSERVER
+# NS_PATH_AOLSERVER
 #
 #   Allows the building with support for AOLserver 
 #
@@ -16,9 +17,14 @@
 #
 #   Sets the following vars:
 #       NS_AOLSERVER 
+#
+#   Updates following vars:
+#       CFLAGS
+#       LIBS
+#       SHLIB_LD
 #------------------------------------------------------------------------
 
-AC_DEFUN(THREAD_PATH_AOLSERVER, [
+AC_DEFUN(NS_PATH_AOLSERVER, [
     AC_MSG_CHECKING([for AOLserver configuration])
     AC_ARG_WITH(aol, 
     [  --with-aolserver        directory with AOLserver distribution],\
@@ -38,7 +44,14 @@ AC_DEFUN(THREAD_PATH_AOLSERVER, [
     else
         AOL_DIR=${ac_cv_c_aolserver}
         AC_MSG_RESULT([found AOLserver in $AOL_DIR])
+        CFLAGS="${CFLAGS} -I${AOL_DIR}/include"
+        LIBS="${LIBS} -L${AOL_DIR}/lib -lnsd -lnsthread"
+        if test "`uname -s`" = Darwin ; then 
+            SHLIB_LD="cc -bundle \${LDFLAGS}"
+        fi
+        AC_SUBST(SHLIB_LD)
         AC_DEFINE(NS_AOLSERVER)
     fi
 ])
 
+# EOF

@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.28 2002/12/05 23:25:35 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.29 2003/03/17 09:01:31 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -19,7 +19,6 @@
 #include "threadSvListCmd.h" /* Adds shared variants of list commands */
 
 #ifdef NS_AOLSERVER
-# include "aolstub.cpp"
 # define HIDE_DOTNAMES       /* tsv::names cmd does not list .<name> arrays */
 #endif
 
@@ -752,7 +751,8 @@ Sv_DuplicateObj(objPtr)
                  * If not able to duplicate, assure valid string
                  * representation is available at least.
                  */
-                if (!dupPtr->typePtr && objPtr->typePtr->updateStringProc) {
+                if (!dupPtr->typePtr && objPtr->typePtr->updateStringProc
+                    && objPtr->bytes == NULL) {
                     (*objPtr->typePtr->updateStringProc)(objPtr);
                 }
             }

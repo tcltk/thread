@@ -15,7 +15,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.12 2002/12/19 09:55:43 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.13 2003/03/17 09:01:29 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -532,7 +532,7 @@ DeleteObjHandle(handle)
  *----------------------------------------------------------------------
  */
 
-void
+int
 Sp_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
 {

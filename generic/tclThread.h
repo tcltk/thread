@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.14 2002/12/19 09:55:43 vasiljevic Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.15 2003/03/17 09:01:23 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -68,19 +68,19 @@ EXTERN int  Thread_SafeInit _ANSI_ARGS_((Tcl_Interp *interp));
  * Exported from threadSvCmd.c file.
  */
 
-EXTERN void Sv_Init _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Sv_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Exported from threadSpCmd.c file.
  */
 
-EXTERN void Sp_Init _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Sp_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Exported from threadPoolCmd.c file.
  */
 
-EXTERN void Tpool_Init _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Tpool_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Macros for splicing in/out of linked lists
@@ -105,7 +105,8 @@ EXTERN void Tpool_Init _ANSI_ARGS_((Tcl_Interp *interp));
  */ 
 
 #define TCL_CMD(a,b,c) \
-  Tcl_CreateObjCommand((a), (b), (c), (ClientData)NULL, NULL);
+  if (Tcl_CreateObjCommand((a),(b),(c),(ClientData)NULL, NULL) == NULL) \
+    return TCL_ERROR;
 
 #define OPT_CMP(a,b) \
   ((a) && (b) && (*(a)==*(b)) && (*(a+1)==*(b+1)) && (!strcmp((a),(b))))
