@@ -1,4 +1,4 @@
-# RCS: @(#) $Id: makefile.vc,v 1.5 2000/08/10 01:35:59 davidg Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.6 2000/08/10 04:08:04 davidg Exp $
 
 !include "config.vc"
 
@@ -63,7 +63,10 @@ dlllflags = $(lcommon) -subsystem:windows -dll
 # Project specific targets
 ######################################################################
 
-all : $(THREADLIB)
+all : setup $(THREADLIB)
+
+setup : $(TMPDIR) $(OUTDIR) 
+	@$(vcvars)
 
 test: all
     @$(TCLSH_PROG) <<
@@ -73,7 +76,7 @@ regsub -all {\\} {$(TESTDIR)} {/} testdir
 source [file join $$testdir all.tcl]
 <<nokeep
 
-$(THREADLIB) : $(TMPDIR) $(OUTDIR) $(THREADOBJS)
+$(THREADLIB) : $(THREADOBJS)
 	@echo Linking...
 	@$(link32) $(dlllflags) -out:$@ $(TCLSTUBSLIB) @<<
 $(THREADOBJS)
@@ -109,8 +112,8 @@ $<
 
 $(TMPDIR)\thread.res : $(WINDIR)\thread.rc
 	@echo Compiling resources...
-	$(rc32) -fo"$@" -i "$(GENERICDIR)" -i "$(TCLROOT)\generic" -r \
-	    -DNODEBUG=$(NODEBUG) -DRESOURCE_INCLUDED $(WINDIR)\thread.rc
+	@$(rc32) -fo"$@" -i "$(GENERICDIR)" -i "$(TCLROOT)\generic" -r \
+		-DNODEBUG=$(NODEBUG) -DRESOURCE_INCLUDED $(WINDIR)\thread.rc
 
 $(TMPDIR)\resource.obj : $(TMPDIR)\thread.res
 	@$(cvtres32) -nologo -machine:$(MACHINE) -out:$@ $(TMPDIR)\thread.res
@@ -121,9 +124,9 @@ $(TMPDIR)\resource.obj : $(TMPDIR)\thread.res
 ######################################################################
 
 $(WINDIR)\thread.rc : $(GENERICDIR)\thread.h
-
 $(GENERICDIR)\threadCmd.c : $(GENERICDIR)\thread.h
-
+$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\thread.h
+$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\thread.h
 
 ######################################################################
 # Cleanup
