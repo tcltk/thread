@@ -1,3 +1,12 @@
+2002-02-09  Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: added thread::configure interface.
+	Currently only "-eventmark" option is supported.
+	Allows for AOLserver builds to change the "thread::" prefix
+	by re-defining the "NS" compile-time constant.
+
+	* doc/thread.n: added docs for thread::configure
+
 2002-02-06  Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/aolserv.cpp: (new) added for loading into the AOLserver.
