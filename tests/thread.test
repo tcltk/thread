@@ -10,7 +10,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: thread.test,v 1.5 2000/05/09 19:14:15 kupries Exp $
+# RCS: @(#) $Id: thread.test,v 1.6 2000/05/09 20:15:20 kupries Exp $
 
 package require tcltest
 namespace import -force ::tcltest::*
@@ -332,11 +332,11 @@ test thread-6.3 {Transfer of channels, readable?} {
     set res [regexp $file [file channels]]
 
     thread::transfer $server $file
-    set res [string length [thread::send $server "read $file"]]
+    set res [string length [thread::send $server "read -nonewline $file"]]
     thread::send $server "close $file"
     ThreadReap
     set res
-} {240}
+} [string length [::tcltest::viewFile dummyForTransfer]]
 
 test thread-6.4 {Transfer of channels, closeable?} {
     set server [thread::create]

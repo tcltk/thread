@@ -2,7 +2,8 @@
 
 	* tests/thread.test: Removed dependency on aclocals.m4. Using a
 	  real temporary file now, as created by a call to
-	  tcltest::makeFile.
+	  tcltest::makeFile. Updated test 6.3 to use the correct length
+	  information.
 
 2000-05-04  Andreas Kupries <a.kupries@westend.com>
 
