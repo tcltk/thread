@@ -1,5 +1,7 @@
 2001-04-26  David Gravereaux <davygrvy@pobox.com>
 
+	* config/* (new): old site-wide config directory re-added.
+
 	* generic/threadCmd.c (ThreadEventProc): ThreadErrorProc now
 	supported in asyncronous sends when Tcl_Eval returns other than
 	TCL_OK.  Errors were silently ignored prior to this. Bug #219324
@@ -44,11 +46,12 @@
 	documented the change and clarified the subtleties.
 
 	* win/vc/makefile.vc:
-	* win/vc/thread.dsp: Change NODEBUG macro to be DEBUG instead.
+	* win/vc/thread.dsp: Changed NODEBUG macro to be DEBUG instead.
 	Double negatives give me a headache.  DEBUG=1 makes more sense
 	to me than NODEBUG=0.  Not that I didn't think you wouldn't have
 	disagreed it was confusing, no?
 
+	* win/vc/config.vc: Added a reminder to edit before using
 	* win/vc/thread.rc: Added authors and removed the Ajuba branding.
 
 2001-04-25  David Gravereaux <davygrvy@pobox.com>
