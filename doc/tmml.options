@@ -1,5 +1,0 @@
-array set Options {
-    xsltProcessor  tdom
-    masterDocument thread.tmml
-    tomanOptions   -soelim
-}
