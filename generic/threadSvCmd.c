@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.30 2003/03/28 15:42:57 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.31 2003/04/02 12:57:47 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1784,7 +1784,7 @@ Sv_Init (interp)
                 Tcl_InitHashTable(&bucketPtr->arrays, TCL_STRING_KEYS);
                 Tcl_InitHashTable(&bucketPtr->handles, TCL_ONE_WORD_KEYS);
             }
-            Tcl_CreateExitHandler((Tcl_ExitProc*)SvFinalize, NULL);
+            Tcl_CreateExitHandler((Tcl_ExitProc*)SvFinalize, (ClientData)-1);
             /*
              * We use this trick to get the tclEmptyStringRep pointer
              * defined by Tcl without directly referencing it. If we

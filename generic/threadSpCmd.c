@@ -15,7 +15,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.13 2003/03/17 09:01:29 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.14 2003/04/02 12:57:47 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -548,7 +548,6 @@ Sp_Init (interp)
              * find out who/if is using them. Generally, 
              * this should be delegated to the programmer.
              */
-            /*Tcl_CreateExitHandler((Tcl_ExitProc *)FinalizeSp, NULL);*/
             initialized = 1;
         }
         RELEASE_SYNCMUTEX;

@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.69 2003/03/28 15:41:18 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.70 2003/04/02 12:57:47 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -485,7 +485,8 @@ Init(interp)
         memset(tsdPtr, 0, sizeof(ThreadSpecificData));
         tsdPtr->interp = interp;
         ListUpdate(tsdPtr);
-        Tcl_CreateThreadExitHandler(ThreadExitProc, NULL);
+        Tcl_CreateThreadExitHandler(ThreadExitProc,
+                                    (ClientData)threadEmptyResult);
     }
 }
 
@@ -3129,7 +3130,7 @@ ThreadExitProc(clientData)
     /* Only used in 8.4+ interps */
     TransferResult *tResultPtr, *tNextPtr;
 
-    if (threadEvalScript) {
+    if (threadEvalScript && threadEvalScript != threadEmptyResult) {
         Tcl_Free((char*)threadEvalScript);
     }
     
