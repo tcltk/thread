@@ -5,5 +5,16 @@
 #   ../configure --help 
 #
 
-sh ../configure --enable-threads
+sh ../configure --enable-symbols --enable-threads
 
+# 
+# For AOLserver, you might want to use this command.
+# Just uncomment following two command lines below.
+# You should modify the "--with-aolserver" directive
+# if your AOLserver directory does not match.
+#
+
+#sh ../configure --enable-threads --enable-symbols \
+#    --with-aolserver=/usr/local/aolserver
+
+# EOF
