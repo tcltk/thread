@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.36 2002/02/12 18:21:42 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.37 2002/02/19 20:11:53 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -589,7 +589,7 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
 
 static int
 ThreadReserveObjCmd(flag, interp, objc, objv)
-    ClientData  flag;           /* THREAD_RESERVE or THREAD_RELEASE */
+    ClientData  flag;           /* THREAD_RESERVE | THREAD_RELEASE */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
@@ -1444,7 +1444,7 @@ NewThread(clientData)
         Tcl_ConditionFinalize(&tsdPtr->doOneEvent);
     }
 
-    ListRemove(NULL);
+    ListRemove(tsdPtr);
 
     /*
      * It is up to all other extensions, including Tk, to be responsible
@@ -2184,7 +2184,7 @@ ThreadWait()
      * other threads from sending us more work while we're unwinding.
      */
 
-    ListRemove(NULL);
+    ListRemove(tsdPtr);
 
     /*
      * Now that the event processor for this thread is closing,
@@ -2216,14 +2216,9 @@ ThreadReserve(interp, threadId, operation)
     Tcl_ThreadId threadId;              /* Target thread ID */
     int operation;                      /* THREAD_RESERVE | THREAD_RELEASE */
 {
-    int users, step;
+    int users;
     ThreadEvent *evPtr;
     ThreadSpecificData *tsdPtr;
-
-    switch (operation) {
-    case THREAD_RESERVE: step = +1; break;
-    case THREAD_RELEASE: step = -1; break;
-    }
 
     Tcl_MutexLock(&threadMutex);
 
@@ -2242,7 +2237,12 @@ ThreadReserve(interp, threadId, operation)
         }
     }
 
-    users = tsdPtr->refCount + step;
+    switch (operation) {
+    case THREAD_RESERVE: ++tsdPtr->refCount; break;
+    case THREAD_RELEASE: --tsdPtr->refCount; break;
+    }
+
+    users = tsdPtr->refCount;
 
     if (users <= 0) {
         

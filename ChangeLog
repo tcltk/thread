@@ -1,3 +1,19 @@
+2002-02-12  Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: fixed thread::preserve glitch. We never
+	actually did bump the reservation counter by a silly mistake.
+
+2002-02-12  Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: added thread::preserve and thread::release
+	commands. These allow for a simple reference counting when creating
+	and/or tearing-down threads. Instead of calling thread::unwind in
+	the target thread, one can use "thread::release id" to displose it.
+	This is much easier to use and it can be coupled with calls to
+	thread::preserve to implement simple thread reservation scenario.
+
+	* doc/thread.n: added docs for thread::preserve/thread::release
+	
 2002-02-09  Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: added thread::configure interface.
