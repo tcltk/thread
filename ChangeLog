@@ -1,3 +1,11 @@
+2003-02-08 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: fixed ListRemoveInner
+	to correctly update global threadList ptr when 
+	the last referenced thread exits. This was not
+	the case before and we were trashing memory
+	leading to process exitus.	
+
 2003-01-25  Mo DeJong  <mdejong@users.sourceforge.net>
 
 	* generic/threadCmd.c (ThreadSendObjCmd):
