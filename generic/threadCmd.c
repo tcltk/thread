@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.51 2002/08/23 18:02:07 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.52 2002/10/20 10:22:32 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -458,9 +458,6 @@ EXTERN int
 Thread_SafeInit(interp)
     Tcl_Interp *interp;
 {
-    /*
-     * FIXME: shouldn't we disable threading for safe interp?
-     */
     return Thread_Init(interp);
 }
 
@@ -523,7 +520,8 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
-    char *script = NULL;
+    int argc;
+    char *arg, *script;
     int flags = TCL_THREAD_NOFLAGS;
 
     Init(interp);
@@ -532,37 +530,32 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
      * Syntax: thread::create ?-joinable? ?script?
      */
 
-    if (objc == 1) {
-        /* Neither option nor script available.
-         */
-        script = NS"wait"; /* Enters the event loop */
-        
-    } else if (objc == 2) {
-        /* Either option or script possible, not both.
-         */
-        char *arg = Tcl_GetStringFromObj(objv[1], NULL);
-        if (OPT_CMP(arg, "-joinable")) {
+    script = NS"wait";
+
+    for (argc = 1; argc < objc; argc++) {
+        arg = Tcl_GetStringFromObj(objv[argc], NULL);
+        if (OPT_CMP(arg, "--")) {
+            argc++;
+            if ((argc + 1) == objc) {
+                script = Tcl_GetStringFromObj(objv[argc], NULL);
+            } else {
+                goto usage;
+            }
+            break;
+        } else if (OPT_CMP(arg, "-joinable")) {
             flags |= TCL_THREAD_JOINABLE;
-            script = NS"wait"; /* Enters the event loop */
+        } else if ((argc + 1) == objc) {
+            script = Tcl_GetStringFromObj(objv[argc], NULL);
         } else {
-            script = arg;
+            goto usage;
         }
-    } else if (objc == 3) {
-        /* Enough information for both flag and script.
-         */
-        if (OPT_CMP(Tcl_GetStringFromObj(objv[1], NULL), "-joinable")) {
-            flags |= TCL_THREAD_JOINABLE;
-        } else {
-            Tcl_WrongNumArgs(interp, 1, objv, "?-joinable? ?script?");
-            return TCL_ERROR;
-        }
-        script = Tcl_GetStringFromObj(objv[2], NULL);
-    } else {
-        Tcl_WrongNumArgs(interp, 1, objv, "?-joinable? ?script?");
-        return TCL_ERROR;
     }
-    
+
     return ThreadCreate(interp, script, TCL_THREAD_STACK_DEFAULT, flags);
+
+ usage:
+    Tcl_WrongNumArgs(interp, 1, objv, "?-joinable? ?script?");
+    return TCL_ERROR;
 }
 
 /*
@@ -1409,8 +1402,8 @@ NewThread(clientData)
     ThreadCtrl *ctrlPtr = (ThreadCtrl *)clientData;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
     Tcl_Interp *interp;
-    int result;
-    char *threadEvalScript;
+    int result = TCL_OK, scriptLen;
+    char *evalScript;
     int maj, min, ptch, type;
 
     /*
@@ -1452,9 +1445,9 @@ NewThread(clientData)
      * we are eval'ing, for the case that we exit during evaluation
      */
 
-    threadEvalScript = (char*)Tcl_Alloc(1+strlen(ctrlPtr->script));
-    strcpy(threadEvalScript, ctrlPtr->script);
-    Tcl_CreateThreadExitHandler(ThreadExitProc,(ClientData)threadEvalScript);
+    scriptLen = strlen(ctrlPtr->script);
+    evalScript = strcpy((char*)Tcl_Alloc(scriptLen+1), ctrlPtr->script);
+    Tcl_CreateThreadExitHandler(ThreadExitProc,(ClientData)evalScript);
 
     /*
      * Notify the parent we are alive.
@@ -1469,13 +1462,13 @@ NewThread(clientData)
      */
 
     Tcl_Preserve((ClientData)tsdPtr->interp);
-    result = Tcl_Eval(tsdPtr->interp, threadEvalScript);
+    result = Tcl_EvalEx(tsdPtr->interp, evalScript, scriptLen, TCL_EVAL_GLOBAL);
     if (result != TCL_OK) {
         ThreadErrorProc(tsdPtr->interp);
     }
 
     /*
-     * Clean up. Note: add something like TlistRemove for transfer list.
+     * Clean up. Note: add something like TlistRemove for the transfer list.
      */
 
     if (tsdPtr->doOneEvent) {
@@ -1655,6 +1648,8 @@ ListRemoveInner(tsdPtr)
     if (tsdPtr->nextPtr) {
         tsdPtr->nextPtr->prevPtr = tsdPtr->prevPtr;
     }
+
+    tsdPtr->nextPtr = tsdPtr->prevPtr = NULL;
 }
 
 /*
