@@ -31,6 +31,15 @@ Depending on your platform (Unix-like or Windows) go to the appropriate
 directory (unix or win) and start with the README file. 
 
 
+WHERE IS THE DOCUMENTATION ?
+============================
+
+Documentation in Unix man and standard HTML format is available in the
+doc/man and doc/html directories respectively. 
+Currently, documentation is in reference-style only. The tutorial-style
+documentation will be provided with future releases of the extension.
+
+
 HOW TO GET SUPPORT ?
 ====================
 
