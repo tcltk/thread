@@ -1,3 +1,7 @@
+2001-05-27  David Gravereaux <davygrvy@pobox.com>
+
+	* tests/thread.test: fixed small typo in comments.
+
 2001-08-03  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* Makefile.in: corrected handling of VERSION
