@@ -7,7 +7,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.3 2002/01/19 23:15:47 vasiljevic Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.4 2002/01/19 23:18:25 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -48,7 +48,6 @@ EXTERN void Sp_Init _ANSI_ARGS_((Tcl_Interp *interp));
  *  Platform specific functions.
  */
 
-EXTERN void ThreadKill _ANSI_ARGS_((long id));
 
 /*
  * Utility macros
