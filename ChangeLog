@@ -1,3 +1,10 @@
+2004-12-22 Zoran Vasiljevic <zv@archiware.com>
+
+	* tcl/cmdsrv/cmdsrv.tcl: command server listens on loopback
+	interface (127.0.0.1) only.
+
+	* unix/README: clarified usage of the CONFIG file
+
 2004-12-18 Zoran Vasiljevic <zv@archiware.com>
 
 	**** COMPATIBILITY: Dropped support for Tcl 8.3 ****
@@ -23,54 +30,54 @@
 2004-11-27 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: Fixed race condition which resulted 
-	  in blocking at pool creation with high -minworkers threads.
-	  This fixes the Tcl Bug #933975.
+	in blocking at pool creation with high -minworkers threads.
+	This fixes the Tcl Bug #933975.
 
 2004-11-25 Zoran Vasiljevic <zv@archiware.com>
 
 	* tests/thread.tcl: Disabled all tests handling channel transfer
-          for Windows ports until core is capable of handling this correctly.
+	for Windows ports until core is capable of handling this correctly.
 
         * generic/threadSpCmd.c: Fixed segmentation problems observed on
-	  Windows ports and related to notification of an uninitialized
-	  condition variable(s). This closes Bug #1051068 (wrongly posted
-          under Tcl Patches at SF).
+	Windows ports and related to notification of an uninitialized
+	condition variable(s). This closes Bug #1051068 (wrongly posted
+	under Tcl Patches at SF).
 
 	* doc/thread.man: Fixed mutex/condvar code example. Thanks to
-  	  Gustaf Neumann of XOTcl for the tip.
+	Gustaf Neumann of XOTcl for the tip.
 
 2004-10-21  Andreas Kupries <andreask@activestate.com>
 
 	* tests/thread.test: Added two tests checking the working of
-	  fileevents after a pipe channel has been transfered. The second
-	  has to fail for any core where TIP #218 is not applied, because
-	  the incoming alert is directed to the wrong thread for event
-	  processing.
+	fileevents after a pipe channel has been transfered. The second
+	has to fail for any core where TIP #218 is not applied, because
+	the incoming alert is directed to the wrong thread for event
+	processing.
 
 2004-10-20 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c (ThreadSetResult): adjusted handling of
-	  interp result to accomodate for recent changes in Tcl core.
-	  This closes Tcl Bug# 1050490.
+	interp result to accomodate for recent changes in Tcl core.
+	This closes Tcl Bug# 1050490.
  
 2004-10-19  Andreas Kupries <andreask@activestate.com>
 
 	* generic/threadSvCmd.c: Added a prototype for
-	  SvObjDispatchObjCmd. Prevented compilation of debug variant on
-	  Windows due to warning as error.
+	SvObjDispatchObjCmd. Prevented compilation of debug variant on
+	Windows due to warning as error.
 
 	* tests/thread.test: Added more tests transfering channels between
-	  threads for in-core drivers.
+	threads for in-core drivers.
 
 2004-10-18  Andreas Kupries <andreask@activestate.com>
 
 	* generic/threadCmd.c (ThreadErrorProc): Added code to explicitly
-	  initialize the field 'interp' in ThreadSendData. This was ok
-	  (NULL) for a regular build, but when build with symbols the
-	  guard pattern forced a crash in test thread-16.2.
+	initialize the field 'interp' in ThreadSendData. This was ok
+	(NULL) for a regular build, but when build with symbols the
+	guard pattern forced a crash in test thread-16.2.
 
 	* tests/thread.test: Duplicate test id thread-16.1 renamed to
-	  thread-16.2.
+	thread-16.2.
 
 2004-08-14 Zoran Vasiljevic <zv@archiware.com>
 
