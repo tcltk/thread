@@ -1,3 +1,10 @@
+2003-12-01 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: removed the concept of foreign
+	thread since it broke our async message bouncing. We
+	still have to find the way how we should avoid broadcasting
+	non-package threads (like for aolserver).
+
 2003-11-27 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: fixed mutex release in ThreadSend

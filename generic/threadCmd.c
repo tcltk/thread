@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.80 2003/11/28 13:17:00 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.81 2003/12/01 19:54:43 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -64,10 +64,9 @@ typedef struct ThreadSpecificData {
 static Tcl_ThreadDataKey dataKey;
 
 #define THREAD_FLAGS_NONE          0      /* None */
-#define THREAD_FLAGS_CREATED       1      /* Thread created by the package */
-#define THREAD_FLAGS_STOPPED       2      /* Thread is being stopped */
-#define THREAD_FLAGS_INERROR       4      /* Thread is in error */
-#define THREAD_FLAGS_UNWINDONERROR 8      /* Thread unwinds on script error */
+#define THREAD_FLAGS_STOPPED       1      /* Thread is being stopped */
+#define THREAD_FLAGS_INERROR       2      /* Thread is in error */
+#define THREAD_FLAGS_UNWINDONERROR 4      /* Thread unwinds on script error */
 
 #define THREAD_RESERVE             1      /* Reserves the thread */
 #define THREAD_RELEASE             2      /* Releases the thread */
@@ -1631,7 +1630,6 @@ NewThread(clientData)
 
     Tcl_MutexLock(&threadMutex);
     ListUpdateInner(tsdPtr);
-    tsdPtr->flags |= THREAD_FLAGS_CREATED;
 
     /*
      * We need to keep a pointer to the alloc'ed mem of the script
@@ -1909,10 +1907,8 @@ ThreadList(interp, listObjPtr)
     
     Tcl_MutexLock(&threadMutex);
     for (tsdPtr = threadList; tsdPtr; tsdPtr = tsdPtr->nextPtr) {
-        if ((tsdPtr->flags && THREAD_FLAGS_CREATED)) {
-            long id = (long)tsdPtr->threadId;
-            Tcl_ListObjAppendElement(interp, *listObjPtr, Tcl_NewLongObj(id));
-        }
+        long id = (long)tsdPtr->threadId;
+        Tcl_ListObjAppendElement(interp, *listObjPtr, Tcl_NewLongObj(id));
     }
     Tcl_MutexUnlock(&threadMutex);
 
@@ -1974,8 +1970,7 @@ ThreadExistsInner(threadId)
     ThreadSpecificData *tsdPtr;
     
     for (tsdPtr = threadList; tsdPtr; tsdPtr = tsdPtr->nextPtr) {
-        if (   tsdPtr->threadId == threadId
-            && (tsdPtr->flags & THREAD_FLAGS_CREATED)) {
+        if (tsdPtr->threadId == threadId) {
             return tsdPtr;
         }
     }
@@ -2404,18 +2399,6 @@ ThreadSend(interp, id, send, clbk, wait)
         } else {
             Tcl_SetResult(interp, "invalid thread id", TCL_STATIC);
         }
-        return TCL_ERROR;
-    }
-    
-    /*
-     * Refuse to send messages to threads which were not
-     * created by the package. This includes "foreign"
-     * threads created, for example, by the AOLserver.
-     */
-
-    if (!(tsdPtr->flags & THREAD_FLAGS_CREATED)) {
-        Tcl_MutexUnlock(&threadMutex);
-        Tcl_SetResult(interp, "thread not created by the package", TCL_STATIC);
         return TCL_ERROR;
     }
 
