@@ -22,7 +22,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.21 2004/11/25 15:03:24 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.22 2004/12/22 16:32:42 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -728,7 +728,7 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
         }
         if (IsReadWrite(mutex)) {
             PutMutex(mutex);
-            Tcl_AppendResult(interp, "wrong mutex type, must be recursive "
+            Tcl_AppendResult(interp, "wrong mutex type, must be exclusive "
                              "or recursive", NULL);
             return TCL_ERROR;
         }
