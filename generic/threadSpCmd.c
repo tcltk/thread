@@ -2,8 +2,13 @@
  * threadSpCmd.c --
  *
  * This file implements commands for script-level access to thread 
- * synchronization primitives. Currently, the mutex and condition-variable
- * objects are exposed to the script programmer.
+ * synchronization primitives. Currently, the mutex and condition
+ * variable objects are exposed to the script programmer.
+ *
+ * Additionaly, a locked eval is also implemented. This is a practical
+ * convenience function which relieves the programmer from the need
+ * to take care about unlocking some mutex after evaluating a protected
+ * part of code.
  *
  * Copyright (c) 1998 by Sun Microsystems, Inc.
  * Copyright (c) 1999,2000 by Scriptics Corporation.
@@ -11,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.7 2002/07/03 09:48:09 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.8 2002/10/20 10:21:56 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -24,8 +29,6 @@
 
 static Tcl_HashTable syncHandles;       /* Handles/pointers to sync objects */
 static Tcl_Mutex syncHandlesMutex;      /* Protects the above table */
-
-static int syncHandlesInitialized;      /* Flag, table initalized or not */
 static unsigned int syncHandlesCounter; /* Counter for unique object id's */
 
 #define GRAB_SYNCMUTEX    Tcl_MutexLock(&syncHandlesMutex)
@@ -40,6 +43,7 @@ static unsigned int syncHandlesCounter; /* Counter for unique object id's */
 
 static Tcl_ObjCmdProc ThreadMutexObjCmd;
 static Tcl_ObjCmdProc ThreadCondObjCmd;
+static Tcl_ObjCmdProc ThreadEvalObjCmd;
 
 /*
  * Forward declaration of functions used only within this file
@@ -141,9 +145,12 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
      */
 
     switch ((enum options)opt) {
-    case m_CREATE: /* Already did above */    break;
-    case m_LOCK:   Tcl_MutexLock(mutexPtr);   break;
-    case m_UNLOCK: Tcl_MutexUnlock(mutexPtr); break;
+    case m_LOCK:   
+        Tcl_MutexLock(mutexPtr);
+        break;
+    case m_UNLOCK: 
+        Tcl_MutexUnlock(mutexPtr);
+        break;
     case m_DESTROY:
         Tcl_MutexFinalize(mutexPtr);
         Tcl_Free((char*)mutexPtr);
@@ -152,6 +159,102 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
     }
 
     return TCL_OK;
+}
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadEvalObjCmd --
+ *
+ *    This procedure is invoked to process "thread::eval" Tcl command.
+ *    See the user documentation for details on what it does.
+ *
+ * Results:
+ *    A standard Tcl result.
+ *
+ * Side effects:
+ *    See the user documentation.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+ThreadEvalObjCmd(dummy, interp, objc, objv)
+    ClientData dummy;                   /* Not used. */
+    Tcl_Interp *interp;                 /* Current interpreter. */
+    int objc;                           /* Number of arguments. */
+    Tcl_Obj *CONST objv[];              /* Argument objects. */
+{
+    int ret, optx;
+    char *mutexHandle;
+    Tcl_Obj *scriptObj;
+    Tcl_Mutex *mutexPtr = NULL;
+    static Tcl_Mutex evalMutex;
+
+    /* 
+     * Syntax:
+     *
+     *     thread::eval ?-lock <mutexHandle>? arg ?arg ...?
+     */
+
+    if (objc < 2) {
+        Tcl_AppendResult(interp, "wrong # args: should be \"",
+                         Tcl_GetString(objv[0]),
+                         " ?-lock <mutexHandle>? arg ?arg...?\"", NULL);
+        return TCL_ERROR;
+    }
+
+    if (objc > 3 && OPT_CMP(Tcl_GetString(objv[1]), "-lock")) {
+        mutexHandle = Tcl_GetString(objv[2]);
+        ret = GetObjFromHandle(interp, MUTEXID, mutexHandle, (void**)&mutexPtr);
+        if (ret != TCL_OK) {
+            return TCL_ERROR;
+        }
+        optx = 3;
+    } else {
+        optx = 1;
+        mutexPtr = &evalMutex;
+    }
+
+    objc -= optx;
+    Tcl_MutexLock(mutexPtr);
+
+    /*
+     * Evaluate passed arguments as Tcl script. Note that
+     * Tcl_EvalObjEx throws away the passed object by 
+     * doing an decrement reference count on it. This also
+     * means we need not build object bytecode rep.
+     */
+    
+    if (objc == 1) {
+        scriptObj = Tcl_DuplicateObj(objv[optx]);
+    } else {
+        scriptObj = Tcl_ConcatObj(objc, objv + optx);
+    }
+
+    ret = Tcl_EvalObjEx(interp, scriptObj, TCL_EVAL_DIRECT);
+
+    if (ret == TCL_ERROR) {
+        char msg[32 + TCL_INTEGER_SPACE];   
+        sprintf(msg, "\n    (\"eval\" body line %d)", interp->errorLine);
+        Tcl_AddObjErrorInfo(interp, msg, -1);
+    }
+
+    /*
+     * Double-check the mutex handle in case somebody
+     * has deleted the mutex in the evaluated script.
+     * This is considered to be A Bad Thing.
+     */
+    
+    if (mutexPtr != &evalMutex) {
+        if (GetObjFromHandle(NULL, MUTEXID, mutexHandle, (void**)&mutexPtr)
+                == TCL_OK) {
+            Tcl_MutexUnlock(mutexPtr);
+        }
+    } else {
+        Tcl_MutexUnlock(mutexPtr);
+    }
+
+    return ret;
 }
 
 /*
@@ -235,14 +338,13 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
     }
 
     switch ((enum options)opt) {
-    case c_CREATE: break;
     case c_WAIT:
 
         /*
-         * May improve the Tcl_ConditionWait() to report timeouts
-         * so we can inform script programmer about this interesting fact.
-         * I think threre is still a place for something like 
-         * Tcl_ConditionWaitEx() or similar... 
+         * May improve the Tcl_ConditionWait() to report timeouts so we can
+         * inform script programmer about this interesting fact. I think 
+         * there is still a place for something like Tcl_ConditionWaitEx()
+         * or similar in the core.
          */
 
         if (objc < 4 || objc > 5) {
@@ -266,11 +368,9 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
             Tcl_ConditionWait(condPtr, mutexPtr, NULL);
         }
         break;
-
     case c_NOTIFY:
         Tcl_ConditionNotify(condPtr);
         break;
-
     case c_DESTROY: 
         Tcl_ConditionFinalize(condPtr);
         Tcl_Free((char*)condPtr);
@@ -308,22 +408,21 @@ SetHandleFromObj(interp, type, addrPtr)
     char handle[20];
     Tcl_HashEntry *hashEntryPtr;
 
-    GRAB_SYNCMUTEX;
-
+#ifdef NS_AOLSERVER
+    sprintf(handle, "%cid%p", type, addrPtr);
+#else
     sprintf(handle, "%cid%u", type, syncHandlesCounter++);
-
     /*
      * By their very nature, object handles are always unique
      * (the counter!) so no need to check for duplicates.
      */
-
+    GRAB_SYNCMUTEX;    
     hashEntryPtr = Tcl_CreateHashEntry(&syncHandles, handle, &new);
     Tcl_SetHashValue(hashEntryPtr, (ClientData)addrPtr);
-
     RELEASE_SYNCMUTEX;
-
+#endif /* NS_AOLSERVER */
     Tcl_SetObjResult(interp, Tcl_NewStringObj(handle, -1));
-   
+
     return;
 }
 
@@ -350,26 +449,36 @@ GetObjFromHandle(interp, type, handle, addrPtrPtr)
     char *handle;                       /* Tcl string handle */
     void **addrPtrPtr;                  /* Return object address here */
 {
+    void *addrPtr = NULL;
     Tcl_HashEntry *hashEntryPtr;
 
-    if (handle[0] != type || handle[1] != 'i' || handle[2] != 'd') {
-        Tcl_AppendResult(interp, "invalid handle \"", handle, "\"", NULL);
-        return TCL_ERROR;
+    if (handle[0] != type || handle[1] != 'i' || handle[2] != 'd'
+#ifdef NS_AOLSERVER
+        || sscanf(handle+3, "%p", &addrPtr) != 1 || addrPtr == NULL
+#endif
+        ) {
+        goto badhandle;
     }
-
+#ifdef NS_AOLSERVER
+    *addrPtrPtr = addrPtr;
+#else
     GRAB_SYNCMUTEX;
-   
     hashEntryPtr = Tcl_FindHashEntry(&syncHandles, handle);
     if (hashEntryPtr == (Tcl_HashEntry *)NULL) {
         RELEASE_SYNCMUTEX;
-        Tcl_AppendResult(interp, "no such handle \"", handle, "\"", NULL);
-        return TCL_ERROR;        
+        goto badhandle;
     }
     *addrPtrPtr = (void *)Tcl_GetHashValue(hashEntryPtr);
-
     RELEASE_SYNCMUTEX;
+#endif /* NS_AOLSERVER */
 
     return TCL_OK;
+
+ badhandle:
+    if (interp != NULL) {
+        Tcl_AppendResult(interp, "invalid handle \"", handle, "\"", NULL);
+    }
+    return TCL_ERROR;
 }
 
 /*
@@ -378,6 +487,7 @@ GetObjFromHandle(interp, type, handle, addrPtrPtr)
  * DeleteObjHandle --
  *
  *      Deletes the object handle from internal hash table.
+ *      Caller has to take care about disposing the object.
  *
  * Results:
  *      Standard Tcl result. 
@@ -395,10 +505,8 @@ DeleteObjHandle(handle)
     Tcl_HashEntry *hashEntryPtr;
     
     GRAB_SYNCMUTEX;
-
     hashEntryPtr = Tcl_FindHashEntry(&syncHandles, handle);
     Tcl_DeleteHashEntry(hashEntryPtr);
-
     RELEASE_SYNCMUTEX;
 } 
 
@@ -407,16 +515,14 @@ DeleteObjHandle(handle)
  *
  * Sp_Init --
  *
- *      Create the thread::mutex and thread::cond commands in current
- *      interpreter.
+ *      Create commands in current interpreter..
  *
  * Results:
  *      None.
  *
  * Side effects:
- *      Creates new commands in current interpreter, registers
- *      new application exit handler, initializes shared hash table
- *      for storing sync primitives handles/pointers.
+ *      Creates new commands in current interpreter, initializes 
+ *      shared hash table for storing sync primitives handles/pointers.
  *
  *----------------------------------------------------------------------
  */
@@ -425,18 +531,27 @@ void
 Sp_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
 {
-    if (!syncHandlesInitialized) {
+    static int initialized;
+
+    if (!initialized) {
         GRAB_SYNCMUTEX;
-        if (!syncHandlesInitialized) {
+        if (!initialized) {
             Tcl_InitHashTable(&syncHandles, TCL_STRING_KEYS);
-            syncHandlesInitialized = 1; 
-            Tcl_CreateExitHandler((Tcl_ExitProc *)FinalizeSp, NULL);
+            /*
+             * We should not be garbage-collecting sync 
+             * primitives because there is no way to 
+             * find out who/if is using them. Generally, 
+             * this should be delegated to programmer.
+             */
+            /*Tcl_CreateExitHandler((Tcl_ExitProc *)FinalizeSp, NULL);*/
+            initialized = 1;
         }
         RELEASE_SYNCMUTEX;
     }
 
     TCL_CMD(interp, "thread::mutex", ThreadMutexObjCmd);
     TCL_CMD(interp, "thread::cond",  ThreadCondObjCmd);
+    TCL_CMD(interp, "thread::eval",  ThreadEvalObjCmd);
 }
 
 /*
@@ -445,6 +560,7 @@ Sp_Init (interp)
  * FinalizeSp --
  *
  *      Garbage-collect hash table on application exit. 
+ *      NOTE: this function should not be used!
  *
  * Results:
  *      Standard Tcl result. 
