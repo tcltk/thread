@@ -1,4 +1,3 @@
-
 #
 # tpool.tcl --
 #
@@ -12,13 +11,17 @@
 # this implementation is to serve as an example of using the Tcl
 # extension to implement some very common threading paradigms.
 #
+# Beware: with time, as improvements are made to the C-level
+# implementation, this Tcl one might lag behind or even never
+# reach the level of its C companion. 
+#
 # Copyright (c) 2002 by Zoran Vasiljevic.
 #
 # See the file "license.terms" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: tpool.tcl,v 1.6 2002/12/18 22:14:36 vasiljevic Exp $
+# RCS: @(#) $Id: tpool.tcl,v 1.7 2003/09/03 11:28:39 vasiljevic Exp $
 #
 
 package require Thread 2.5
