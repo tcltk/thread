@@ -853,7 +853,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-tcl              directory containing tcl configuration (tclConfig.sh)
-  --with-gdbm             link with optional gdbm support
+  --with-gdbm             link with optional GDBM support
   --with-tclinclude       directory containing the public Tcl header files
   --with-celib=DIR        use Windows/CE support library from DIR
 
@@ -6042,8 +6042,6 @@ done
 #--------------------------------------------------------------------
 
 
-    echo "$as_me:$LINENO: checking for GNU gdbm library" >&5
-echo $ECHO_N "checking for GNU gdbm library... $ECHO_C" >&6
 
 # Check whether --with-gdbm or --without-gdbm was given.
 if test "${with_gdbm+set}" = set; then
@@ -6051,6 +6049,11 @@ if test "${with_gdbm+set}" = set; then
   \
 	with_gdbm=${withval}
 fi;
+
+    if test x"${with_gdbm}" != x; then
+
+    echo "$as_me:$LINENO: checking for GNU gdbm library" >&5
+echo $ECHO_N "checking for GNU gdbm library... $ECHO_C" >&6
 
     if test "${ac_cv_c_gdbm+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -6110,6 +6113,7 @@ _ACEOF
         { { echo "$as_me:$LINENO: error: none found" >&5
 echo "$as_me: error: none found" >&2;}
    { (exit 1); exit 1; }; }
+    fi
     fi
 
 
