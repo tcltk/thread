@@ -67,7 +67,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: thread.n,v 1.8 2002/01/19 23:19:54 vasiljevic Exp $
+'\" RCS: @(#) $Id: thread.n,v 1.9 2002/02/09 17:08:37 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -261,6 +261,7 @@ thread \- Script level threading
 \fB thread::send\fR \fIid\fR ?\fI-async\fR? \fIscript\fR ?\fIvarname\fR?
 \fB thread::wait\fR
 \fB thread::join\fR \fIid\fR
+\fB thread::configure\fR \fIid\fR ?\fIoption\fR? ?\fIvalue\fI? ?\fIoption value\fI?...
 \fB thread::transfer\fR \fIid\fR \fIchannel\fR
 
  Thread synchronization primitives commands:
@@ -364,7 +365,8 @@ can enter the event loop explicitly by calling \fBthread::wait\fR or
 
 Optional \fIvarname\fR specifies name of the variable to store
 the result of the \fIscript\fR. Without the \fI-async\fR flag, the command
-returns the evaluation code, similarily to the standard Tcl \fBcatch\fR command.
+returns the evaluation code, similarily to the standard Tcl \fBcatch\fR 
+command.
 If, however, the \fI-async\fR flag is specified, the command returns 
 immediately and caller can later \fBvwait\fR on \fIvarname\fR to get the
 result of the passed \fIscript\fR.
@@ -379,6 +381,18 @@ a \fBvwait\fR.
 This command waits for the thread with ID \fIid\fR to exit and
 then returns it's exit code. Errors will be returned for threads which
 are not joinable or already waited upon by another thread.
+.TP
+\fBthread::configure\fR 
+This command configures various low-level aspects of the thread with ID
+\fIid\fR in the similar way as the standard Tcl command \fBfconfigure\fR
+configures some Tcl channel options.
+Currently, only one thread option is supported: \fI-eventmark\fR. This option,
+when set, limits the number of asynchronously posted scripts to the thread 
+event loop. The \fBthread::send -async\fR command will block until the 
+number of pending scripts in the thread event queue does not drop below 
+the configured \fI-eventmark\fR.
+Default value for the \fI-eventmark\fR is 0 (zero) which effectively 
+disables the checking, i.e. allows for unlimited number of posted scripts.
 .TP
 \fBthread::transfer\fR 
 This moves the specified \fIchannel\fR from the
