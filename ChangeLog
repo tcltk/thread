@@ -1,5 +1,11 @@
 2004-01-31 Zoran Vasiljevic <zoran@archiware.com>
 
+	* pkgIndex.tcl.in: fixed Tcl Bug #918137
+	* doc/format.tcl: fixed inclusion of man.macros in
+	every *.n doc file
+
+2004-01-31 Zoran Vasiljevic <zoran@archiware.com>
+
 	* generic/threadCmd.c: fixed incorrect handling of return
         codes from the scripts passed to threads. We were wrongly
         triggering error for non-error return codes such as TCL_RETURN,
