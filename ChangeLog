@@ -1,3 +1,16 @@
+2002-03-27  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* Makefile.in (TCLSH_PROG): moved and updated env var definitions
+	to have tclsh work from build dir.  Removed TCL_EXTRA_CFLAGS,
+	TCL_LD_FLAGS, TCL_SHLIB_LD_LIBS, TCL_DBGX, TCL_STUB_LIB_FILE,
+	TCL_STUB_LIB_SPEC as they aren't needed (configure acquires all
+	that info for us).  TCL_LIBS is also not needed, but left in as a
+	reference to the libs Tcl used.
+
+	* configure: regen based on updated tclconfig/tcl.m4
+	* configure.in: moved the SHLIB_LD_LIBS magic into
+	tclconfig/tcl.m4 and noted where users can modify (SHLIB_LD_)LIBS.
+
 2002-03-19  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* generic/tclThread.h: 
@@ -10,7 +23,7 @@
 	* tests/all.tcl:
 	* tests/thread.test: improved to detect 8.3/8.4 pkg differences
 
-	* tclconfig/* (new):
+	* tclconfig/tcl.m4,install-sh (new):
 	* config/* (removed):
 	* aclocal.m4: 
 	* configure: 
