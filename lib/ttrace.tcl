@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.3 2004/04/02 10:39:43 vasiljevic Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.4 2004/07/21 21:01:12 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -279,7 +279,7 @@ namespace eval ttrace {
         set cmd [lindex $args 0]
         variable resolvers
         foreach resolver $resolvers {
-            if {[uplevel [info comm resolve::$resolver] $cmd]} {
+            if {[uplevel [info comm resolve::$resolver] [list $cmd]]} {
                 set c [catch {uplevel $cmd [lrange $args 1 end]} r]
                 return -code $c -errorcode $::errorCode \
                     -errorinfo $::errorInfo $r
