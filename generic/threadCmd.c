@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.37 2002/02/19 20:11:53 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.38 2002/03/08 07:26:11 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -37,6 +37,7 @@
  */
 
 #ifdef NS_AOLSERVER
+# include <ns.h>
 # define NS "Thread::"
 #else
 # define NS "thread::"
@@ -78,15 +79,12 @@ typedef struct ThreadSpecificData {
 
 static Tcl_ThreadDataKey dataKey;
 
-enum _ThreadFlags {
-    THREAD_FLAGS_NONE,                    /* None */
-    THREAD_FLAGS_STOPPED                  /* Thread is being stopped */
-};
+#define THREAD_FLAGS_NONE          0      /* None */
+#define THREAD_FLAGS_STOPPED       1      /* Thread is being stopped */
+#define THREAD_FLAGS_UNWINDONERROR 2      /* Thread unwinds on script error */
 
-enum _ThreadReserve {
-    THREAD_RESERVE,                       /* Reserves the thread */
-    THREAD_RELEASE                        /* Releases the thread */
-};
+#define THREAD_RESERVE             1      /* Reserves the thread */
+#define THREAD_RELEASE             2      /* Releases the thread */
 
 /*
  * This list is used to list all threads that have interpreters.
@@ -1373,6 +1371,7 @@ NewThread(clientData)
     /*
      * Initialize the interpreter.
      */
+
 #ifdef NS_AOLSERVER
     interp = (Tcl_Interp*)Ns_TclAllocateInterp(NULL);
 #else
@@ -1489,7 +1488,6 @@ static void
 ThreadErrorProc(interp)
     Tcl_Interp *interp;         /* Interp that failed */
 {
-    Tcl_Channel errChannel;
     ThreadSendData *sendPtr;
     char *errorInfo, *argv[3], buf[10];
 
@@ -1497,17 +1495,18 @@ ThreadErrorProc(interp)
     errorInfo = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
 
     if (errorProcString == NULL) {
-
-        errChannel = Tcl_GetStdChannel(TCL_STDERR);
+#ifdef NS_AOLSERVER
+        Ns_Log(Error, "%s\n%s", Tcl_GetStringResult(interp), errorInfo);
+#else
+        Tcl_Channel errChannel = Tcl_GetStdChannel(TCL_STDERR);
 
         Tcl_WriteChars(errChannel, "Error from thread ", -1);
         Tcl_WriteChars(errChannel, buf, -1);
         Tcl_WriteChars(errChannel, "\n", 1);
         Tcl_WriteChars(errChannel, errorInfo, -1);
         Tcl_WriteChars(errChannel, "\n", 1);
-
+#endif
     } else {
-
         argv[0] = errorProcString;
         argv[1] = buf;
         argv[2] = errorInfo;
@@ -2392,6 +2391,17 @@ ThreadEventProc(evPtr, mask)
         ThreadErrorProc(interp);
     }
 
+    /*
+     * Mark unwind scenario for this thread if the script resulted
+     * in error condition and thread has been marked to unwind
+     * in such cases. This will cause thread to disappear from the
+     * list of active threads, clean-up its event queue and exit.
+     */
+
+    if (code != TCL_OK && (tsdPtr->flags & THREAD_FLAGS_UNWINDONERROR)) {
+        tsdPtr->flags |= THREAD_FLAGS_STOPPED;
+    }
+
     if (interp != NULL) {
         Tcl_Release((ClientData)interp);
     }
@@ -2488,14 +2498,26 @@ ThreadGetOption(interp, threadId, option, dsPtr)
         Tcl_SetResult(interp, "invalid thread id", TCL_STATIC);
         return TCL_ERROR;
     }
-    if (!len ||
-        (len > 2 && option[1]=='e' && !strncmp(option,"-eventmark", len))) {
+    if (len == 0 || (len > 2 && option[1] == 'e' 
+                     && !strncmp(option,"-eventmark", len))) {
         char buf[16];
-        if (!len) {
+        if (len == 0) {
             Tcl_DStringAppendElement(dsPtr, "-eventmark");
         }
         sprintf(buf, "%d", tsdPtr->maxEventsCount);
         Tcl_DStringAppendElement(dsPtr, buf);
+        if (len) {
+            Tcl_MutexUnlock(&threadMutex);
+            return TCL_OK;
+        }
+    }
+    if (len == 0 || (len > 2 && option[1] == 'u' 
+                     && !strncmp(option,"-unwindonerror", len))) {
+        int flag = tsdPtr->flags & THREAD_FLAGS_UNWINDONERROR;
+        if (len == 0) {
+            Tcl_DStringAppendElement(dsPtr, "-unwindonerror");
+        }
+        Tcl_DStringAppendElement(dsPtr, flag ? "1" : "0");
         if (len) {
             Tcl_MutexUnlock(&threadMutex);
             return TCL_OK;
@@ -2537,15 +2559,28 @@ ThreadSetOption(interp, threadId, option, value)
         Tcl_SetResult(interp, "invalid thread id", TCL_STATIC);
         return TCL_ERROR;
     }
-    if (len > 2 && option[1]=='e' && !strncmp(option,"-eventmark", len)) {
+    if (len > 2 && option[1] == 'e' 
+        && !strncmp(option,"-eventmark", len)) {
         if (sscanf(value, "%d", &tsdPtr->maxEventsCount) != 1) {
             Tcl_AppendResult(interp, "expected integer but got \"",
                              value, "\"", NULL);
             Tcl_MutexUnlock(&threadMutex);
             return TCL_ERROR;
         }
+    } else if (len > 2 && option[1] == 'u' 
+               && !strncmp(option,"-unwindonerror", len)) {
+        int flag = 0;
+        if (Tcl_GetBoolean(interp, value, &flag) != TCL_OK) {
+            Tcl_MutexUnlock(&threadMutex);
+            return TCL_ERROR;
+        }
+        if (flag) {
+            tsdPtr->flags |=  THREAD_FLAGS_UNWINDONERROR;
+        } else {
+            tsdPtr->flags &= ~THREAD_FLAGS_UNWINDONERROR;
+        }
     }
-
+        
     Tcl_MutexUnlock(&threadMutex);
     return TCL_OK;
 }
