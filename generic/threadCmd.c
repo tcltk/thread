@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.1.1.1 2000/01/19 22:57:23 welch Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.2 2000/04/10 05:55:10 welch Exp $
  */
 
 #include "tcl.h"
@@ -369,7 +369,7 @@ ThreadCreate(interp, script, stacksize)
     ctrl.flags = 0;
 
     Tcl_MutexLock(&threadMutex);
-    if (TclpThreadCreate(&id, NewThread, (ClientData) &ctrl) != TCL_OK) {
+    if (Tcl_CreateThread(&id, NewThread, (ClientData) &ctrl, 0, 0) != TCL_OK) {
 	Tcl_MutexUnlock(&threadMutex);
         Tcl_AppendResult(interp,"can't create a new thread",0);
 	ckfree((void*)ctrl.script);
@@ -382,7 +382,7 @@ ThreadCreate(interp, script, stacksize)
 
     Tcl_ConditionWait(&ctrl.condWait, &threadMutex, NULL);
     Tcl_MutexUnlock(&threadMutex);
-    TclFinalizeCondition(&ctrl.condWait);
+    Tcl_ConditionFinalize(&ctrl.condWait);
     Tcl_SetObjResult(interp, Tcl_NewLongObj((long)id));
     return TCL_OK;
 }
@@ -774,7 +774,7 @@ Thread_Send(interp, id, script, wait)
 	}
     }
     Tcl_SetResult(interp, resultPtr->result, TCL_DYNAMIC);
-    TclFinalizeCondition(&resultPtr->done);
+    Tcl_ConditionFinalize(&resultPtr->done);
     code = resultPtr->code;
 
     ckfree((char *) resultPtr);
