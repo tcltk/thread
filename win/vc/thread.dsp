@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) External Target" 0x0106
 
-CFG=thread - Win32 Debug LIB _use msvcrtd_
+CFG=thread - thread - Win32 Release DLL
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -34,18 +34,18 @@ CFG=thread - Win32 Debug LIB _use msvcrtd_
 !IF  "$(CFG)" == "thread - Win32 Release DLL"
 
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "thread_1"
-# PROP BASE Intermediate_Dir "thread_1"
-# PROP BASE Cmd_Line "NMAKE -nologo /f makefile.vc NODEBUG=1"
-# PROP BASE Rebuild_Opt "/a"
-# PROP BASE Target_File "thread.dll"
+# PROP BASE Output_Dir "Release"
+# PROP BASE Intermediate_Dir "Release"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1"
+# PROP BASE Rebuild_Opt "-a"
+# PROP BASE Target_File "thread20.dll"
 # PROP BASE Bsc_Name ""
 # PROP BASE Target_Dir ""
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "thread_1"
-# PROP Intermediate_Dir "thread_1"
-# PROP Cmd_Line "NMAKE -nologo /f makefile.vc NODEBUG=1"
-# PROP Rebuild_Opt "/a"
+# PROP Output_Dir "Release"
+# PROP Intermediate_Dir "Release"
+# PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1"
+# PROP Rebuild_Opt "-a"
 # PROP Target_File "thread20.dll"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
@@ -53,16 +53,16 @@ CFG=thread - Win32 Debug LIB _use msvcrtd_
 !ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
 
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "thread_0"
-# PROP BASE Intermediate_Dir "thread_0"
-# PROP BASE Cmd_Line "NMAKE -nologo /f makefile.vc NODEBUG=1"
-# PROP BASE Rebuild_Opt "/a"
-# PROP BASE Target_File "thread.dll"
+# PROP BASE Output_Dir "Release_Static"
+# PROP BASE Intermediate_Dir "Release_Static"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1"
+# PROP BASE Rebuild_Opt "-a"
+# PROP BASE Target_File "thread20.lib"
 # PROP BASE Bsc_Name ""
 # PROP BASE Target_Dir ""
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "thread_0"
-# PROP Intermediate_Dir "thread_0"
+# PROP Output_Dir "Release_Static"
+# PROP Intermediate_Dir "Release_Static"
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread20.lib"
@@ -72,16 +72,16 @@ CFG=thread - Win32 Debug LIB _use msvcrtd_
 !ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
 
 # PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "thread_2"
-# PROP BASE Intermediate_Dir "thread_2"
-# PROP BASE Cmd_Line "NMAKE -nologo /f makefile.vc NODEBUG=1"
-# PROP BASE Rebuild_Opt "/a"
-# PROP BASE Target_File "thread.dll"
+# PROP BASE Output_Dir "Release_StaticX"
+# PROP BASE Intermediate_Dir "Release_StaticX"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1 NOMSVCRT=0"
+# PROP BASE Rebuild_Opt "-a"
+# PROP BASE Target_File "thread20x.lib"
 # PROP BASE Bsc_Name ""
 # PROP BASE Target_Dir ""
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "thread_2"
-# PROP Intermediate_Dir "thread_2"
+# PROP Output_Dir "Release_StaticX"
+# PROP Intermediate_Dir "Release_StaticX"
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=1 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread20x.lib"
@@ -91,16 +91,16 @@ CFG=thread - Win32 Debug LIB _use msvcrtd_
 !ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
 
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "thread_3"
-# PROP BASE Intermediate_Dir "thread_3"
-# PROP BASE Cmd_Line "NMAKE -nologo -p -f makefile.vc NODEBUG=0 STATIC_BUILD=1"
+# PROP BASE Output_Dir "Debug"
+# PROP BASE Intermediate_Dir "Debug"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0"
 # PROP BASE Rebuild_Opt "-a"
-# PROP BASE Target_File "threadd.dll"
-# PROP BASE Bsc_Name "threadd.bsc"
+# PROP BASE Target_File "thread20d.dll"
+# PROP BASE Bsc_Name ""
 # PROP BASE Target_Dir ""
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "thread_3"
-# PROP Intermediate_Dir "thread_3"
+# PROP Output_Dir "Debug"
+# PROP Intermediate_Dir "Debug"
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread20d.dll"
@@ -110,16 +110,16 @@ CFG=thread - Win32 Debug LIB _use msvcrtd_
 !ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
 
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "thread_4"
-# PROP BASE Intermediate_Dir "thread_4"
-# PROP BASE Cmd_Line "NMAKE -nologo -p -f makefile.vc NODEBUG=0 STATIC_BUILD=1"
+# PROP BASE Output_Dir "Debug_Static"
+# PROP BASE Intermediate_Dir "Debug_Static"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1"
 # PROP BASE Rebuild_Opt "-a"
-# PROP BASE Target_File "threadd.dll"
-# PROP BASE Bsc_Name "threadd.bsc"
+# PROP BASE Target_File "thread20sd.lib"
+# PROP BASE Bsc_Name ""
 # PROP BASE Target_Dir ""
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "thread_4"
-# PROP Intermediate_Dir "thread_4"
+# PROP Output_Dir "Debug_Static"
+# PROP Intermediate_Dir "Debug_Static"
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread20sd.lib"
@@ -129,16 +129,16 @@ CFG=thread - Win32 Debug LIB _use msvcrtd_
 !ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
 
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "thread_5"
-# PROP BASE Intermediate_Dir "thread_5"
-# PROP BASE Cmd_Line "NMAKE -nologo -p -f makefile.vc NODEBUG=0 STATIC_BUILD=1"
+# PROP BASE Output_Dir "Debug_StaticX"
+# PROP BASE Intermediate_Dir "Debug_StaticX"
+# PROP BASE Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP BASE Rebuild_Opt "-a"
-# PROP BASE Target_File "threadd.dll"
-# PROP BASE Bsc_Name "threadd.bsc"
+# PROP BASE Target_File "thread20xd.lib"
+# PROP BASE Bsc_Name ""
 # PROP BASE Target_Dir ""
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "thread_5"
-# PROP Intermediate_Dir "thread_5"
+# PROP Output_Dir "Debug_StaticX"
+# PROP Intermediate_Dir "Debug_StaticX"
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc NODEBUG=0 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP Rebuild_Opt "-a"
 # PROP Target_File "thread20xd.lib"
@@ -156,236 +156,33 @@ CFG=thread - Win32 Debug LIB _use msvcrtd_
 # Name "thread - Win32 Debug LIB"
 # Name "thread - Win32 Debug LIB _use msvcrtd_"
 
-!IF  "$(CFG)" == "thread - Win32 Release DLL"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
-
-!ENDIF 
-
 # Begin Source File
-
 SOURCE=.\config.vc
-
-!IF  "$(CFG)" == "thread - Win32 Release DLL"
-
-# PROP Intermediate_Dir "Release"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
-
-# PROP Intermediate_Dir "Release_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
-
-# PROP Intermediate_Dir "Release_StaticX"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
-
-# PROP Intermediate_Dir "Debug"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
-
-# PROP Intermediate_Dir "Debug_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
-
-# PROP Intermediate_Dir "Debug_StaticX"
-
-!ENDIF 
-
 # End Source File
-# Begin Source File
 
+# Begin Source File
 SOURCE=.\makefile.vc
-
-!IF  "$(CFG)" == "thread - Win32 Release DLL"
-
-# PROP Intermediate_Dir "Release"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
-
-# PROP Intermediate_Dir "Release_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
-
-# PROP Intermediate_Dir "Release_StaticX"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
-
-# PROP Intermediate_Dir "Debug"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
-
-# PROP Intermediate_Dir "Debug_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
-
-# PROP Intermediate_Dir "Debug_StaticX"
-
-!ENDIF 
-
 # End Source File
-# Begin Source File
 
+# Begin Source File
 SOURCE=..\..\generic\thread.h
-
-!IF  "$(CFG)" == "thread - Win32 Release DLL"
-
-# PROP Intermediate_Dir "Release"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
-
-# PROP Intermediate_Dir "Release_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
-
-# PROP Intermediate_Dir "Release_StaticX"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
-
-# PROP Intermediate_Dir "Debug"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
-
-# PROP Intermediate_Dir "Debug_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
-
-# PROP Intermediate_Dir "Debug_StaticX"
-
-!ENDIF 
-
 # End Source File
-# Begin Source File
 
+# Begin Source File
 SOURCE=.\thread.rc
-
-!IF  "$(CFG)" == "thread - Win32 Release DLL"
-
-# PROP Intermediate_Dir "Release"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
-
-# PROP Intermediate_Dir "Release_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
-
-# PROP Intermediate_Dir "Release_StaticX"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
-
-# PROP Intermediate_Dir "Debug"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
-
-# PROP Intermediate_Dir "Debug_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
-
-# PROP Intermediate_Dir "Debug_StaticX"
-
-!ENDIF 
-
 # End Source File
-# Begin Source File
 
+# Begin Source File
 SOURCE=..\..\generic\threadCmd.c
-
-!IF  "$(CFG)" == "thread - Win32 Release DLL"
-
-# PROP Intermediate_Dir "Release"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
-
-# PROP Intermediate_Dir "Release_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
-
-# PROP Intermediate_Dir "Release_StaticX"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
-
-# PROP Intermediate_Dir "Debug"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
-
-# PROP Intermediate_Dir "Debug_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
-
-# PROP Intermediate_Dir "Debug_StaticX"
-
-!ENDIF 
-
 # End Source File
-# Begin Source File
 
+# Begin Source File
 SOURCE=..\..\generic\threadSpCmd.c
-
-!IF  "$(CFG)" == "thread - Win32 Release DLL"
-
-# PROP Intermediate_Dir "Release"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
-
-# PROP Intermediate_Dir "Release_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
-
-# PROP Intermediate_Dir "Release_StaticX"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
-
-# PROP Intermediate_Dir "Debug"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
-
-# PROP Intermediate_Dir "Debug_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
-
-# PROP Intermediate_Dir "Debug_StaticX"
-
-!ENDIF 
-
 # End Source File
+
 # Begin Source File
-
 SOURCE=..\..\generic\threadSvCmd.c
-
-!IF  "$(CFG)" == "thread - Win32 Release DLL"
-
-# PROP Intermediate_Dir "Release"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB"
-
-# PROP Intermediate_Dir "Release_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Release LIB _use msvcrt_"
-
-# PROP Intermediate_Dir "Release_StaticX"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug DLL"
-
-# PROP Intermediate_Dir "Debug"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB"
-
-# PROP Intermediate_Dir "Debug_Static"
-
-!ELSEIF  "$(CFG)" == "thread - Win32 Debug LIB _use msvcrtd_"
-
-# PROP Intermediate_Dir "Debug_StaticX"
-
-!ENDIF 
-
 # End Source File
+
 # End Target
 # End Project
