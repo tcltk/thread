@@ -1,4 +1,4 @@
-<manpage cat="package" id="thread" title="Tcl Threading" version="2.4">
+<manpage cat="package" id="thread" title="Tcl Threading" version="2.5">
 <!--  
      Copyright (c) 2000 Andreas Kupries
      Copyright (c) 2002 Zoran Vasiljevic 
@@ -15,7 +15,7 @@
 <synopsis>
 <syntax>
 <p>
-<cmd>package require Thread ?2.4?</cmd></p>
+<cmd>package require Thread ?2.5?</cmd></p>
 <cmd>thread::create</cmd> ?<m>-joinable</m>? ?<m>script</m>?
 <cmd>thread::preserve</cmd> <m>id</m>
 <cmd>thread::release</cmd> ?<m>-wait</m>? <m>id</m>
@@ -31,6 +31,8 @@
 <cmd>thread::join</cmd> <m>id</m>
 <cmd>thread::configure</cmd> <m>id</m> ?<m>option</m>? ?<m>value</m><m>? ?</m><m>option value</m><m>?...</m>
 <cmd>thread::transfer</cmd> <m>id</m> <m>channel</m>
+<cmd>thread::detach</cmd> <m>channel</m>
+<cmd>thread::attach</cmd> <m>channel</m>
 
 <cmd>thread::cond</cmd> <m>options</m>
 <cmd>thread::mutex</cmd> <m>options</m>
@@ -54,6 +56,7 @@
 <cmd>tsv::lsearch</cmd> <m>array</m> <m>element</m> ?<m>mode</m>? <m>pattern</m>
 <cmd>tsv::lpop</cmd> <m>array</m> <m>element</m> ?<m>index</m>?
 <cmd>tsv::lpush</cmd> <m>array</m> <m>element</m> <m>value</m> ?<m>index</m>?
+<cmd>tsv::eval <m>arg</m> ?<m>arg ...</m>?</cmd>
 </syntax>
 </synopsis>
 
@@ -90,11 +93,13 @@ joinable thread, i.e. one upon whose exit can be waited upon (by using
 </commanddef>
 
 <commanddef>
-<command> <cmd>thread::preserve</cmd> <m>id</m>
+<command> <cmd>thread::preserve</cmd> ?<m>id</m>?
 </command>
 <desc>This procedure increments the thread reference counter. Each call
 to this command increments the reference counter by one (1). Command returns the value 
 of the reference counter after the increment. 
+If called with the optional thread <m>id</m>, the command preserves the given thread.
+Otherwise the current thread is preserved.
 <p>With reference counting, one can implement controlled access to a shared Tcl thread. 
 By incrementing the reference counter, the caller signalizes that he/she wishes to use
 the thread for a longer period of time. By decrementing the counter, using the 
@@ -104,12 +109,16 @@ the thread.</p>
 </commanddef>
 
 <commanddef>
-<command> <cmd>thread::release</cmd> ?<m>-wait</m>? <m>id</m>
+<command> <cmd>thread::release</cmd> ?<m>-wait</m>? ?<m>id</m>?
 </command>
 <desc>This procedure decrements the thread reference counter. Each call to this
-command decrements the reference counter by one (1). Command returns
-the value of the reference counter after the decrement. When the reference counter
-reaches zero (0), the target thread is terminated.
+command decrements the reference counter by one (1). 
+If called with the optional thread <m>id</m>, the command releases the given thread.
+Otherwise, the current thread is released.
+Command returns the value of the reference counter after the decrement. When the 
+reference counter reaches zero (0), the target thread is terminated. You should 
+not reference the thread after the <cmd>thread::release</cmd> command returns 
+zero or negative integer.
 <p>Optional flag <m>-wait</m> instructs the caller thread to wait for the target
 thread to exit, if the effect of the command would result in termination of the
 target thread, i.e. if the return result is zero (0). Without the flag, the caller
@@ -119,7 +128,7 @@ the <m>-wait</m>, since this may block the caller thread indefinitely.</p>
 </commanddef>
 
 <commanddef>
-<command><cmd>thread::id</cmd> </command>
+<command><cmd>thread::id</cmd></command>
 <desc>This command returns the ID of the current thread. 
 </desc>
 </commanddef>
@@ -144,8 +153,11 @@ The <m>proc</m> is called in the interpreter that invoked the
 <command><cmd>thread::unwind</cmd></command>
 <desc>This stops a prior <cmd>thread::wait</cmd>. Execution of the script will continue
 from the <cmd>thread::wait</cmd> command. If <cmd>thread::wait</cmd> was the last command
-in a thread, the thread will exit. The command usually returns empty result but
-may trigger Tcl error with the message "target thread died" in some situations.
+in the script passed to the thread at the time of its creation, the thread will exit. 
+The command usually returns empty result but may trigger Tcl error with the message 
+"target thread died" in some situations.
+This command is deprecated in favour of more advanced thread reservation system 
+implemented with <cmd>thread::preserve</cmd> and <cmd>thread::release</cmd> commands.
 </desc>
 </commanddef>
 
@@ -258,10 +270,37 @@ channel. Because of this it is possible to deadlock the participating
 threads by commanding the other through a synchronous
 <cmd>thread::send</cmd> to transfer a channel to us. This easily extends
 into longer loops of threads waiting for each other.
-Other restrictions: The channel in question must not be shared among
+Other restrictions: the channel in question must not be shared among
 multiple interpreters running in the sending thread. This
 automatically excludes the special channels for standard input, output
 and error.
+</desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>thread::detach</cmd> </command>
+<desc>This detaches the specified <m>channel</m> from the
+current thread and interpreter. After that, the current interpreter 
+has no access to the channel anymore. The channel is in the parked
+state until some other (or the same) thread attaches the channel
+again with <cmd>thread::attach</cmd> command.
+Restriction: the channel in question must not be shared among
+multiple interpreters running in the sending thread. This
+automatically excludes the special channels for standard input, output
+and error.
+</desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>thread::attach</cmd> </command>
+<desc>This attaches the previously detached <m>channel</m> in the
+current thread/interpreter. For already existing channels, 
+the command does nothing, i.e. it is not an error to attach the
+same channel more than once. The first operation will actualy
+perform the operation, while all subsequent operation will just
+do nothing.
+Command throws error if the <m>channel</m> cannot be found in the
+list of detached channels and/or in the current interpreter.
 </desc>
 </commanddef>
 
@@ -525,6 +564,16 @@ in the shared <m>array</m>. If <m>index</m> is not specified, it defaults to zer
 <command><cmd>tsv::lpush</cmd></command>
 <desc>Inserts the <m>value</m> at the <m>index</m> list position in the list <m>element</m>
 in the shared <m>array</m>. If <m>index</m> is not specified, it defaults to zero.
+</desc>
+</commanddef>
+
+<commanddef>
+<command><cmd>tsv::eval</cmd> </command>
+<desc>This command concatenates passed arguments and evaluates the 
+resulting script under the internal mutex protection. During the
+script evaluation, the entire shared array is locked. For shared
+variable commands within the script, the internal locking is disabled
+so no deadlock can occur.
 </desc>
 </commanddef>
 
