@@ -1,10 +1,10 @@
 <html>
 <head>
-<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.4 $">
+<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.5 $">
 </head><body>
 <div class="header">
 <div class="navbar" align="center">
-<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode379">DESCRIPTION</a> · <a href="#SECTnode391">COMMANDS</a> · <a href="#SECTnode1459">DISCUSSION</a> · <a href="#SECTnode1477">CREDITS</a> · <a href="#SECTnode1486">SEE ALSO</a> · <a href="#SECTnode1492">KEYWORDS</a>
+<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode400">DESCRIPTION</a> · <a href="#SECTnode412">COMMANDS</a> · <a href="#SECTnode1539">DISCUSSION</a> · <a href="#SECTnode1557">CREDITS</a> · <a href="#SECTnode1566">SEE ALSO</a> · <a href="#SECTnode1572">KEYWORDS</a>
 </div><hr class="navsep">
 </div><div class="body">
 
@@ -14,7 +14,7 @@
 
 <h2><a name="SECTnode14">SYNOPSIS</a></h2><pre class="syntax">
 <p>
-<b class="cmd">package require Thread ?2.4?</b>
+<b class="cmd">package require Thread ?2.5?</b>
 </p>
 <b class="cmd">thread::create</b> ?<i class="m">-joinable</i>? ?<i class="m">script</i>?
 <b class="cmd">thread::preserve</b> <i class="m">id</i>
@@ -31,6 +31,8 @@
 <b class="cmd">thread::join</b> <i class="m">id</i>
 <b class="cmd">thread::configure</b> <i class="m">id</i> ?<i class="m">option</i>? ?<i class="m">value</i><i class="m">? ?</i><i class="m">option value</i><i class="m">?...</i>
 <b class="cmd">thread::transfer</b> <i class="m">id</i> <i class="m">channel</i>
+<b class="cmd">thread::detach</b> <i class="m">channel</i>
+<b class="cmd">thread::attach</b> <i class="m">channel</i>
 
 <b class="cmd">thread::cond</b> <i class="m">options</i>
 <b class="cmd">thread::mutex</b> <i class="m">options</i>
@@ -54,15 +56,16 @@
 <b class="cmd">tsv::lsearch</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">mode</i>? <i class="m">pattern</i>
 <b class="cmd">tsv::lpop</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">index</i>?
 <b class="cmd">tsv::lpush</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> ?<i class="m">index</i>?
+<b class="cmd">tsv::eval <i class="m">arg</i> ?<i class="m">arg ...</i>?</b>
 </pre>
 
-<h2><a name="SECTnode379">DESCRIPTION</a></h2><p>The <b class="package">thread</b> extension creates threads that contain Tcl interpreters, 
+<h2><a name="SECTnode400">DESCRIPTION</a></h2><p>The <b class="package">thread</b> extension creates threads that contain Tcl interpreters, 
 and it lets you send scripts to those threads for evaluation. It also enables you to share data
 between threads in a safe, protected fashion. Additionaly, it provides script-level access
 to basic thread synchronization primitives, like mutexes and condition variables.
 </p>
 
-<h2><a name="SECTnode391">COMMANDS</a></h2><dl class="commandlist">
+<h2><a name="SECTnode412">COMMANDS</a></h2><dl class="commandlist">
 
 <p>
 This section describes commands for creating and destroying threads
@@ -84,11 +87,13 @@ joinable thread, i.e. one upon whose exit can be waited upon (by using
 
 
 
-<dt> <b class="cmd">thread::preserve</b> <i class="m">id</i>
+<dt> <b class="cmd">thread::preserve</b> ?<i class="m">id</i>?
 </dt>
 <dd>This procedure increments the thread reference counter. Each call
 to this command increments the reference counter by one (1). Command returns the value 
 of the reference counter after the increment. 
+If called with the optional thread <i class="m">id</i>, the command preserves the given thread.
+Otherwise the current thread is preserved.
 <p>With reference counting, one can implement controlled access to a shared Tcl thread. 
 By incrementing the reference counter, the caller signalizes that he/she wishes to use
 the thread for a longer period of time. By decrementing the counter, using the 
@@ -98,12 +103,16 @@ the thread.</p>
 
 
 
-<dt> <b class="cmd">thread::release</b> ?<i class="m">-wait</i>? <i class="m">id</i>
+<dt> <b class="cmd">thread::release</b> ?<i class="m">-wait</i>? ?<i class="m">id</i>?
 </dt>
 <dd>This procedure decrements the thread reference counter. Each call to this
-command decrements the reference counter by one (1). Command returns
-the value of the reference counter after the decrement. When the reference counter
-reaches zero (0), the target thread is terminated.
+command decrements the reference counter by one (1). 
+If called with the optional thread <i class="m">id</i>, the command releases the given thread.
+Otherwise, the current thread is released.
+Command returns the value of the reference counter after the decrement. When the 
+reference counter reaches zero (0), the target thread is terminated. You should 
+not reference the thread after the <b class="cmd">thread::release</b> command returns 
+zero or negative integer.
 <p>Optional flag <i class="m">-wait</i> instructs the caller thread to wait for the target
 thread to exit, if the effect of the command would result in termination of the
 target thread, i.e. if the return result is zero (0). Without the flag, the caller
@@ -113,8 +122,7 @@ the <i class="m">-wait</i>, since this may block the caller thread indefinitely.
 
 
 
-<dt>
-<b class="cmd">thread::id</b> </dt>
+<dt><b class="cmd">thread::id</b></dt>
 <dd>This command returns the ID of the current thread. 
 </dd>
 
@@ -140,8 +148,11 @@ The <i class="m">proc</i> is called in the interpreter that invoked the
 <dt><b class="cmd">thread::unwind</b></dt>
 <dd>This stops a prior <b class="cmd">thread::wait</b>. Execution of the script will continue
 from the <b class="cmd">thread::wait</b> command. If <b class="cmd">thread::wait</b> was the last command
-in a thread, the thread will exit. The command usually returns empty result but
-may trigger Tcl error with the message &quot;target thread died&quot; in some situations.
+in the script passed to the thread at the time of its creation, the thread will exit. 
+The command usually returns empty result but may trigger Tcl error with the message 
+&quot;target thread died&quot; in some situations.
+This command is deprecated in favour of more advanced thread reservation system 
+implemented with <b class="cmd">thread::preserve</b> and <b class="cmd">thread::release</b> commands.
 </dd>
 
 
@@ -262,10 +273,39 @@ channel. Because of this it is possible to deadlock the participating
 threads by commanding the other through a synchronous
 <b class="cmd">thread::send</b> to transfer a channel to us. This easily extends
 into longer loops of threads waiting for each other.
-Other restrictions: The channel in question must not be shared among
+Other restrictions: the channel in question must not be shared among
 multiple interpreters running in the sending thread. This
 automatically excludes the special channels for standard input, output
 and error.
+</dd>
+
+
+
+<dt>
+<b class="cmd">thread::detach</b> </dt>
+<dd>This detaches the specified <i class="m">channel</i> from the
+current thread and interpreter. After that, the current interpreter 
+has no access to the channel anymore. The channel is in the parked
+state until some other (or the same) thread attaches the channel
+again with <b class="cmd">thread::attach</b> command.
+Restriction: the channel in question must not be shared among
+multiple interpreters running in the sending thread. This
+automatically excludes the special channels for standard input, output
+and error.
+</dd>
+
+
+
+<dt>
+<b class="cmd">thread::attach</b> </dt>
+<dd>This attaches the previously detached <i class="m">channel</i> in the
+current thread/interpreter. For already existing channels, 
+the command does nothing, i.e. it is not an error to attach the
+same channel more than once. The first operation will actualy
+perform the operation, while all subsequent operation will just
+do nothing.
+Command throws error if the <i class="m">channel</i> cannot be found in the
+list of detached channels and/or in the current interpreter.
 </dd>
 
 
@@ -548,6 +588,17 @@ in the shared <i class="m">array</i>. If <i class="m">index</i> is not specified
 
 
 
+<dt>
+<b class="cmd">tsv::eval</b> </dt>
+<dd>This command concatenates passed arguments and evaluates the 
+resulting script under the internal mutex protection. During the
+script evaluation, the entire shared array is locked. For shared
+variable commands within the script, the internal locking is disabled
+so no deadlock can occur.
+</dd>
+
+
+
 <dt><b class="cmd">tsv::array</b></dt>
 <dd>This command supports most of the options of the standard Tcl <b class="cmd">array</b>
 command like:
@@ -589,7 +640,7 @@ it clears the array and sets new values atomically.
 
 </dl>
 
-<h2><a name="SECTnode1459">DISCUSSION</a></h2><p>The fundamental threading model in Tcl is that there can be one or
+<h2><a name="SECTnode1539">DISCUSSION</a></h2><p>The fundamental threading model in Tcl is that there can be one or
 more Tcl interpreters per thread, but each Tcl interpreter should only
 be used by a single thread which created it.
 A &quot;shared memory&quot; abstraction is awkward to provide in Tcl because Tcl
@@ -611,12 +662,12 @@ or their elements from any thread, without explicit locking.
 </p><p>For advanced multithreading scripts, script-level access to two basic 
 synchronization primitives, mutex and condition variables, is also supported.
 </p>
-<h2><a name="SECTnode1477">CREDITS</a></h2><p>Shared variable arrays are inspired by the nsv interface found in 
+<h2><a name="SECTnode1557">CREDITS</a></h2><p>Shared variable arrays are inspired by the nsv interface found in 
 AOLserver 3.+ highly scalable Web server from America Online.
 </p>
-<h2><a name="SECTnode1486">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
+<h2><a name="SECTnode1566">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
 </a></p>
-<h2><a name="SECTnode1492">KEYWORDS</a></h2><p class="keywords">
+<h2><a name="SECTnode1572">KEYWORDS</a></h2><p class="keywords">
 <a class="keyword" href="keyword-index.html#KW-threads">threads</a>, <a class="keyword" href="keyword-index.html#KW-events">events</a>, <a class="keyword" href="keyword-index.html#KW-messagepassing">message passing</a>, <a class="keyword" href="keyword-index.html#KW-synchronization">synchronization</a>, <a class="keyword" href="keyword-index.html#KW-sharedvariables">shared variables</a>, <a class="keyword" href="keyword-index.html#KW-mutex">mutex</a>, <a class="keyword" href="keyword-index.html#KW-conditionvariable">condition variable</a>
 </p>
 </div><div class="footer">

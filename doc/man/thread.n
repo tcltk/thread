@@ -157,7 +157,7 @@ Database Class:	\\fB\\$3\\fR
 \\$1\l'|0\(ul'\\$2
 ..
 '\" END man.macros
-.TH "Tcl Threading" n "2.4" Tcl ""
+.TH "Tcl Threading" n "2.5" Tcl ""
 .BS
 .SH NAME
 thread \- A Tcl extension implementing script level access to Tcl threading capabilities.
@@ -167,7 +167,7 @@ thread \- A Tcl extension implementing script level access to Tcl threading capa
 
 .PP
 
-\&\fBpackage require Thread ?2.4?\fP
+\&\fBpackage require Thread ?2.5?\fP
 
 \&\fBthread::create\fP ?\fI-joinable\fR? ?\fIscript\fR?
 \&\fBthread::preserve\fP \fIid\fR
@@ -184,6 +184,8 @@ thread \- A Tcl extension implementing script level access to Tcl threading capa
 \&\fBthread::join\fP \fIid\fR
 \&\fBthread::configure\fP \fIid\fR ?\fIoption\fR? ?\fIvalue\fR\fI? ?\fR\fIoption value\fR\fI?...\fR
 \&\fBthread::transfer\fP \fIid\fR \fIchannel\fR
+\&\fBthread::detach\fP \fIchannel\fR
+\&\fBthread::attach\fP \fIchannel\fR
 
 \&\fBthread::cond\fP \fIoptions\fR
 \&\fBthread::mutex\fP \fIoptions\fR
@@ -207,6 +209,7 @@ thread \- A Tcl extension implementing script level access to Tcl threading capa
 \&\fBtsv::lsearch\fP \fIarray\fR \fIelement\fR ?\fImode\fR? \fIpattern\fR
 \&\fBtsv::lpop\fP \fIarray\fR \fIelement\fR ?\fIindex\fR?
 \&\fBtsv::lpush\fP \fIarray\fR \fIelement\fR \fIvalue\fR ?\fIindex\fR?
+\&\fBtsv::eval \fIarg\fR ?\fIarg ...\fR?\fP
 
 .fi
 .BE
@@ -231,10 +234,12 @@ ignored. Using flag \fB-joinable\fP it is possible to create a
 joinable thread, i.e. one upon whose exit can be waited upon (by using
 \&\fBthread::join\fP command).
 .TP
-\&\fB \fBthread::preserve\fP \fIid\fB
+\&\fB \fBthread::preserve\fP ?\fIid\fB?
 \&\fRThis procedure increments the thread reference counter. Each call
 to this command increments the reference counter by one (1). Command returns the value
 of the reference counter after the increment.
+If called with the optional thread \fIid\fR, the command preserves the given thread.
+Otherwise the current thread is preserved.
 .RS
 .PP
 With reference counting, one can implement controlled access to a shared Tcl thread.
@@ -244,11 +249,15 @@ the thread for a longer period of time. By decrementing the counter, using the
 the thread.
 .RE
 .TP
-\&\fB \fBthread::release\fP ?\fI-wait\fB? \fIid\fB
+\&\fB \fBthread::release\fP ?\fI-wait\fB? ?\fIid\fB?
 \&\fRThis procedure decrements the thread reference counter. Each call to this
-command decrements the reference counter by one (1). Command returns
-the value of the reference counter after the decrement. When the reference counter
-reaches zero (0), the target thread is terminated.
+command decrements the reference counter by one (1).
+If called with the optional thread \fIid\fR, the command releases the given thread.
+Otherwise, the current thread is released.
+Command returns the value of the reference counter after the decrement. When the
+reference counter reaches zero (0), the target thread is terminated. You should
+not reference the thread after the \fBthread::release\fP command returns
+zero or negative integer.
 .RS
 .PP
 Optional flag \fI-wait\fR instructs the caller thread to wait for the target
@@ -282,8 +291,11 @@ myerrorproc thread_id errorInfo
 \&\fB\fBthread::unwind\fP
 \&\fRThis stops a prior \fBthread::wait\fP. Execution of the script will continue
 from the \fBthread::wait\fP command. If \fBthread::wait\fP was the last command
-in a thread, the thread will exit. The command usually returns empty result but
-may trigger Tcl error with the message "target thread died" in some situations.
+in the script passed to the thread at the time of its creation, the thread will exit.
+The command usually returns empty result but may trigger Tcl error with the message
+"target thread died" in some situations.
+This command is deprecated in favour of more advanced thread reservation system
+implemented with \fBthread::preserve\fP and \fBthread::release\fP commands.
 .TP
 \&\fB\fBthread::exit\fP
 \&\fRThis forces a thread stuck in the \fBthread::wait\fP to unconditionaly
@@ -377,10 +389,31 @@ channel. Because of this it is possible to deadlock the participating
 threads by commanding the other through a synchronous
 \&\fBthread::send\fP to transfer a channel to us. This easily extends
 into longer loops of threads waiting for each other.
-Other restrictions: The channel in question must not be shared among
+Other restrictions: the channel in question must not be shared among
 multiple interpreters running in the sending thread. This
 automatically excludes the special channels for standard input, output
 and error.
+.TP
+\&\fB\fBthread::detach\fP
+\&\fRThis detaches the specified \fIchannel\fR from the
+current thread and interpreter. After that, the current interpreter
+has no access to the channel anymore. The channel is in the parked
+state until some other (or the same) thread attaches the channel
+again with \fBthread::attach\fP command.
+Restriction: the channel in question must not be shared among
+multiple interpreters running in the sending thread. This
+automatically excludes the special channels for standard input, output
+and error.
+.TP
+\&\fB\fBthread::attach\fP
+\&\fRThis attaches the previously detached \fIchannel\fR in the
+current thread/interpreter. For already existing channels,
+the command does nothing, i.e. it is not an error to attach the
+same channel more than once. The first operation will actualy
+perform the operation, while all subsequent operation will just
+do nothing.
+Command throws error if the \fIchannel\fR cannot be found in the
+list of detached channels and/or in the current interpreter.
 .PP
 This section describes commands used for script-level access to
 most common and basic thread synchronization primitives: mutexes and
@@ -577,6 +610,13 @@ in the shared \fIarray\fR. If \fIindex\fR is not specified, it defaults to zero.
 \&\fB\fBtsv::lpush\fP
 \&\fRInserts the \fIvalue\fR at the \fIindex\fR list position in the list \fIelement\fR
 in the shared \fIarray\fR. If \fIindex\fR is not specified, it defaults to zero.
+.TP
+\&\fB\fBtsv::eval\fP
+\&\fRThis command concatenates passed arguments and evaluates the
+resulting script under the internal mutex protection. During the
+script evaluation, the entire shared array is locked. For shared
+variable commands within the script, the internal locking is disabled
+so no deadlock can occur.
 .TP
 \&\fB\fBtsv::array\fP
 \&\fRThis command supports most of the options of the standard Tcl \fBarray\fP
