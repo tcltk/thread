@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.10 2002/12/05 15:14:01 vasiljevic Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.11 2002/12/06 22:21:29 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -45,7 +45,7 @@
 
 #ifdef NS_AOLSERVER
 # include <ns.h>
-# define NS "Thread::"
+# define NS "thread::"
 #else
 # define NS "thread::"
 #endif
