@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.33 2002/01/25 08:24:46 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.34 2002/02/07 08:10:42 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -30,6 +30,16 @@
 # define POST_TCL_83 0
 #else
 # define POST_TCL_83 1
+#endif
+
+/*
+ * Allow for some command/namespace customization
+ */
+
+#ifdef NS_AOLSERVER
+# define NS "Thread::"
+#else
+# define NS "thread::"
 #endif
 
 /* 
@@ -328,20 +338,20 @@ Thread_Init(interp)
      * We seem to have a Tcl core compiled with threads enabled.
      */
 
-    TCL_CMD(interp, "thread::create",    ThreadCreateObjCmd);
-    TCL_CMD(interp, "thread::send",      ThreadSendObjCmd);
-    TCL_CMD(interp, "thread::exit",      ThreadExitObjCmd);
-    TCL_CMD(interp, "thread::unwind",    ThreadUnwindObjCmd);
-    TCL_CMD(interp, "thread::id",        ThreadIdObjCmd);
-    TCL_CMD(interp, "thread::names",     ThreadNamesObjCmd);
-    TCL_CMD(interp, "thread::exists",    ThreadExistsObjCmd);
-    TCL_CMD(interp, "thread::wait",      ThreadWaitObjCmd);
-    TCL_CMD(interp, "thread::errorproc", ThreadErrorProcObjCmd);
+    TCL_CMD(interp, NS"create",    ThreadCreateObjCmd);
+    TCL_CMD(interp, NS"send",      ThreadSendObjCmd);
+    TCL_CMD(interp, NS"exit",      ThreadExitObjCmd);
+    TCL_CMD(interp, NS"unwind",    ThreadUnwindObjCmd);
+    TCL_CMD(interp, NS"id",        ThreadIdObjCmd);
+    TCL_CMD(interp, NS"names",     ThreadNamesObjCmd);
+    TCL_CMD(interp, NS"exists",    ThreadExistsObjCmd);
+    TCL_CMD(interp, NS"wait",      ThreadWaitObjCmd);
+    TCL_CMD(interp, NS"errorproc", ThreadErrorProcObjCmd);
 
     if (!subset83) {
 #if (POST_TCL_83)
-    TCL_CMD(interp, "thread::join",      ThreadJoinObjCmd);
-    TCL_CMD(interp, "thread::transfer",  ThreadTransferObjCmd);
+    TCL_CMD(interp, NS"join",      ThreadJoinObjCmd);
+    TCL_CMD(interp, NS"transfer",  ThreadTransferObjCmd);
 #endif
     }
 
@@ -461,7 +471,7 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
     if (objc == 1) {
         /* Neither option nor script available.
          */
-        script = "thread::wait"; /* Enters the event loop */
+        script = NS"wait"; /* Enters the event loop */
         
     } else if (objc == 2) {
         /* Either option or script possible, not both.
@@ -469,7 +479,7 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
         char *arg = Tcl_GetStringFromObj(objv[1], NULL);
         if (OPT_CMP(arg, "-joinable")) {
             flags |= TCL_THREAD_JOINABLE;
-            script = "thread::wait"; /* Enters the event loop */
+            script = NS"wait"; /* Enters the event loop */
         } else {
             script = arg;
         }
@@ -1182,9 +1192,12 @@ NewThread(clientData)
     /*
      * Initialize the interpreter.
      */
-
+#ifdef NS_AOLSERVER
+    tsdPtr->interp = (Tcl_Interp*)Ns_TclAllocateInterp(NULL);
+#else
     tsdPtr->interp = Tcl_CreateInterp();
     result = Tcl_Init(tsdPtr->interp);
+#endif
 
     /*
      *  Tcl_Init() under 8.3.[1,2] and 8.4a1 doesn't work under threads.
@@ -1199,7 +1212,9 @@ NewThread(clientData)
         Tcl_ExitThread(result);
     }
 
+#ifndef NS_AOLSERVER
     result = Thread_Init(tsdPtr->interp);
+#endif
 
     /*
      * Update the list of threads.
@@ -1248,7 +1263,11 @@ NewThread(clientData)
      * notice when we delete this interp.
      */
 
+#ifdef NS_AOLSERVER
+    (void)Ns_TclDeAllocateInterp(tsdPtr->interp);
+#else
     Tcl_DeleteInterp(tsdPtr->interp);
+#endif
 
     /*
      * Tcl_ExitThread calls Tcl_FinalizeThread() indirectly which calls
