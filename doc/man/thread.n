@@ -267,7 +267,7 @@ created with this flag have the initial value of the reference counter of 1 (one
 .RE
 .TP
 \&\fB \fBthread::preserve\fP ?\fIid\fB?
-\&\fRThis procedure increments the thread reference counter. Each call
+\&\fRThis command increments the thread reference counter. Each call
 to this command increments the reference counter by one (1). Command returns
 the value of the reference counter after the increment.
 If called with the optional thread \fIid\fR, the command preserves the given
@@ -282,7 +282,7 @@ that he/she has finished using the thread.
 .RE
 .TP
 \&\fB \fBthread::release\fP ?\fI-wait\fB? ?\fIid\fB?
-\&\fRThis procedure decrements the thread reference counter. Each call to this
+\&\fRThis command decrements the thread reference counter. Each call to this
 command decrements the reference counter by one (1).
 If called with the optional thread \fIid\fR, the command releases the given
 thread. Otherwise, the current thread is released.
@@ -407,9 +407,7 @@ the event queue of the target thread.
 .TP
 \&\fB\fBthread::wait\fP
 \&\fRThis enters the event loop so a thread can receive messages from 
-\&\fBthread::send\fP. This is equivalent to 
-\&\fBvwait \fIunusedvariable\fB\fR except that \fBthread::unwind\fP 
-will not unblock a \fBvwait\fP. This command should only be used within 
+\&\fBthread::send\fP. This command should only be used within 
 the script passed to the \fBthread::create\fP. It should be the very last 
 command in the script. If this is not the case, the exiting thread will continue
 executing the script lines pass the \fBthread::wait\fP which is not what 
@@ -431,7 +429,7 @@ you usualy want and/or expect.
 \&\fB\fBthread::eval\fP ?\fI-lock mutex\fB? \fIarg\fB ?\fIarg ...\fB?
 \&\fRThis command concatenates passed arguments and evaluates the
 resulting script under the mutex protection. If no mutex is specified,
-using the \fB-lock mutex\fP optional argument, an internal
+using the \fI-lock mutex\fR optional argument, an internal
 static mutex is used.
 .TP
 \&\fB\fBthread::join\fP \fIid\fB

@@ -160,7 +160,7 @@ Database Class:	\\fB\\$3\\fR
 .TH "Tcl Threading" n "2.5" Tcl ""
 .BS
 .SH NAME
-tsv \- Part of the Tcl threading extension implementing pools of worker threads.
+tpool \- Part of the Tcl threading extension implementing pools of worker threads.
 .SH SYNOPSIS
 .nf
 
@@ -169,11 +169,11 @@ tsv \- Part of the Tcl threading extension implementing pools of worker threads.
 
 \&\fBpackage require Thread ?2.5?\fP
 
-\&\fBtpool::names\fP
 \&\fBtpool::create\fP ?\fIoptions\fR?
 \&\fBtpool::post\fP \fItpoolId\fR \fIscript\fR
 \&\fBtpool::wait\fP \fItpoolId\fR \fIjobIdList\fR ?\fIvarName\fR?
 \&\fBtpool::get\fP \fItpoolId\fR \fIjobId\fR
+\&\fBtpool::names\fP
 \&\fBtpool::preserve\fP \fItpoolId\fR
 \&\fBtpool::release\fP \fItpoolId\fR
 
@@ -183,52 +183,165 @@ tsv \- Part of the Tcl threading extension implementing pools of worker threads.
 .PP
 .SH COMMANDS
 .TP
-\&\fB\fBtpool::names\fP
-\&\fRThis command returns a list of IDs of threadpools created with the
-\&\fBtpool::create\fP command.
-.TP
 \&\fB\fBtpool::create \fP ?\fIoptions\fB?
-\&\fR
+\&\fRThis command creates new threadpool. It accepts several options as
+key-value pairs. Options are used to tune some threadpool parameters.
+The command returns the ID of the newly created threadpool.
+.RS
+.PP
+Following \fIoptions\fR are supported:
+.TP
+\&\fB\fI-minthreads number\fB
+\&\fRMinimum \fInumber\fR of threads needed for this threadpool instance.
+During threadpool creation, the implementation will create somany
+worker threads upfront and will keep at least \fInumber\fR of them alive
+during the lifetime of the threadpool instance.
+.br
+Default value of this parameter is 0 (zero). which means that a newly
+threadpool will have no worker threads initialy. All worker threads will be
+started on demand by callers running \fBtpool::post\fP command and
+posting jobs to the job queue.
+.TP
+\&\fB\fI-maxthreads number\fB
+\&\fRMaximum \fInumber\fR of threads allowed for this threadpool instance.
+If a new job is pending and there are no idle worker threads available,
+the implementation will try to create new worker thread. If the number of
+available worker threads is lower than the \fInumber\fR,
+new worker thread will start and the caller will enter event loop and
+wait until the worker thread has initialized. If. however, the
+number of available worker threads is equal to \fInumber\fR, the caller
+will enter the event loop and wait for the first worker thread to get idle,
+thus ready to run the job.
+.br
+Default value of this parameter is 4 (four), which means that the
+threadpool instance will allow maximum of 4 worker threads running jobs
+or being idle waiting for new jobs to get posted to the job queue.
+.TP
+\&\fB\fI-idletime seconds\fB
+\&\fRTime in \fIseconds\fR an idle worker thread waits for the job
+to get posted to the job queue. If no job arrives during this interval
+and the time expires, the worker thread will check the number of
+currently available worker threads. If the number is higher than the
+number set by the \fIminthreads\fR option, it will exit.
+If an \fIexitscript\fR has been defined, the exiting worker thread
+will first run the script and then exit. Errors from the exit script,
+if any, are ignored.
+.br
+The idle worker thread is not servicing the event loop. If you, however,
+put the worker thread into the event loop, by evaluating the
+\&\fBvwait\fP or other related Tcl commands, the worker thread
+will not be in the idle state, hence the idle timer will not be
+taken into account.
+.br
+Default value for this option is zero (0), meaning that no idle time
+is set. Worker threads will thus, once started, never exit.
+.TP
+\&\fB\fI-initcmd script\fB
+\&\fRTcl script used to initialize new worker thread. This is usually used
+to load packages and commands in the worker, set default variables, create
+namespaces, and such. If the \fI-initcmd script\fR runs in Tcl error,
+the worker will not be created and the initiating command (either the
+\&\fBtpool::create\fP or \fBtpool::post\fP) will throw the
+error.
+.br
+Default value for this option is unspecified, hence, the Tcl interpreter of
+the worker thread will contain just the initial set of Tcl commands.
+.TP
+\&\fB\fI-exitcmd script\fB
+\&\fRTcl script run when the idle worker thread exits. This is normaly used
+to cleanup the state of the worker thread, release reserved resources and
+cleanup memory.
+.br
+Default value for this option is unspecified, thus no Tcl script will run on
+the worker thread exit.
+.RE
 .TP
 \&\fB\fBtpool::post\fP \fItpoolId\fB \fIscript\fB
 \&\fRThis command sends a \fIscript\fR to the target \fItpoolId\fR threadpool
-for execution. The script will be executed in the first available worker thread.
+for execution. The script will be executed in the first available idle worker thread.
 If there are no idle worker threads available, the command will create
 new one, enter the event loop and service events until the newly created
 thread is initialized. If the current number of worker threads is equal to
 the maximum number of worker threads, as defined during the threadpool creation
 with the \fBtpool::create\fP command, the command will enter the event loop
-and service events while waiting for one of the worker threads to become
-available.
-.RS
-.PP
+and service events while waiting for one of the worker threads to become idle.
+.br
 The command returns the ID of the posted job. This ID is used for subsequent
 \&\fBtpool::wait\fP and \fBtpool::get\fP commands to wait for and
-retrieve result of the posted script. If the pool \fItpoolId\fR is not found
-in the list of active thread pools, the command will throw error. The error
-will also be triggered if the newly created worker thread fails to initialize.
-.RE
+retrieve result of the posted script respectively. If the threadpool \fItpoolId\fR
+is not found in the list of active thread pools, the command will throw error.
+The error will also be triggered if the newly created worker thread fails to
+initialize.
 .TP
 \&\fB\fBtpool::wait\fP \fItpoolId\fB \fIjobIdList\fB ?\fIvarName\fB?
-\&\fR
+\&\fRThis command waits for one or many jobs, whose job IDs are given in the
+\&\fIjobIdList\fR to get processed by the worker thread(s). If none of the
+specified jobs are ready, the command will enter the event loop, service
+events and wait for the first job to get ready.
+.br
+The command returns the list of completed job IDs. If the optional variable
+\&\fIvarName\fR is given, it will be set to the list of jobs in the \fIjobIdList\fR
+which are still pending. If the threadpool \fItpoolId\fR is not found in the
+list of active thread pools, the command will throw error.
 .TP
 \&\fB\fBtpool::get\fP \fItpoolId\fB \fIjobId\fB
-\&\fR
-This command retrieves the result of the previously posted job \fIjobId\fR.
+\&\fRThis command retrieves the result of the previously posted job \fIjobId\fR.
 Only results of jobs waited upon with the \fBtpool::wait\fP command can
-be retrieved. If the execution of the script resulted in error, it will throw
-the error and update the \fBerrorInfo\fR and \fBerrorCode\fR
+be retrieved. If the execution of the script resulted in error, the command
+will throw the error and update the \fBerrorInfo\fR and \fBerrorCode\fR
 variables correspondingly. If the pool \fItpoolId\fR is not found in the list
 of threadpools, the command will throw error. If the job \fIjobId\fR
-is not ready for retrieval, while still not processed, or currently
-being executed by the worker thread, the command will throw error.
+is not ready for retrieval, because it is currently being executed by the worker
+thread, the command will throw error.
+.TP
+\&\fB\fBtpool::names\fP
+\&\fRThis command returns a list of IDs of threadpools created with the
+\&\fBtpool::create\fP command. If no threadpools were found, the
+command will return empty list.
 .TP
 \&\fB\fBtpool::preserve\fP \fItpoolId\fB
-\&\fR
+\&\fREach call to this command increments the reference counter of the
+threadpool \fItpoolId\fR by one (1). Command returns the value of the
+reference counter after the increment.
+.br
+With reference counting, one can implement controlled access to a shared
+threadpool resource. By incrementing the reference counter, the caller
+signalizes that he/she wishes to use the resource for a longer period of time.
+By decrementing the counter, using the  \fBtpool::release\fP command,
+caller signalizes that he/she has finished using the resource.
 .TP
 \&\fB\fBtpool::release\fP \fItpoolId\fB
-\&\fR
+\&\fREach call to this command decrements the reference counter of the
+threadpool \fItpoolId\fR by one (1).Command returns the value of the
+reference counter after the decrement. When the reference counter reaches
+zero (0), the threadpool \fItpoolId\fR is marked for termination.
+You should not reference the threadpool after the \fBtpool::release\fP
+command returns zero. The \fItpoolId\fR handle goes out of scope and
+should not be used any more. Any following reference to the same threadpool
+handle will result in Tcl error.
 .SH DISCUSSION
+.PP
+Threadpool is one of the most common threading paradigm when it comes
+to server applications handling a large number of relatively small tasks.
+A very simplistic model for building a server application would be to
+create a new thread each time a request arrives and service the request
+in the new thread. One of the disadvantages of this approach is that
+the overhead of creating a new thread for each request is significant;
+a server that created a new thread for each request would spend more time
+and consume more system resources in creating and destroying threads than
+in processing actual user requests. In addition to the overhead of
+creating and destroying threads, active threads consume system resources.
+Creating too many threads can cause the system to run out of memory or
+trash due to excessive memory consumption.
+.br
+A thread pool offers a solution to both the problem of thread life-cycle
+overhead and the problem of resource trashing. By reusing threads for
+multiple tasks, the thread-creation overhead is spread over many tasks.
+As a bonus, because the thread already exists when a request arrives,
+the delay introduced by thread creation is eliminated. Thus, the request
+can be serviced immediately. Furthermore, by properly tuning the number
+of threads in the thread pool, resource thrashing may also be eliminated
+by forcing any request to wait until a thread is available to process it.
 .SH "SEE ALSO"
 Guide to the Tcl threading model
 .SH KEYWORDS
