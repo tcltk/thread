@@ -1,3 +1,16 @@
+2003-12-22 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadSpCmd.c: added recursive and reader/writer locks
+	and associated commands
+
+	* generic/threadSpCmd.h: added new file
+
+	* generic/lib/ttrace.tcl: added Ttrace package implementation
+
+	* doc: added documentation for Ttrace package and synced other
+	doc files to match the release 2.6 state.
+
+
 2003-12-01 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: removed the concept of foreign
