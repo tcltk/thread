@@ -7,7 +7,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvListCmd.c,v 1.9 2003/09/03 11:27:53 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvListCmd.c,v 1.10 2003/11/27 19:53:10 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -34,6 +34,7 @@ static Tcl_ObjCmdProc SvLindexObjCmd;    /* lindex      */
 static Tcl_ObjCmdProc SvLinsertObjCmd;   /* linsert     */
 static Tcl_ObjCmdProc SvLrangeObjCmd;    /* lrange      */
 static Tcl_ObjCmdProc SvLsearchObjCmd;   /* lsearch     */
+static Tcl_ObjCmdProc SvLsetObjCmd;      /* lset        */
 
 /*
  * These two are copied verbatim from the tclUtil.c
@@ -58,6 +59,14 @@ static void DupListObjShared(Tcl_Obj*, Tcl_Obj*);
  */
 
 static Tcl_Mutex initMutex;
+
+/*
+ * Functions for implementing the "lset" list command
+ */
+
+static Tcl_Obj*
+SvLsetFlat(Tcl_Interp *interp, Tcl_Obj *listPtr, int indexCount,
+           Tcl_Obj **indexArray, Tcl_Obj *valuePtr);
 
 
 /*
@@ -93,6 +102,7 @@ Sv_RegisterListCommands(void)
             Sv_RegisterCommand("lindex",   SvLindexObjCmd,   NULL, NULL);
             Sv_RegisterCommand("lrange",   SvLrangeObjCmd,   NULL, NULL);
             Sv_RegisterCommand("lsearch",  SvLsearchObjCmd,  NULL, NULL);
+            Sv_RegisterCommand("lset",     SvLsetObjCmd,     NULL, NULL);
             Sv_RegisterObjType(Tcl_GetObjType("list"), DupListObjShared);
             initialized = 1;
         }
@@ -787,6 +797,64 @@ SvLindexObjCmd (arg, interp, objc, objv)
 /*
  *-----------------------------------------------------------------------------
  *
+ * SvLsetObjCmd --
+ *
+ *      This procedure is invoked to process the "tsv::lset" command.
+ *      See the user documentation for details on what it does.
+ *
+ * Results:
+ *      A standard Tcl result.
+ *
+ * Side effects:
+ *      See the user documentation.
+ *
+ *-----------------------------------------------------------------------------
+ */
+
+static int
+SvLsetObjCmd (arg, interp, objc, objv)
+    ClientData arg;
+    Tcl_Interp *interp;
+    int objc;
+    Tcl_Obj *CONST objv[];
+{
+    Tcl_Obj *lPtr;
+    int ret, argc, off;
+    Container *svObj = (Container*)arg;
+
+    /*
+     * Syntax:
+     *          tsv::lset array key index ?index ...? value
+     *          $list lset index ?index ...? value
+     */
+
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
+    if (ret != TCL_OK) {
+        return TCL_ERROR;
+    }
+    if ((objc - off) < 2) {
+        Tcl_WrongNumArgs(interp, off, objv, "index ?index...? value");
+        goto cmd_err;
+    }
+
+    lPtr = svObj->tclObj;
+    argc = objc - off - 1;
+
+    if (!SvLsetFlat(interp, lPtr, argc, (Tcl_Obj**)(objv+off),objv[objc-1])) {
+        return TCL_ERROR;
+    }
+
+    Tcl_SetObjResult(interp, Sv_DuplicateObj(lPtr));
+
+    return Sv_PutContainer(interp, svObj, SV_CHANGED);
+
+ cmd_err:
+    return Sv_PutContainer(interp, svObj, SV_ERROR);
+}
+
+/*
+ *-----------------------------------------------------------------------------
+ *
  * DupListObjShared --
  *
  *      Help function to make a proper deep copy of the list object.
@@ -941,6 +1009,147 @@ SvGetIntForIndex(interp, objPtr, endValue, indexPtr)
         return TCL_ERROR;
     }
     return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * SvLsetFlat --
+ *
+ *  Almost exact copy from the TclLsetFlat found in tclListObj.c.
+ *  Simplified in a sense that thread shared objects are guaranteed
+ *  to be non-shared.
+ *
+ *  Actual return value of this procedure is irrelevant to the caller,
+ *  and it should be either NULL or non-NULL.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static Tcl_Obj*
+SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
+     Tcl_Interp *interp;     /* Tcl interpreter */
+     Tcl_Obj *listPtr;       /* Pointer to the list being modified */
+     int indexCount;         /* Number of index args */
+     Tcl_Obj **indexArray;
+     Tcl_Obj *valuePtr;      /* Value arg to 'lset' */
+{
+    int elemCount, index, result, i;
+    Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
+
+    /*
+     * Determine whether the index arg designates a list
+     * or a single index.
+     */
+
+    if (indexCount == 1 &&
+        Tcl_ListObjGetElements(interp, indexArray[0], &indexCount, 
+                               &indexArray) != TCL_OK) {
+        /*
+         * Index arg designates something that is neither an index
+         * nor a well formed list.
+         */
+
+        return NULL;
+    }
+
+    /*
+     * If there are no indices, then simply return the new value,
+     * counting the returned pointer as a reference
+     */
+
+    if (indexCount == 0) {
+        return valuePtr;
+    }
+
+    /*
+     * Anchor the linked list of Tcl_Obj's whose string reps must be
+     * invalidated if the operation succeeds.
+     */
+
+    chainPtr = NULL;
+
+    /*
+     * Handle each index arg by diving into the appropriate sublist
+     */
+
+    for (i = 0; ; ++i) {
+
+        /*
+         * Take the sublist apart.
+         */
+
+        result = Tcl_ListObjGetElements(interp,listPtr,&elemCount,&elemPtrs);
+        if (result != TCL_OK) {
+            break;
+        }
+
+        listPtr->internalRep.twoPtrValue.ptr2 = (VOID*)chainPtr;
+
+        /*
+         * Determine the index of the requested element.
+         */
+
+        result = SvGetIntForIndex(interp, indexArray[i], elemCount-1, &index);
+        if (result != TCL_OK) {
+            break;
+        }
+        
+        /*
+         * Check that the index is in range.
+         */
+        
+        if (index < 0 || index >= elemCount) {
+            Tcl_SetObjResult(interp,
+                             Tcl_NewStringObj("list index out of range", -1));
+            result = TCL_ERROR;
+            break;
+        }
+
+        /*
+         * Break the loop after extracting the innermost sublist
+         */
+
+        if (i >= (indexCount - 1)) {
+            result = TCL_OK;
+            break;
+        }
+    
+        /*
+         * Extract the appropriate sublist and chain it onto the linked
+         * list of Tcl_Obj's whose string reps must be spoilt.
+         */
+
+        subListPtr = elemPtrs[index];
+        chainPtr = listPtr;
+        listPtr = subListPtr;
+    }
+
+    /* Store the result in the list element */
+
+    if (result == TCL_OK) {
+        result = Tcl_ListObjGetElements(interp,listPtr,&elemCount,&elemPtrs);
+        if (result == TCL_OK) {
+            Tcl_DecrRefCount(elemPtrs[index]);
+            elemPtrs[index] = Sv_DuplicateObj(valuePtr);
+            Tcl_IncrRefCount(elemPtrs[index]);
+        }
+    }
+
+    if (result == TCL_OK) {
+        listPtr->internalRep.twoPtrValue.ptr2 = (VOID*)chainPtr;
+        /* Spoil all the string reps */
+        while (listPtr != NULL) {
+            subListPtr = (Tcl_Obj*)listPtr->internalRep.twoPtrValue.ptr2;
+            Tcl_InvalidateStringRep(listPtr);
+            listPtr->internalRep.twoPtrValue.ptr2 = NULL;
+            listPtr = subListPtr;
+        }
+        
+        return valuePtr;
+    }
+    
+    return NULL;
 }
 
 /* EOF $RCSfile: threadSvListCmd.c,v $ */
