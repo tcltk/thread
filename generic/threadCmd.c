@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.23 2001/04/26 08:24:38 davygrvy Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.24 2001/04/27 01:43:50 davygrvy Exp $
  */
 
 #include "thread.h"
@@ -160,7 +160,7 @@ TCL_DECLARE_MUTEX(threadMutex)
  * Forward declaration of functions used within this file
  */
 
-Tcl_ThreadCreateType	NewThread _ANSI_ARGS_((ClientData clientData));
+static Tcl_ThreadCreateType	NewThread _ANSI_ARGS_((ClientData clientData));
 static void	ListRemove _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 static void	ListUpdateInner _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 static int	ThreadEventProc _ANSI_ARGS_((Tcl_Event *evPtr, int mask));
@@ -174,7 +174,7 @@ static int 	ThreadSend _ANSI_ARGS_((Tcl_Interp *interp,
 static int 	ThreadExists _ANSI_ARGS_((Tcl_ThreadId id));
 static void	ThreadErrorProc _ANSI_ARGS_((Tcl_Interp *interp));
 static void	ThreadFreeProc _ANSI_ARGS_((ClientData clientData));
-Tcl_EventDeleteProc	ThreadDeleteEvent;
+static Tcl_EventDeleteProc	ThreadDeleteEvent;
 static void	ThreadExitProc _ANSI_ARGS_((ClientData clientData));
 
 
@@ -246,21 +246,21 @@ Thread_Init(interp)
 	 * so let's initialize ourselves.  This uses the thread:: namespace.
 	 */
 
-	Tcl_CreateObjCommand(interp,"thread::create", ThreadCreateObjCmd, 
+	Tcl_CreateObjCommand(interp, "thread::create", ThreadCreateObjCmd, 
 		(ClientData)NULL ,NULL);
-	Tcl_CreateObjCommand(interp,"thread::send", ThreadSendObjCmd, 
+	Tcl_CreateObjCommand(interp, "thread::send", ThreadSendObjCmd, 
 		(ClientData)NULL ,NULL);
-	Tcl_CreateObjCommand(interp,"thread::exit", ThreadExitObjCmd, 
+	Tcl_CreateObjCommand(interp, "thread::unwind", ThreadUnwindObjCmd, 
 		(ClientData)NULL ,NULL);
-	Tcl_CreateObjCommand(interp,"thread::id", ThreadIdObjCmd, 
+	Tcl_CreateObjCommand(interp, "thread::id", ThreadIdObjCmd, 
 		(ClientData)NULL ,NULL);
-	Tcl_CreateObjCommand(interp,"thread::names", ThreadNamesObjCmd, 
+	Tcl_CreateObjCommand(interp, "thread::names", ThreadNamesObjCmd, 
 		(ClientData)NULL ,NULL);
-	Tcl_CreateObjCommand(interp,"thread::wait", ThreadWaitObjCmd, 
+	Tcl_CreateObjCommand(interp, "thread::wait", ThreadWaitObjCmd, 
 		(ClientData)NULL ,NULL);
-	Tcl_CreateObjCommand(interp,"thread::errorproc", ThreadErrorProcObjCmd, 
+	Tcl_CreateObjCommand(interp, "thread::errorproc", ThreadErrorProcObjCmd, 
 		(ClientData)NULL ,NULL);
-	Tcl_CreateObjCommand(interp,"thread::exists", ThreadExistsObjCmd, 
+	Tcl_CreateObjCommand(interp, "thread::exists", ThreadExistsObjCmd, 
 		(ClientData)NULL ,NULL);
 
 	if (!subset83) {
@@ -433,9 +433,9 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
 /*
  *----------------------------------------------------------------------
  *
- * ThreadExitObjCmd --
+ * ThreadUnwindObjCmd --
  *
- *	This procedure is invoked to process the "thread::exit" Tcl 
+ *	This procedure is invoked to process the "thread::unwind" Tcl 
  *	command. See the user documentation for details on what it does.
  *
  * Results:
@@ -449,7 +449,7 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
 
 	/* ARGSUSED */
 int
-ThreadExitObjCmd(dummy, interp, objc, objv)
+ThreadUnwindObjCmd(dummy, interp, objc, objv)
     ClientData dummy;			/* Not used. */
     Tcl_Interp *interp;			/* Current interpreter. */
     int objc;				/* Number of arguments. */
@@ -1544,49 +1544,46 @@ ThreadSend(interp, id, script, wait)
  *
  * ThreadWait --
  *
- *	Waits for events and process them as they come, until stopped.
- *	At stop, process all runable events from the event queue
- *	and return gracefuly.
+ *	Waits for events and process them as they come, until signaled
+ *	to stop.
  *
  * Results:
  *	TCL_OK always
  *
  * Side effects:
- *	Deletes events posted from other threads and processes all 
- *	pending events from other sources.
+ *	Deletes any thread::send or thread::transfer events that are
+ *	pending.
  *
  *----------------------------------------------------------------------
  */
 static int
 ThreadWait()
 {    
-    int eventFlags = TCL_ALL_EVENTS;
-    int i;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     /*
-     * Hang-around until signaled to exit.
+     * Hang-around until signaled to stop.
      */
 
     while (!(tsdPtr->stopped)) {
-        (void) Tcl_DoOneEvent(eventFlags);
+        Tcl_DoOneEvent(TCL_ALL_EVENTS);
     }
 
     /*
      * Splice ourselves from the thread-list early. This prevents
-     * other threads to send us more work while we're exiting.
+     * other threads from sending us more work while we're unwinding.
      */
 
     ListRemove(tsdPtr);
 
     /*
-     * Delete all pending thread::send events.  These are events
-     * owned by us.  It is up to all other extensions (including Tk)
-     * to be responsible for there own events when they recieve a
-     * Tcl_CallWhenDeleted notice. 
+     * Delete all pending thread::send and thread::transfer events.
+     * These events are owned by us.  It is up to all other extensions,
+     * including Tk, to be responsible for their own events when they
+     * receive a Tcl_CallWhenDeleted notice.
      */
 
-    Tcl_DeleteEvents((Tcl_EventDeleteProc *)ThreadDeleteEvent, NULL);
+    Tcl_DeleteEvents((Tcl_EventDeleteProc *) ThreadDeleteEvent, NULL);
 
     return TCL_OK;
 }
@@ -1596,13 +1593,15 @@ ThreadWait()
  *
  * ThreadStop --
  *
- *	Signals the current thread to stop.
+ *	Signals the current thread to stop waiting (processing events).
  *
  * Results:
  *	TCL_OK always.
  *
  * Side effects:
- * 	Thread will jump out of the event loop and prepare for exit.	
+ * 	Thread will jump out of the event loop and exit thread::wait.
+ *	This does not *guarentee* that the thread will exit.  There
+ *	may be more commands left in the script after the thread::wait.
  *
  *----------------------------------------------------------------------
  */
