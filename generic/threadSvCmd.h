@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.11 2003/09/03 11:34:49 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.12 2003/12/22 21:20:59 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -17,6 +17,8 @@
 #include <tcl.h>
 #include <ctype.h>
 #include <string.h>
+
+#include "threadSpCmd.h" /* For recursive locks */
 
 /*
  * Starting from 8.4 core, Tcl API is CONST'ified
@@ -83,21 +85,18 @@ typedef struct Svconf {
 /*
  * Macros for handling locking and unlocking
  */
+#define LOCK_BUCKET(a)      Sp_RecursiveMutexLock(&(a)->lock)
+#define UNLOCK_BUCKET(a)    Sp_RecursiveMutexUnlock(&(a)->lock)
 
-#define LOCK_BUCKET(a)       if ((a)->lock != (Tcl_Mutex)-1) \
-                                 Tcl_MutexLock(&(a)->lock)
-#define UNLOCK_BUCKET(a)     if ((a)->lock != (Tcl_Mutex)-1) \
-                                 Tcl_MutexUnlock(&(a)->lock)
-#define LOCK_CONTAINER(a)    if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
-                                 Tcl_MutexLock(&(a)->bucketPtr->lock)
-#define UNLOCK_CONTAINER(a)  if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
-                                 Tcl_MutexUnlock(&(a)->bucketPtr->lock)
+#define LOCK_CONTAINER(a)   Sp_RecursiveMutexLock(&(a)->bucketPtr->lock)
+#define UNLOCK_CONTAINER(a) Sp_RecursiveMutexUnlock(&(a)->bucketPtr->lock)
 
 /*
  * This is named synetrically to LockArray as function
  * rather than as a macro just to improve readability.
  */
-#define UnlockArray(a) UNLOCK_CONTAINER(a)     
+#define UnlockArray(a) UNLOCK_CONTAINER(a)
+
 
 /*
  * Mode for Sv_PutContainer, so it knows what
@@ -152,7 +151,8 @@ typedef struct PsStore {
  */
 
 typedef struct Bucket {
-    Tcl_Mutex lock;            /* Lock when accessing arrays in this bucket */
+    Sp_RecursiveMutex lock;    /* */
+    Tcl_ThreadId lockt;        /* Thread holding the lock */
     Tcl_HashTable arrays;      /* Hash table of all arrays in bucket */
     Tcl_HashTable handles;     /* Hash table of given-out handles in bucket */
     struct Container *freeCt;  /* List of free Tcl-object containers */
