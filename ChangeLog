@@ -1,3 +1,12 @@
+2003-04-02 Zoran Vasiljevic <zoran@archiware.com>
+
+	* threadCmd.c:
+	* threadPoolCmd.c:
+	* threadSpCmd.c:
+	* threadSvCmd.c: always call registered exit callbacks
+	with non-NULL clientData, otherwise Tcl won't invoke
+	the registered  callback. 
+
 2003-03-28 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadSvList.c
