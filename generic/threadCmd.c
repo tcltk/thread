@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.2 2000/04/10 05:55:10 welch Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.3 2000/04/10 23:39:51 welch Exp $
  */
 
 #include "tcl.h"
@@ -60,7 +60,7 @@ static struct ThreadSpecificData *threadList;
 /*
  * An instance of the following structure contains all information that is
  * passed into a new thread when the thread is created using either the
- * "thread create" Tcl command or the ThreadCreate() C function.
+ * "thread create" Tcl command or the Thread_Create() C function.
  */
 
 typedef struct ThreadCtrl {
@@ -125,7 +125,7 @@ EXTERN int	Thread_Init _ANSI_ARGS_((Tcl_Interp *interp));
 EXTERN int	ThreadObjCmd _ANSI_ARGS_((ClientData clientData,
 	Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
 EXTERN int	Thread_Create _ANSI_ARGS_((Tcl_Interp *interp,
-	CONST char *script));
+	CONST char *script, int stacksize));
 EXTERN int	Thread_List _ANSI_ARGS_((Tcl_Interp *interp));
 EXTERN int	Thread_Send _ANSI_ARGS_((Tcl_Interp *interp, Tcl_ThreadId id,
 	char *script, int wait));
@@ -135,6 +135,8 @@ EXTERN int	Thread_Send _ANSI_ARGS_((Tcl_Interp *interp, Tcl_ThreadId id,
 
 #ifdef MAC_TCL
 static pascal void *NewThread _ANSI_ARGS_((ClientData clientData));
+#elif defined __WIN32__
+static unsigned __stdcall NewThread _ANSI_ARGS_((ClientData clientData));
 #else
 static void     NewThread _ANSI_ARGS_((ClientData clientData));
 #endif
@@ -168,15 +170,34 @@ int
 Thread_Init(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
-    if (Tcl_InitStubs(interp, "8.1", 0) == NULL) {
+    Tcl_Obj *boolObjPtr;
+    int boolVar;
+
+    if (Tcl_InitStubs(interp, "8.3", 0) == NULL) {
+	/*
+	 * Truely depend on 8.3.1 and the new Tcl_CreateThread
+	 */
 	return TCL_ERROR;
     }
-    Tcl_CreateObjCommand(interp,"thread", ThreadObjCmd, 
-	    (ClientData)NULL ,NULL);
-    if (Tcl_PkgProvide(interp, "Thread", "2.0" ) != TCL_OK) {
+    boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", 0);
+    if ((boolObjPtr != NULL) &&
+	    (Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_ERROR)
+	    && boolVar) {
+	/*
+	 * Seem to have a Tcl core compiled with threads enabled.
+	 */
+
+	Tcl_CreateObjCommand(interp,"thread", ThreadObjCmd, 
+		(ClientData)NULL ,NULL);
+	if (Tcl_PkgProvide(interp, "Thread", "2.0" ) != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	return TCL_OK;
+    } else {
+	Tcl_AppendResult(interp,
+	    "The Tcl core wasn't compiled for multithreading.  ", NULL);
 	return TCL_ERROR;
     }
-    return TCL_OK;
 }
 
 
@@ -252,7 +273,7 @@ ThreadObjCmd(dummy, interp, objc, objv)
 		Tcl_WrongNumArgs(interp, 2, objv, "?script?");
 		return TCL_ERROR;
 	    }
-	    return ThreadCreate(interp, script);
+	    return Thread_Create(interp, script, 0);
 	}
 	case THREAD_EXIT: {
 	    if (objc > 2) {
@@ -356,7 +377,7 @@ ThreadObjCmd(dummy, interp, objc, objv)
 
 	/* ARGSUSED */
 int
-ThreadCreate(interp, script, stacksize)
+Thread_Create(interp, script, stacksize)
     Tcl_Interp *interp;			/* Current interpreter. */
     CONST char *script;			/* Script to execute */
     int stacksize;			/* zero for default size */
@@ -417,6 +438,8 @@ ThreadCreate(interp, script, stacksize)
  */
 #ifdef MAC_TCL
 static pascal void *
+#elif defined __WIN32__
+static unsigned __stdcall
 #else
 static void
 #endif
@@ -478,6 +501,8 @@ NewThread(clientData)
     Tcl_ExitThread(result);
 #ifdef MAC_TCL
     return NULL;
+#elif defined __WIN32__
+    return 0;
 #endif
 }
 
