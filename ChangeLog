@@ -1,3 +1,8 @@
+2003-05-17 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: sets the name of the new thread
+	to "-tclthreead-" when compiled for AOLserver
+
 2003-04-29 Zoran Vasiljevic <zoran@archiware.com>
 
         Tagged interim 2.5.2 release.
@@ -10,7 +15,7 @@
 
 2003-04-10 Zoran Vasiljevic <zoran@archiware.com>
 
-	* threadCmd.c: removed checking of stopped flag
+	* generic/threadCmd.c: removed checking of stopped flag
 	during walk of the list of active threads. This
 	solves some subtle thread reservation problems
 	with threads marked to unwind on error.
@@ -19,10 +24,10 @@
 	
 2003-04-02 Zoran Vasiljevic <zoran@archiware.com>
 
-	* threadCmd.c:
-	* threadPoolCmd.c:
-	* threadSpCmd.c:
-	* threadSvCmd.c: always call registered exit callbacks
+	* generic/threadCmd.c:
+	* generic/threadPoolCmd.c:
+	* generic/threadSpCmd.c:
+	* generic/threadSvCmd.c: always call registered exit callbacks
 	with non-NULL clientData, otherwise Tcl won't invoke
 	the registered  callback. 
 
