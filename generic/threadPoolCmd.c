@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.27 2004/08/14 20:30:11 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.28 2004/11/27 06:11:02 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -91,6 +91,7 @@ static Tcl_ThreadDataKey dataKey;
 
 static ThreadPool *tpoolList;
 static Tcl_Mutex listMutex;
+static Tcl_Mutex startMutex;
 
 /*
  * Used to represent the empty result.
@@ -273,24 +274,17 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
 
     /*
      * Start the required number of worker threads.
-     * Note that this is done under mutex protection
-     * in order to avoid contentions on the malloc 
-     * mutex, since creating a new thread might be
-     * expensive in terms of allocated memory.
      */
-
-    Tcl_MutexLock(&listMutex);
 
     for (ii = 0; ii < tpoolPtr->minWorkers; ii++) {
         if (CreateWorker(interp, tpoolPtr) != TCL_OK) {
             Tcl_Free((char*)tpoolPtr);
-            Tcl_MutexUnlock(&listMutex);
             return TCL_ERROR;
         }
     }
 
+    Tcl_MutexLock(&listMutex);
     SpliceIn(tpoolPtr, tpoolList);
-
     Tcl_MutexUnlock(&listMutex);
 
     sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
@@ -916,7 +910,6 @@ CreateWorker(interp, tpoolPtr)
 {
     Tcl_ThreadId id;
     TpoolResult result;
-    Tcl_Mutex waitMutex = (Tcl_Mutex)0;
 
     /*
      * Initialize the result structure to be
@@ -929,26 +922,21 @@ CreateWorker(interp, tpoolPtr)
     result.tpoolPtr = tpoolPtr;
 
     /*
-     * Create new worker thread here.
+     * Create new worker thread here. Wait for the thread to start 
+     * because it's using the ThreadResult arg which is on our stack.
      */
 
+    Tcl_MutexLock(&startMutex);
     if (Tcl_CreateThread(&id, TpoolWorker, (ClientData)&result,
                          TCL_THREAD_STACK_DEFAULT, 0) != TCL_OK) {
         Tcl_SetResult(interp, "can't create a new thread", TCL_STATIC);
+        Tcl_MutexUnlock(&startMutex);
         return TCL_ERROR;
     }
-
-    /*
-     * Wait for the thread to start because it's using
-     * the ThrreadResult argument which is on our stack.
-     */
-
-    Tcl_MutexLock(&waitMutex);
     while(result.retcode == -1) {
-        Tcl_ConditionWait(&tpoolPtr->cond, &waitMutex, NULL);
+        Tcl_ConditionWait(&tpoolPtr->cond, &startMutex, NULL);
     }
-    Tcl_MutexUnlock(&waitMutex);
-    Tcl_MutexFinalize(&waitMutex);
+    Tcl_MutexUnlock(&startMutex);
 
     /*
      * Set error-related information if the thread
@@ -991,6 +979,8 @@ TpoolWorker(clientData)
     Tcl_Time waitTime, *idlePtr;
     char *errMsg = "can't create new Tcl interpreter";
 
+    Tcl_MutexLock(&startMutex);
+
     /*
      * Initialize the Tcl interpreter
      */
@@ -1012,6 +1002,7 @@ TpoolWorker(clientData)
              && (type == TCL_ALPHA_RELEASE)) && (rPtr->retcode != TCL_OK)) {
         rPtr->result = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
         Tcl_ConditionNotify(&tpoolPtr->cond);
+        Tcl_MutexUnlock(&startMutex);
         goto out;
     }
     rPtr->retcode = Thread_Init(interp);
@@ -1020,6 +1011,7 @@ TpoolWorker(clientData)
     if (rPtr->retcode != TCL_OK) {
         rPtr->result = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
         Tcl_ConditionNotify(&tpoolPtr->cond);
+        Tcl_MutexUnlock(&startMutex);
         goto out;
     }
 
@@ -1033,6 +1025,7 @@ TpoolWorker(clientData)
             char *err = (char*)Tcl_GetStringResult(interp);
             rPtr->result = strcpy(Tcl_Alloc(strlen(err)+1), err);
             Tcl_ConditionNotify(&tpoolPtr->cond);
+            Tcl_MutexUnlock(&startMutex);
             goto out;
         }
     }
@@ -1050,11 +1043,12 @@ TpoolWorker(clientData)
     }
 
     /*
-     * Tell caller we're ready to service jobs 
+     * Tell caller we've started
      */
 
     tpoolPtr->numWorkers++; 
     Tcl_ConditionNotify(&tpoolPtr->cond);
+    Tcl_MutexUnlock(&startMutex);
 
     /*
      * Wait for jobs to arrive. Note the handcrafted time test.
