@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.14 2002/12/12 08:16:24 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.15 2002/12/13 20:53:45 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -199,8 +199,8 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     /* 
      * Syntax:  tpool::create ?-minworkers count?
      *                        ?-maxworkers count?
-     *                        ?-initscript script?
-     *                        ?-exitscript script?
+     *                        ?-initcmd script?
+     *                        ?-exitcmd script?
      *                        ?-idletime seconds?
      */
 
@@ -230,10 +230,10 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
             if (Tcl_GetIntFromObj(interp, objv[ii+1], &idle) != TCL_OK) {
                 return TCL_ERROR;
             }
-        } else if (OPT_CMP(opt, "-initscript")) {
+        } else if (OPT_CMP(opt, "-initcmd")) {
             char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
             cmd  = strcpy(Tcl_Alloc(len+1), val);
-        } else if (OPT_CMP(opt, "-exitscript")) {
+        } else if (OPT_CMP(opt, "-exitcmd")) {
             char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
             exs  = strcpy(Tcl_Alloc(len+1), val);
         } else {
@@ -299,9 +299,10 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     return TCL_OK;
 
  usage:
-    Tcl_WrongNumArgs(interp, 1, objv, "?-minworkers count?"
-                     " ?-maxworkers count?"
-                     " ?-initcmd command? ?-idletime seconds?");
+    Tcl_WrongNumArgs(interp, 1, objv,
+                     "?-minworkers count? ?-maxworkers count? "
+                     "?-initcmd script? ?-exitcmd script? "
+                     "?-idletime seconds?");
     return TCL_ERROR;
 }
 
