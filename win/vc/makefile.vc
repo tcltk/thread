@@ -4,7 +4,7 @@
 # Microsoft Visual C++ makefile for use with nmake.exe v1.62+ (VC++ 5.0+)
 #
 #---------------------------------------------------------------------
-# RCS: @(#) $Id: makefile.vc,v 1.27 2003/04/22 18:20:22 davygrvy Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.28 2003/12/01 19:27:26 vasiljevic Exp $
 #---------------------------------------------------------------------
 
 !if "$(MSVCDIR)" == ""
@@ -151,11 +151,14 @@ THREADLIBBASE	= $(OUT_DIR)\thread$(THREAD_MAJOR)$(THREAD_MINOR)$(SUFX:t=)
 THREADLIB	= $(THREADLIBBASE).$(EXT)
 
 THREADOBJS	= \
+	$(TMP_DIR)\psGdbm.obj \
+	$(TMP_DIR)\tclXkeylist.obj \
 	$(TMP_DIR)\threadCmd.obj \
 	$(TMP_DIR)\threadSpCmd.obj \
 	$(TMP_DIR)\threadSvCmd.obj \
 	$(TMP_DIR)\threadPoolCmd.obj \
 	$(TMP_DIR)\threadSvListCmd.obj \
+	$(TMP_DIR)\threadSvKeylistCmd.obj \
 	$(TMP_DIR)\threadWin.obj \
 !if !$(STATIC_BUILD)
 	$(TMP_DIR)\thread.res
@@ -344,7 +347,7 @@ $(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\tclThread.h
 $(GENERICDIR)\threadSvCmd.c : $(GENERICDIR)\tclThread.h
 $(GENERICDIR)\threadPoolCmd.c : $(GENERICDIR)\tclThread.h
 $(GENERICDIR)\threadSvListCmd.c : $(GENERICDIR)\tclThread.h
-
+$(GENERICDIR)\threadSvKeylistCmd.c : $(GENERICDIR)\tclThread.h
 
 #---------------------------------------------------------------------
 # Cleanup
