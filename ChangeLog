@@ -1,3 +1,13 @@
+2003-07-27 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadPoolCmd.c: added "-nowait" option
+	to the "tpool::post" commandi. This allows the 
+ 	caller to post jobs to the threadpool queue without
+	waiting for an idle thread. The implementation will
+	start at least one worker thread if there is none 
+	available to satisfy the first request.
+	Added "tpool::cancel" command. See docs for info.
+
 2003-05-31 Zoran Vasiljevic <zoran@archiware.com>
 	
 	* generic/threadCmd.c: fixed ListRemoveInner for
