@@ -160,7 +160,7 @@ Database Class:	\\fB\\$3\\fR
 .TH "Tcl Threading" n "2.5" Tcl ""
 .BS
 .SH NAME
-tsv \- Part of the Tcl threading extension allowing script-level creation and manipulation
+tsv \- Part of the Tcl threading extension allowing script-level manipulation
 of data shared between threads in a simple, safe and protected fashion.
 .SH SYNOPSIS
 .nf
@@ -312,7 +312,7 @@ in the shared \fIarray\fR. If \fIindex\fR is not specified, it defaults to zero.
 \&\fRThis command concatenates passed arguments and evaluates the
 resulting script under the internal mutex protection. During the
 script evaluation, the entire shared array is locked. For shared
-variable commands within the script, the internal locking is disabled
+variable commands within the script, internal locking is disabled
 so no deadlock can occur. It is also allowed to unset the shared
 variable from within the script. The shared variable is automatically
 created if it did not exists at the time of the first lock operation.
@@ -365,7 +365,7 @@ Due to the internal design of the Tcl core, there is no provision of full
 integration of shared variables within the Tcl syntax, unfortunately. All
 access to shared data must be performed with the supplied package commands.
 Also, variable traces are not supported. But even so, benefits of easy,
-simple and safe shared data manipulation outweights the imposed limitations.
+simple and safe shared data manipulation outweights imposed limitations.
 .SH CREDITS
 .PP
 Thread shared variables are inspired by the nsv interface found in

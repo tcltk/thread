@@ -1,6 +1,6 @@
 <html>
 <head>
-<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: tsv.html,v $ $Revision: 1.2 $">
+<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: tsv.html,v $ $Revision: 1.3 $">
 </head><body>
 <div class="header">
 <div class="navbar" align="center">
@@ -10,7 +10,7 @@
 
 
 <h2><a name="SECTnode5">NAME</a></h2><p class="namesection">
-<b class="names">tsv - </b><br>Part of the Tcl threading extension allowing script-level creation and manipulation
+<b class="names">tsv - </b><br>Part of the Tcl threading extension allowing script-level manipulation
 of data shared between threads in a simple, safe and protected fashion.</p>
 
 <h2><a name="SECTnode14">SYNOPSIS</a></h2><pre class="syntax">
@@ -210,7 +210,7 @@ in the shared <i class="m">array</i>. If <i class="m">index</i> is not specified
 <dd>This command concatenates passed arguments and evaluates the
 resulting script under the internal mutex protection. During the
 script evaluation, the entire shared array is locked. For shared
-variable commands within the script, the internal locking is disabled
+variable commands within the script, internal locking is disabled
 so no deadlock can occur. It is also allowed to unset the shared
 variable from within the script. The shared variable is automatically
 created if it did not exists at the time of the first lock operation.
@@ -278,7 +278,7 @@ Due to the internal design of the Tcl core, there is no provision of full
 integration of shared variables within the Tcl syntax, unfortunately. All
 access to shared data must be performed with the supplied package commands.
 Also, variable traces are not supported. But even so, benefits of easy, 
-simple and safe shared data manipulation outweights the imposed limitations.</p>
+simple and safe shared data manipulation outweights imposed limitations.</p>
 <h2><a name="SECTnode795">CREDITS</a></h2><p>Thread shared variables are inspired by the nsv interface found in 
 AOLserver 3.+ highly scalable Web server from America Online.
 </p>
