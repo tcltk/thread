@@ -14,10 +14,10 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadWin.c,v 1.2 2002/01/19 23:29:52 vasiljevic Exp $
+ * RCS: @(#) $Id: threadWin.c,v 1.3 2002/01/21 23:58:36 davygrvy Exp $
  */
 
-#include "../..generic/tclThread.h"
+#include "../generic/tclThread.h"
 #include <windows.h>
 #include <process.h>
 

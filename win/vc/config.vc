@@ -3,7 +3,7 @@
 #  Edit for your local configuration.
 #
 ######################################################################
-# RCS: @(#) $Id: config.vc,v 1.15 2001/09/05 22:59:42 davygrvy Exp $
+# RCS: @(#) $Id: config.vc,v 1.16 2002/01/21 23:49:08 davygrvy Exp $
 
 #!error you must edit this file before using.
 
@@ -18,11 +18,11 @@ MACHINE   = IX86
 
 # are we VC++ version 5.0 or 6.0 ?
 #
-MSDEV_VER	= 5
+MSDEV_VER	= 6
 
 # Where is this located?
 #
-MSDEVROOT	= C:\Dev\DevStudio
+MSDEVROOT	= C:\Dev\DevStudio60
 
 # Where is Tcl ?
 #
