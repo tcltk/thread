@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.5 2005/01/03 19:24:47 vasiljevic Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.6 2005/01/11 15:59:27 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -17,6 +17,7 @@
 #   ttrace::isenabled      returns true if ttrace is enabled
 #   ttrace::cleanup        bring the interp to a pristine state
 #   ttrace::update         update interp to the latest trace epoch
+#   ttrace::config         setup some configuration options
 #   ttrace::getscript      returns a script for initializing interps
 #
 # Commands used for/from trace callbacks:
@@ -60,7 +61,7 @@ namespace eval ttrace {
         error "requires AOLserver or Tcl threading extension"
     }
 
-    package provide Ttrace 1.0
+    package provide Ttrace 1.1
 
     # Package variables
     variable resolvers ""     ; # List of registered resolvers
@@ -84,6 +85,9 @@ namespace eval ttrace {
     # Exported commands
     namespace export unknown
 
+    # Initially, allow creation of epochs
+    set config(-doepochs) 1
+
     # Initialize ttrace shared state
     if {[${store}array exists ttrace] == 0} {
         ${store}set ttrace lastepoch $epoch
@@ -92,12 +96,12 @@ namespace eval ttrace {
 
     proc eval {cmd args} {
         enable
-        set code [catch {::uplevel $cmd $args} result]
+        set nmsp [::uplevel namespace current]
+        set code [catch {namespace eval $nmsp ::uplevel $cmd $args} result]
         disable
         if {[info commands ns_ictl] == ""} {
             if {$code == 0} {
                 variable tvers
-                getscript
                 if {$tvers >= "2.6"} {
                     thread::broadcast {package require Ttrace; ttrace::update}
                 }
@@ -109,15 +113,33 @@ namespace eval ttrace {
                 ns_markfordelete
             }
         }
-        return -code $code $result
+        return -code $code \
+            -errorinfo $::errorInfo -errorcode $::errorCode $result
+    }
+
+    proc config {args} {
+        variable config
+        if {[llength $args] == 0} {
+            array get config
+        } elseif {[llength $args] == 1} {
+            set opt [lindex $args 0]
+            set config($opt)
+        } else {
+            set opt [lindex $args 0]
+            set val [lindex $args 1]
+            set config($opt) $val
+        }
     }
 
     proc enable {} {
-        variable enabled
-        variable epoch [_newepoch]
+        variable config
         variable tracers
         variable enables
+        variable enabled
         set enabled 1
+        if {$config(-doepochs) != 0} {
+            variable epoch [_newepoch]
+        }
         set nsp [namespace current]
         foreach enabler $enables {
             enable::_$enabler
@@ -401,7 +423,9 @@ namespace eval ttrace {
                 lappend pargs [list $arg $def]
             }
         }
-        append res "::proc $cmd [list $pargs] [list $pbody]"
+        append res "::namespace eval $nsp {" \n
+        append res "::proc [namespace tail $cmd] [list $pargs] [list $pbody]" \n
+        append res "}" \n
     }
 
     proc _serializensp {{nsp ""} {result _}} {
@@ -414,6 +438,9 @@ namespace eval ttrace {
             set vname [namespace tail $var]
             if {[array exists $var] == 0} {
                 append res "::variable $vname {[set $var]}" \n
+            } else {
+                append res "::variable $vname" \n
+                append res "::array set $vname [list [array get $var]]" \n
             }
         }
         foreach cmd [info procs ${nsp}::*] {
@@ -811,11 +838,11 @@ eval {
     #
 
     ttrace::atenable XOTclEnabler {args} {
-        if {[info commands Class] == ""} {
+        if {[info commands ::xotcl::Class] == ""} {
             return
         }
-        if {[info commands xotcl::_creator] == ""} {
-            Class create ::xotcl::_creator -instproc create {args} {
+        if {[info commands ::xotcl::_creator] == ""} {
+            ::xotcl::Class create ::xotcl::_creator -instproc create {args} {
                 set result [next]
                 if {![string match ::xotcl::_* $result]} {
                     ttrace::addentry xotcl $result ""
@@ -823,37 +850,46 @@ eval {
                 return $result
             }
         }
-        Class instmixin ::xotcl::_creator
+        ::xotcl::Class instmixin ::xotcl::_creator
     }
 
     ttrace::atdisable XOTclDisabler {args} {
-        if {   [info commands Class] == "" 
+        if {   [info commands ::xotcl::Class] == "" 
             || [info commands ::xotcl::_creator] == ""} {
             return
         }
+        ::xotcl::Class instmixin ""
         ::xotcl::_creator destroy
-        Class instmixin ""
     }
 
     set resolver [ttrace::addresolver resolveclasses {name} {
-        if {![string match "::*" $name]} {
-            set name ::$name
+        set cns  [uplevel namespace current]
+        set name [namespace tail $classname]
+        if {$cns == "::"} {
+            set cns ""
         }
-        set script [ttrace::getentry xotcl $name]
+        set ncmd ${cns}::$name
+        set gcmd ::$name
+        set script [ttrace::getentry xotcl $ncmd]
         if {$script == ""} {
-            return 0
+            set script [ttrace::getentry xotcl $gcmd]
+            if {$script == ""} {
+                return 0
+            }
         }
-        uplevel $script
+        uplevel [list namespace eval $cns $script]
         return 1
     }]
 
     ttrace::addscript xotcl [subst -nocommands {
-        if {![catch {::Serializer new} ss]} {
-            foreach entry [concat [ttrace::getentries xotcl] ::Serializer] {
-                ttrace::addentry xotcl \$entry [\$ss serialize \$entry]
+        if {![catch {Serializer new} ss]} {
+            foreach entry [ttrace::getentries xotcl] {
+                if {[ttrace::getentry xotcl \$entry] == ""} {
+                    ttrace::addentry xotcl \$entry [\$ss serialize \$entry]
+                }
             }
             \$ss destroy
-            return {Class proc __unknown name {$resolver \$name}}
+            return {::xotcl::Class proc __unknown name {$resolver \$name}}
         }
     }]
 
