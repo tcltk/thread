@@ -46,7 +46,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread22.dll"
+# PROP Target_File "thread23.dll"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -65,7 +65,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0 STATIC_BUILD=1"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread22.lib"
+# PROP Target_File "thread23.lib"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -84,7 +84,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir "Release_StaticX"
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=0 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread22x.lib"
+# PROP Target_File "thread23x.lib"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -103,7 +103,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread22d.dll"
+# PROP Target_File "thread23d.dll"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -122,7 +122,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1 STATIC_BUILD=1"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread22sd.lib"
+# PROP Target_File "thread23sd.lib"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
@@ -141,7 +141,7 @@ CFG=thread - Win32 Release DLL
 # PROP Intermediate_Dir ""
 # PROP Cmd_Line "NMAKE -nologo -f makefile.vc DEBUG=1 STATIC_BUILD=1 NOMSVCRT=0"
 # PROP Rebuild_Opt "-a"
-# PROP Target_File "thread22xd.lib"
+# PROP Target_File "thread23xd.lib"
 # PROP Bsc_Name ""
 # PROP Target_Dir ""
 
