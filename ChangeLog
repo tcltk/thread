@@ -24,6 +24,14 @@
 	* generic/threadSvCmd.c: Added some additional casting of
 	Tcl_GetHashValue to prevent compiler warnings.
 
+	* generic/threadCmd.c(ThreadWait): Removed the event loop
+	sinking after the "while(..) Tcl_DoOneEvent();" because this
+	extension is only responsible for it's own events in the event
+	loop.  Any other extension that's queueing events must be
+	responsible for it's own cleanup and should be aware of when
+	the interp (ie. this thread) is going away when we fall-out
+	to Tcl_DeleteInterp from the Tcl_Eval in NewThread().
+
 2000-07-14 Zoran Vasiljevic <zoran@munich.com>
 
 	* generic/threadCmd.c: improved thread::exit behaviour
