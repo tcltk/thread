@@ -2,7 +2,7 @@
 
 	* generic/threadCmd.c (ThreadEventProc): ThreadErrorProc now
 	supported in asyncronous sends when Tcl_Eval returns other than
-	TCL_OK.  It silently failed prior to this.
+	TCL_OK.  It silently failed prior to this. Bug #219324
 
 2001-04-25  David Gravereaux <davygrvy@pobox.com>
 
