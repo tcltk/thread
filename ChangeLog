@@ -1,3 +1,15 @@
+2001-04-28  David Gravereaux <davygrvy@pobox.com>
+
+	* generic/threadCmd.c (NewThread): removed the previous addition of
+	Tcl_FinalizeThread.  Tcl_ExitThread calls it anyways (my mistake).
+	The resource leak was in the core.  See ->
+	http://sourceforge.net/tracker/?func=detail&atid=110894&aid=419683&group_id=10894
+	for the fix.  That patch is pending approval.
+
+	To acheive the same behavior of emptying the event loop the way
+	thread::wait used to work, use the following:
+		set T [thread::create {thread::unwind; update}]
+
 2001-04-26  David Gravereaux <davygrvy@pobox.com>
 
 	* config/* (new): old site-wide config directory re-added.
@@ -51,7 +63,7 @@
 	to me than NODEBUG=0.  Not that I didn't think you wouldn't have
 	disagreed it was confusing, no?
 
-	* win/vc/config.vc: Added a reminder to edit before using
+	* win/vc/config.vc: Added a reminder to edit before using.
 	* win/vc/thread.rc: Added authors and removed the Ajuba branding.
 
 2001-04-25  David Gravereaux <davygrvy@pobox.com>
@@ -60,7 +72,7 @@
 	loop sinking which was probably done because Tcl_FinalizeThread
 	was missing from NewThread().  Now the event loop is cleaned
 	by Tcl_FinalizeThread and ThreadWait doesn't manipulate events
-	that don't belong to it.
+	that don't belong to it.  Bug #418689 and #418693
 
 	* generic/threadCmd.c (Thread_Init): logic fix in a version check
 	for determining the 8.3 package subset.
