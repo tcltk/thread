@@ -1,2 +1,3 @@
-sh ../configure --enable-gcc --enable-threads --prefix=/home/welch/install --exec-prefix=/home/welch/install/solaris \
+sh ../../configure --enable-gcc --enable-threads --prefix=/home/welch/install \
+	--exec-prefix=/home/welch/install/solaris \
 	--with-tcl=/home/welch/cvs/tcl8.3/unix/sol-thread
