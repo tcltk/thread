@@ -5,7 +5,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.5 2002/05/25 21:39:05 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.6 2002/07/02 15:46:56 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -15,6 +15,14 @@
 #include <tcl.h>
 #include <ctype.h>
 #include <string.h>
+
+/*
+ * Starting from 8.4 core, Tcl API is CONST'ified
+ */
+
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION <= 3) 
+# define CONST84
+#endif
 
 /*
  * Uncomment following line to get command-line

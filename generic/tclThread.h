@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.6 2002/03/20 01:33:03 hobbs Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.7 2002/07/02 15:46:56 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -23,6 +23,15 @@
 
 #include <tcl.h>
 #include <string.h> /* For memset and friends */
+
+/*
+ * Starting from 8.4 core, Tcl API is CONST'ified.
+ * Versions < 8 we do not support anyway.
+ */
+
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION <= 3)
+# define CONST84
+#endif
 
 #undef  TCL_STORAGE_CLASS
 #define TCL_STORAGE_CLASS DLLEXPORT

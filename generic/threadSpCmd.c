@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.5 2002/06/17 20:22:55 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.6 2002/07/02 15:46:56 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -86,7 +86,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
     char *mutexHandle;
     Tcl_Mutex *mutexPtr = NULL;
 
-    static CONST char *cmdOpts[] = {
+    static CONST84 char *cmdOpts[] = {
         "create", "destroy", "lock", "unlock", NULL
     };
     enum options {
@@ -184,7 +184,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
     Tcl_Mutex *mutexPtr = NULL;
     Tcl_Condition *condPtr = NULL;
 
-    static CONST char *cmdOpts[] = {
+    static CONST84 char *cmdOpts[] = {
         "create", "destroy", "notify", "wait", NULL
     };
     enum options {
