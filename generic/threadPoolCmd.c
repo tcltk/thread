@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.10 2002/12/05 23:41:44 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.11 2002/12/09 16:33:55 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -108,6 +108,7 @@ static Tcl_ObjCmdProc TpoolPostObjCmd;
 static Tcl_ObjCmdProc TpoolWaitObjCmd;
 static Tcl_ObjCmdProc TpoolGetObjCmd;
 static Tcl_ObjCmdProc TpoolReserveObjCmd;
+static Tcl_ObjCmdProc TpoolNamesObjCmd;
 
 /*
  * Miscelaneous functions used within this file
@@ -732,6 +733,45 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
     Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
 
     return TCL_OK; 
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TpoolNamesObjCmd --
+ *
+ *  This procedure is invoked to process the "tpool::names" Tcl 
+ *  command. See the user documentation for details on what it does.
+ *
+ * Results:
+ *  A standard Tcl result.
+ *
+ * Side effects:
+ *  None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+TpoolNamesObjCmd(dummy, interp, objc, objv)
+    ClientData  dummy;          /* Not used. */
+    Tcl_Interp *interp;         /* Current interpreter. */
+    int         objc;           /* Number of arguments. */
+    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+{
+    ThreadPool *tpoolPtr;
+    Tcl_Obj *listObj = Tcl_NewListObj(0, NULL);
+    
+    Tcl_MutexLock(&listMutex);
+    for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
+        char buf[16];
+        sprintf(buf, "%s%u", TPOOL_HNDLPREFIX, tpoolPtr->tpoolId);
+        Tcl_ListObjAppendElement(interp, listObj, Tcl_NewStringObj(buf,-1));
+    }
+    Tcl_MutexUnlock(&listMutex);
+    Tcl_SetObjResult(interp, listObj);
+
+    return TCL_OK;
 }
 
 /*
@@ -1509,6 +1549,7 @@ Tpool_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
 {
     TCL_CMD(interp, "tpool::create",   TpoolCreateObjCmd);
+    TCL_CMD(interp, "tpool::names",    TpoolNamesObjCmd);
     TCL_CMD(interp, "tpool::post",     TpoolPostObjCmd);
     TCL_CMD(interp, "tpool::wait",     TpoolWaitObjCmd);
     TCL_CMD(interp, "tpool::get",      TpoolGetObjCmd);
