@@ -1,3 +1,9 @@
+2002-10-15  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* configure:
+	* configure.in: move the CFLAGS definition into TEA_ENABLE_SHARED
+	and make it pick up the env CFLAGS at configure time.
+
 2002-08-23 Zoran Vasiljevic <zoran@archiware.com>
 
 	* threadCmd.c: fixed potential memory corruption
