@@ -1,3 +1,12 @@
+2002-03-07  Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadSvc.c: tsv::names will skip reporting shared
+	arrays with leading dot in their names. This is turned-on 
+	only for AOLserver builds with the HIDE_DOTNAMES. For the
+	regular Tcl builds, all arrays are reported, regardless of
+	the name. Motivation behind this feature is to allow 
+        programmers certain privacy. It is not name-clash-proof, though,
+
 2002-02-12  Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: fixed thread::preserve glitch. We never
