@@ -7,7 +7,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.1 2001/09/04 23:43:09 davygrvy Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.2 2001/09/05 23:02:01 davygrvy Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -40,6 +40,7 @@ Tcl_ObjCmdProc	ThreadSendObjCmd;
 Tcl_ObjCmdProc	ThreadJoinObjCmd;
 Tcl_ObjCmdProc	ThreadUnwindObjCmd;
 Tcl_ObjCmdProc	ThreadExitObjCmd;
+Tcl_ObjCmdProc	ThreadKillObjCmd;
 Tcl_ObjCmdProc	ThreadWaitObjCmd;
 Tcl_ObjCmdProc	ThreadIdObjCmd;
 Tcl_ObjCmdProc	ThreadNamesObjCmd;
@@ -66,6 +67,13 @@ void	Initialize_Sv _ANSI_ARGS_((Tcl_Interp *interp));
 Tcl_ObjCmdProc	ThreadMutexObjCmd;
 Tcl_ObjCmdProc	ThreadCondObjCmd;
 void	Initialize_Sp _ANSI_ARGS_((Tcl_Interp *interp));
+
+/*
+ *  Platform specific functions.
+ */
+
+void ThreadKill _ANSI_ARGS_((long id));
+
 
 /*
  * end of header
