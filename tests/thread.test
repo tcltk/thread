@@ -11,21 +11,15 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: thread.test,v 1.18 2004/11/25 14:32:34 vasiljevic Exp $
+# RCS: @(#) $Id: thread.test,v 1.19 2004/12/18 13:26:03 vasiljevic Exp $
 
 package require tcltest; namespace import -force ::tcltest::*
 
 # Require the accurate version for the tests so we don't pick up
 # older Thread packages by accident
+package require Tcl 8.4
+package require Thread 2.6
 
-if {$::tcl_version == 8.3} {
-    package require Thread 2.1.6
-} else {
-    package require Thread 2.6
-}
-
-set ::tcltest::testConstraints(only83)    [expr {($::tcl_version == 8.3)}]
-set ::tcltest::testConstraints(notFor83)  [expr {($::tcl_version != 8.3)}]
 set ::tcltest::testConstraints(notForWin) [expr {($::tcl_platform(platform) != "windows")}]
 
 set dummy [::tcltest::makeFile dummyForTransfer dummyForTransfer]
@@ -41,22 +35,11 @@ proc ThreadReap {} {
     llength [thread::names]
 }
 
-test thread-1.83 {thread package check} {only83} {
-    package provide Thread
-} {2.1.6}
-test thread-1.84 {thread package check} {notFor83} {
-    package provide Thread
-} {2.6}
-
 test thread-2.0 {no global thread command} {
     info commands thread
 } {}
 
-test thread-2.83 {thread subcommands} {only83} {
-    lsort [info commands thread::*]
-} {::thread::broadcast ::thread::cond ::thread::configure ::thread::create ::thread::errorproc ::thread::eval ::thread::exists ::thread::exit ::thread::id ::thread::mutex ::thread::names ::thread::preserve ::thread::release ::thread::rwmutex ::thread::send ::thread::unwind ::thread::wait}
-
-test thread-2.84 {thread subcommands} {notFor83} {
+test thread-2.84 {thread subcommands} {
     lsort [info commands thread::*]
 } {::thread::attach ::thread::broadcast ::thread::cond ::thread::configure ::thread::create ::thread::detach ::thread::errorproc ::thread::eval ::thread::exists ::thread::exit ::thread::id ::thread::join ::thread::mutex ::thread::names ::thread::preserve ::thread::release ::thread::rwmutex ::thread::send ::thread::transfer ::thread::unwind ::thread::wait}
 
@@ -110,7 +93,7 @@ test thread-4.3 {thread::create - release a thread} {
     set l
 } {1}
 
-test thread-4.4 {thread::create - create joinable thread} {notFor83} {
+test thread-4.4 {thread::create - create joinable thread} {
     ThreadReap
     set tid [thread::create -joinable {set x 5}]
     set c [thread::join $tid]
@@ -118,7 +101,7 @@ test thread-4.4 {thread::create - create joinable thread} {notFor83} {
     set c
 } {0}
 
-test thread-4.5 {thread::create - join detached thread} {notFor83} {
+test thread-4.5 {thread::create - join detached thread} {
     ThreadReap
     set tid [thread::create]
     thread::send -async $tid {after 1000 ; thread::release}
@@ -157,7 +140,7 @@ test thread-6.1 {thread::unwind - blocked unwind} {
     set l
 } {2}
 
-test thread-7.0 {thread::exit} {notFor83} {
+test thread-7.0 {thread::exit} {
     ThreadReap
     set tid [thread::create -joinable {thread::exit}]
     set c [thread::join $tid]
@@ -464,7 +447,7 @@ test thread-16.2 {thread::errorproc - async reporting} {
     while executing
 "set x"}}
 
-test thread-17.1 {thread::transfer - channel lists} {notFor83 notForWin} {
+test thread-17.1 {thread::transfer - channel lists} {notForWin} {
     ThreadReap
     set tid [thread::create]
     set file [open $dummy r]
@@ -477,7 +460,7 @@ test thread-17.1 {thread::transfer - channel lists} {notFor83 notForWin} {
     set res
 } {1 0 1}
 
-test thread-17.2 {thread::transfer - target thread dying} {notFor83 notForWin} {
+test thread-17.2 {thread::transfer - target thread dying} {notForWin} {
     ThreadReap
     set tid [thread::create]
     set file [open $dummy r]
@@ -488,7 +471,7 @@ test thread-17.2 {thread::transfer - target thread dying} {notFor83 notForWin} {
     set msg
 } {transfer failed: target thread died}
 
-test thread-17.3 {thread::transfer - clearing of fileevents} {notFor83 notForWin} {
+test thread-17.3 {thread::transfer - clearing of fileevents} {notForWin} {
     proc _HandleIt_ {} {
         global gotEvents tid file    
         if {$gotEvents == 0} {
@@ -509,7 +492,7 @@ test thread-17.3 {thread::transfer - clearing of fileevents} {notFor83 notForWin
     set gotEvents
 } {1}
 
-test thread-17.4 {thread::transfer - file - readable?} {notFor83 notForWin} {
+test thread-17.4 {thread::transfer - file - readable?} {notForWin} {
     ThreadReap
     set tid [thread::create]
     set file [open $dummy r]
@@ -521,7 +504,7 @@ test thread-17.4 {thread::transfer - file - readable?} {notFor83 notForWin} {
     set res
 } [string length [::tcltest::viewFile dummyForTransfer]]
 
-test thread-17.5 {thread::transfer - file - closeable?} {notFor83 notForWin} {
+test thread-17.5 {thread::transfer - file - closeable?} {notForWin} {
     set tid [thread::create]
     set file [open $dummy r]
     set res [regexp $file [file channels]]
@@ -531,7 +514,7 @@ test thread-17.5 {thread::transfer - file - closeable?} {notFor83 notForWin} {
     set res
 } {}
 
-test thread-17.6 {thread::transfer - socket - readable?} {notFor83 notForWin} {
+test thread-17.6 {thread::transfer - socket - readable?} {notForWin} {
     set tid [thread::create]
     set lsock ""
     proc accept {sock host port} {global lsock ; set lsock $sock}
@@ -555,7 +538,7 @@ test thread-17.6 {thread::transfer - socket - readable?} {notFor83 notForWin} {
     set res
 } {hello}
 
-test thread-17.7 {thread::transfer - socket - closeable?} {notFor83 notForWin} {
+test thread-17.7 {thread::transfer - socket - closeable?} {notForWin} {
     set tid [thread::create]
     set lsock ""
     proc accept {sock host port} {global lsock ; set lsock $sock}
@@ -582,7 +565,7 @@ test thread-17.7 {thread::transfer - socket - closeable?} {notFor83 notForWin} {
 # channel, which uses the same type of code is something we can
 # do. Lucky us.
 
-test thread-17.8 {thread::transfer - pipe - readable?} {notFor83 notForWin} {
+test thread-17.8 {thread::transfer - pipe - readable?} {notForWin} {
     set tid [thread::create]
 
     set s [makeFile {
@@ -609,7 +592,7 @@ test thread-17.8 {thread::transfer - pipe - readable?} {notFor83 notForWin} {
 # operation. For 9 it is the original thread, for 10 the other
 # thread. 10 currently fails. It seems to be some signal stuff.
 
-test thread-17.9 {thread::transfer - pipe - closable?} {notFor83 notForWin} {
+test thread-17.9 {thread::transfer - pipe - closable?} {notForWin} {
     set tid [thread::create]
 
     set s [makeFile {
@@ -634,7 +617,7 @@ test thread-17.9 {thread::transfer - pipe - closable?} {notFor83 notForWin} {
     set res
 } {1 {} 0}
 
-test thread-17.10 {thread::transfer - pipe - closable?} {notFor83 notForWin} {
+test thread-17.10 {thread::transfer - pipe - closable?} {notForWin} {
 
     set tid [thread::create]
 
@@ -670,7 +653,7 @@ test thread-17.10 {thread::transfer - pipe - closable?} {notFor83 notForWin} {
     set res
 } {1 {} 0}
 
-test thread-17.11a {thread::transfer - pipe - readable event - no transfer} {notFor83} {
+test thread-17.11a {thread::transfer - pipe - readable event - no transfer} {
     set tid [thread::create]
 
     set s [makeFile {
@@ -699,7 +682,7 @@ test thread-17.11a {thread::transfer - pipe - readable event - no transfer} {not
     set cond
 } ok
 
-test thread-17.11b {thread::transfer - pipe - readable event - with transfer} {notFor83} {
+test thread-17.11b {thread::transfer - pipe - readable event - with transfer} {
     set tid [thread::create]
 
     set s [makeFile {
@@ -736,13 +719,13 @@ test thread-17.11b {thread::transfer - pipe - readable event - with transfer} {n
 } ok
 
 
-test thread-18.0 {thread::detach - args} {notFor83} {
+test thread-18.0 {thread::detach - args} {
     set x [catch {thread::detach} msg]
     list $x $msg
 } {1 {wrong # args: should be "thread::detach channel"}}
 
 
-test thread-18.1 {thread::detach - channel} {notFor83} {
+test thread-18.1 {thread::detach - channel} {
     global fd
     set fd [open $dummy r]
     set r1 [regexp $fd [file channels]]
@@ -751,7 +734,7 @@ test thread-18.1 {thread::detach - channel} {notFor83} {
     list $r1 $r2
 } {1 0}
 
-test thread-18.2 {thread::attach - in different thread} {notFor83} {
+test thread-18.2 {thread::attach - in different thread} {
     global fd
     ThreadReap
     set tid [thread::create]
@@ -761,7 +744,7 @@ test thread-18.2 {thread::attach - in different thread} {notFor83} {
     list $r1
 } {1}
 
-test thread-18.3 {thread::attach - in same thread} {notFor83} {
+test thread-18.3 {thread::attach - in same thread} {
     global fd
     thread::attach $fd
     set r1 [regexp $fd [file channels]]

@@ -5,11 +5,11 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: psGdbm.c,v 1.1 2003/09/03 11:24:53 vasiljevic Exp $
+ * RCS: @(#) $Id: psGdbm.c,v 1.2 2004/12/18 13:26:03 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
-#ifdef USE_GDBM
+#ifdef HAVE_GDBM
 
 #include "threadSvCmd.h"
 #include <gdbm.h>
@@ -387,7 +387,7 @@ ps_gdbm_geterr(handle)
     return gdbm_strerror(gdbm_errno);
 }
 
-#endif  /* USE_GDBM */
+#endif  /* HAVE_GDBM */
 
 /* EOF $RCSfile*/
 

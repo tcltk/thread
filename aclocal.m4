@@ -8,52 +8,62 @@ builtin(include,tclconfig/tcl.m4)
 builtin(include,aolserver.m4)
 
 #
-# Handle the "--enable-gdbm" option for linking-in
+# Handle the "--with-gdbm" option for linking-in
 # the gdbm-based peristent store for shared arrays.
 # It tries to locate gdbm files in couple of standard
-# system directories and/or common install locations.
+# system directories and/or common install locations
+# in addition to the directory passed by the user.
+# In the latter case, expect all gdbm lib files and
+# include files located in the same directory.
 #
 
-AC_DEFUN(TCLTHREAD_ENABLE_GDBM, [
-    AC_MSG_CHECKING([wether to link with the GNU gdbm library])
-    AC_ARG_ENABLE(gdbm,
-	[  --enable-gdbm           link with optional gdbm support [--disable-gdbm]],
-	[gdbm_ok=$enableval], [gdbm_ok=no])
+AC_DEFUN(TCLTHREAD_WITH_GDBM, [
+    AC_MSG_CHECKING([for GNU gdbm library])
+    AC_ARG_WITH(gdbm,
+	[  --with-gdbm           link with optional gdbm support],\
+	with_gdbm=${withval})
 
-    if test "${enable_gdbm+set}" = set; then
-        enableval="$enable_gdbm"
-        gdbm_ok=$enableval
-    else
-        gdbm_ok=no
+    AC_CACHE_VAL(ac_cv_c_gdbm,[
+    if test x"${with_gdbm}" != x ; then
+        if test -f "${with_gdbm}/gdbm.h" -a x"`ls ${with_gdbm}/libgdbm* 2>/dev/null`" != x; then
+            ac_cv_c_gdbm=`(cd ${with_gdbm}; pwd)`
+            gincdir=$ac_cv_c_gdbm
+            glibdir=$ac_cv_c_gdbm
+        else
+            AC_MSG_ERROR([${with_gdbm} directory doesn't contain gdbm library])
+        fi
     fi
-    if test "$gdbm_ok" = "yes" ; then
-        for i in `ls -d ${exec_prefix}/lib 2>/dev/null` \
-                `ls -d ${prefix}/lib 2>/dev/null` \
-                `ls -d /usr/local/lib 2>/dev/null` \
+    ])
+    if test x"${gincdir}" = x -o x"${glibdir}" = x; then
+        for i in \
+                `ls -d ${exec_prefix}/lib 2>/dev/null`\
+                `ls -d ${prefix}/lib 2>/dev/null`\
+                `ls -d /usr/local/lib 2>/dev/null`\
                 `ls -d /usr/lib 2>/dev/null` ; do
-            if test -f "$i/libgdbm*" ; then
-                libdir=`(cd $i; pwd)`
+            if test x"`ls $i/libgdbm* 2>/dev/null`" != x ; then
+                glibdir=`(cd $i; pwd)`
                 break
             fi
         done
-        for i in `ls -d ${prefix}/include 2>/dev/null` \
-                `ls -d /usr/local/include 2>/dev/null` \
+        for i in \
+                `ls -d ${prefix}/include 2>/dev/null`\
+                `ls -d /usr/local/include 2>/dev/null`\
                 `ls -d /usr/include 2>/dev/null` ; do
             if test -f "$i/gdbm.h" ; then
-                incldir=`(cd $i; pwd)`
+                gincdir=`(cd $i; pwd)`
                 break
             fi
         done
-        if test x"$libdir" = x -o x"$incldir" = x ; then
-            AC_MSG_ERROR([can't, because no gdbm found on this system])
+        if test x"$glibdir" = x -o x"$gincdir" = x ; then
+            AC_MSG_ERROR([none found])
         else
             AC_MSG_RESULT([yes])
-            AC_DEFINE(USE_GDBM)
-            CFLAGS="${CFLAGS} -I$incldir"
-            LIBS="${LIBS} -L$libdir -lgdbm"
+            AC_DEFINE(HAVE_GDBM)
+            GDBM_CFLAGS="-I\"$gincdir\""
+            GDBM_LIBS="-L\"$glibdir\" -lgdbm"
         fi
     else
-        AC_MSG_RESULT([no])
+        AC_MSG_ERROR([none found])
     fi
 ])
 

@@ -5,7 +5,7 @@
     Part of the Tcl threading extension allowing script level
     manipulation of data shared between threads.
 }]
-[require Tcl 8.3]
+[require Tcl 8.4]
 [require Thread [opt 2.6]]
 
 [description]
