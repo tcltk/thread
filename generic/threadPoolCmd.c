@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.24 2003/08/27 12:08:50 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.25 2003/11/27 19:54:19 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -545,8 +545,8 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
 
         Tcl_DecrRefCount(waitList); 
         PushWaiter(tpoolPtr);
-        Tcl_MutexUnlock(&tpoolPtr->mutex);
 
+        Tcl_MutexUnlock(&tpoolPtr->mutex);
         tsdPtr->stop = -1;
         while (tsdPtr->stop == -1) {
             Tcl_DoOneEvent(TCL_ALL_EVENTS);
@@ -588,18 +588,21 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
     int ii, wObjc, jobId;
-    char *tpoolName;
-    Tcl_Obj *doneList, **wObjv;
+    char *tpoolName, *listVar = NULL;
+    Tcl_Obj *doneList, *waitList, **wObjv;
     ThreadPool *tpoolPtr;
     TpoolResult *rPtr;
 
     /* 
-     * Syntax: tpool::cancel tpoolId jobIdList
+     * Syntax: tpool::wait tpoolId jobIdList ?listVar?
      */
 
-    if (objc != 3) {
-        Tcl_WrongNumArgs(interp, 1, objv, "tpoolId jobIdList");
+    if (objc < 3 || objc > 4) {
+        Tcl_WrongNumArgs(interp, 1, objv, "tpoolId jobIdList ?listVar");
         return TCL_ERROR;
+    }
+    if (objc == 4) {
+        listVar = Tcl_GetString(objv[3]);
     }
     if (Tcl_ListObjGetElements(interp, objv[2], &wObjc, &wObjv) != TCL_OK) {
         return TCL_ERROR;
@@ -611,15 +614,16 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
                          "\"", NULL);
         return TCL_ERROR;
     }
-    
+ 
     InitWaiter();
     doneList = Tcl_NewListObj(0, NULL);
-    
+    waitList = Tcl_NewListObj(0, NULL);
+
+    Tcl_MutexLock(&tpoolPtr->mutex);
     for (ii = 0; ii < wObjc; ii++) {
         if (Tcl_GetIntFromObj(interp, wObjv[ii], &jobId) != TCL_OK) {
             return TCL_ERROR;
         }
-        Tcl_MutexLock(&tpoolPtr->mutex);
         for (rPtr = tpoolPtr->workHead; rPtr; rPtr = rPtr->nextPtr) {
             if (rPtr->jobId == (unsigned int)jobId) {
                 if (rPtr->prevPtr != NULL) {
@@ -637,9 +641,15 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
                 Tcl_Free((char*)rPtr);
                 Tcl_ListObjAppendElement(interp, doneList, wObjv[ii]);
                 break;
+            } else if (listVar) {
+                Tcl_ListObjAppendElement(interp, waitList, wObjv[ii]);
             }
         }
-        Tcl_MutexUnlock(&tpoolPtr->mutex);
+    }
+    Tcl_MutexUnlock(&tpoolPtr->mutex);
+
+    if (listVar) {
+        Tcl_SetVar2Ex(interp, listVar, NULL, waitList, 0);
     }
 
     Tcl_SetObjResult(interp, doneList);
