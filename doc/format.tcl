@@ -1,13 +1,15 @@
 #!/usr/local/bin/tclsh
+set mydir [file dirname [info script]]
 lappend auto_path /usr/local/lib
 package req doctools
 doctools::new dt
-dt configure -format nroff
-set f [open man.macros]
-set m [read $f]
-close $f
-file rename html htm
+set wd [pwd]
+cd $mydir
 set code [catch {
+    set f [open man.macros]
+    set m [read $f]
+    close $f
+    file rename html htm
     foreach xx {thread tsv tpool} {
         set f [open $xx.man]
         set t [read $f]
@@ -25,6 +27,7 @@ set code [catch {
     }
 } err]
 file rename htm html
+cd $wd
 if {$code} {
     error $err
 }
