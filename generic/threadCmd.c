@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.78 2003/11/27 20:12:45 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.79 2003/11/28 12:47:20 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1001,6 +1001,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
     }
 
     Tcl_DecrRefCount(listObj);
+    Tcl_ResetResult(interp);
 
     return TCL_OK;
 }
@@ -2410,6 +2411,7 @@ ThreadSend(interp, id, send, clbk, wait)
      */
 
     if (!(tsdPtr->flags & THREAD_FLAGS_CREATED)) {
+        Tcl_MutexUnlock(&threadMutex);
         Tcl_SetResult(interp, "thread not created by the package", TCL_STATIC);
         return TCL_ERROR;
     }
