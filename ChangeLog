@@ -1,3 +1,16 @@
+2004-11-25 Zoran Vasiljevic <zoran@archiware.com>
+
+	* tests/thread.tcl: Disabled all tests handling channel transfer
+          for Windows ports until core is capable of handling this correctly.
+
+        * generic/threadSpCmd.c: Fixed segmentation problems observed on
+	  Windows ports and related to notification of an uninitialized
+	  condition variable(s). This closes Bug #1051068 (wrongly posted
+          under Tcl Patches at SF).
+
+	* doc/thread.man: Fixed mutex/condvar code example. Thanks to
+  	  Gustaf Neumann of XOTcl for the tip.
+
 2004-10-21  Andreas Kupries <andreask@activestate.com>
 
 	* tests/thread.test: Added two tests checking the working of
