@@ -13,15 +13,13 @@
 .SH NAME
 thread \- Script level threading
 .SH "SYNOPSIS"
-\fB thread::create ?-joinable? ?\fIscript\fR?
+\fB thread::create ?\fIscript\fR?
 \fB thread::id\fR
 \fB thread::errorproc ?\fIprocname\fR?
 \fB thread::exit\fR
 \fB thread::names\fR
 \fB thread::send id ?\fI-async\fR? \fIscript\fR
 \fB thread::wait\fR
-\fB thread::join id\fR
-\fB thread::transfer id channel\fR
 .BE
 .SH "DESCRIPTION"
 .PP
@@ -31,11 +29,9 @@ it lets you send scripts to those threads.
 \fBthread::create\fR creates a thread that contains a Tcl
 interpreter. The Tcl interpreter either evaluates the \fIscript\fR, if
 specified, or it waits in the event loop for scripts that arrive via
-the \fBthread::send\fR command. The result of \fBthread::create\fR is
-the ID of the thread. The result, if any, of \fIscript\fR is
-ignored. Using flag \fB-joinable\fR it is possible to create a
-joinable thread, i.e. one upon whose exit can be waited upon (by using
-\fBthread::join\fR).
+the \fBthread::send\fR command. The result of \fBthread::create\fR
+is the ID of the thread. The result, if any, of \fIscript\fR is
+ignored.
 
 \fBthread::id\fR returns the ID of the current thread. 
 
@@ -71,27 +67,6 @@ startup script. Threads can enter the event loop explicitly by calling
 \fBthread::wait\fR enters the event loop so a thread can receive
 messages from \fBthread::send\fR. This is equivalent to \fBvwait\fR
 \fIunusedvariable\fR.
-
-\fBthread::join\fR waits for the thread with id \fIid\fR to exit and
-then returns its exit code. Errors will be returned for threads which
-are not joinable or already waited upon by another thread.
-
-\fBthread::transfer\fR moves the specified \fIchannel\fR from the
-current thread and interpreter to the main interpreter of the thread
-with the given \fIid\fR. After the move the current interpreter has no
-access to the channel anymore, but the main interpreter of the target
-thread will be able to use it from now on.
-
-The command waits until the other thread has incorporated the
-channel. Because of this it is possible to deadlock the participating
-threads by commanding the other through a synchronous
-\fBthread::send\fR to transfer a channel to us. This easily extends
-into longer loops of threads waiting for each other.
-
-Other restrictions: The channel in question must not be shared among
-multiple interpreters running in the sending thread. This
-automatically excludes the special channels for standard input, output
-and error.
 .SH "DISCUSSION"
 The fundamental threading model in Tcl is that there can be one or
 more Tcl interpreters per thread, but each Tcl interpreter should only
@@ -103,9 +78,7 @@ threading where the main thread can manage several background, or
 requests to worker threads, and then await responses from worker
 threads or new client requests. Everything goes through the common Tcl
 event loop, so message passing between threads works naturally with
-event-driven I/O, \fBvwait\fR on variables, and so forth. For the
-transfer of bulk information it is possible to move channels between
-the threads.
+event-driven I/O, \fBvwait\fR on variables, and so forth.
 .SH "SEE ALSO"
 Guide to the Tcl threading model
 .SH "CREDITS"
