@@ -1,3 +1,17 @@
+2002-11-24 Zoran Vasiljevic <zoran@archiware.com>
+
+	* tcl/tpool.tcl: added threadpool implementation in Tcl
+	* doc/man/thread.n
+	* doc/thread.tmml
+	* doc/html/thread.html: new tsv::eval, thread::attach, thread::detach
+
+	* generoc/threadSvCmd.h
+	* generic/threadSvCmd.c: added tsv::eval command
+
+	* generic/threadCmd.c: added thread::attach, thread::detach
+	Also, fixed thread::preserve and thread::release to accept
+	the thread id as the optional paramter.
+	
 2002-11-23 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: fixed ListRemoveInner() to recognize
