@@ -26,11 +26,19 @@ Depending on your platform (Unix-like or Windows) go to the appropriate
 directory (unix or win) and start with the README file. 
 
 Extension can be compiled on several Unix derivates including various 
-distributions of Linux. It can also be compiled under Windows using 
-either MinGW environment (http://www.mingw.org) or Microsoft MSVC++.
+distributions of Linux. Build process is pretty straightforward. I've 
+checked various versions of Solaris and Linux but the extension
+should compile without problems on any Unix-like operating system 
+with a proper pthreads library implementation.
+
+It can also be compiled under Windows using either MinGW environment
+(http://www.mingw.org) or Microsoft MSVC++ compiler.
 The Cygwin environment (http://www.cygwin.com) may also be used but
-the Cygwin-supplied gcc compiler is not supported. You should use the
-gcc compiler as provided with the MinGW environment. 
+the Cygwin-supplied gcc compiler is not supported. You should use
+the gcc compiler as provided with the MinGW environment. 
+Please note that Cygwin/MinGW builds are working only for Tcl 8.4b1 
+or later. Earlier versions of Tcl core had many problems when building
+under one of those environments.
 
 There are also some (pretty promising) efforts in using MinGW on Linux
 to cross-compile the Tcl core for Windows under Linux operating system.
