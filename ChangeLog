@@ -1,3 +1,11 @@
+2004-10-21  Andreas Kupries <andreask@activestate.com>
+
+	* tests/thread.test: Added two tests checking the working of
+	  fileevents after a pipe channel has been transfered. The second
+	  has to fail for any core where TIP #218 is not applied, because
+	  the incoming alert is directed to the wrong thread for event
+	  processing.
+
 2004-10-20 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c (ThreadSetResult): adjusted handling of

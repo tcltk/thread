@@ -11,7 +11,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: thread.test,v 1.16 2004/10/19 23:37:19 andreas_kupries Exp $
+# RCS: @(#) $Id: thread.test,v 1.17 2004/10/21 20:09:35 andreas_kupries Exp $
 
 package require tcltest; namespace import -force ::tcltest::*
 
@@ -666,6 +666,71 @@ test thread-17.10 {thread::transfer - pipe - closable?} {notFor83} {
 
     set res
 } {1 {} 0}
+
+test thread-17.11a {thread::transfer - pipe - readable event - no transfer} {notFor83} {
+    set tid [thread::create]
+
+    set s [makeFile {
+	after 5000 {exit 0}
+	fileevent stdin readable {
+	    if {[eof  stdin]} {exit 0}
+	    if {[gets stdin line] <0} return
+	    puts response
+	}
+	vwait forever
+	exit 0
+    } pscript] ;# {}
+
+    set pipe [open "|[info nameofexecutable] $s" r+]
+
+    fconfigure $pipe -blocking 0
+    fileevent  $pipe readable {read $pipe ; set cond ok}
+    after 3000 {set cond timeout}
+
+    puts $pipe tick ; flush $pipe
+
+    vwait ::cond
+    catch {close $pipe}
+    removeFile pscript
+
+    set cond
+} ok
+
+test thread-17.11b {thread::transfer - pipe - readable event - with transfer} {notFor83} {
+    set tid [thread::create]
+
+    set s [makeFile {
+	after 5000 {exit 0}
+	fileevent stdin readable {
+	    if {[eof stdin]} {exit 0}
+	    if {[gets stdin line] <0} return
+	    puts response
+	}
+	vwait forever
+	exit 0
+    } pscript] ;# {}
+    set pipe [open "|[info nameofexecutable] $s" r+]
+
+    thread::transfer $tid $pipe
+
+    thread::send           $tid [list set chan $pipe]
+    set cond [thread::send $tid {
+	fconfigure $chan -blocking 0
+	fileevent  $chan readable {read $chan ; set cond ok}
+	after 3000 {set cond timeout}
+
+	puts $chan tick ; flush $chan
+
+	vwait ::cond
+	catch {close $pipe}
+	set cond
+    }]
+
+    ThreadReap
+    removeFile pscript
+
+    set cond
+} ok
 
 
 test thread-18.0 {thread::detach - args} {notFor83} {
