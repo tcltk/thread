@@ -5,12 +5,13 @@ package req doctools
 doctools::new dt
 set wd [pwd]
 cd $mydir
+file rename html htm
 set code [catch {
     set f [open man.macros]
     set m [read $f]
     close $f
-    file rename html htm
-    foreach xx {thread tsv tpool} {
+    foreach file [glob -nocomplain *.man] {
+        set xx [file root $file]
         set f [open $xx.man]
         set t [read $f]
         close $f
