@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.49 2002/07/19 19:33:32 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.50 2002/08/18 20:49:38 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -383,7 +383,6 @@ Thread_Init(interp)
      */
 
     tclIs83 = ((maj == 8) && (min == 3));
-
     boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", 0);
 
     if (boolObjPtr == NULL
@@ -1340,7 +1339,7 @@ ThreadClbkSetVar(interp, clientData)
 static int
 ThreadCreate(interp, script, stacksize, flags)
     Tcl_Interp *interp;         /* Current interpreter. */
-    CONST char *script;         /* Script to execute */
+    CONST char *script;         /* Script to evaluate */
     int         stacksize;      /* Zero for default size */
     int         flags;          /* Zero for no flags */
 {
@@ -1356,16 +1355,15 @@ ThreadCreate(interp, script, stacksize, flags)
             flags) != TCL_OK) {
         Tcl_MutexUnlock(&threadMutex);
         Tcl_SetResult(interp, "can't create a new thread", TCL_STATIC);
-        Tcl_Free((void *)ctrl.script);
         return TCL_ERROR;
     }
 
     /*
-     * Wait for the thread to start because it is using something
-     * on our stack!
+     * Wait for the thread to start because it is using
+     * the ThreadCtrl argument which is on our stack.
      */
 
-    while (ctrl.script) {
+    while (ctrl.script != NULL) {
         Tcl_ConditionWait(&ctrl.condWait, &threadMutex, NULL);
     }
     Tcl_MutexUnlock(&threadMutex);
@@ -1381,25 +1379,25 @@ ThreadCreate(interp, script, stacksize, flags)
  * NewThread --
  *
  *    This routine is the "main()" for a new thread whose task is to
- *    execute a single TCL script.  The argument to this function is
- *    a pointer to a structure that contains the text of the TCL script
- *    to be executed.
+ *    execute a single TCL script. The argument to this function is
+ *    a pointer to a structure that contains the text of the Tcl script
+ *    to be executed, plus some synchronization primitives. Those are
+ *    used so the caller gets signalized when the new thread has 
+ *    done its initialization.
  *
- *    Space to hold the script field of the ThreadControl structure passed 
- *    in as the only argument was obtained from malloc() and must be freed 
- *    by this function before it exits.  Space to hold the ThreadControl
- *    structure itself is released by the calling function, and the
- *    two condition variables in the ThreadControl structure are destroyed
- *    by the calling function.  The calling function will destroy the
+ *    Space to hold the ThreadControl structure itself is reserved on
+ *    the stack of the calling function. The two condition variables
+ *    in the ThreadControl structure are destroyed by the calling 
+ *    function as well. The calling function will destroy the
  *    ThreadControl structure and the condition variable as soon as
- *    ctrlPtr->condWait is signaled, so this routine must make copies of
- *    any data it might need after that point.
+ *    ctrlPtr->condWait is signaled, so this routine must make copies
+ *    of any data it might need after that point.
  *
  * Results:
  *    none
  *
  * Side effects:
- *    A TCL script is executed in a new thread.
+ *    A Tcl script is executed in a new thread.
  *
  *----------------------------------------------------------------------
  */
@@ -1424,15 +1422,15 @@ NewThread(clientData)
 #else
     interp = Tcl_CreateInterp();
     result = Tcl_Init(interp);
-
+ 
     /*
      *  Tcl_Init() under 8.3.[1,2] and 8.4a1 doesn't work under threads.
      */
 
     Tcl_GetVersion(&maj, &min, &ptch, &type);
-    if (!((maj == 8) && (min == 3) && (ptch <= 2)) &&
-        !((maj == 8) && (min == 4) && (ptch == 1)  &&
-          (type == TCL_ALPHA_RELEASE)) && (result != TCL_OK)) {
+    if (!((maj == 8) && (min == 3) && (ptch <= 2))
+        && !((maj == 8) && (min == 4) && (ptch == 1)  
+             && (type == TCL_ALPHA_RELEASE)) && (result != TCL_OK)) {
         Tcl_ConditionNotify(&ctrlPtr->condWait);
         ThreadErrorProc(interp);
         Tcl_ExitThread(result);
@@ -1440,11 +1438,6 @@ NewThread(clientData)
     result = Thread_Init(interp);
 #endif
 
-    /*
-     * Clear private state
-     */
-    
-    memset(tsdPtr, 0, sizeof(ThreadSpecificData));
     tsdPtr->interp = interp;
 
     /*
@@ -1481,7 +1474,7 @@ NewThread(clientData)
         ThreadErrorProc(tsdPtr->interp);
     }
     Tcl_Release((ClientData)tsdPtr->interp);
-    
+
     /*
      * Clean up. Note: add something like TlistRemove for transfer list.
      */
@@ -2080,8 +2073,8 @@ ThreadSend(interp, id, send, clbk, wait)
         resultPtr->errorInfo   = NULL;
         resultPtr->dstThreadId = threadId;
         resultPtr->srcThreadId = Tcl_GetCurrentThread();
-
         resultPtr->eventPtr    = eventPtr;
+
         eventPtr->resultPtr    = resultPtr;
 
         SpliceInResult(resultPtr, resultList);
@@ -2296,7 +2289,6 @@ ThreadReserve(interp, threadId, operation, wait)
                 resultPtr->errorInfo   = NULL;
                 resultPtr->dstThreadId = threadId;
                 resultPtr->srcThreadId = Tcl_GetCurrentThread();
-
                 SpliceInResult(resultPtr, resultList);
             }
 
@@ -2931,11 +2923,9 @@ ThreadExitProc(clientData)
 
             } else if (tResultPtr->dstThreadId == self) {
                 /*
-                 * Dang.  The target is going away. Unblock the caller
-                 *        and deliver a failure notice.
-                 *
-                 * The result string must be dynamically allocated because
-                 * the main thread is going to call free on it.
+                 * Dang. The target is going away. Unblock the caller.
+                 * The result string must be dynamically allocated 
+                 * because the main thread is going to call free on it.
                  */
 
                 tResultPtr->resultMsg  = strcpy(Tcl_Alloc(1+strlen(diemsg)), diemsg);
