@@ -2,8 +2,15 @@
 #
 # tpool.tcl --
 #
-# Tcl implementation of a thread pool paradigm in pure Tcl using the
-# Tcl threading extension 2.5 (or higer)
+# Tcl implementation of a threadpool paradigm in pure Tcl using
+# the Tcl threading extension 2.5 (or higer). 
+#
+# This file is for example purposes only. The efficient C-level
+# threadpool implementation is already a part of the threading
+# extension starting with 2.5 version. Both implementations have
+# the same Tcl API so both can be used interchageably. Goal of this 
+# implementation is to serve as an example of using the Tcl extension
+# to solve some very common threading cases.
 #
 # Copyright (c) 2002 by Zoran Vasiljevic.
 #
@@ -11,58 +18,70 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: tpool.tcl,v 1.3 2002/12/05 15:14:12 vasiljevic Exp $
+# RCS: @(#) $Id: tpool.tcl,v 1.4 2002/12/05 23:22:22 vasiljevic Exp $
 #
 
-package require Tcl    8.4
-package require Thread 2.5
-package provide Tpool  1.0
+#package require Tcl    8.4
+#package require Thread 2.5
+
+set thisScript [info script]
 
 namespace eval tpool {
+
     variable afterevent "" ; # Idle timer event for worker threads
     variable result        ; # Stores result from the worker thread
     variable waiter        ; # Waits for an idle worker thread
     variable jobsdone      ; # Accumulates results from worker threads
+
+    #
+    # Create shared array with a single element.
+    # It is used for automatic pool handles creation.
+    #
+
+    set ns [namespace current]
+    tsv::lock $ns {
+        if {[tsv::exists $ns count] == 0} {
+            tsv::set $ns count 0
+        }
+        tsv::set $ns count -1
+    }
+    variable thisScript [info script]
 }
 
 #
 # tpool::create --
 #
-#   Creates instance of a named thread pool.
+#   Creates instance of a thread pool.
 #
 # Arguments:
-#   args   Variable number of key/value arguments, as follows:
+#   args Variable number of key/value arguments, as follows:
 #
-#          -minworkers  minimum # of worker threads (def = 0)
-#          -maxworkers  maximum # of worker threads (def = 4)
-#          -workeridle  # of sec worker is idle before exiting (def = 300)
-#          -initscript  script used to initialize new worker thread
+#        -minworkers  minimum # of worker threads (def:0)
+#        -maxworkers  maximum # of worker threads (def:4)
+#        -workeridle  # of sec worker is idle before exiting (def:0 = never)
+#        -initscript  script used to initialize new worker thread
 #
 # Side Effects:
 #   Might create many new threads if "-minworkers" option is > 0.
 #
 # Results:
-#   The id of the newly created thread pool.
+#   The id of the newly created thread pool. This id must be used 
+#   in all other tpool::* commands.
 #
 
 proc tpool::create {args} {
-    
+
+    variable thisScript
+
     #
-    # Check if the pool is already created
+    # Get next threadpool handle and create the pool array.
     #
 
     set ns [namespace current]
-    set name [namespace tail $ns][tsv::incr $ns count]
+    set tpid [namespace tail $ns][tsv::incr $ns count]
 
-    set tpid ${ns}::$name
     tsv::lock $tpid {
-        if {[tsv::exists $tpid name]} {
-            error "thread pool \"$name\" already exists"
-        }
-        tsv::set $tpid name $name
-    }
-    if {[llength $args] % 2} {
-        error "requires even number of arguments"
+        tsv::set $tpid name $tpid
     }
 
     #
@@ -73,16 +92,22 @@ proc tpool::create {args} {
          thrworkers  ""
          thrwaiters  ""
          jobcounter  0
+         refcounter  0
          numworkers  0
         -minworkers  0
         -maxworkers  4
-        -workeridle  300000
-        -initscript  {source ../tpool/tpool.tcl}
+        -workeridle  0
     }
+
+    tsv::set $tpid -initscript  "source $thisScript"
 
     #
     # Override with user-supplied data
     #
+
+    if {[llength $args] % 2} {
+        error "requires even number of arguments"
+    }
 
     foreach {arg val} $args {
         switch -- $arg {
@@ -114,17 +139,16 @@ proc tpool::create {args} {
 #   the job in two modes: synchronous and asynchronous.
 #   For the synchronous mode, the pool implementation will retain
 #   the result of the passed script until the caller collects it 
-#   using the thread::wait command.
+#   using the "thread::get" command.
 #   For the asynchronous mode, the result of the script is ignored.
 #
 # Arguments:
 #   args   Variable # of arguments with the following syntax:
-#          tpool::send ?-detached? tpid script
+#          tpool::post ?-detached? tpid script
 #
-#          where:
-#            -detached flag to turn the async operation (ignore result)
-#            tpid      the id of the thread pool 
-#            script    script to pass to the worker thread for execution
+#          -detached  flag to turn the async operation (ignore result)
+#          tpid       the id of the thread pool 
+#          script     script to pass to the worker thread for execution
 #
 # Side Effects:
 #   Depends on the passed script.
@@ -133,7 +157,7 @@ proc tpool::create {args} {
 #   The id of the posted job. This id is used later on to collect
 #   result of the job and set local variables accordingly.
 #   For asynchronously posted jobs, the return result is ignored
-#   and this function returns zero.
+#   and this function returns empty result.
 #
 
 proc tpool::post {args} {
@@ -191,12 +215,15 @@ proc tpool::post {args} {
     #
 
     if {$detached} {
-        set j 0
-        thread::send -async $tid [list ${ns}::Run $tpid $j $cmd]
+        set j ""
+        thread::send -async $tid [list ${ns}::Run $tpid 0 $cmd]
     } else {
         set j [tsv::incr $tpid jobcounter]
         thread::send -async $tid [list ${ns}::Run $tpid $j $cmd] ${ns}::result
     }
+
+    variable jobsdone
+    set jobsdone($j) ""
 
     return $j
 }
@@ -204,16 +231,17 @@ proc tpool::post {args} {
 #
 # tpool::wait --
 #
-#   Waits for a job sent with "thread::send" to finish.
+#   Waits for jobs sent with "thread::post" to finish.
 #
 # Arguments:
-#   tpid    Name of the pool shared array.
-#   jobList List of job id's of the previously posted job.
-#   jobLeft List of jobs not collected
+#   tpid     Name of the pool shared array.
+#   jobList  List of job id's done.
+#   jobLeft  List of jobs still pending.
 #
 # Side Effects:
 #   Might eventually enter the event loop while waiting
 #   for the job result to arrive from the worker thread.
+#   It ignores bogus job ids.
 #
 # Results:
 #   Result of the job. If the job resulted in error, it sets
@@ -221,21 +249,59 @@ proc tpool::post {args} {
 #
 
 proc tpool::wait {tpid jobList {jobLeft ""}} {
-    error "not yet implemented"
+
+    variable result
+    variable jobsdone
+
+    if {$jobLeft != ""} {
+        upvar $jobLeft jobleft
+    }
+
+    set retlist ""
+    set jobleft ""
+
+    foreach j $jobList {
+        if {[info exists jobsdone($j)] == 0} {
+            continue ; # Ignore (skip) bogus job ids
+        }
+        if {$jobsdone($j) != ""} {
+            lappend retlist $j
+        } else {
+            lappend jobleft $j
+        }
+    }
+    if {[llength $retlist] == 0 && [llength $jobList]} {
+        #
+        # No jobs found; wait for the first one to get ready.
+        #
+        set jobleft $jobList
+        while {1} {
+            vwait [namespace current]::result
+            set doneid [lindex $result 0]
+            set jobsdone($doneid) $result
+            if {[lsearch $jobList $doneid] >= 0} {
+                lappend retlist $doneid
+                set x [lsearch $jobleft $doneid]
+                set jobleft [lreplace $jobleft $x $x]
+                break
+            }
+        }
+    }
+
+    return $retlist
 }
 
 #
 # tpool::get --
 #
-#   Waits for a job sent with "thread::send" to finish.
+#   Waits for a job sent with "thread::post" to finish.
 #
 # Arguments:
 #   tpid   Name of the pool shared array.
 #   jobid  Id of the previously posted job.
 #
 # Side Effects:
-#   Might eventually enter the event loop while waiting
-#   for the job result to arrive from the worker thread.
+#   None.
 #
 # Results:
 #   Result of the job. If the job resulted in error, it sets
@@ -243,42 +309,68 @@ proc tpool::wait {tpid jobList {jobLeft ""}} {
 #
 
 proc tpool::get {tpid jobid} {
-    
-    variable result
+
     variable jobsdone
 
-    #
-    # Look if the job has already been collected.
-    # If not, wait for the next job to finish.
-    #
-
-    if {[info exists jobsdone($jobid)]} {
-        set result $jobsdone($jobid)
-        unset jobsdone($jobid)
-    } else {
-        while {1} {
-            vwait [namespace current]::result
-            set doneid [lindex $result 0]
-            if {$jobid == $doneid} {
-                break
-            }
-            set jobsdone($doneid) $result ; # Not our job; store and wait 
-        }
+    if {[lindex $jobsdone($jobid) 1] != 0} {
+        eval error [lrange $jobsdone($jobid) 2 end]
     }
 
-    #
-    # Set the result in the current thread.
-    #
-
-    if {[lindex $result 1] != 0} {
-        eval error [lrange $result 2 end]
-    }
-
-    return [lindex $result 2]
+    return [lindex $jobsdone($jobid) 2]
 }
 
 #
-# Private internal procedures.
+# tpool::preserve --
+#
+#   Increments the reference counter of the threadpool, reserving it
+#   for the private usage..
+#
+# Arguments:
+#   tpid   Name of the pool shared array.
+#
+# Side Effects:
+#   None.
+#
+# Results:
+#   Current number of threadpool reservations.
+#
+
+proc tpool::preserve {tpid} {
+    tsv::incr $tpid refcounter
+}
+
+#
+# tpool::release --
+#
+#   Decrements the reference counter of the threadpool, eventually
+#   tearing the pool down if this was the last reservation.
+#
+# Arguments:
+#   tpid   Name of the pool shared array.
+#
+# Side Effects:
+#   If the number of reservations drops to zero or below
+#   the threadpool is teared down.
+#
+# Results:
+#   Current number of threadpool reservations.
+#
+
+proc tpool::release {tpid} {
+
+    tsv::lock $tpid {
+        if {[tsv::incr $tpid refcounter -1] <= 0} {
+            # Release all workers threads
+            foreach t [tsv::set $tpid thrworkers] {
+                thread::release -wait $t
+            }
+            tsv::unset $tpid ; # This is not an error; it works!
+        }
+    }
+}
+
+#
+# Private procedures, not a part of the threadpool API.
 #
 
 #
@@ -432,9 +524,11 @@ proc tpool::Run {tpid jid cmd} {
     # Register the idle timer again.
     #
 
-    set afterevent [after [tsv::set $tpid -workeridle] [subst {
-        ${ns}::Timer $tpid
-    }]]
+    if {[set idle [tsv::set $tpid -workeridle]]} {
+        set afterevent [after $idle [subst {
+            ${ns}::Timer $tpid
+        }]]
+    }
 
     return $res
 }
