@@ -5,7 +5,7 @@
  *  level access to threading. It will not load into a core that was
  *  not compiled for thread support.
  *
- *  see http://dev.activestate.com/doc/howto/thread_model.html
+ *  see http://www.tcl.tk/doc/howto/thread_model.html
  *
  *  Some of this code is based on work done by Richard Hipp on behalf of
  *  Conservation Through Innovation, Limited, with their permission.
@@ -16,21 +16,11 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.38 2002/03/08 07:26:11 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.39 2002/03/20 01:33:03 hobbs Exp $
  * ----------------------------------------------------------------------------
  */
 
 #include "tclThread.h"
-
-/*
- * Some functionality within the package depens on the Tcl version.
- */
-
-#if ((TCL_MAJOR_VERSION<8) || (TCL_MAJOR_VERSION>=8 && TCL_MINOR_VERSION<4))
-# define POST_TCL_83 0
-#else
-# define POST_TCL_83 1
-#endif
 
 /*
  * Allow for some command/namespace customization.
@@ -51,6 +41,7 @@
 TCL_DECLARE_MUTEX(threadMutex)
 
 static char *threadEmptyResult = "";
+static int   tclIs83 = 0;
 
 /*
  * Each thread has an single instance of the following structure. There
@@ -175,8 +166,6 @@ typedef struct ThreadClbkData {
     ThreadEventResult result;             /* Returns result asynchronously */
 } ThreadClbkData;
 
-#if (POST_TCL_83)
-
 /*
  * Event used to transfer a channel between threads.
  * This requires Tcl core support added in Tcl 8.4.
@@ -202,8 +191,6 @@ typedef struct TransferResult {
 } TransferResult;
 
 static TransferResult *transferList;
-
-#endif /* POST_TCL_83 */
 
 /*
  * This is for simple error handling 
@@ -292,7 +279,6 @@ ListRemoveInner   _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 static void 
 ListUpdateInner   _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 
-#if (POST_TCL_83)
 static int 
 ThreadJoin        _ANSI_ARGS_((Tcl_Interp *interp,
                                Tcl_ThreadId id));
@@ -303,7 +289,6 @@ ThreadTransfer    _ANSI_ARGS_((Tcl_Interp *interp,
 static int 
 TransferEventProc _ANSI_ARGS_((Tcl_Event *evPtr, 
                                int mask));
-#endif
 
 /*
  * Functions implementing Tcl commands
@@ -321,10 +306,9 @@ static Tcl_ObjCmdProc ThreadExistsObjCmd;
 static Tcl_ObjCmdProc ThreadConfigureObjCmd;
 static Tcl_ObjCmdProc ThreadErrorProcObjCmd;
 
-#if (POST_TCL_83)
+/* 8.4 only */
 static Tcl_ObjCmdProc ThreadJoinObjCmd;
 static Tcl_ObjCmdProc ThreadTransferObjCmd;
-#endif
 
 
 /*
@@ -349,7 +333,7 @@ Thread_Init(interp)
 {
     Tcl_Obj *boolObjPtr;
     char *msg;
-    int boolVar, maj, min, ptch, type, subset83;
+    int boolVar, maj, min, ptch, type;
 
     if (Tcl_InitStubs(interp, "8.3", 0) == NULL) {
         return TCL_ERROR;
@@ -361,7 +345,7 @@ Thread_Init(interp)
         /*
          * Truely depends on 8.3.1+ with the new Tcl_CreateThread API
          */
-        msg = "This extension can't run in a Tcl core less than 8.3.1";
+        msg = "The Thread extension requires Tcl 8.3.1+";
         Tcl_SetStringObj(Tcl_GetObjResult(interp), msg, -1);
         return TCL_ERROR;
     }
@@ -375,11 +359,7 @@ Thread_Init(interp)
      * proper package version provided to Tcl for a consistent interface.
      */
 
-#if (POST_TCL_83)
-    subset83 = ((maj == 8) && (min == 3)) ? 1 : 0;
-#else
-    subset83 = 1;
-#endif
+    tclIs83 = ((maj == 8) && (min == 3));
 
     boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", 0);
 
@@ -409,11 +389,9 @@ Thread_Init(interp)
     TCL_CMD1(interp,NS"preserve",  ThreadReserveObjCmd, THREAD_RESERVE);
     TCL_CMD1(interp,NS"release",   ThreadReserveObjCmd, THREAD_RELEASE);
 
-    if (!subset83) {
-#if (POST_TCL_83)
-    TCL_CMD(interp, NS"join",      ThreadJoinObjCmd);
-    TCL_CMD(interp, NS"transfer",  ThreadTransferObjCmd);
-#endif
+    if (!tclIs83) {
+        TCL_CMD(interp, NS"join",      ThreadJoinObjCmd);
+        TCL_CMD(interp, NS"transfer",  ThreadTransferObjCmd);
     }
 
     /*
@@ -435,7 +413,7 @@ Thread_Init(interp)
      */
 
     return Tcl_PkgProvide(interp, "Thread", 
-            (subset83) ? THREAD_VERSION_SUBSET83 : THREAD_VERSION);
+            (tclIs83) ? THREAD_VERSION_SUBSET83 : THREAD_VERSION);
 }
 
 /*
@@ -964,7 +942,6 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
     return TCL_OK;
 }
 
-#if (POST_TCL_83)
 /*
  *----------------------------------------------------------------------
  *
@@ -1060,7 +1037,6 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
     
     return ThreadTransfer(interp, (Tcl_ThreadId)id, chan);
 }
-#endif
 
 /*
  *----------------------------------------------------------------------
@@ -1715,7 +1691,6 @@ ThreadExistsInner(threadId)
     return NULL;
 }
 
-#if (POST_TCL_83)
 /*
  *----------------------------------------------------------------------
  *
@@ -1743,11 +1718,11 @@ ThreadJoin(interp, threadId)
     ret = Tcl_JoinThread(threadId, &state);
 
     if (ret == TCL_OK) {
-        Tcl_SetIntObj (Tcl_GetObjResult (interp), state);
+        Tcl_SetIntObj(Tcl_GetObjResult (interp), state);
     } else {
         char buf [20];
-        sprintf (buf, "%ld", (long)threadId);
-        Tcl_AppendResult (interp, "cannot join thread ", buf, NULL);
+        sprintf(buf, "%ld", (long)threadId);
+        Tcl_AppendResult(interp, "cannot join thread ", buf, NULL);
     }
 
     return ret;
@@ -1803,10 +1778,10 @@ ThreadTransfer(interp, id, chan)
     TransferEvent *evPtr;
     TransferResult *resultPtr;
 
-    if (!Tcl_IsChannelRegistered (interp, chan)) {
+    if (!Tcl_IsChannelRegistered(interp, chan)) {
         Tcl_SetResult(interp, "channel is not registered here", TCL_STATIC);
     }
-    if (Tcl_IsChannelShared (chan)) {
+    if (Tcl_IsChannelShared(chan)) {
         Tcl_SetResult(interp, "channel is shared", TCL_STATIC);
         return TCL_ERROR;
     }
@@ -1836,10 +1811,10 @@ ThreadTransfer(interp, id, chan)
      * Cut channel out of interp and current thread.
      */
 
-    Tcl_ClearChannelHandlers (chan);
-    Tcl_RegisterChannel ((Tcl_Interp *) NULL, chan);
-    Tcl_UnregisterChannel (interp, chan);
-    Tcl_CutChannel (chan);
+    Tcl_ClearChannelHandlers(chan);
+    Tcl_RegisterChannel((Tcl_Interp *) NULL, chan);
+    Tcl_UnregisterChannel(interp, chan);
+    Tcl_CutChannel(chan);
     
     /*
      * Wrap it into an event.
@@ -1864,7 +1839,7 @@ ThreadTransfer(interp, id, chan)
      * Maintain the cleanup list.
      */
 
-    resultPtr->srcThreadId = Tcl_GetCurrentThread ();
+    resultPtr->srcThreadId = Tcl_GetCurrentThread();
     resultPtr->dstThreadId = id;
     resultPtr->eventPtr    = evPtr;
     resultPtr->nextPtr     = transferList;
@@ -1889,7 +1864,7 @@ ThreadTransfer(interp, id, chan)
      */
 
     while (resultPtr->resultCode < 0) {
-        Tcl_ConditionWait (&resultPtr->done, &threadMutex, NULL);
+        Tcl_ConditionWait(&resultPtr->done, &threadMutex, NULL);
     }
 
     /*
@@ -1910,7 +1885,7 @@ ThreadTransfer(interp, id, chan)
     resultPtr->prevPtr  = NULL;
     
     Tcl_MutexUnlock(&threadMutex);
-    Tcl_ConditionFinalize (&resultPtr->done);
+    Tcl_ConditionFinalize(&resultPtr->done);
 
     /*
      * Process the result now.
@@ -1923,9 +1898,9 @@ ThreadTransfer(interp, id, chan)
          * to current thread and specified interp.
          */
 
-        Tcl_SpliceChannel (chan);
-        Tcl_RegisterChannel (interp, chan);
-        Tcl_UnregisterChannel ((Tcl_Interp *) NULL, chan);
+        Tcl_SpliceChannel(chan);
+        Tcl_RegisterChannel(interp, chan);
+        Tcl_UnregisterChannel((Tcl_Interp *) NULL, chan);
         Tcl_AppendResult(interp, "transfer failed: ", NULL);
 
         if (resultPtr->resultMsg) {
@@ -1944,7 +1919,6 @@ ThreadTransfer(interp, id, chan)
 
     return TCL_OK;
 }
-#endif
 
 /*
  *----------------------------------------------------------------------
@@ -2612,7 +2586,6 @@ ThreadIdleProc(clientData)
     Tcl_Release(sendPtr->interp);
 }
 
-#if (POST_TCL_83)
 /*
  *----------------------------------------------------------------------
  *
@@ -2679,7 +2652,6 @@ TransferEventProc(evPtr, mask)
     
     return 1;
 }
-#endif
 
 /*
  *----------------------------------------------------------------------
@@ -2749,8 +2721,7 @@ ThreadDeleteEvent(eventPtr, clientData)
         }
         return 1;
     }
-#if (POST_TCL_83)
-    if (eventPtr->proc == TransferEventProc) {
+    if (!tclIs83 && (eventPtr->proc == TransferEventProc)) {
         /* 
          * A channel is in flight toward the thread just exiting.
          * Pass it back to the originator, if possible.
@@ -2765,8 +2736,8 @@ ThreadDeleteEvent(eventPtr, clientData)
              * value of zero. This destroys the channel.
              */
             
-            Tcl_SpliceChannel (evPtr->chan);
-            Tcl_UnregisterChannel ((Tcl_Interp *) NULL, evPtr->chan);
+            Tcl_SpliceChannel(evPtr->chan);
+            Tcl_UnregisterChannel((Tcl_Interp *) NULL, evPtr->chan);
             return 1;
         }
         
@@ -2775,7 +2746,6 @@ ThreadDeleteEvent(eventPtr, clientData)
         
         return 1;
     }
-#endif
 
     /*
      * If it was NULL, we were in the middle of servicing the event
@@ -2809,9 +2779,8 @@ ThreadExitProc(clientData)
     ThreadEventResult *resultPtr, *nextPtr;
     Tcl_ThreadId self = Tcl_GetCurrentThread();
 
-#if (POST_TCL_83)
+    /* Only used in 8.4+ interps */
     TransferResult *tResultPtr, *tNextPtr;
-#endif
 
     if (threadEvalScript) {
         Tcl_Free((char*)threadEvalScript);
@@ -2882,49 +2851,46 @@ ThreadExitProc(clientData)
             Tcl_ConditionNotify(&resultPtr->done);
         }
     }
-#if (POST_TCL_83)
-    for (tResultPtr = transferList; tResultPtr; tResultPtr = tNextPtr) {
-        tNextPtr = tResultPtr->nextPtr;
-        if (tResultPtr->srcThreadId == self) {
-            
-            /*
-             * We are going away. By freeing up the result we signal
-             * to the other thread we don't care about the result.
-             *
-             * This should not happen, as this thread should be in
-             * ThreadTransfer at location (*).
-             */
-            
-            if (tResultPtr->prevPtr) {
-                tResultPtr->prevPtr->nextPtr = tResultPtr->nextPtr;
-            } else {
-                transferList = tResultPtr->nextPtr;
-            }
-            if (tResultPtr->nextPtr) {
-                tResultPtr->nextPtr->prevPtr = tResultPtr->prevPtr;
-            }
-            tResultPtr->nextPtr = tResultPtr->prevPtr = 0;
-            tResultPtr->eventPtr->resultPtr = NULL;
-            Tcl_Free((char *)tResultPtr);
+    if (!tclIs83) {
+        for (tResultPtr = transferList; tResultPtr; tResultPtr = tNextPtr) {
+            tNextPtr = tResultPtr->nextPtr;
+            if (tResultPtr->srcThreadId == self) {
+                /*
+                 * We are going away. By freeing up the result we signal
+                 * to the other thread we don't care about the result.
+                 *
+                 * This should not happen, as this thread should be in
+                 * ThreadTransfer at location (*).
+                 */
 
-        } else if (tResultPtr->dstThreadId == self) {
-            
-            /*
-             * Dang.  The target is going away. Unblock the caller
-             *        and deliver a failure notice.
-             *
-             * The result string must be dynamically allocated because
-             * the main thread is going to call free on it.
-             */
-            
-            char *msg = "target thread died";
+                if (tResultPtr->prevPtr) {
+                    tResultPtr->prevPtr->nextPtr = tResultPtr->nextPtr;
+                } else {
+                    transferList = tResultPtr->nextPtr;
+                }
+                if (tResultPtr->nextPtr) {
+                    tResultPtr->nextPtr->prevPtr = tResultPtr->prevPtr;
+                }
+                tResultPtr->nextPtr = tResultPtr->prevPtr = 0;
+                tResultPtr->eventPtr->resultPtr = NULL;
+                Tcl_Free((char *)tResultPtr);
 
-            tResultPtr->resultMsg  = strcpy(Tcl_Alloc(1+strlen(msg)), msg); 
-            tResultPtr->resultCode = TCL_ERROR;
-            Tcl_ConditionNotify(&tResultPtr->done);
+            } else if (tResultPtr->dstThreadId == self) {
+                /*
+                 * Dang.  The target is going away. Unblock the caller
+                 *        and deliver a failure notice.
+                 *
+                 * The result string must be dynamically allocated because
+                 * the main thread is going to call free on it.
+                 */
+                char *msg = "target thread died";
+
+                tResultPtr->resultMsg  = strcpy(Tcl_Alloc(1+strlen(msg)), msg);
+                tResultPtr->resultCode = TCL_ERROR;
+                Tcl_ConditionNotify(&tResultPtr->done);
+            }
         }
     }
-#endif
     Tcl_MutexUnlock(&threadMutex);
 }
 
