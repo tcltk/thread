@@ -1,5 +1,13 @@
 2003-11-27 Zoran Vasiljevic <zoran@archiware.com>
 
+	* generic/threadCmd.c: fixed mutex release in ThreadSend
+	when refusing to send message to foreign thread.
+	Also, clear the result of the thread::broadcast since it
+	should not return anything to the caller, no matter the
+	outcome of the command.
+
+2003-11-27 Zoran Vasiljevic <zoran@archiware.com>
+
 	* generic/threadCmd.c: mark threads created by the package
 	to distinguish them from "foreign" threads. We will forbid
 	sending messages to those since they will probably never listen.
