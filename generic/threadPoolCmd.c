@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.3 2002/12/03 22:59:52 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.4 2002/12/03 23:49:33 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -31,7 +31,7 @@ typedef struct TpoolWaiter {
 typedef struct ThreadPool {
     unsigned int tpoolId;           /* Pool id number */
     unsigned int jobId;             /* Job counter */
-    int idleTime;                   /* Time in ms a worker thread idles */
+    int idleTime;                   /* Time in secs a worker thread idles */
     int teardown;                   /* Set to 1 to tear down the pool */
     char *initScript;               /* Script to initialize worker thread */
     int minWorkers;                 /* Minimum number or worker threads */
@@ -69,8 +69,8 @@ typedef struct TpoolResult {
     int scriptLen;                  /* Length of the script */    
     int retcode;                    /* Tcl return code of the current job */
     char *result;                   /* Tcl result of the current job */
-    char *errorCode;                /* On error: content of the errorCode var */
-    char *errorInfo;                /* On error: content of the errorInfo var */
+    char *errorCode;                /* On error: content of the errorCode */
+    char *errorInfo;                /* On error: content of the errorInfo */
     Tcl_ThreadId threadId;          /* Originating thread id */
     ThreadPool *tpoolPtr;           /* Current thread pool */
     struct TpoolResult *nextPtr;
@@ -82,7 +82,7 @@ typedef struct TpoolResult {
  */
 
 typedef struct ThreadSpecificData {
-    int stop;                       /* Marks stop event; exit from event loop */
+    int stop;                       /* Set stop event; exit from event loop */
     TpoolWaiter *waitPtr;           /* Threads private idle structure */
     ThreadPool *tpoolPtr;           /* Worker thread pool association */
     Tcl_Interp *interp;             /* Worker thread interpreter */
@@ -226,7 +226,6 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
             if (Tcl_GetIntFromObj(interp, objv[ii+1], &idle) != TCL_OK) {
                 return TCL_ERROR;
             }
-            idle *= 1000; /* We need msecs */
         } else if (OPT_CMP(opt, "-initscript")) {
             char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
             cmd  = strcpy(Tcl_Alloc(len+1), val);
@@ -846,8 +845,9 @@ TpoolWorker(clientData)
     TpoolResult         *rsPtr = (TpoolResult*)clientData;
     ThreadPool       *tpoolPtr = rsPtr->tpoolPtr;
 
-    int maj, min, ptch, type;
+    int maj, min, ptch, type, tout = 0;
     Tcl_Interp *interp;
+    Tcl_Time waitTime, *idlePtr, t1, t2;
 
     /*
      * Initialize the Tcl interpreter
@@ -894,6 +894,14 @@ TpoolWorker(clientData)
     tsdPtr->tpoolPtr = tpoolPtr;
     tsdPtr->interp   = interp;
 
+    if (tpoolPtr->idleTime == 0) {
+        idlePtr = NULL;
+    } else {
+        waitTime.sec  = tpoolPtr->idleTime/1000;
+        waitTime.usec = (tpoolPtr->idleTime % 1000) * 1000;
+        idlePtr = &waitTime;
+    }
+
     /*
      * Tell caller we're ready.
      */
@@ -902,7 +910,10 @@ TpoolWorker(clientData)
     Tcl_ConditionNotify(&tpoolPtr->cond);
 
     /*
-     * Wait for jobs to arrive.
+     * Wait for jobs to arrive. Note handcrafted time test.
+     * Tcl API misses the return value of the Tcl_ConditionWait.
+     * Hence, we do not know why the call returned. Was it the
+     * caller signalled the variable or has the idle timer expired?
      */
 
     Tcl_MutexLock(&tpoolPtr->mutex);
@@ -910,10 +921,17 @@ TpoolWorker(clientData)
         tpoolPtr->idleWorkers++;
         SignalWaiter(tpoolPtr);
         while (!tpoolPtr->teardown && !(rsPtr = PopWork(tpoolPtr))) {
-            Tcl_ConditionWait(&tpoolPtr->cond, &tpoolPtr->mutex, NULL);
+            Tcl_GetTime(&t1);
+            Tcl_ConditionWait(&tpoolPtr->cond, &tpoolPtr->mutex, idlePtr);
+            Tcl_GetTime(&t2);
+            if (tpoolPtr->idleTime) {
+                if ((t2.sec - t1.sec) >= tpoolPtr->idleTime) {
+                    tout = 1;
+                }
+            }
         }
         tpoolPtr->idleWorkers--;
-        if (tpoolPtr->teardown) {
+        if (tpoolPtr->teardown || tout) {
             break;
         }
         Tcl_MutexUnlock(&tpoolPtr->mutex);
