@@ -1,5 +1,11 @@
 2004-07-21 Zoran Vasiljevic <zoran@archiware.com>
 
+	* generic/tclThread.h: corrected namespace prefix for
+	AOLserver 4.x or higher, since namespaced commands are
+	now supported.
+
+2004-07-21 Zoran Vasiljevic <zoran@archiware.com>
+
 	* doc/*: reformatted docs and added some clarifications 
 	about mutex handling.
 
