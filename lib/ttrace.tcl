@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.1 2003/11/26 17:09:41 vasiljevic Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.2 2004/04/02 10:34:37 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -97,7 +97,7 @@ namespace eval ttrace {
                 variable tvers
                 getscript
                 if {$tvers >= "2.6"} {
-                    thread::broadcast ttrace::update
+                    thread::broadcast {package require Ttrace; ttrace::update}
                 }
             }
         } else {
