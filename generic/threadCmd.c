@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.77 2003/11/18 19:37:22 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.78 2003/11/27 20:12:45 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -64,9 +64,10 @@ typedef struct ThreadSpecificData {
 static Tcl_ThreadDataKey dataKey;
 
 #define THREAD_FLAGS_NONE          0      /* None */
-#define THREAD_FLAGS_STOPPED       1      /* Thread is being stopped */
-#define THREAD_FLAGS_INERROR       2      /* Thread is in error */
-#define THREAD_FLAGS_UNWINDONERROR 4      /* Thread unwinds on script error */
+#define THREAD_FLAGS_CREATED       1      /* Thread created by the package */
+#define THREAD_FLAGS_STOPPED       2      /* Thread is being stopped */
+#define THREAD_FLAGS_INERROR       4      /* Thread is in error */
+#define THREAD_FLAGS_UNWINDONERROR 8      /* Thread unwinds on script error */
 
 #define THREAD_RESERVE             1      /* Reserves the thread */
 #define THREAD_RELEASE             2      /* Releases the thread */
@@ -1629,6 +1630,7 @@ NewThread(clientData)
 
     Tcl_MutexLock(&threadMutex);
     ListUpdateInner(tsdPtr);
+    tsdPtr->flags |= THREAD_FLAGS_CREATED;
 
     /*
      * We need to keep a pointer to the alloc'ed mem of the script
@@ -2401,6 +2403,17 @@ ThreadSend(interp, id, send, clbk, wait)
         return TCL_ERROR;
     }
     
+    /*
+     * Refuse to send messages to threads which were not
+     * created by the package. This includes "foreign"
+     * threads created, for example, by the AOLserver.
+     */
+
+    if (!(tsdPtr->flags & THREAD_FLAGS_CREATED)) {
+        Tcl_SetResult(interp, "thread not created by the package", TCL_STATIC);
+        return TCL_ERROR;
+    }
+
     /*
      * Short circut sends to ourself.
      */
