@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.31 2002/01/22 00:03:52 davygrvy Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.32 2002/01/22 20:35:01 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1037,6 +1037,7 @@ ThreadClbkSetVar(interp, clientData)
     ClientData clientData;
 {
     ThreadClbkData *clbkPtr = (ThreadClbkData*)clientData;
+    int code;
     char *var = (char*)clbkPtr->clientData;
     Tcl_Obj *valObj;
     ThreadEventResult *resultPtr = &clbkPtr->result;
@@ -1057,13 +1058,13 @@ ThreadClbkSetVar(interp, clientData)
 
     if (Tcl_SetVar2Ex(interp, var, NULL, valObj, 
                       TCL_GLOBAL_ONLY | TCL_LEAVE_ERR_MSG) == NULL) {
-        ThreadErrorProc(interp);
         return TCL_ERROR;
     }
 
     /*
-     * Ignore error related fields for now:
-     * FIXME: should we triger the background error here ?
+     * FIXME: what should be the proper way of informing the waiter
+     * thread which might be vwait'ing for (this) result that the
+     * error is pending ? Should we trigger the background error stuff ?
      */
 
     if (resultPtr->code != TCL_OK) {
@@ -1077,10 +1078,9 @@ ThreadClbkSetVar(interp, clientData)
             Tcl_SetVar(interp, var, resultPtr->errorInfo, TCL_GLOBAL_ONLY);
             Tcl_Free((char*)resultPtr->errorInfo);
         }
-        ThreadErrorProc(interp);
     }
 
-    return resultPtr->code;
+    return TCL_OK;
 }
 
 /*
@@ -2021,15 +2021,20 @@ ThreadEventProc(evPtr, mask)
         Tcl_MutexUnlock(&threadMutex);
 
     } else if (clbkPtr && clbkPtr->threadId != threadId) {
+
+        ThreadSendData *tmpPtr = (ThreadSendData*)clbkPtr;
         
         /*
          * Route the callback back to it's originator
          */
 
-        ThreadSendData *tmpPtr = (ThreadSendData*)clbkPtr;
+        if (code != TCL_OK) {
+            ThreadErrorProc(interp);
+        }
+
         ThreadSetResult(interp, code, &clbkPtr->result);
         ThreadSend(interp, clbkPtr->threadId, tmpPtr, NULL, 0);
-
+        
     } else if (code != TCL_OK) {
 
         /*

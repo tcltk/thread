@@ -1,6 +1,11 @@
 
 2002-01-02  Zoran Vasiljevic <zoran@archiware.com>
 
+	* generic/threadCmd.c: fixed multiple async reporting of error events
+	(thanks Jean-Luc Fontaine for the tip)
+   
+2002-01-02  Zoran Vasiljevic <zoran@archiware.com>
+
         * generic/threadSvListCmd.* (new): added for the new implementation
         of the thread-shared-variable (tsv) interface.
         * generic/threadSvCmd.c: now uses shared Tcl objects instead of strings
