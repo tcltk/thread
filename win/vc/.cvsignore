@@ -1,10 +1,9 @@
 Debug
-Debug_Static
-Debug_StaticX
 Release
-Release_Static
-Release_StaticX
 *.opt
 *.ncb
 *.plg
 *.00?
+.#*
+nmakehlp.exe
+nmakehlp.obj
