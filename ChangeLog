@@ -1,3 +1,7 @@
+2000-04-18  Brent Welch <welch@scriptics.com>
+
+	* Makefile.in: Fixes for make install
+
 2000-04-17  Brent Welch <welch@scriptics.com>
 
 	* generic/threadCmd.c
