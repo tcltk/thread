@@ -1,3 +1,24 @@
+2003-09-03 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/tclXkeylist.(c|h): added keyed-list datatype
+	implementation borrowed from the TclX package. This is
+	now part of the shared variable command set.
+
+	* generic/threadSvCmd.(c|h): modified to support persistent
+	shared variables with plugin-architecture for different
+	persistent store implementations.
+
+	* generic/threadSvlistCmd.(c|h): modified to reflect added 
+	support for persistent shared variables.
+
+	* generic/psGdbm.(c|h): added persistent store wrapper
+	for the GNU gdbm package.
+
+	* configure et al: regenerated with autoconf because of
+	added optional comilation with GNU gdbm. Updated makefiles
+	to process newly added files for keyed lists and persistent
+	stores.
+
 2003-08-27 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadPoolCmd.c: after expiration of the idle
