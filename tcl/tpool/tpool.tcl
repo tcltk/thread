@@ -18,7 +18,7 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: tpool.tcl,v 1.5 2002/12/13 20:55:09 vasiljevic Exp $
+# RCS: @(#) $Id: tpool.tcl,v 1.6 2002/12/18 22:14:36 vasiljevic Exp $
 #
 
 package require Thread 2.5
@@ -137,6 +137,26 @@ proc tpool::create {args} {
     }
 
     return $tpid
+}
+
+#
+# tpool::names --
+#
+#   Returns list of currently created threadpools
+#
+# Arguments:
+#   None.
+#
+# Side Effects:
+#   None.
+#
+# Results
+#   List of active threadpoool identifiers or empty if none found
+#
+#
+
+proc tpool::names {} {
+    tsv::names [namespace tail [namespace current]]*
 }
 
 #
