@@ -1,10 +1,11 @@
-######################################################################
+#---------------------------------------------------------------------
 # makefile.vc --
 #
 # Microsoft Visual C++ makefile for use with nmake.exe v1.62+ (VC++ 5.0+)
 #
-# RCS: @(#) $Id: makefile.vc,v 1.24 2003/02/15 00:18:39 davygrvy Exp $
-######################################################################
+#---------------------------------------------------------------------
+# RCS: @(#) $Id: makefile.vc,v 1.25 2003/02/15 00:41:21 davygrvy Exp $
+#---------------------------------------------------------------------
 
 !if "$(MSVCDIR)" == ""
 MSG = ^
@@ -55,7 +56,7 @@ the environment.  Jump to this line to read the new instructions.
 #		Sets where to install Tcl from the built binaries.
 #		C:\Progra~1\Tcl is assumed when not specified.
 #
-#	OPTS=static,msvcrt,linkexten,threads,symbols,profile,none
+#	OPTS=static,msvcrt,threads,symbols,profile,none
 #		Sets special options for the core.  The default is for none.
 #		Any combination of the above may be used (comma separated).
 #		'none' will over-ride everything to nothing.
@@ -169,10 +170,16 @@ TCL_INCLUDES	= -I "$(_TCLDIR)\generic"
 
 THREAD_DEFINES	= $(OPTDEFINES)
 
+LIB_INSTALL_DIR		= $(_INSTALLDIR)\lib
+BIN_INSTALL_DIR		= $(_INSTALLDIR)\bin
+DOC_INSTALL_DIR		= $(_INSTALLDIR)\doc
+SCRIPT_INSTALL_DIR	= $(_INSTALLDIR)\lib\$(PROJECT)$(DOTVERSION)
+INCLUDE_INSTALL_DIR	= $(_INSTALLDIR)\include
 
-######################################################################
+
+#---------------------------------------------------------------------
 # Compile flags
-######################################################################
+#---------------------------------------------------------------------
 
 
 !if $(DEBUG)
@@ -209,9 +216,9 @@ cflags = $(cflags) -QIA64_Bx
 cflags = $(cflags) -DUSE_TCL_STUBS
 !endif
 
-######################################################################
+#---------------------------------------------------------------------
 # Link flags
-######################################################################
+#---------------------------------------------------------------------
 
 
 !if $(DEBUG)
@@ -246,12 +253,13 @@ guilflags = $(lflags) -subsystem:windows
 baselibs  = kernel32.lib advapi32.lib user32.lib
 
 
-######################################################################
+#---------------------------------------------------------------------
 # Project specific targets
-######################################################################
+#---------------------------------------------------------------------
 
 
 all: setup $(THREADLIB)
+install:  install-binaries install-libraries install-docs
 
 setup:
 	@if not exist $(OUT_DIR)\nul mkdir $(OUT_DIR)
@@ -285,9 +293,19 @@ $(THREADOBJS)
 !endif
 
 
-######################################################################
+install-binaries:
+	@$(CPY) "$(THREADLIB)" "$(SCRIPT_INSTALL_DIR)\"
+#!if $(THREADLIB) != $(THREADIMPLIB)
+#	@$(CPY) "$(THREADLIB)" "$(SCRIPT_INSTALL_DIR)\"
+#!endif
+#	@$(CPY) "$(THREADIMPLIB)" "$(LIB_INSTALL_DIR)\"
+
+install-libraries:
+
+
+#---------------------------------------------------------------------
 # Inference rules.  Use batch-mode.
-######################################################################
+#---------------------------------------------------------------------
 
 
 {$(GENERICDIR)}.c{$(TMP_DIR)}.obj ::
@@ -303,9 +321,9 @@ $<
 <<
 
 
-######################################################################
+#---------------------------------------------------------------------
 # Special case targets
-######################################################################
+#---------------------------------------------------------------------
 
 
 $(TMP_DIR)\thread.res : $(WINDIR)\thread.rc
@@ -316,9 +334,9 @@ $(TMP_DIR)\thread.res : $(WINDIR)\thread.rc
 		$(WINDIR)\thread.rc
 
 
-######################################################################
+#---------------------------------------------------------------------
 # Dedependency rules
-######################################################################
+#---------------------------------------------------------------------
 
 
 $(WINDIR)\thread.rc : $(WINDIR)\vc\pkg.vc
@@ -329,9 +347,9 @@ $(GENERICDIR)\threadPoolCmd.c : $(GENERICDIR)\tclThread.h
 $(GENERICDIR)\threadSvListCmd.c : $(GENERICDIR)\tclThread.h
 
 
-######################################################################
+#---------------------------------------------------------------------
 # Cleanup
-######################################################################
+#---------------------------------------------------------------------
 
 
 clean:
