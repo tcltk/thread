@@ -67,7 +67,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: thread.n,v 1.11 2002/03/08 07:26:11 vasiljevic Exp $
+'\" RCS: @(#) $Id: thread.n,v 1.12 2002/05/26 19:52:49 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -260,7 +260,7 @@ thread \- Script level threading
 \fB thread::exit\fR
 \fB thread::names\fR
 \fB thread::exists\fR
-\fB thread::send\fR \fIid\fR ?\fI-async\fR? \fIscript\fR ?\fIvarname\fR?
+\fB thread::send\fR ?\fI-async\fR? \fIid\fR \fIscript\fR ?\fIvarname\fR?
 \fB thread::wait\fR
 \fB thread::join\fR \fIid\fR
 \fB thread::configure\fR \fIid\fR ?\fIoption\fR? ?\fIvalue\fI? ?\fIoption value\fI?...
