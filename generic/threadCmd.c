@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.11 2000/07/14 22:27:14 zoran Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.12 2000/08/10 02:20:37 davidg Exp $
  */
 
 #include "thread.h"
@@ -166,8 +166,7 @@ static int 	ThreadTransfer _ANSI_ARGS_((Tcl_Interp *interp,
         Tcl_ThreadId id, Tcl_Channel chan));
 static void	ThreadErrorProc _ANSI_ARGS_((Tcl_Interp *interp));
 static void	ThreadFreeProc _ANSI_ARGS_((ClientData clientData));
-static int	ThreadDeleteEvent _ANSI_ARGS_((Tcl_Event *eventPtr,
-	ClientData clientData));
+Tcl_EventDeleteProc	ThreadDeleteEvent;
 static void	ThreadExitProc _ANSI_ARGS_((ClientData clientData));
 
 
@@ -1487,7 +1486,7 @@ ThreadWait()
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     /*
-     * Hang-around until not signaled to exit.
+     * Hang-around until signaled to exit.
      */
 
     while (!(tsdPtr->stopped)) {
@@ -1506,18 +1505,7 @@ ThreadWait()
      * By doing this here, we avoid processing them below.
      */
 
-    Tcl_DeleteEvents((Tcl_EventDeleteProc *)ThreadDeleteEvent, NULL);
-
-    /*
-     * Run all other pending events which we can not sink otherwise.
-     * We assume that no runnable event will block us indefinitely
-     * or kick us into a infinite loop, otherwise we're stuck.
-     */
-
-    eventFlags |= TCL_DONT_WAIT;
-    while (Tcl_DoOneEvent(eventFlags)) {
-        ; /* empty loop */
-    }
+    Tcl_DeleteEvents(ThreadDeleteEvent, NULL);
 
     return TCL_OK;
 }
