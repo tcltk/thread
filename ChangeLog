@@ -1,3 +1,17 @@
+2003-11-27 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: mark threads created by the package
+	to distinguish them from "foreign" threads. We will forbid
+	sending messages to those since they will probably never listen.
+
+	* generic/threadSvCmd.c: corrected some typos
+
+	* generic/threadSvListCmd.c: added implementation for the
+	"tsv::lset" command
+
+	* generic/threadPoolCmd.c: added optional varname argument
+	(last arg) to the tpool::cancel
+
 2003-11-25 Zoran Vasiljevic <zoran@archiware.com>
 
 	* doc/format.tcl: new file with a simple poor man's
