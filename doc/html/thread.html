@@ -1,10 +1,10 @@
 <html>
 <head>
-<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.7 $">
+<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: thread.html,v $ $Revision: 1.8 $">
 </head><body>
 <div class="header">
 <div class="navbar" align="center">
-<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode163">DESCRIPTION</a> · <a href="#SECTnode175">COMMANDS</a> · <a href="#SECTnode984">DISCUSSION</a> · <a href="#SECTnode999">SEE ALSO</a> · <a href="#SECTnode1005">KEYWORDS</a>
+<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode163">DESCRIPTION</a> · <a href="#SECTnode175">COMMANDS</a> · <a href="#SECTnode970">DISCUSSION</a> · <a href="#SECTnode985">SEE ALSO</a> · <a href="#SECTnode991">KEYWORDS</a>
 </div><hr class="navsep">
 </div><div class="body">
 
@@ -86,7 +86,8 @@ exit. It is possible to create a situation in which it may be impossible to
 terminate the thread, for example by putting some endless loop after the 
 <b class="cmd">thread::wait</b> or entering the event loop again by doing an vwait-type
 of command. In such cases, the thread may never exit. This is considered to
-be a bad practice and should be avoided if possible. Consider:</p>
+be a bad practice and should be avoided if possible.</p>
+Consider:
 <pre class="example">
     # You should NEVER do ...
     set tid [thread::create {
@@ -95,11 +96,11 @@ be a bad practice and should be avoided if possible. Consider:</p>
         vwait forever ; # -- this!
     }]
 </pre>
-<p>The thread created in the above example will never be able to exit.
+The thread created in the above example will never be able to exit.
 After it has been released with the last matching <b class="cmd">thread::release</b> call
 the thread will jump out of the <b class="cmd">thread::wait</b> and continue to execute 
 commands following. It will enter <b class="cmd">vwait</b> command and wait endlessly for 
-events. There is no way one can terminate this thread, so you wouldn't want to this!</p>
+events. There is no way one can terminate this thread, so you wouldn't want to this!
 <p>
 Each newly created has its internal reference counter set to 0 (zero), i.e. it is
 unreserved. This counter gets incremented by a call to <b class="cmd">thread::preserve</b> 
@@ -115,7 +116,7 @@ created with this flag have the initial value of the reference counter of 1 (one
 
 <dt> <b class="cmd">thread::preserve</b> ?<i class="m">id</i>?
 </dt>
-<dd>This procedure increments the thread reference counter. Each call
+<dd>This command increments the thread reference counter. Each call
 to this command increments the reference counter by one (1). Command returns
 the value of the reference counter after the increment. 
 If called with the optional thread <i class="m">id</i>, the command preserves the given
@@ -131,7 +132,7 @@ that he/she has finished using the thread.</p>
 
 <dt> <b class="cmd">thread::release</b> ?<i class="m">-wait</i>? ?<i class="m">id</i>?
 </dt>
-<dd>This procedure decrements the thread reference counter. Each call to this
+<dd>This command decrements the thread reference counter. Each call to this
 command decrements the reference counter by one (1). 
 If called with the optional thread <i class="m">id</i>, the command releases the given
 thread. Otherwise, the current thread is released.
@@ -264,10 +265,7 @@ the event queue of the target thread.</p>
 
 <dt><b class="cmd">thread::wait</b></dt>
 <dd>This enters the event loop so a thread can receive messages from 
-<b class="cmd">thread::send</b>. This is equivalent to 
-<tt class="samp">vwait <i class="m">unusedvariable</i>
-</tt> except that <b class="cmd">thread::unwind</b> 
-will not unblock a <b class="cmd">vwait</b>. This command should only be used within 
+<b class="cmd">thread::send</b>. This command should only be used within 
 the script passed to the <b class="cmd">thread::create</b>. It should be the very last 
 command in the script. If this is not the case, the exiting thread will continue
 executing the script lines pass the <b class="cmd">thread::wait</b> which is not what 
@@ -289,7 +287,7 @@ you usualy want and/or expect.
 <b class="cmd">thread::eval</b> ?<i class="m">-lock mutex</i>? <i class="m">arg</i> ?<i class="m">arg ...</i>?</dt>
 <dd>This command concatenates passed arguments and evaluates the 
 resulting script under the mutex protection. If no mutex is specified,
-using the <b class="option">-lock mutex</b> optional argument, an internal
+using the <i class="m">-lock mutex</i> optional argument, an internal
 static mutex is used.
 </dd>
 
@@ -528,7 +526,7 @@ thread wake-ups, for example).</p>
 
 </dl>
 
-<h2><a name="SECTnode984">DISCUSSION</a></h2><p>The fundamental threading model in Tcl is that there can be one or
+<h2><a name="SECTnode970">DISCUSSION</a></h2><p>The fundamental threading model in Tcl is that there can be one or
 more Tcl interpreters per thread, but each Tcl interpreter should only
 be used by a single thread which created it.
 A &quot;shared memory&quot; abstraction is awkward to provide in Tcl because Tcl
@@ -544,10 +542,10 @@ it is possible to move channels between the threads.
 synchronization primitives, mutex and condition variables, is also supported.
 </p>
 
-<h2><a name="SECTnode999">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
+<h2><a name="SECTnode985">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
 </a></p>
 
-<h2><a name="SECTnode1005">KEYWORDS</a></h2><p class="keywords">
+<h2><a name="SECTnode991">KEYWORDS</a></h2><p class="keywords">
 <a class="keyword" href="keyword-index.html#KW-threads">threads</a>, <a class="keyword" href="keyword-index.html#KW-events">events</a>, <a class="keyword" href="keyword-index.html#KW-messagepassing">message passing</a>, <a class="keyword" href="keyword-index.html#KW-synchronization">synchronization</a>, <a class="keyword" href="keyword-index.html#KW-mutex">mutex</a>, <a class="keyword" href="keyword-index.html#KW-conditionvariable">condition variable</a>
 </p>
 </div><div class="footer">
