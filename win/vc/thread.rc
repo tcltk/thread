@@ -1,10 +1,11 @@
-// RCS: @(#) $Id: thread.rc,v 1.8 2001/04/29 00:09:30 davygrvy Exp $
+// RCS: @(#) $Id: thread.rc,v 1.9 2001/05/27 07:42:40 davygrvy Exp $
 //
 // Version resource script
 //
 
-#define VS_VERSION_INFO 1
+#include <winver.h>
 
+#define RESOURCE_INCLUDED
 #include <tcl.h>
 
 LANGUAGE 0x9, 0x1    /* LANG_ENGLISH, SUBLANG_DEFAULT */
@@ -37,7 +38,7 @@ BEGIN
             VALUE "LegalCopyright", "Under BSD license\0"
             VALUE "ProductName", "Tcl for Windows\0"
             VALUE "ProductVersion", THREAD_VERSION
-            VALUE "Authors", "Brent Welch <welch@panasas.com>,\r\n" "Andreas Kupries <a.kupries@westend.com>, \r\n" "David Gravereaux <davygrvy@pobox.com>,\r\n" "Zoran Vasiljevic<zoran@munich.com>" "\0"
+            VALUE "Authors", "Brent Welch,\r\n" "Andreas Kupries, \r\n" "David Gravereaux,\r\n" "Zoran Vasiljevic" "\0"
         END
     END
     BLOCK "VarFileInfo"
