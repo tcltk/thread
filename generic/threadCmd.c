@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.46 2002/07/17 18:10:21 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.47 2002/07/18 16:09:09 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -245,7 +245,8 @@ ThreadSetOption   _ANSI_ARGS_((Tcl_Interp *interp,
 static int  
 ThreadReserve     _ANSI_ARGS_((Tcl_Interp *interp, 
                                Tcl_ThreadId id, 
-                               int operation));
+                               int operation,
+                               int wait));
 static int  
 ThreadEventProc   _ANSI_ARGS_((Tcl_Event *evPtr, 
                                int mask));
@@ -296,6 +297,7 @@ TransferEventProc _ANSI_ARGS_((Tcl_Event *evPtr,
 
 static Tcl_ObjCmdProc ThreadCreateObjCmd;
 static Tcl_ObjCmdProc ThreadReserveObjCmd;
+static Tcl_ObjCmdProc ThreadReleaseObjCmd;
 static Tcl_ObjCmdProc ThreadSendObjCmd;
 static Tcl_ObjCmdProc ThreadUnwindObjCmd;
 static Tcl_ObjCmdProc ThreadExitObjCmd;
@@ -385,9 +387,8 @@ Thread_Init(interp)
     TCL_CMD(interp, NS"wait",      ThreadWaitObjCmd);
     TCL_CMD(interp, NS"configure", ThreadConfigureObjCmd);
     TCL_CMD(interp, NS"errorproc", ThreadErrorProcObjCmd);
-
-    TCL_CMD1(interp,NS"preserve",  ThreadReserveObjCmd, THREAD_RESERVE);
-    TCL_CMD1(interp,NS"release",   ThreadReserveObjCmd, THREAD_RELEASE);
+    TCL_CMD(interp, NS"preserve",  ThreadReserveObjCmd);
+    TCL_CMD(interp, NS"release",   ThreadReleaseObjCmd);
 
     if (!tclIs83) {
         TCL_CMD(interp, NS"join",      ThreadJoinObjCmd);
@@ -564,14 +565,13 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
  */
 
 static int
-ThreadReserveObjCmd(flag, interp, objc, objv)
-    ClientData  flag;           /* THREAD_RESERVE | THREAD_RELEASE */
+ThreadReserveObjCmd(dummy, interp, objc, objv)
+    ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
     long id;
-    Tcl_ThreadId threadId;
 
     Init(interp);
 
@@ -583,9 +583,60 @@ ThreadReserveObjCmd(flag, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    threadId = (Tcl_ThreadId)id;
+    return ThreadReserve(interp, (Tcl_ThreadId)id, THREAD_RESERVE, 0);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadReleaseObjCmd --
+ *
+ *  This procedure is invoked to process the "thread::release" Tcl 
+ *  command. See the user documentation for details on what this
+ *  command does.
+ *
+ * Results:
+ *  A standard Tcl result.
+ *
+ * Side effects:
+ *  See the user documentation.
+ *
+ *----------------------------------------------------------------------
+ */
 
-    return ThreadReserve(interp, threadId, (int)flag);
+static int
+ThreadReleaseObjCmd(dummy, interp, objc, objv)
+    ClientData  dummy;           /* Not used. */
+    Tcl_Interp *interp;         /* Current interpreter. */
+    int         objc;           /* Number of arguments. */
+    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+{
+    int wait = 0;
+    long id;
+
+    Init(interp);
+
+    if (objc < 2 || objc > 3) {
+        goto usage;
+    }
+    if (objc == 3) {
+        if (OPT_CMP(Tcl_GetString(objv[1]), "-wait")) {
+            wait = 1;
+        } else {
+            goto usage;
+        }
+        if (Tcl_GetLongFromObj(interp, objv[2], &id) != TCL_OK) {
+            return TCL_ERROR;
+        }
+    } else if (Tcl_GetLongFromObj(interp, objv[1], &id) != TCL_OK) {
+        return TCL_ERROR;
+    }
+
+    return ThreadReserve(interp, (Tcl_ThreadId)id, THREAD_RELEASE, wait);
+
+ usage:
+    Tcl_WrongNumArgs(interp, 1, objv, "?-wait? threadId");
+    return TCL_ERROR;    
 }
 
 /*
@@ -619,7 +670,7 @@ ThreadUnwindObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    return ThreadReserve(interp, 0, THREAD_RELEASE);
+    return ThreadReserve(interp, 0, THREAD_RELEASE, /* Wait for thread */1);
 }
 
 /*
@@ -2189,12 +2240,13 @@ ThreadWait()
  */
 
 static int
-ThreadReserve(interp, threadId, operation)
+ThreadReserve(interp, threadId, operation, wait)
     Tcl_Interp *interp;                 /* Current interpreter */
     Tcl_ThreadId threadId;              /* Target thread ID */
     int operation;                      /* THREAD_RESERVE | THREAD_RELEASE */
+    int wait;                           /* Wait for thread to exit */
 {
-    int users;
+    int users, dowait = 0;
     ThreadEvent *evPtr;
     ThreadSpecificData *tsdPtr;
 
@@ -2216,8 +2268,8 @@ ThreadReserve(interp, threadId, operation)
     }
 
     switch (operation) {
-    case THREAD_RESERVE: ++tsdPtr->refCount; break;
-    case THREAD_RELEASE: --tsdPtr->refCount; break;
+    case THREAD_RESERVE: ++tsdPtr->refCount;                break;
+    case THREAD_RELEASE: --tsdPtr->refCount; dowait = wait; break;
     }
 
     users = tsdPtr->refCount;
@@ -2231,6 +2283,7 @@ ThreadReserve(interp, threadId, operation)
         tsdPtr->flags |= THREAD_FLAGS_STOPPED;
         
         if (threadId /* Not current! */) {
+            ThreadEventResult *resultPtr = NULL;
 
             /*
              * Remove from the list of active threads, so nobody can post 
@@ -2241,17 +2294,56 @@ ThreadReserve(interp, threadId, operation)
             
             /*
              * Send an dummy event, just to wake-up target thread.
-             * It should immediately exit thereafter.
+             * It should immediately exit thereafter. We might get
+             * stuck here for long time if user really wants to 
+             * be absolutely sure that the thread has exited.
              */
             
+            if (dowait) {
+                resultPtr = (ThreadEventResult*)Tcl_Alloc(sizeof(ThreadEventResult));
+                resultPtr->done        = (Tcl_Condition)NULL;
+                resultPtr->result      = NULL;
+                resultPtr->code        = TCL_OK;
+                resultPtr->errorCode   = NULL;
+                resultPtr->errorInfo   = NULL;
+                resultPtr->dstThreadId = threadId;
+                resultPtr->srcThreadId = Tcl_GetCurrentThread();
+
+                resultPtr->nextPtr = resultList;
+                if (resultList) {
+                    resultList->prevPtr = resultPtr;
+                }
+                resultPtr->prevPtr = NULL;
+                resultList = resultPtr;
+            }
+
             evPtr = (ThreadEvent*)Tcl_Alloc(sizeof(ThreadEvent));
             evPtr->event.proc = ThreadEventProc;
             evPtr->sendData   = NULL;
             evPtr->clbkData   = NULL;
-            evPtr->resultPtr  = NULL;
+            evPtr->resultPtr  = resultPtr;
             
             Tcl_ThreadQueueEvent(threadId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL);
             Tcl_ThreadAlert(threadId);
+
+            if (dowait) {
+                while (resultPtr->result == NULL) {
+                    Tcl_ConditionWait(&resultPtr->done, &threadMutex, NULL);
+                }
+                if (resultPtr->prevPtr) {
+                    resultPtr->prevPtr->nextPtr = resultPtr->nextPtr;
+                } else {
+                    resultList = resultPtr->nextPtr;
+                }
+                if (resultPtr->nextPtr) {
+                    resultPtr->nextPtr->prevPtr = resultPtr->prevPtr;
+                }
+                Tcl_ConditionFinalize(&resultPtr->done);
+                if (resultPtr->result != threadEmptyResult) {
+                    Tcl_Free(resultPtr->result); /* Will be ignored anyway */
+                }
+                Tcl_Free((char*)resultPtr);
+            }
         }
     }
 

@@ -1,3 +1,14 @@
+2002-07-18  Zoran Vasiljevic <zoran@archiware.com>  
+
+	* threadCmd.c: modified thread::release to allow
+	for optional "-wait" argument. This will result in 
+	the thread waiting until the target thread has really
+	exited. Otherwise, the command exits immediately and 
+	target thread may exit asynchronously some time later.
+ 	This is not techically needed since one can always join
+	the exiting thread, but the join command is not 
+	available for some older Tcl versions. 
+
 2002-07-13  Zoran Vasiljevic <zoran@archiware.com>  
 
 	* doc/man:
