@@ -17,7 +17,7 @@ TCLSH_PROG    = "$(TCLROOT)\win\release\tclsh83.exe"
 
 # Set NODEBUG to 0 to compile with symbols.
 # check if the macro was set on the commandline.
-!ifdef NODEBUG
+!ifndef NODEBUG
 NODEBUG   = 1
 !endif
 

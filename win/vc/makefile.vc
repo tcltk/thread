@@ -1,4 +1,4 @@
-# RCS: @(#) $Id: makefile.vc,v 1.3 2000/04/17 20:37:45 welch Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.4 2000/04/19 16:52:20 welch Exp $
 
 !include "config.vc"
 
@@ -45,13 +45,9 @@ cflags = -c -W3 -nologo -YX $(cdebug) $(cvarsmt) $(include32) \
 ######################################################################
 
 !if "$(NODEBUG)" == "0"
-ldebug = -opt:noref -debug -debugtype:cv
+ldebug = -opt:noref -debug -debugtype:cv -nodefaultlib:msvcrt
 !else
-
-# I added -nodefaultlib:msvcrt so we can use just stay with the
-# release built tclstub83.lib.  This little hack doesn't introduce
-# any bugs, by the way.
-ldebug = -opt:ref -release -nodefaultlib:msvcrt
+ldebug = -opt:ref -release
 !endif
 
 # declarations common to all linker options

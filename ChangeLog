@@ -1,3 +1,7 @@
+2000-04-19  Brent Welch <welch@scriptics.com>
+
+	* win/vc/config.rc, Makefile.vc: Fixes from David Gravereaux
+
 2000-04-18  Brent Welch <welch@scriptics.com>
 
 	* Makefile.in: Fixes for make install
