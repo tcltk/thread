@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.5 2000/04/11 23:10:54 welch Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.6 2000/04/17 20:37:04 welch Exp $
  */
 
 #include "thread.h"
@@ -152,13 +152,7 @@ EXTERN int	Thread_Send _ANSI_ARGS_((Tcl_Interp *interp, Tcl_ThreadId id,
 #undef TCL_STORAGE_CLASS
 #define TCL_STORAGE_CLASS DLLIMPORT
 
-#ifdef MAC_TCL
-static pascal void *NewThread _ANSI_ARGS_((ClientData clientData));
-#elif defined __WIN32__
-static unsigned __stdcall NewThread _ANSI_ARGS_((ClientData clientData));
-#else
-static void     NewThread _ANSI_ARGS_((ClientData clientData));
-#endif
+Tcl_ThreadCreateType	NewThread _ANSI_ARGS_((ClientData clientData));
 static void	ListRemove _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 static void	ListUpdateInner _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 static int	ThreadEventProc _ANSI_ARGS_((Tcl_Event *evPtr, int mask));
@@ -629,13 +623,7 @@ Thread_Create(interp, script, stacksize)
  *
  *------------------------------------------------------------------------
  */
-#ifdef MAC_TCL
-static pascal void *
-#elif defined __WIN32__
-static unsigned __stdcall
-#else
-static void
-#endif
+Tcl_ThreadCreateType
 NewThread(clientData)
     ClientData clientData;
 {
@@ -692,11 +680,8 @@ NewThread(clientData)
     Tcl_Release((ClientData) tsdPtr->interp);
     Tcl_DeleteInterp(tsdPtr->interp);
     Tcl_ExitThread(result);
-#ifdef MAC_TCL
-    return NULL;
-#elif defined __WIN32__
-    return 0;
-#endif
+
+    TCL_THREAD_CREATE_RETURN;
 }
 
 /*
