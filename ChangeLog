@@ -1,3 +1,9 @@
+2003-02-24 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: fixed ThreadSetResult
+	to correctly initialize all elements of the 
+	result structure.
+
 2003-02-08 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: fixed ListRemoveInner
