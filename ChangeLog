@@ -1,3 +1,10 @@
+2002-12-04 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadPoolcmd.c: rewritten to use
+	worker threads sitting on the cond var instead of 
+	in the event loop. The poster thread still respects
+	i.e. does not block the event loop while posting jobs.
+
 2002-12-03 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/tclthread.h: added SpliceIn/SpliceOut macros.
