@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.1 2002/12/02 18:18:34 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.2 2002/12/03 07:13:23 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -76,8 +76,8 @@ typedef struct SendResult {
 typedef struct SendEvent {
     Tcl_Event event;                /* Must be the first element */
     int eventId;                    /* Event serial number */
-    int detached;                   /* The job is detached (ignore result) */
     char *script;                   /* Script to evaluate in worker thread */
+    int scriptLen;                  /* Length of the script */
     SendResult *resultPtr;          /* Result structure */
 } SendEvent;
 
@@ -152,8 +152,8 @@ static void
 SignalWaiter   _ANSI_ARGS_((ThreadPool *tpoolPtr));
 
 static int
-TpoolEval      _ANSI_ARGS_((Tcl_Interp *interp,char*script,SendResult*rsPtr));
-
+TpoolEval      _ANSI_ARGS_((Tcl_Interp *interp, char *script, int scriptLen,
+                            SendResult *rsPtr));
 static void
 TpoolResult    _ANSI_ARGS_((Tcl_Interp *interp, SendResult *rsPtr));
 
@@ -207,7 +207,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     /* 
      * Syntax:  tpool::create ?-minworkers count?
      *                        ?-maxworkers count?
-     *                        ?-initcmd command?
+     *                        ?-initscript command?
      *                        ?-idletime seconds?
      */
 
@@ -412,8 +412,8 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
 
     evPtr = (SendEvent*)Tcl_Alloc(sizeof(SendEvent));
     evPtr->event.proc = RunSendEvent;
-    evPtr->detached   = detached;
     evPtr->script     = strcpy(Tcl_Alloc(len+1), script);
+    evPtr->scriptLen  = len;
     if (detached == 0) {
         evPtr->resultPtr = (SendResult*)Tcl_Alloc(sizeof(SendResult));
         memset(evPtr->resultPtr, 0, sizeof(SendResult));
@@ -876,7 +876,7 @@ TpoolWorker(clientData)
      */
 
     if (rsPtr->retcode != TCL_ERROR && tpoolPtr->initScript) {
-        TpoolEval(interp, tpoolPtr->initScript, rsPtr);
+        TpoolEval(interp, tpoolPtr->initScript, -1, rsPtr);
         if (rsPtr->retcode == TCL_ERROR) {
             Tcl_ConditionNotify(&tpoolPtr->tpoolCond);
             goto out;
@@ -1076,14 +1076,14 @@ RunSendEvent(eventPtr, mask)
         Tcl_DeleteTimerHandler(tsdPtr->timer);
     }
 
-    TpoolEval(interp, evPtr->script, rsPtr);
+    TpoolEval(interp, evPtr->script, evPtr->scriptLen, rsPtr);
     Tcl_Free(evPtr->script);
 
     /*
      * Pass the result back to the caller
      */
 
-    if (evPtr->detached == 0) {
+    if (rsPtr) {
         evPtr = (SendEvent*)Tcl_Alloc(sizeof(SendEvent));
         evPtr->event.proc = RunResultEvent;
         evPtr->resultPtr  = rsPtr;
@@ -1362,22 +1362,23 @@ GetTpoolUnl (tpoolName)
  *----------------------------------------------------------------------
  */
 static int
-TpoolEval(interp, script, rsPtr)
+TpoolEval(interp, script, scriptLen, rsPtr)
     Tcl_Interp *interp;
     char *script;
+    int scriptLen;
     SendResult *rsPtr;
 {
     int ret, reslen;
     char *result, *errorCode, *errorInfo;
     
-    ret = Tcl_EvalEx(interp, script, -1, TCL_EVAL_GLOBAL);
+    ret = Tcl_EvalEx(interp, script, scriptLen, TCL_EVAL_GLOBAL);
     if (rsPtr == NULL) {
         return ret;
     }
     rsPtr->retcode = ret;
     if (rsPtr->retcode == TCL_ERROR) {
-        errorCode = Tcl_GetVar(interp, "errorCode", TCL_GLOBAL_ONLY);
-        errorInfo = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
+        errorCode = (char*)Tcl_GetVar(interp, "errorCode", TCL_GLOBAL_ONLY);
+        errorInfo = (char*)Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
         if (errorCode != NULL) {
             rsPtr->errorCode = Tcl_Alloc(1 + strlen(errorCode));
             strcpy(rsPtr->errorCode, errorCode);
@@ -1388,7 +1389,7 @@ TpoolEval(interp, script, rsPtr)
         }
     }
     
-    result = Tcl_GetStringResult(interp);
+    result = (char*)Tcl_GetStringResult(interp);
     reslen = strlen(result);
     
     if (reslen == 0) {
