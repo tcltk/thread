@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.8 2002/10/20 10:21:56 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.9 2002/12/02 18:23:17 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -541,7 +541,7 @@ Sp_Init (interp)
              * We should not be garbage-collecting sync 
              * primitives because there is no way to 
              * find out who/if is using them. Generally, 
-             * this should be delegated to programmer.
+             * this should be delegated to the programmer.
              */
             /*Tcl_CreateExitHandler((Tcl_ExitProc *)FinalizeSp, NULL);*/
             initialized = 1;
@@ -549,9 +549,9 @@ Sp_Init (interp)
         RELEASE_SYNCMUTEX;
     }
 
-    TCL_CMD(interp, "thread::mutex", ThreadMutexObjCmd);
-    TCL_CMD(interp, "thread::cond",  ThreadCondObjCmd);
-    TCL_CMD(interp, "thread::eval",  ThreadEvalObjCmd);
+    TCL_CMD(interp, NS"::mutex", ThreadMutexObjCmd);
+    TCL_CMD(interp, NS"::cond",  ThreadCondObjCmd);
+    TCL_CMD(interp, NS"::eval",  ThreadEvalObjCmd);
 }
 
 /*
