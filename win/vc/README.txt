@@ -17,8 +17,8 @@ There are 2 ways to build the extension:
 
 	The following macros can be added to the end of the commandline to effect
 	the build:
-		NODEBUG=(0|1)
-			Set to zero for a symbols build.  Defaults to non-symbols
+		DEBUG=(0|1)
+			Set to one for a symbols build.  Defaults to non-symbols
 			when left out.
 		STATIC_BUILD=(0|1)
 			Will make a static library instead of a dll.
