@@ -1,40 +1,35 @@
-
 #
 # cmdsrv.tcl --
 #
 #   Simple socket command server. Supports many simultaneous sessions.
 #   Works in thread mode with each new connection receiving the new thread.
-#   Has idle timer on per-thread basis.
 #  
 #   Usage:
 #      cmdsrv::create port ?-idletimer value? ?-initcmd cmd?
 # 
 #      port         Tcp port where the server listens
-#      -idletimer   # of ms to idle before tearing down socket
-#                   (default: 300000 = 5 minutes)
-#      -initcmd     script to evaluate in new command interpreter at start
-#                   (default: empty)
+#      -idletimer   # of ms to idle before tearing down socket (def: 300 sec)
+#      -initcmd     script to initialize new worker thread (def: empty)
+#
 #   Example:
 #
-#      % cmdsrv::create 5000 -idletimer 60000
+#      % cmdsrv::create 5000 -idletimer 60
 #      % vwait forever
 #
 #      Starts the server on the port 5000, sets idle timer
-#      to 1 minute
+#      to 1 minute. You can now use "telnet" utility to connect.
 #
 #   See the file "license.terms" for information on usage and
 #   redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: cmdsrv.tcl,v 1.1 2002/11/24 22:33:53 vasiljevic Exp $
+# RCS: @(#) $Id: cmdsrv.tcl,v 1.2 2002/11/25 09:07:12 vasiljevic Exp $
 #
 
-# package require Thread 2.5
-# package provide Cmdsrv 1.0
-
-load ./libthread2.5.so
+package require Thread 2.5
+package provide Cmdsrv 1.0
 
 namespace eval cmdsrv {
-    variable data
+    variable data; # Stores global configuration options
 }
 
 #
@@ -66,8 +61,8 @@ proc cmdsrv::create {port args} {
     #
 
     array set data {
-        -initcmd   {source cmdsrv.tcl}
         -idletimer 300000
+        -initcmd   {package require Cmdsrv}
     }
     
     #
@@ -92,10 +87,45 @@ proc cmdsrv::create {port args} {
     
     socket -server [namespace current]::_Accept $port
 }
+
+#
+# cmdsrv::_Accept --
+#
+#	Helper procedure to solve Tcl shared channel bug when responding
+#   to incoming socket connection and transfering the channel to other
+#   thread(s).
+#
+# Arguments:
+#   port   Port where the server is listening
+#   args   Variable number of arguments
+#
+# Side Effects:
+#	None.
+#
+# Results:
+#	None.
+#
 
 proc cmdsrv::_Accept {s ipaddr port} {
     after idle [list [namespace current]::Accept $s $ipaddr $port]
 }
+
+#
+# cmdsrv::Accept --
+#
+#	Accepts the incoming socket connection, creates the worker thread.
+#
+# Arguments:
+#   s      incoming socket
+#   ipaddr IP address of the remote peer
+#   port   Tcp port used for this connection
+#
+# Side Effects:
+#	Creates new worker thread.
+#
+# Results:
+#	None.
+#
 
 proc cmdsrv::Accept {s ipaddr port} {
 
@@ -121,8 +151,7 @@ proc cmdsrv::Accept {s ipaddr port} {
     thread::transfer $tid $s ; # This flushes the socket as well
 
     #
-    # Start event-loop in the remote thread
-    # and start the idle timer
+    # Start event-loop processing in the remote thread
     #
 
     thread::send -async $tid [subst {
@@ -132,6 +161,23 @@ proc cmdsrv::Accept {s ipaddr port} {
         [namespace current]::StartIdleTimer $s
     }]
 }
+
+#
+# cmdsrv::Read --
+#
+#	Event loop procedure to read data from socket and collect the 
+#   command to execute. If the command read from socket is complete
+#   it executes the command are prints the result back. 
+#
+# Arguments:
+#   s      incoming socket
+#
+# Side Effects:
+#	None.
+#
+# Results:
+#	None.
+#
 
 proc cmdsrv::Read {s} {
 
@@ -143,15 +189,11 @@ proc cmdsrv::Read {s} {
     # Cover client closing connection
     #
 
-    if {[eof $s] || [catch {gets $s line} readCount]} {
+    if {[eof $s] || [catch {read $s} line]} {
         return [SockDone $s]
     }
 
-    #
-    # Cover some strange cases
-    #
-    
-    if {$readCount == -1} {
+    if {[string length $line] == 0} {
         return [StartIdleTimer $s]
     }
 
@@ -170,25 +212,50 @@ proc cmdsrv::Read {s} {
     # Run the command
     #
 
-    if {[string length $data(cmd)]} {
-        catch {uplevel \#0 $data(cmd)} ret
-        if {[info exists data] == 0} {
-            return
-        } else {
-            puts $s $ret
-            set data(cmd) ""
-        }
-    }
+    catch {uplevel \#0 $data(cmd)} ret
+    puts $s $ret
+    set data(cmd) ""
 
     puts -nonewline $s "% "
     StartIdleTimer $s
 }
+
+#
+# cmdsrv::SockDone --
+#
+#	Tears down the thread and closes the socket if the remote peer has
+#   closed his side of the comm channel. 
+#
+# Arguments:
+#   s      incoming socket
+#
+# Side Effects:
+#	Worker thread gets released.
+#
+# Results:
+#	None.
+#
 
 proc cmdsrv::SockDone {s} {
 
     catch {close $s}
     thread::release
 }
+
+#
+# cmdsrv::StopIdleTimer --
+#
+#	Cancel the connection idle timer. 
+#
+# Arguments:
+#   s      incoming socket
+#
+# Side Effects:
+#	After event gets cancelled.
+#
+# Results:
+#	None.
+#
 
 proc cmdsrv::StopIdleTimer {s} {
 
@@ -199,6 +266,21 @@ proc cmdsrv::StopIdleTimer {s} {
         unset data(idleevent)
     }
 }
+
+#
+# cmdsrv::StartIdleTimer --
+#
+#	Initiates the connection idle timer. 
+#
+# Arguments:
+#   s      incoming socket
+#
+# Side Effects:
+#	After event gets posted.
+#
+# Results:
+#	None.
+#
 
 proc cmdsrv::StartIdleTimer {s} {
 
@@ -208,4 +290,12 @@ proc cmdsrv::StartIdleTimer {s} {
         [after $data(-idletimer) [list [namespace current]::SockDone $s]]
 }
 
-################################# End of file ################################
+# EOF $RCSfile: cmdsrv.tcl,v $
+
+# Emacs Setup Variables
+# Local Variables:
+# mode: Tcl
+# indent-tabs-mode: nil
+# tcl-basic-offset: 4
+# End:
+
