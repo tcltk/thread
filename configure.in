@@ -32,16 +32,17 @@ AC_SUBST(CONFIGDIR)
 PACKAGE=thread
 
 THREAD_MAJOR=2
-THREAD_MINOR=3
+THREAD_MINOR=4
 THREAD_PATCHLEVEL=
+
+THREAD_VERSION_SUBSET83="2.1.4"
 
 VERSION=${THREAD_MAJOR}.${THREAD_MINOR}${THREAD_PATCHLEVEL}
 NODOT_VERSION=${THREAD_MAJOR}${THREAD_MINOR}
 
-THREAD_VERSION_SUBSET83="2.1.3"
-
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
+AC_SUBST(THREAD_VERSION_SUBSET83)
 
 #--------------------------------------------------------------------
 # We put this here so that you can compile with -DVERSION="1.2" to
@@ -160,6 +161,7 @@ case "`uname -s`" in
     ;;
     *)
 	CLEANFILES=
+	AC_SUBST(CLEANFILES)
     ;;
 esac
 
@@ -282,5 +284,5 @@ SC_PROG_TCLSH
 # Finally, substitute all of the various values into the Makefile.
 #--------------------------------------------------------------------
 
-AC_OUTPUT([Makefile \
-	pkgIndex.tcl])
+AC_OUTPUT([Makefile pkgIndex.tcl])
+
