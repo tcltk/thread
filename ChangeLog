@@ -1,7 +1,19 @@
+2002-01-26  David Gravereaux <davygrvy@pobox.com>
+
+	* generic/threadSvCmd.c:  A small 'const' qualifier change to remove a
+	warning.  It's a bit more wordy now, but reads a little clearer to me.
+	Unscambling pointer math gives me a headache and combined with a cast
+	tends to get dangerous.
+
+	* win/threadWin.c: new idea for thread::kill added.  It's wrapped in an
+	#if 0/#endif for now.  I do notice that tcl.h is now typedef'ing
+	ClientData as an 'int *'.  It used to 'void *', didn't it??  The
+	ISO/ANSI/CLEAN C style of setting a typed pointer to a void* now doesn't
+	want to work.  Maybe I do too much C++ to have noticed this before...
 
 2002-01-23  Zoran Vasiljevic <zoran@archiware.com>
 
-	* generic/threadCmd.c: fixed address od the target interpreter when
+	* generic/threadCmd.c: fixed address of the target interpreter when
 	doing the callback async script processing. All messages went to the
 	main interpreter instead of the selected interpreter, causing process
 	to hung when posting callbacks to more that one interp at the same time.
