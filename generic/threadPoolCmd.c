@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.29 2005/01/03 09:00:06 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.30 2005/01/11 15:58:40 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -940,7 +940,8 @@ CreateWorker(interp, tpoolPtr)
      * failed to initialize correctly.
      */
     
-    if (result.retcode == TCL_ERROR) {
+    if (result.retcode == 1) {
+        result.retcode = TCL_ERROR;
         SetResult(interp, &result);
         return TCL_ERROR;
     }
@@ -968,13 +969,13 @@ static Tcl_ThreadCreateType
 TpoolWorker(clientData)
     ClientData clientData;
 {    
-    TpoolResult         *rPtr  = (TpoolResult*)clientData;
+    TpoolResult          *rPtr = (TpoolResult*)clientData;
     ThreadPool       *tpoolPtr = rPtr->tpoolPtr;
 
     int tout = 0;
     Tcl_Interp *interp;
     Tcl_Time waitTime, *idlePtr;
-    char *errMsg = "can't create new Tcl interpreter";
+    char *errMsg;
 
     Tcl_MutexLock(&startMutex);
 
@@ -984,14 +985,18 @@ TpoolWorker(clientData)
 
 #ifdef NS_AOLSERVER
     interp = (Tcl_Interp*)Ns_TclAllocateInterp(NULL);
-    rPtr->retcode = TCL_OK;
+    rPtr->retcode = 0;
 #else
     interp = Tcl_CreateInterp();
-    rPtr->retcode |= Tcl_Init(interp);
-    rPtr->retcode |= Thread_Init(interp);
+    if (Tcl_Init(interp) == TCL_OK && Thread_Init(interp) == TCL_OK) {
+        rPtr->retcode = 0;
+    } else {
+        rPtr->retcode = 1;
+    }
 #endif
     
-    if (rPtr->retcode != TCL_OK) {
+    if (rPtr->retcode == 1) {
+        errMsg = (char*)Tcl_GetStringResult(interp);
         rPtr->result = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
         Tcl_ConditionNotify(&tpoolPtr->cond);
         Tcl_MutexUnlock(&startMutex);
@@ -1005,8 +1010,9 @@ TpoolWorker(clientData)
     if (tpoolPtr->initScript) {
         TpoolEval(interp, tpoolPtr->initScript, -1, rPtr);
         if (rPtr->retcode != TCL_OK) {
-            char *err = (char*)Tcl_GetStringResult(interp);
-            rPtr->result = strcpy(Tcl_Alloc(strlen(err)+1), err);
+            rPtr->retcode = 1;
+            errMsg = (char*)Tcl_GetStringResult(interp);
+            rPtr->result  = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
             Tcl_ConditionNotify(&tpoolPtr->cond);
             Tcl_MutexUnlock(&startMutex);
             goto out;
@@ -1035,7 +1041,7 @@ TpoolWorker(clientData)
 
     /*
      * Wait for jobs to arrive. Note the handcrafted time test.
-     * Tcl API misses the return value of the Tcl_ConditionWait.
+     * Tcl API misses the return value of the Tcl_ConditionWait().
      * Hence, we do not know why the call returned. Was it someone
      * signalled the variable or has the idle timer expired?
      */
@@ -1056,8 +1062,17 @@ TpoolWorker(clientData)
             }
         }
         tpoolPtr->idleWorkers--;
-        if (tpoolPtr->tearDown || tout) {
+        if (tpoolPtr->tearDown) {
+            /* Queue tearing down; abandon all work */
             break;
+        } else if (rPtr == NULL) {
+            /* No work, hence idle timer fired */
+            if (tpoolPtr->numWorkers > tpoolPtr->minWorkers) {
+                break; /* Can safely teardown this worker */
+            } else {
+                tout = 0;
+                continue; /* Leave this woker alive */
+            }
         }
         Tcl_MutexUnlock(&tpoolPtr->mutex);
         TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
