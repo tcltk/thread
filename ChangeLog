@@ -1,4 +1,13 @@
+2000-07-14 Zoran Vasiljevic <zoran@munich.com>
 
+	* generic/threadCmd.c: improved thread::exit behaviour
+	  now does a better job of draining the event loop before exit.
+	  may have some wishes open, though - see ThreadWait().
+	
+	* generic/threadSpCmd.c, generic/threadSvCmd.c:
+	  added some comments in function headers.
+	  docs/tests for above still pending.
+	
 2000-07-03 Zoran Vasiljevic <zoran@munich.com>
 	
    	Summary of changes:
@@ -28,7 +37,7 @@
 	  Changed behaviour of "thread::exit". It now simply flips the
           bit to signal thread stuck in thread::wait to gracefuly exit.
           Consequence: command now does not trigger error on thread exit.
-          Also, thread event queue in now properly cleared.
+          Also, thread event queue is now properly cleared.
           ThreadWait() and ThreadStop() are newly added to support this.
           Also the ThreadSpecificData has one more integer: "stopped"
 
