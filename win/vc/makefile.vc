@@ -5,12 +5,12 @@
 # maintenance utility -> nmake.exe that builds the Tcl thread
 # extension.  See README.txt for commandline options and instructions.
 #
-# RCS: @(#) $Id: makefile.vc,v 1.15 2000/08/24 01:13:06 welch Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.16 2000/10/27 03:24:42 davidg Exp $
 ######################################################################
 
 
 ######################################################################
-# 2 bug fixes needed for VC++ 6.0's nmake tool.
+# a bug fix needed for VC++ 6.0's nmake tool.
 
 # Reset the version *string* back to the integer it's supposed to be.
 # more entries will have to be made here for all subsiquent releases
@@ -18,12 +18,6 @@
 #
 _NMAKE_VER  = $(_NMAKE_VER:6.00.8168.0=600)
 
-!if $(_NMAKE_VER) >= 600
-# non existent directories as dependents are either considered always
-# UP-TO-DATE or just plain don't work for calling their target command
-#
-HAVE_BAD_NODIR_TS   = 1
-!endif
 ######################################################################
 
 
@@ -79,7 +73,7 @@ NOMSVCRT	= 0
 
 # remember to change thread.h as well when this changes
 #
-VER	= 21
+VER	= 22
 
 !if $(NODEBUG)
 TMPDIRNAMEPREFIX = Release
@@ -231,7 +225,11 @@ setup:
 test: all
     $(TCLSH_PROG) <<
 regsub -all {\\} {$(THREADLIB)} {/} threadlib
-package ifneeded Thread 2.0 [list load $$threadlib]
+if {$$::tcl_version == "8.3"} {
+package ifneeded Thread 2.1.1 [list load $$threadlib]
+} else {
+package ifneeded Thread 2.2 [list load $$threadlib]
+}
 regsub -all {\\} {$(TESTDIR)} {/} testdir
 source [file join $$testdir all.tcl]
 <<nokeep

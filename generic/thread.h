@@ -1,13 +1,21 @@
 /*
  * thread.h --
+ *
+ * 	Global header file for the thread extension.
  * 
- * RCS: @(#) $Id: thread.h,v 1.5 2000/08/24 01:13:02 welch Exp $ 
+ * See the file "license.terms" for information on usage and redistribution
+ * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+ *
+ * RCS: @(#) $Id: thread.h,v 1.6 2000/10/27 03:24:50 davidg Exp $ 
  */
 
 /* remember to change win/vc/makefile.vc as well when these change */
-#define THREAD_MAJOR_VERSION  2
-#define THREAD_MINOR_VERSION  1
-#define THREAD_VERSION        "2.1"
+#define THREAD_MAJOR_VERSION	2
+#define THREAD_MINOR_VERSION	2
+#define THREAD_VERSION		"2.2"
+
+/* this is the version provided when loaded into an 8.3 core */
+#define THREAD_VERSION_SUBSET83	"2.1.1"
 
 #include "tcl.h"
 

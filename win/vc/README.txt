@@ -1,6 +1,6 @@
 The files in this vc subdirectory may be useful if you have not set
 up your TEA (i.e., Cygwin) environment.  They have been contributed
-by David Gravereaux <davygrvy@bigfoot.com>
+by David Gravereaux <davygrvy@pobox.com>
 
 If you have TEA, then ignore these files;
 you should run "../configure", then "make" from the thread/win directory
