@@ -1,6 +1,12 @@
-2002-07-20  Zoran Vasiljevic <zoran@archiware.com>  
+2002-07-20  Mo DeJong  <mdejong@users.sourceforge.net>
 
-	* threadSvCmd.c: applied patch for correcting the #584123 bug.
+        * generic/threadSvCmd.c (Sv_tclEmptyStringRep, Sv_Init):
+        Avoid linking to the tclEmptyStringRep variable defined
+        in Tcl since this makes it very difficult to load
+        the Thread package into an executable that has
+        also loaded Tcl. The previous approach used a hack
+        under Windows, we now use this same hack on all systems.
+	[Tcl bug 584123]
 
 2002-07-19  Zoran Vasiljevic <zoran@archiware.com>  
 
