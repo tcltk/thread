@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.9 2002/12/14 11:58:05 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.10 2003/09/03 11:27:53 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -81,9 +81,74 @@ typedef struct Svconf {
 #define FLAGS_CREATEVAR    4   /* Create the array variable if none found */
 
 /*
+ * Macros for handling locking and unlocking
+ */
+
+#define LOCK_BUCKET(a)       if ((a)->lock != (Tcl_Mutex)-1) \
+                                 Tcl_MutexLock(&(a)->lock)
+#define UNLOCK_BUCKET(a)     if ((a)->lock != (Tcl_Mutex)-1) \
+                                 Tcl_MutexUnlock(&(a)->lock)
+#define LOCK_CONTAINER(a)    if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
+                                 Tcl_MutexLock(&(a)->bucketPtr->lock)
+#define UNLOCK_CONTAINER(a)  if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
+                                 Tcl_MutexUnlock(&(a)->bucketPtr->lock)
+
+/*
+ * This is named synetrically to LockArray as function
+ * rather than as a macro just to improve readability.
+ */
+#define UnlockArray(a) UNLOCK_CONTAINER(a)     
+
+/*
+ * Mode for Sv_PutContainer, so it knows what
+ * happened with the embedded shared object.
+ */
+
+#define SV_UNCHANGED       0   /* Object has not been modified */
+#define SV_CHANGED         1   /* Object has been modified */
+#define SV_ERROR          -1   /* Object may be in incosistent state */
+
+/*
+ * Definitions of functions implementing simple key/value 
+ * persistent storage for shared variable arrays.
+ */
+
+typedef ClientData (ps_open_proc)(const char*);
+
+typedef int (ps_get_proc)   (ClientData, const char*, char**, int*);
+typedef int (ps_put_proc)   (ClientData, const char*, char*, int);
+typedef int (ps_first_proc) (ClientData, char**, char**, int*);
+typedef int (ps_next_proc)  (ClientData, char**, char**, int*);
+typedef int (ps_delete_proc)(ClientData, const char*);
+typedef int (ps_close_proc) (ClientData);
+typedef void(ps_free_proc)  (char*);
+
+typedef char* (ps_geterr_proc)(ClientData);
+
+/*
+ * This structure maintains a bunch of pointers to functions implementing
+ * the simple persistence layer for the shared variable arrays. 
+ */
+
+typedef struct PsStore {
+    char *type;                /* Type identifier of the persistent storage */
+    ClientData psHandle;       /* Handle to the opened storage */
+    ps_open_proc   *psOpen;    /* Function to open the persistent key store */
+    ps_get_proc    *psGet;     /* Function to retrieve value bound to key */
+    ps_put_proc    *psPut;     /* Function to store user key and value */
+    ps_first_proc  *psFirst;   /* Function to retrieve the first key/value */
+    ps_next_proc   *psNext;    /* Function to retrieve the next key/value */
+    ps_delete_proc *psDelete;  /* Function to delete user key and value */
+    ps_close_proc  *psClose;   /* Function to close the persistent store */
+    ps_free_proc   *psFree;    /* Fuction to free allocated memory */
+    ps_geterr_proc *psError;   /* Function to return last store error */
+    struct PsStore *nextPtr;   /* For linking into linked lists */
+} PsStore;
+
+/*
  * The following structure defines a collection of arrays.
- * Only the arrays within a given bucket share a lock, allowing for more
- * concurency.
+ * Only the arrays within a given bucket share a lock, 
+ * allowing for more concurency.
  */
 
 typedef struct Bucket {
@@ -98,11 +163,15 @@ typedef struct Bucket {
  */
 
 typedef struct Array {
+    char *bindAddr;            /* Array is bound to this address */
+    PsStore *psPtr;            /* Persistent storage functions */
     Bucket *bucketPtr;         /* Array bucket. */
     Tcl_HashEntry *entryPtr;   /* Entry in bucket array table. */
     Tcl_HashEntry *handlePtr;  /* Entry in handles table */
     Tcl_HashTable vars;        /* Table of variables. */
 } Array;
+
+#define UnlockArray(a) Tcl_MutexUnlock(&((a)->bucketPtr->lock))
 
 /*
  * The object container for Tcl-objects stored within shared arrays.
@@ -114,6 +183,7 @@ typedef struct Container {
     Tcl_HashEntry *entryPtr;   /* Entry in array table. */
     Tcl_HashEntry *handlePtr;  /* Entry in handles table */
     Tcl_Obj *tclObj;           /* Tcl object to hold shared values */
+    int epoch;                 /* Track object changes */
     char *chunkAddr;           /* Address of one chunk of object containers */
     struct Container *nextPtr; /* Next object container in the free list */
 } Container;
@@ -127,17 +197,17 @@ typedef struct SvCmdInfo {
     char *cmdName;              /* Real (rewritten) name of the command */
     Tcl_ObjCmdProc *objProcPtr; /* The object-based command procedure */
     Tcl_CmdDeleteProc *delProcPtr; /* Pointer to command delete function */
-    ClientData clientData;     /* Pointer passed to above command */
+    ClientData *clientData;     /* Pointer passed to above command */
     struct SvCmdInfo *nextPtr;  /* Next in chain of registered commands */
 } SvCmdInfo;
 
 /*
  * Structure for registering special object duplicator functions.
- * Some regular Tcl object duplicators produce shallow instead of
- * proper deep copies of the object. While this is considered ok
- * in single-threaded apps, a multithreaded app could have problems
- * when accessing objects which live in (i.e. are accessed from) 
- * different interpreters.
+ * Reason for this is that even some regular Tcl duplicators
+ * produce shallow instead of proper deep copies of the object.
+ * While this is considered to be ok in single-threaded apps,
+ * a multithreaded app could have problems when accessing objects
+ * which live in (i.e. are accessed from) different interpreters.
  * So, for each object type which should be stored in shared object
  * pools, we must assure that the object is copied properly.
  */
@@ -152,9 +222,20 @@ typedef struct RegType {
  * Limited API functions
  */
 
-void Sv_RegisterCommand(char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*,ClientData);
-void Sv_RegisterObjType(Tcl_ObjType*, Tcl_DupInternalRepProc*);
-int  Sv_Container(Tcl_Interp*,int,Tcl_Obj*CONST objv[],Container**,int*,int);
+void 
+Sv_RegisterCommand(char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*,ClientData);
+
+void 
+Sv_RegisterObjType(Tcl_ObjType*, Tcl_DupInternalRepProc*);
+
+void 
+Sv_RegisterPsStore(PsStore*);
+
+int
+Sv_GetContainer(Tcl_Interp*,int,Tcl_Obj*CONST objv[],Container**,int*,int);
+
+int
+Sv_PutContainer(Tcl_Interp*, Container*, int);
 
 /*
  * Private version of Tcl_DuplicateObj which takes care about
@@ -162,30 +243,6 @@ int  Sv_Container(Tcl_Interp*,int,Tcl_Obj*CONST objv[],Container**,int*,int);
  */
 
 Tcl_Obj* Sv_DuplicateObj(Tcl_Obj*);
-
-#define LOCK_BUCKET(a)   if ((a)->lock != (Tcl_Mutex)-1) \
-                             Tcl_MutexLock(&(a)->lock)
-#define UNLOCK_BUCKET(a) if ((a)->lock != (Tcl_Mutex)-1) \
-                             Tcl_MutexUnlock(&(a)->lock)
-
-#define Sv_Lock(a)       if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
-                             Tcl_MutexLock(&(a)->bucketPtr->lock)
-#define Sv_Unlock(a)     if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
-                             Tcl_MutexUnlock(&(a)->bucketPtr->lock)
-
-#define UnlockArray(a)    if ((a)->bucketPtr->lock != (Tcl_Mutex)-1) \
-                             Tcl_MutexUnlock(&((a)->bucketPtr->lock))
-
-/*
- * Needed when copying objects. This is something not exported
- * from Tcl, therefore we must use tricks to get this value.
- * See in sv.c for details.
- */
-
-extern char* tclEmptyStringRep;
-
-#undef  TCL_STORAGE_CLASS
-#define TCL_STORAGE_CLASS DLLIMPORT
 
 #endif /* _SV_H_ */
 

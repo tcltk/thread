@@ -7,7 +7,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvListCmd.c,v 1.8 2003/03/28 15:42:59 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvListCmd.c,v 1.9 2003/09/03 11:27:53 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -79,7 +79,7 @@ static Tcl_Mutex initMutex;
 void
 Sv_RegisterListCommands(void)
 {
-    static int initialized;
+    static int initialized = 0;
 
     if (initialized == 0) {
         Tcl_MutexLock(&initMutex);
@@ -134,7 +134,7 @@ SvLpopObjCmd (arg, interp, objc, objv)
      *          $list lpop ?index?
      */
 
-    ret = Sv_Container(interp, objc, objv, &svObj, &off, 0);
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -173,12 +173,10 @@ SvLpopObjCmd (arg, interp, objc, objv)
     Tcl_DecrRefCount(elPtr);
 
  cmd_ok:
-    Sv_Unlock(svObj);
-    return TCL_OK;
+    return Sv_PutContainer(interp, svObj, SV_CHANGED);
 
  cmd_err:
-    Sv_Unlock(svObj);
-    return TCL_ERROR;
+    return Sv_PutContainer(interp, svObj, SV_ERROR);
 }
 
 /*
@@ -216,7 +214,7 @@ SvLpushObjCmd (arg, interp, objc, objv)
      */
 
     flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
-    ret = Sv_Container(interp, objc, objv, &svObj, &off, flg);
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -240,19 +238,17 @@ SvLpushObjCmd (arg, interp, objc, objv)
         }
     }
 
-    args[0] = Tcl_DuplicateObj(objv[off]);
+    args[0] = Sv_DuplicateObj(objv[off]);
     ret = Tcl_ListObjReplace(interp, svObj->tclObj, index, 0, 1, args);
     if (ret != TCL_OK) {
         Tcl_DecrRefCount(args[0]);
         goto cmd_err;
     }
 
-    Sv_Unlock(svObj);
-    return TCL_OK;
+    return Sv_PutContainer(interp, svObj, SV_CHANGED);
 
  cmd_err:
-    Sv_Unlock(svObj);
-    return TCL_ERROR;
+    return Sv_PutContainer(interp, svObj, SV_ERROR);
 }
 
 /*
@@ -290,7 +286,7 @@ SvLappendObjCmd(arg, interp, objc, objv)
      */
 
     flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
-    ret = Sv_Container(interp, objc, objv, &svObj, &off, flg);
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -309,12 +305,10 @@ SvLappendObjCmd(arg, interp, objc, objv)
 
     Tcl_SetObjResult(interp, Sv_DuplicateObj(svObj->tclObj));
 
-    Sv_Unlock(svObj);
-    return TCL_OK;
+    return Sv_PutContainer(interp, svObj, SV_CHANGED);
 
  cmd_err:
-    Sv_Unlock(svObj);
-    return TCL_ERROR;
+    return Sv_PutContainer(interp, svObj, SV_ERROR);
 }
 
 /*
@@ -352,7 +346,7 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
      *          $list lreplace first last ?element ...?
      */
 
-    ret = Sv_Container(interp, objc, objv, &svObj, &off, 0);
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -408,12 +402,10 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
         Tcl_Free((char*)args);
     }
 
-    Sv_Unlock(svObj);
-    return ret;
+    return Sv_PutContainer(interp, svObj, SV_CHANGED);
 
  cmd_err:
-    Sv_Unlock(svObj);
-    return TCL_ERROR;
+    return Sv_PutContainer(interp, svObj, SV_ERROR);
 }
 
 /*
@@ -450,7 +442,7 @@ SvLrangeObjCmd (arg, interp, objc, objv)
      *          $list lrange first last
      */
 
-    ret = Sv_Container(interp, objc, objv, &svObj, &off, 0);
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -491,12 +483,10 @@ SvLrangeObjCmd (arg, interp, objc, objv)
     Tcl_Free((char*)args);
 
  cmd_ok:
-    Sv_Unlock(svObj);
-    return TCL_OK;
+    return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 
  cmd_err:
-    Sv_Unlock(svObj);
-    return TCL_ERROR;
+    return Sv_PutContainer(interp, svObj, SV_ERROR);
 }
 
 /*
@@ -534,7 +524,7 @@ SvLinsertObjCmd (arg, interp, objc, objv)
      */
 
     flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
-    ret = Sv_Container(interp, objc, objv, &svObj, &off, flg);
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -571,12 +561,11 @@ SvLinsertObjCmd (arg, interp, objc, objv)
     }
 
     Tcl_Free((char*)args);
-    Sv_Unlock(svObj);
-    return TCL_OK;
+
+    return Sv_PutContainer(interp, svObj, SV_CHANGED);
 
  cmd_err:
-    Sv_Unlock(svObj);
-    return TCL_ERROR;
+    return Sv_PutContainer(interp, svObj, SV_ERROR);
 }
 
 /*
@@ -612,17 +601,20 @@ SvLlengthObjCmd (arg, interp, objc, objv)
      *          $list llength
      */
 
-    ret = Sv_Container(interp, objc, objv, &svObj, &off, 0);
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
+
     ret = Tcl_ListObjLength(interp, svObj->tclObj, &llen);
-    Sv_Unlock(svObj);
     if (ret == TCL_OK) {
         Tcl_ResetResult(interp);
         Tcl_SetIntObj(Tcl_GetObjResult(interp), llen);
     }
-
+    if (Sv_PutContainer(interp, svObj, SV_UNCHANGED) != TCL_OK) {
+        return TCL_ERROR;
+    }
+    
     return ret;
 }
 
@@ -655,7 +647,7 @@ SvLsearchObjCmd (arg, interp, objc, objv)
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
 
-    static CONST84 char *modes[] = {"-exact", "-glob", "-regexp", NULL};
+    static const char *modes[] = {"-exact", "-glob", "-regexp", NULL};
     enum {LS_EXACT, LS_GLOB, LS_REGEXP};
 
     mode = LS_GLOB;
@@ -666,7 +658,7 @@ SvLsearchObjCmd (arg, interp, objc, objv)
      *          $list lsearch ?mode? pattern
      */
 
-    ret = Sv_Container(interp, objc, objv, &svObj, &off, 0);
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -723,16 +715,13 @@ SvLsearchObjCmd (arg, interp, objc, objv)
         }
     }
 
-    Sv_Unlock(svObj);
-
     Tcl_ResetResult(interp);
     Tcl_SetIntObj(Tcl_GetObjResult(interp), index);
 
-    return TCL_OK;
+    return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 
  cmd_err:
-    Sv_Unlock(svObj);
-    return TCL_ERROR;
+    return Sv_PutContainer(interp, svObj, SV_ERROR);
 }
 
 /*
@@ -769,7 +758,7 @@ SvLindexObjCmd (arg, interp, objc, objv)
      *          $list lindex index
      */
 
-    ret = Sv_Container(interp, objc, objv, &svObj, &off, 0);
+    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -789,12 +778,10 @@ SvLindexObjCmd (arg, interp, objc, objv)
         Tcl_SetObjResult(interp, Sv_DuplicateObj(elPtrs[index]));
     }
 
-    Sv_Unlock(svObj);
-    return TCL_OK;
+    return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 
  cmd_err:
-    Sv_Unlock(svObj);
-    return TCL_ERROR;
+    return Sv_PutContainer(interp, svObj, SV_ERROR);
 }
 
 /*
