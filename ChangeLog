@@ -1,3 +1,17 @@
+2002-12-06 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadSvCmd.c: the tsv::lock now allows
+	for unsetting the shared array within the script argument.
+
+	* generic/threadPoolCmd.c: fixed one missing mutex unlock
+	in the ThreadRelease.
+
+        * tcl/tpool/tpool.tcl: implemented missing API calls found
+ 	in the C-level implementation.
+
+	* tcl/phttpd/phttpd.tcl: simplified switching to Tcl-level
+	threadpool implementation. 	
+
 2002-12-04 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadPoolcmd.c: rewritten to use
