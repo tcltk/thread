@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.19 2000/11/02 23:59:56 davidg Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.20 2000/11/03 00:04:25 davidg Exp $
  */
 
 #include "thread.h"
@@ -915,7 +915,7 @@ NewThread(clientData)
     /*
      *  Tcl_Init() under 8.3.[1,2] and 8.4a1 doesn't work under threads.
      */
-    if (!((maj == 8) && (min == 3) && (ptch =< 2)) &&
+    if (!((maj == 8) && (min == 3) && (ptch <= 2)) &&
 	    !((maj == 8) && (min == 4) && (ptch == 1) && (type == TCL_ALPHA_RELEASE)) &&
 	    (result != TCL_OK)) {
 	Tcl_ConditionNotify(&ctrlPtr->condWait);
