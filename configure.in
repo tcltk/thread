@@ -3,7 +3,7 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
 #
-# RCS: @(#) $Id: configure.in,v 1.13 2002/10/15 18:45:03 hobbs Exp $
+# RCS: @(#) $Id: configure.in,v 1.14 2002/11/24 17:10:14 vasiljevic Exp $
 
 #--------------------------------------------------------------------
 # This configure.in is based on the Tcl Extension Architecture (TEA)
@@ -25,7 +25,7 @@ AC_SUBST(CONFIGDIR)
 PACKAGE=thread
 
 THREAD_MAJOR=2
-THREAD_MINOR=4
+THREAD_MINOR=5
 THREAD_PATCHLEVEL=
 
 THREAD_VERSION_SUBSET83="${THREAD_MAJOR}.1.${THREAD_MINOR}"
