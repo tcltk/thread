@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.54 2002/11/07 18:28:49 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.55 2002/11/23 12:19:02 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1185,7 +1185,7 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
     }
     if (ThreadExists(threadId) == 0) {
         Tcl_SetResult(interp, "invalid thread id", TCL_STATIC);
-        return TCL_OK;
+        return TCL_ERROR;
     }
     if (objc == 2) {
         Tcl_DStringInit(&ds);
@@ -1643,6 +1643,9 @@ ListRemoveInner(tsdPtr)
 {
     if (tsdPtr == NULL) {
         tsdPtr = TCL_TSD_INIT(&dataKey);
+    }
+    if (tsdPtr->prevPtr == NULL && tsdPtr->nextPtr == NULL) {
+        return;
     }
     if (tsdPtr->prevPtr) {
         tsdPtr->prevPtr->nextPtr = tsdPtr->nextPtr;
@@ -2189,10 +2192,10 @@ ThreadWait()
     }
 
     /*
-     * Splice ourselves from the thread-list early. This prevents
-     * other threads from sending us more work while we're unwinding.
+     * Remove from the list of active threads, so nobody can post 
+     * work to this thread, since it is just about to terminate.
      */
-
+    
     ListRemove(tsdPtr);
 
     /*
@@ -2243,7 +2246,7 @@ ThreadReserve(interp, threadId, operation, wait)
         if (tsdPtr == (ThreadSpecificData*)NULL) {
             Tcl_MutexUnlock(&threadMutex);
             Tcl_SetResult(interp, "invalid thread id", TCL_STATIC);
-            return TCL_OK;
+            return TCL_ERROR;
         }
     }
 
