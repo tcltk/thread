@@ -570,7 +570,7 @@ CONFIGDIR=${srcdir}/config
 PACKAGE=thread
 
 MAJOR_VERSION=2
-MINOR_VERSION=0
+MINOR_VERSION=1
 PATCHLEVEL=
 
 VERSION=${MAJOR_VERSION}.${MINOR_VERSION}${PATCHLEVEL}
@@ -1186,6 +1186,7 @@ else
 	    # check in a few common install locations
 	    if test x"${ac_cv_c_tclconfig}" = x ; then
 		for i in `ls -d ${prefix}/lib 2>/dev/null` \
+			`ls -d /usr/lib 2>/dev/null` \
 			`ls -d /usr/local/lib 2>/dev/null` ; do
 		    if test -f "$i/tclConfig.sh" ; then
 			ac_cv_c_tclconfig=`(cd $i; pwd)`
@@ -1222,7 +1223,7 @@ fi
 
 
     echo $ac_n "checking for existence of $TCL_BIN_DIR/tclConfig.sh""... $ac_c" 1>&6
-echo "configure:1226: checking for existence of $TCL_BIN_DIR/tclConfig.sh" >&5
+echo "configure:1227: checking for existence of $TCL_BIN_DIR/tclConfig.sh" >&5
 
     if test -f "$TCL_BIN_DIR/tclConfig.sh" ; then
         echo "$ac_t""loading" 1>&6
@@ -1267,7 +1268,7 @@ echo "configure:1226: checking for existence of $TCL_BIN_DIR/tclConfig.sh" >&5
 
 
     echo $ac_n "checking for Tcl public headers""... $ac_c" 1>&6
-echo "configure:1271: checking for Tcl public headers" >&5
+echo "configure:1272: checking for Tcl public headers" >&5
 
     # Check whether --with-tclinclude or --without-tclinclude was given.
 if test "${with_tclinclude+set}" = set; then
@@ -1296,7 +1297,9 @@ else
 
 		eval "temp_includedir=${includedir}"
 		for i in \
+			`ls -d ${TCL_PREFIX}/include 2>/dev/null` \
 			`ls -d ${temp_includedir} 2>/dev/null` \
+			`ls -d ${TCL_BIN_DIR}/../include 2>/dev/null` \
 			/usr/local/include /usr/include ; do
 		    if test -f "$i/tcl.h" ; then
 			ac_cv_c_tclh=$i
@@ -1365,7 +1368,7 @@ esac
 
 
     echo $ac_n "checking for building with threads""... $ac_c" 1>&6
-echo "configure:1369: checking for building with threads" >&5
+echo "configure:1372: checking for building with threads" >&5
     # Check whether --enable-threads or --disable-threads was given.
 if test "${enable_threads+set}" = set; then
   enableval="$enable_threads"
@@ -1392,7 +1395,7 @@ EOF
 		;;
 	    *)
 		echo $ac_n "checking for pthread_mutex_init in -lpthread""... $ac_c" 1>&6
-echo "configure:1396: checking for pthread_mutex_init in -lpthread" >&5
+echo "configure:1399: checking for pthread_mutex_init in -lpthread" >&5
 ac_lib_var=`echo pthread'_'pthread_mutex_init | sed 'y%./+-%__p_%'`
 if eval "test \"`echo '$''{'ac_cv_lib_$ac_lib_var'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
@@ -1400,7 +1403,7 @@ else
   ac_save_LIBS="$LIBS"
 LIBS="-lpthread  $LIBS"
 cat > conftest.$ac_ext <<EOF
-#line 1404 "configure"
+#line 1407 "configure"
 #include "confdefs.h"
 /* Override any gcc2 internal prototype to avoid an error.  */
 /* We use char because int might match the return type of a gcc2
@@ -1411,7 +1414,7 @@ int main() {
 pthread_mutex_init()
 ; return 0; }
 EOF
-if { (eval echo configure:1415: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1418: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_lib_$ac_lib_var=yes"
 else
@@ -1457,7 +1460,7 @@ fi
 
 
     echo $ac_n "checking how to build libraries""... $ac_c" 1>&6
-echo "configure:1461: checking how to build libraries" >&5
+echo "configure:1464: checking how to build libraries" >&5
     # Check whether --enable-shared or --disable-shared was given.
 if test "${enable_shared+set}" = set; then
   enableval="$enable_shared"
@@ -1524,7 +1527,7 @@ SHLIB_CFLAGS=${TCL_SHLIB_CFLAGS}
     esac
 
     echo $ac_n "checking for build with symbols""... $ac_c" 1>&6
-echo "configure:1528: checking for build with symbols" >&5
+echo "configure:1531: checking for build with symbols" >&5
     # Check whether --enable-symbols or --disable-symbols was given.
 if test "${enable_symbols+set}" = set; then
   enableval="$enable_symbols"
@@ -1651,7 +1654,7 @@ esac
 
 
     echo $ac_n "checking for tclsh""... $ac_c" 1>&6
-echo "configure:1655: checking for tclsh" >&5
+echo "configure:1658: checking for tclsh" >&5
 
     if eval "test \"`echo '$''{'ac_cv_path_tclsh'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6

@@ -1,3 +1,11 @@
+2000-08-23  Brent Welch <welch@ajubasolutions.com>
+
+	* configure.in: Changed to version 2.1
+	* generic/threadCmds.c: Made the code that uses new Tcl 8.4 APIs
+	conditional using #ifdef.  Tested with 8.3.2
+	* Applied thread-2-1 tag for use with tclhttpd bundled release.
+
+	* doc/thread.tmml(new): Initial TMML document.
 2000-08-21  David Gravereaux <davygrvy@ajubasolutions.com>
 
 	* win/vc/makefile.vc:
