@@ -2,33 +2,38 @@
 # makefile.vc --
 #
 # Microsoft Visual C++ descriptions file for their program
-# maintenance utility -> nmake.exe
+# maintenance utility -> nmake.exe that builds the Tcl thread
+# extension.  See README.txt for commandline options and instructions.
 #
-# RCS: @(#) $Id: makefile.vc,v 1.11 2000/08/20 16:43:02 davidg Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.12 2000/08/20 18:48:15 davidg Exp $
 ######################################################################
 
 
 ######################################################################
 # 2 bug fixes needed for VC++ 6.0's nmake tool.
 
-# reset the version *string* back to the integer it's supposed to be.
+# Reset the version *string* back to the integer it's supposed to be.
 # more entries will have to be made here for all subsiquent releases
-# until it's fixed.
+# until they fix it.
 #
 _NMAKE_VER  = $(_NMAKE_VER:6.00.8168.0=600)
 
 !if $(_NMAKE_VER) >= 600
-# non existent directories as targets are considered UP-TO-DATE!
+# non existent directories as dependents are either considered always
+# UP-TO-DATE or just plain don't work for calling their target command
 #
 HAVE_BAD_NODIR_TS   = 1
 !endif
 ######################################################################
 
+
 !include "config.vc"
+
 
 ######################################################################
 # Commandline checks and over-rides
 ######################################################################
+
 
 # Set NODEBUG to 0 to compile with symbols.
 #
@@ -37,7 +42,7 @@ NODEBUG		= 1
 !endif
 
 # Set STATIC_BUILD to 1 to make a static library rather
-# than a Dll.
+# than a dll.
 #
 !ifndef STATIC_BUILD
 STATIC_BUILD	= 0
@@ -66,34 +71,42 @@ NOMSVCRT	= 0
 !error "The static runtime in a loadable (dll) extension is a useless configuration that will cause abnormal and unnecessary code bloat."
 !endif
 
+
 ######################################################################
 # Macro setups
 ######################################################################
+
 
 # remember to change thread.h as well when this changes
 #
 VER	= 20
 
 !if $(NODEBUG)
-TMPDIRNAME = Release
+TMPDIRNAMEPREFIX = Release
 DBGX =
 !else
-TMPDIRNAME = Debug
+TMPDIRNAMEPREFIX = Debug
 DBGX = d
 !endif
 
+TMPDIRNAME	=
+
 !if $(STATIC_BUILD)
 !if $(NOMSVCRT) == 0
-TMPDIRNAME = $(TMPDIRNAME)_StaticX
+TMPDIRNAME = $(TMPDIRNAMEPREFIX)_StaticX
 STCX	= x
 !else
-TMPDIRNAME = $(TMPDIRNAME)_Static
+TMPDIRNAME = $(TMPDIRNAMEPREFIX)_Static
 STCX	= s
 !endif
 OUTEXT	= lib
 !else
 STCX	=
 OUTEXT	= dll
+!endif
+
+!if "$(TMPDIRNAME)" == ""
+TMPDIRNAME	= $(TMPDIRNAMEPREFIX)
 !endif
 
 SOURCEROOT	= ..\..
@@ -109,6 +122,18 @@ OUTDIR		= $(WINDIR)\$(TMPDIRNAME)
 THREADLIB	= $(OUTDIR)\thread$(VER)$(STCX)$(DBGX).$(OUTEXT)
 THREADLIBBASE	= $(OUTDIR)\thread$(VER)$(STCX)$(DBGX)
 
+# Is TCLROOT pointing to the sources or the install ?
+#
+!if $(ISTCLINSTALL)
+TCLSTUBSLIB	= "$(TCLROOT)\lib\tclstub84.lib"
+TCLLIB		= "$(TCLROOT)\lib\tcl84.lib"
+TCLSH_PROG	= "$(TCLROOT)\bin\tclsh84.exe"
+!else
+TCLSTUBSLIB	= "$(TCLROOT)\win\$(TMPDIRNAMEPREFIX)\tclstub84$(DBGX).lib"
+TCLLIB		= "$(TCLROOT)\win\$(TMPDIRNAMEPREFIX)\tcl84$(DBGX).lib"
+TCLSH_PROG	= "$(TCLROOT)\win\$(TMPDIRNAMEPREFIX)\tclsh84.exe"
+!endif
+
 THREADOBJS	= \
 	$(TMPDIR)\threadCmd.obj \
 	$(TMPDIR)\threadSpCmd.obj \
@@ -117,9 +142,11 @@ THREADOBJS	= \
 	$(TMPDIR)\resource.obj
 !endif
 
+
 ######################################################################
 # Compile flags
 ######################################################################
+
 
 !if $(NODEBUG)
 cdebug = -O2 -Gs -GD
@@ -139,12 +166,22 @@ ctclstubs   = -DUSE_TCL_STUBS
 ctclstubs   =
 !endif
 
+# Is TCLROOT pointing to the sources or the install?
+#
+!if $(ISTCLINSTALL)
+TCLINCLUDE	= -I"$(TCLROOT)\include"
+!else
+TCLINCLUDE	= -I"$(TCLROOT)\generic"
+!endif
+
 cflags = -nologo -c -W3 -YX $(cdebug) $(crt) -Fp$(TMPDIR)\ \
-          -Fo$(TMPDIR)\ -I"$(TCLROOT)\generic"
+	-Fo$(TMPDIR)\ $(TCLINCLUDE)
+
 
 ######################################################################
 # Link flags
 ######################################################################
+
 
 !if $(NODEBUG)
 ldebug = -opt:ref -release
@@ -171,12 +208,16 @@ lflags = $(lcommon) -machine:$(MACHINE) -subsystem:windows -dll -link50compat $(
 #
 ltclstubs	    = -nodefaultlib:msvcrt.lib $(TCLSTUBSLIB)
 !else
-ltclstubs	    =
+# Fall back to linking with the import library
+#
+ltclstubs	    = $(TCLLIB)
 !endif
+
 
 ######################################################################
 # Project specific targets
 ######################################################################
+
 
 all: setup $(THREADLIB)
 
@@ -195,8 +236,6 @@ regsub -all {\\} {$(TESTDIR)} {/} testdir
 source [file join $$testdir all.tcl]
 <<nokeep
 
-
-
 !if $(STATIC_BUILD)
 $(THREADLIB) : $(THREADOBJS)
 	@echo Creating Static Library...
@@ -212,9 +251,11 @@ $(THREADOBJS)
 	-del $(THREADLIBBASE).exp $(THREADLIBBASE).lib
 !endif
 
+
 ######################################################################
 # Inference rules.  Use batch-mode when supported.
 ######################################################################
+
 
 !if $(_NMAKE_VER) < 162
 {$(GENERICDIR)}.c{$(TMPDIR)}.obj :
@@ -231,6 +272,7 @@ $<
 # Special case targets
 ######################################################################
 
+
 $(TMPDIR)\thread.res : $(WINDIR)\thread.rc
 	@echo Compiling resources...
 	$(rc32) -fo"$@" -i "$(GENERICDIR)" -i "$(TCLROOT)\generic" -r \
@@ -239,18 +281,22 @@ $(TMPDIR)\thread.res : $(WINDIR)\thread.rc
 $(TMPDIR)\resource.obj : $(TMPDIR)\thread.res
 	$(cvtres32) -nologo -machine:$(MACHINE) -out:$@ $(TMPDIR)\thread.res
 
+
 ######################################################################
 # Dedependency rules
 ######################################################################
+
 
 $(WINDIR)\thread.rc : $(GENERICDIR)\thread.h
 $(GENERICDIR)\threadCmd.c : $(GENERICDIR)\thread.h
 $(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\thread.h
 $(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\thread.h
 
+
 ######################################################################
 # Cleanup
 ######################################################################
+
 
 clean:
 	@echo Cleaning non-output build files...
