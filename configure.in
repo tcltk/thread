@@ -3,7 +3,7 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
 #
-# RCS: @(#) $Id: configure.in,v 1.17 2003/04/29 08:47:45 vasiljevic Exp $
+# RCS: @(#) $Id: configure.in,v 1.18 2003/09/03 11:30:05 vasiljevic Exp $
 
 #--------------------------------------------------------------------
 # This configure.in is based on the Tcl Extension Architecture (TEA)
@@ -29,7 +29,7 @@ AC_SUBST(CONFIGDIR)
 PACKAGE=thread
 
 THREAD_MAJOR=2
-THREAD_MINOR=5
+THREAD_MINOR=6
 THREAD_PATCHLEVEL=
 
 THREAD_VERSION_SUBSET83="${THREAD_MAJOR}.1.${THREAD_MINOR}"
@@ -183,8 +183,15 @@ AC_SUBST(AOL_DIR)
 AC_SUBST(AOL_INCLUDES)
 
 #--------------------------------------------------------------------
+# Check if building with optional Gdbm package
+#--------------------------------------------------------------------
+
+TCLTHREAD_ENABLE_GDBM
+
+#--------------------------------------------------------------------
 # Finally, substitute all of the various values into the Makefile.
 #--------------------------------------------------------------------
 
 AC_OUTPUT([Makefile pkgIndex.tcl])
 
+# EOF
