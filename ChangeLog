@@ -1,3 +1,12 @@
+2004-10-19  Andreas Kupries <andreask@activestate.com>
+
+	* generic/threadSvCmd.c: Added a prototype for
+	  SvObjDispatchObjCmd. Prevented compilation of debug variant on
+	  Windows due to warning as error.
+
+	* tests/thread.test: Added more tests transfering channels between
+	  threads for in-core drivers.
+
 2004-10-18  Andreas Kupries <andreask@activestate.com>
 
 	* generic/threadCmd.c (ThreadErrorProc): Added code to explicitly

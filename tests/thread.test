@@ -11,7 +11,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: thread.test,v 1.15 2004/10/18 23:32:29 andreas_kupries Exp $
+# RCS: @(#) $Id: thread.test,v 1.16 2004/10/19 23:37:19 andreas_kupries Exp $
 
 package require tcltest; namespace import -force ::tcltest::*
 
@@ -27,8 +27,7 @@ if {$::tcl_version == 8.3} {
 set ::tcltest::testConstraints(only83)   [expr {($::tcl_version == 8.3)}]
 set ::tcltest::testConstraints(notFor83) [expr {($::tcl_version != 8.3)}]
 
-::tcltest::makeFile dummyForTransfer dummyForTransfer
-set dummy [file join $::tcltest::temporaryDirectory dummyForTransfer]
+set dummy [::tcltest::makeFile dummyForTransfer dummyForTransfer]
 
 proc ThreadReap {} {
     while {[llength [thread::names]] > 1} {
@@ -507,7 +506,7 @@ test thread-17.3 {thread::transfer - clearing of fileevents} {notFor83} {
     set gotEvents
 } {1}
 
-test thread-17.4 {thread::transfer - readable?} {notFor83} {
+test thread-17.4 {thread::transfer - file - readable?} {notFor83} {
     ThreadReap
     set tid [thread::create]
     set file [open $dummy r]
@@ -519,7 +518,7 @@ test thread-17.4 {thread::transfer - readable?} {notFor83} {
     set res
 } [string length [::tcltest::viewFile dummyForTransfer]]
 
-test thread-17.5 {thread::transfer - closeable?} {notFor83} {
+test thread-17.5 {thread::transfer - file - closeable?} {notFor83} {
     set tid [thread::create]
     set file [open $dummy r]
     set res [regexp $file [file channels]]
@@ -528,6 +527,146 @@ test thread-17.5 {thread::transfer - closeable?} {notFor83} {
     ThreadReap
     set res
 } {}
+
+test thread-17.6 {thread::transfer - socket - readable?} {notFor83} {
+    set tid [thread::create]
+    set lsock ""
+    proc accept {sock host port} {global lsock ; set lsock $sock}
+    set listener [socket -server accept 0]
+    set port [lindex [fconfigure $listener -sockname] 2]
+    set socket [socket localhost $port]
+    update ;# To run accept.
+
+    thread::transfer $tid $socket
+
+    puts  $lsock hello
+    flush $lsock
+
+    set res [thread::send $tid [list gets $socket]]
+    thread::send $tid [list close $socket]
+
+    ThreadReap
+    close $listener
+    close $lsock
+
+    set res
+} {hello}
+
+test thread-17.7 {thread::transfer - socket - closeable?} {notFor83} {
+    set tid [thread::create]
+    set lsock ""
+    proc accept {sock host port} {global lsock ; set lsock $sock}
+    set listener [socket -server accept 0]
+    set port [lindex [fconfigure $listener -sockname] 2]
+    set socket [socket localhost $port]
+    update ;# To run accept.
+
+    thread::transfer $tid $socket
+
+    set     res [thread::send $tid "regexp {$socket} \[file channels\]"]
+    lappend res [thread::send $tid [list close $socket]]
+    lappend res [thread::send $tid "regexp {$socket} \[file channels\]"]
+
+    ThreadReap
+    close $listener
+    close $lsock
+
+    set res
+} {1 {} 0}
+
+# We cannot test console channels, nor serials. Because we do not
+# really know if they are available, and under what names. But a pipe
+# channel, which uses the same type of code is something we can
+# do. Lucky us.
+
+test thread-17.8 {thread::transfer - pipe - readable?} {notFor83} {
+    set tid [thread::create]
+
+    set s [makeFile {
+	puts hello
+	flush stdout
+	exit
+    } pscript]
+    set pipe [open "|[info nameofexecutable] $s" r]
+
+    thread::transfer $tid $pipe
+
+    thread::send $tid [list set pipe $pipe]
+
+    set res [thread::send $tid {gets $pipe}]
+    thread::send  $tid {catch {close $pipe}}
+
+    ThreadReap
+    removeFile pscript
+
+    set res
+} {hello}
+
+# The difference between 9 and 10 is the location of the close
+# operation. For 9 it is the original thread, for 10 the other
+# thread. 10 currently fails. It seems to be some signal stuff.
+
+test thread-17.9 {thread::transfer - pipe - closable?} {notFor83} {
+    set tid [thread::create]
+
+    set s [makeFile {
+	fileevent stdin readable {if {[eof stdin]} {exit 0} ; gets stdin}
+	vwait forever
+	exit 0
+    } pscript]
+    set pipe [open "|[info nameofexecutable] $s" r+]
+    thread::send $tid [list set chan $pipe]
+
+    thread::transfer $tid $pipe
+    thread::send     $tid {thread::detach $chan}
+    thread::attach $pipe
+
+    set     res [regexp $pipe [file channels]]
+    lappend res [close  $pipe]
+    lappend res [regexp $pipe [file channels]]
+
+    ThreadReap
+    removeFile pscript
+
+    set res
+} {1 {} 0}
+
+test thread-17.10 {thread::transfer - pipe - closable?} {notFor83} {
+
+    set tid [thread::create]
+
+    set s [makeFile {
+	fileevent stdin readable {if {[eof stdin]} {exit 0} ; gets stdin}
+	vwait forever
+	exit 0
+    } pscript]
+    set pipe [open "|[info nameofexecutable] $s" r+]
+    thread::send $tid [list set chan $pipe]
+
+    thread::transfer $tid $pipe
+
+    set     res [thread::send $tid {regexp $chan [file channels]}]
+
+    if {[catch {
+	# This can fail on Linux, because there a thread cannot 'wait' on
+	# the children of a different thread (in the same process). This
+	# is for Linux < 2.4. For 2.4 it should be possible, but the
+	# language is cautionary, so it may still fail.
+
+	lappend res [thread::send $tid {close  $chan}]
+    }]} {
+	# Fake a result
+	lappend res {}
+    }
+
+    lappend res [thread::send $tid {regexp $chan [file channels]}]
+
+    ThreadReap
+    removeFile pscript
+
+    set res
+} {1 {} 0}
+
 
 test thread-18.0 {thread::detach - args} {notFor83} {
     set x [catch {thread::detach} msg]

@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.36 2004/07/21 20:59:54 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.37 2004/10/19 23:37:19 andreas_kupries Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -121,6 +121,8 @@ static void SvFinalize(ClientData);
 
 static PsStore* GetPsStore(char *handle);
 
+static int SvObjDispatchObjCmd _ANSI_ARGS_ ((ClientData arg,
+            Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
 
 /*
  *-----------------------------------------------------------------------------
