@@ -5,7 +5,7 @@
 # maintenance utility -> nmake.exe that builds the Tcl thread
 # extension.  See README.txt for commandline options and instructions.
 #
-# RCS: @(#) $Id: makefile.vc,v 1.19 2001/05/27 07:41:19 davygrvy Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.20 2001/08/04 02:06:51 hobbs Exp $
 ######################################################################
 
 
@@ -173,7 +173,7 @@ cdll	= -GD
 !endif
 
 cflags = -nologo -c -W3 -YX -GB $(cdebug) $(crt) $(cdll) \
-	-DTHREAD_VERSION=\"$(THREAD_VERSION)\" \
+	-DTHREAD_VERSION=\"$(THREAD_VERSION)\" -DBUILD_thread \
 	-DTHREAD_VERSION_SUBSET83=\"$(THREAD_VERSION_SUBSET83)\" \
 	-Fp$(TMP_DIR)\ -Fo$(TMP_DIR)\ $(TCLINCLUDE)
 
