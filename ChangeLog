@@ -1,3 +1,8 @@
+2002-11-25 Zoran Vasiljevic <zoran@archiware.com>
+
+	* tcl/phttpd/phttpd.tcl: added raw file; no thread support
+	* tcl/cmdsrv/cmdsrv.tcl: first working version
+
 2002-11-24 Zoran Vasiljevic <zoran@archiware.com>
 
 	* tcl/tpool/tpool.tcl: added threadpool implementation in Tcl
