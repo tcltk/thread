@@ -8,7 +8,8 @@
 
 	To acheive the same behavior of emptying the event loop the way
 	thread::wait used to work, use the following:
-		set T [thread::create {thread::unwind; update}]
+		set T [thread::create {thread::wait; update}]
+		thread::send -async $T thread::unwind
 
 2001-04-26  David Gravereaux <davygrvy@pobox.com>
 
