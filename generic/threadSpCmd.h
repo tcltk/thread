@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSpCmd.h,v 1.1 2003/12/22 21:26:11 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSpCmd.h,v 1.2 2004/07/21 20:58:36 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -17,36 +17,93 @@
 #include <tcl.h>
 
 /*
+ * The following structure defines a locking bucket. A locking
+ * bucket is associated with a mutex and protects access to 
+ * objects stored in bucket hash table.
+ */
+
+typedef struct SpBucket {
+    Tcl_Mutex lock;            /* For locking the bucket */
+    Tcl_ThreadId lockt;        /* Thread holding the lock */
+    Tcl_HashTable handles;     /* Hash table of given-out handles in bucket */
+    struct Container *freeCt;  /* List of free Tcl-object containers */
+} SpBucket;
+
+#define NUMSPBUCKETS 32
+
+/*
+ * All types of mutexes share this common part.
+ */
+
+typedef struct Sp_AnyMutex_ {
+    int lockcount;              /* If !=0 mutex is in use */
+    int numlocks;               /* Number of time the mutex got locked */
+    Tcl_Mutex lock;             /* Regular mutex */
+    Tcl_ThreadId owner;         /* Current lock owner thread (-1 = any) */
+} Sp_AnyMutex;
+
+/*
+ * Implementation of the exclusive mutex.
+ */
+
+typedef struct Sp_ExclusiveMutex_ {
+    int lockcount;              /* Flag: 1-locked, 0-not locked */
+    int numlocks;               /* Number of time the mutex got locked */
+    Tcl_Mutex lock;             /* Regular mutex */
+    Tcl_ThreadId owner;         /* Current lock owner thread */
+} Sp_ExclusiveMutex_;
+
+typedef Sp_ExclusiveMutex_* Sp_ExclusiveMutex;
+
+/*
  * Implementation of the recursive mutex.
  */
 
 typedef struct Sp_RecursiveMutex_ {
+    int lockcount;              /* # of times this mutex is locked */
+    int numlocks;               /* Number of time the mutex got locked */
     Tcl_Mutex lock;             /* Regular mutex */
-    Tcl_Condition cond;         /* Wait here to be allowed to lock */
-    Tcl_ThreadId owner;         /* Current lock owner */
-    unsigned int lrcnt;         /* Lock ref count */
+    Tcl_ThreadId owner;         /* Current lock owner thread */
+
+    Tcl_Condition cond;         /* Wait to be allowed to lock the mutex */
 } Sp_RecursiveMutex_;
 
 typedef Sp_RecursiveMutex_* Sp_RecursiveMutex;
 
 /*
- * Implementation of the readwriter mutex.
+ * Implementation of the read/writer mutex.
  */
 
 typedef struct Sp_ReadWriteMutex_ {
+    int lockcount;              /* >0: # of readers, -1: sole writer */
+    int numlocks;               /* Number of time the mutex got locked */
     Tcl_Mutex lock;             /* Regular mutex */
-    Tcl_Condition rcond;        /* Reader lockers wait here */
-    Tcl_Condition wcond;        /* Writer lockers wait here */
+    Tcl_ThreadId owner;         /* Current lock owner thread */
+
     unsigned int numrd;	        /* # of readers waiting for lock */
     unsigned int numwr;         /* # of writers waiting for lock */
-    int lrcnt;                  /* Lock ref count, > 0: # of shared
-                                 * readers, -1: exclusive writer */
+    Tcl_Condition rcond;        /* Reader lockers wait here */
+    Tcl_Condition wcond;        /* Writer lockers wait here */
 } Sp_ReadWriteMutex_;
 
 typedef Sp_ReadWriteMutex_* Sp_ReadWriteMutex;
 
 /*
- * API for recursive mutex.
+ * API for any mutex.
+ */
+
+void Sp_MutexGetLock(Sp_AnyMutex *mutexPtr, Tcl_Mutex **lockPtr);
+
+/*
+ * API for exclusive mutexes.
+ */
+
+void Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *mutexPtr);
+void Sp_ExclusiveMutexUnlock(Sp_ExclusiveMutex *mutexPtr);
+void Sp_ExclusiveMutexFinalize(Sp_ExclusiveMutex *mutexPtr);
+
+/*
+ * API for recursive mutexes.
  */
 
 void Sp_RecursiveMutexLock(Sp_RecursiveMutex *mutexPtr);
@@ -54,7 +111,7 @@ void Sp_RecursiveMutexUnlock(Sp_RecursiveMutex *mutexPtr);
 void Sp_RecursiveMutexFinalize(Sp_RecursiveMutex *mutexPtr);
 
 /*
- * API for reader/writer mutex.
+ * API for reader/writer mutexes.
  */
 
 void Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *mutexPtr);
