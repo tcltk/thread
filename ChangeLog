@@ -1,3 +1,7 @@
+2002-05-25  Zoran Vasiljevic <zoran@archiware.com>  
+	* generic/threadCmd.c: added some typecasts to satisfy Windows 
+	* generic/threadSvCmd.h: added some typecasts to satisfy Windows 
+
 2002-05-04  Zoran Vasiljevic <zoran@archiware.com>  
 	* generic/threadSvCmd.c: removed errant reference to (still not)
 	supported shared dictionary and shared keylist datatypes.
