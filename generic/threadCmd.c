@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.88 2004/12/18 13:26:03 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.89 2005/01/03 09:00:06 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -174,7 +174,6 @@ typedef struct ThreadClbkData {
 
 /*
  * Event used to transfer a channel between threads.
- * This requires Tcl core support added in Tcl 8.4.
  */
 typedef struct TransferEvent {
     Tcl_Event event;                      /* Must be first */
@@ -205,6 +204,13 @@ static TransferResult *transferList;
 static Tcl_ThreadId errorThreadId; /* Id of thread to post error message */
 static char *errorProcString;      /* Tcl script to run when reporting error */
 
+/*
+ * Definition of flags for ThreadSend. 
+ */
+
+#define THREAD_SEND_WAIT 1<<1
+#define THREAD_SEND_HEAD 1<<2
+
 #ifdef BUILD_thread
 # undef  TCL_STORAGE_CLASS
 # define TCL_STORAGE_CLASS DLLEXPORT
@@ -233,7 +239,7 @@ ThreadSend        _ANSI_ARGS_((Tcl_Interp *interp,
                                Tcl_ThreadId id, 
                                ThreadSendData *sendPtr,
                                ThreadClbkData *clbkPtr,
-                               int wait));
+                               int flags));
 static void 
 ThreadSetResult   _ANSI_ARGS_((Tcl_Interp *interp,
                                int code,
@@ -334,8 +340,6 @@ static Tcl_ObjCmdProc ThreadWaitObjCmd;
 static Tcl_ObjCmdProc ThreadExistsObjCmd;
 static Tcl_ObjCmdProc ThreadConfigureObjCmd;
 static Tcl_ObjCmdProc ThreadErrorProcObjCmd;
-
-/* 8.4 only */
 static Tcl_ObjCmdProc ThreadJoinObjCmd;
 static Tcl_ObjCmdProc ThreadTransferObjCmd;
 static Tcl_ObjCmdProc ThreadDetachObjCmd;
@@ -832,7 +836,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
-    int ret, len, vlen = 0, ii = 0, wait = 1;
+    int ret, len, vlen = 0, ii = 0, flags = 0;
     Tcl_ThreadId thrId;
     char *script, *arg, *var = NULL;
 
@@ -842,19 +846,24 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     Init(interp);
 
     /*
-     * Syntax: thread::send ?-async? threadId script ?varName?
+     * Syntax: thread::send ?-async? ?-head? threadId script ?varName?
      */
 
-    if (objc < 3 || objc > 5) {
+    if (objc < 3 || objc > 6) {
         goto usage;
     }
 
-    ii = 1;
-    arg = Tcl_GetStringFromObj(objv[ii], NULL);
+    flags = THREAD_SEND_WAIT;
 
-    if (OPT_CMP(arg, "-async")) {
-        wait = 0;
-        ii++;
+    for (ii = 1; ii < objc; ii++) {
+        arg = Tcl_GetStringFromObj(objv[ii], NULL);
+        if (OPT_CMP(arg, "-async")) {
+            flags &= ~THREAD_SEND_WAIT;
+        } else if (OPT_CMP(arg, "-head")) {
+            flags |= THREAD_SEND_HEAD;
+        } else {
+            break;
+        }
     }
     if (ii >= objc) {
         goto usage;
@@ -870,7 +879,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     if (++ii < objc) {
         var = Tcl_GetStringFromObj(objv[ii], &vlen);
     }
-    if (var && !wait) {
+    if (var && (flags & THREAD_SEND_WAIT) == 0) {
         if (thrId == Tcl_GetCurrentThread()) {
             /*
              * FIXME: Do something for callbacks to self
@@ -903,9 +912,9 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     sendPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
     sendPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+len), script);
 
-    ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, wait);
+    ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, flags);
 
-    if (var && wait) {
+    if (var && (flags & THREAD_SEND_WAIT)) {
         
         /*
          * Leave job's result in passed variable
@@ -923,7 +932,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     return ret;
 
 usage:
-    Tcl_WrongNumArgs(interp, 1, objv, "?-async? id script ?varName?");
+    Tcl_WrongNumArgs(interp,1,objv,"?-async? ?-head? id script ?varName?");
     return TCL_ERROR;
 }
 
@@ -2385,12 +2394,12 @@ ThreadAttach(interp, chanName)
  */
 
 static int
-ThreadSend(interp, thrId, send, clbk, wait)
+ThreadSend(interp, thrId, send, clbk, flags)
     Tcl_Interp     *interp;      /* The current interpreter. */
-    Tcl_ThreadId    thrId;        /* Thread Id of other thread. */
+    Tcl_ThreadId    thrId;       /* Thread Id of other thread. */
     ThreadSendData *send;        /* Pointer to structure with work to do */
     ThreadClbkData *clbk;        /* Opt. callback structure (may be NULL) */
-    int             wait;        /* If 1, we block for the result. */
+    int             flags;       /* Wait or queue to tail */
 {
     ThreadSpecificData *tsdPtr = NULL; /* ... of the target thread */
 
@@ -2431,7 +2440,7 @@ ThreadSend(interp, thrId, send, clbk, wait)
 
     if (thrId == Tcl_GetCurrentThread()) {
         Tcl_MutexUnlock(&threadMutex);
-        if (wait) {
+        if ((flags & THREAD_SEND_WAIT)) {
             return (*send->execProc)(interp, (ClientData)send);
         } else {
             send->interp = interp;
@@ -2466,7 +2475,7 @@ ThreadSend(interp, thrId, send, clbk, wait)
     if (eventPtr->clbkData) {
         Tcl_Preserve((ClientData)eventPtr->clbkData->interp);
     }
-    if (!wait) {
+    if ((flags & THREAD_SEND_WAIT) == 0) {
         resultPtr              = NULL;
         eventPtr->resultPtr    = NULL;
     } else {
@@ -2489,10 +2498,14 @@ ThreadSend(interp, thrId, send, clbk, wait)
      */
 
     eventPtr->event.proc = ThreadEventProc;
-    Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_TAIL);
+    if ((flags & THREAD_SEND_HEAD)) {
+        Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_HEAD);
+    } else {
+        Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_TAIL);
+    }
     Tcl_ThreadAlert(thrId);
 
-    if (!wait) {
+    if ((flags & THREAD_SEND_WAIT) == 0) {
         /*
          * Might potentially spend some time here, until the
          * worker thread clean's up it's queue a little bit.
@@ -3309,7 +3322,6 @@ ThreadExitProc(clientData)
     Tcl_ThreadId self = Tcl_GetCurrentThread();
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    /* Only used in 8.4+ interps */
     TransferResult *tResultPtr, *tNextPtr;
 
     if (threadEvalScript && threadEvalScript != threadEmptyResult) {

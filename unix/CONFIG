@@ -33,7 +33,8 @@
 # AOLserver 4.X; Uses public Tcl library.
 # ----------------------------------------------------
 # aoldir="/usr/local/aolserver"
-# ../configure --enable-threads --with-aolserver=$aoldir
+# ../configure --enable-threads \
+#   --with-aolserver=$aoldir \
 #   --prefix=$aoldir --exec-prefix=$aoldir
 #
 # AOLserver uses its own package loading mechanism.

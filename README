@@ -2,8 +2,9 @@
 WHAT IS THIS ?
 ==============
 
-This is the source distribution of the Tcl Thread extension. You can use
-this extension to gain script-level access to Tcl threading capabilities.
+This is the 2.6.1 source distribution of the Tcl Thread extension. 
+You can use this extension to gain script-level access to Tcl 
+threading capabilities.
 The extension can be used with Tcl cores starting from Tcl8.4 and later.
 Also, this extension supports, i.e. can be used as a loadable module of,
 AOLserver 4.x series of the highly-scalable web server from America Online. 
@@ -24,7 +25,8 @@ HOW TO COMPILE ?
 
 Only Unix-like and Windows platforms are supported at the moment. Depending
 on your platform (Unix-like or Windows) go to the appropriate directory 
-(unix or win) and start with the README file.
+(unix or win) and start with the README file. Macintosh platform is supported
+with the Mac OS X only. The Mac OS 9 (and previous) are not supported.
 
 
 WHERE IS THE DOCUMENTATION ?

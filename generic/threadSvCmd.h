@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.13 2004/07/21 21:00:13 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.14 2005/01/03 09:00:06 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -19,14 +19,6 @@
 #include <string.h>
 
 #include "threadSpCmd.h" /* For recursive locks */
-
-/*
- * Starting from 8.4 core, Tcl API is CONST'ified
- */
-
-#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION <= 3) 
-# define CONST84
-#endif
 
 /*
  * Uncomment following line to get command-line

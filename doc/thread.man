@@ -19,7 +19,6 @@ and sending scripts to threads for evaluation.
 
 
 
-
 [list_begin definitions]
 
 [call [cmd thread::create] [opt -joinable] [opt -preserved] [opt script]]
@@ -214,7 +213,7 @@ false (0) otherwise. This applies only for threads that have
 been created via [cmd thread::create] command.
 
 
-[call [cmd thread::send] [opt -async] [arg id] [arg script] [opt varname]]
+[call [cmd thread::send] [opt -async] [opt -head] [arg id] [arg script] [opt varname]]
 
 This command passes a [arg script] to another thread and, optionally,
 waits for the result. If the [option -async] flag is specified, the 
@@ -256,6 +255,9 @@ Many threads can simultaneously send scripts to the target thread for
 execution. All of them are entered into the event queue of the target 
 thread and executed on the FIFO basis, intermingled with optional other
 events pending in the event queue of the target thread.
+Using the optional [opt -head] switch, scripts posted to the thread's
+event queue can be placed on the head, instead on the tail of the queue,
+thus being executed in the LIFO fashion.
 
 
 [call [cmd thread::broadcast] [arg id] [arg script]]

@@ -63,7 +63,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: thread.n,v 1.19 2004/12/19 11:45:18 vasiljevic Exp $
+'\" RCS: @(#) $Id: thread.n,v 1.20 2005/01/03 09:00:06 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -268,7 +268,7 @@ package require \fBThread  ?2.6?\fR
 .sp
 \fBthread::exists\fR \fIid\fR
 .sp
-\fBthread::send\fR ?-async? \fIid\fR \fIscript\fR ?varname?
+\fBthread::send\fR ?-async? ?-head? \fIid\fR \fIscript\fR ?varname?
 .sp
 \fBthread::broadcast\fR \fIid\fR \fIscript\fR
 .sp
@@ -490,7 +490,7 @@ Returns true (1) if thread given by the \fIid\fR parameter exists,
 false (0) otherwise. This applies only for threads that have
 been created via \fBthread::create\fR command.
 .TP
-\fBthread::send\fR ?-async? \fIid\fR \fIscript\fR ?varname?
+\fBthread::send\fR ?-async? ?-head? \fIid\fR \fIscript\fR ?varname?
 This command passes a \fIscript\fR to another thread and, optionally,
 waits for the result. If the \fB-async\fR flag is specified, the
 command does not wait for the result and it returns empty string.
@@ -525,6 +525,9 @@ Many threads can simultaneously send scripts to the target thread for
 execution. All of them are entered into the event queue of the target
 thread and executed on the FIFO basis, intermingled with optional other
 events pending in the event queue of the target thread.
+Using the optional ?-head? switch, scripts posted to the thread's
+event queue can be placed on the head, instead on the tail of the queue,
+thus being executed in the LIFO fashion.
 .TP
 \fBthread::broadcast\fR \fIid\fR \fIscript\fR
 This command passes a \fIscript\fR to all threads created by the

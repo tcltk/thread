@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: thread.html,v 1.16 2004/12/19 11:45:17 vasiljevic Exp $ thread.n
+<! -- CVS: $Id: thread.html,v 1.17 2005/01/03 09:00:05 vasiljevic Exp $ thread.n
    -->
 
 <body>
@@ -39,7 +39,7 @@ package require <b>Thread ?2.6?</b><br>
 <tr valign=top ><td ><a href="#7"><b class='cmd'>thread::exit</b> </a></td></tr>
 <tr valign=top ><td ><a href="#8"><b class='cmd'>thread::names</b> </a></td></tr>
 <tr valign=top ><td ><a href="#9"><b class='cmd'>thread::exists</b> <i class='arg'>id</i></a></td></tr>
-<tr valign=top ><td ><a href="#10"><b class='cmd'>thread::send</b> ?-async? <i class='arg'>id</i> <i class='arg'>script</i> ?varname?</a></td></tr>
+<tr valign=top ><td ><a href="#10"><b class='cmd'>thread::send</b> ?-async? ?-head? <i class='arg'>id</i> <i class='arg'>script</i> ?varname?</a></td></tr>
 <tr valign=top ><td ><a href="#11"><b class='cmd'>thread::broadcast</b> <i class='arg'>id</i> <i class='arg'>script</i></a></td></tr>
 <tr valign=top ><td ><a href="#12"><b class='cmd'>thread::wait</b> </a></td></tr>
 <tr valign=top ><td ><a href="#13"><b class='cmd'>thread::eval</b> ?-lock mutex? <i class='arg'>arg</i> ?arg ...?</a></td></tr>
@@ -78,7 +78,6 @@ synchronization primitives, like mutexes and condition variables.
 <p>
 This section describes commands for creating and destroying threads
 and sending scripts to threads for evaluation.
-
 
 
 
@@ -294,7 +293,7 @@ been created via <b class='cmd'>thread::create</b> command.
 
 
 <br><br>
-<dt><a name="10"><b class='cmd'>thread::send</b> ?-async? <i class='arg'>id</i> <i class='arg'>script</i> ?varname?</a><dd>
+<dt><a name="10"><b class='cmd'>thread::send</b> ?-async? ?-head? <i class='arg'>id</i> <i class='arg'>script</i> ?varname?</a><dd>
 
 
 This command passes a <i class='arg'>script</i> to another thread and, optionally,
@@ -337,6 +336,9 @@ Many threads can simultaneously send scripts to the target thread for
 execution. All of them are entered into the event queue of the target 
 thread and executed on the FIFO basis, intermingled with optional other
 events pending in the event queue of the target thread.
+Using the optional ?-head? switch, scripts posted to the thread's
+event queue can be placed on the head, instead on the tail of the queue,
+thus being executed in the LIFO fashion.
 
 
 <br><br>

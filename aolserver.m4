@@ -14,14 +14,13 @@
 #
 #   Defines the following vars:
 #       AOL_DIR Full path to the directory containing AOLserver distro
+#       AOL_INCLUDES
+#       AOL_LIBS
 #
 #   Sets the following vars:
 #       NS_AOLSERVER 
 #
 #   Updates following vars:
-#       CFLAGS
-#       LIBS
-#       SHLIB_LD
 #------------------------------------------------------------------------
 
 AC_DEFUN(NS_PATH_AOLSERVER, [
@@ -44,14 +43,13 @@ AC_DEFUN(NS_PATH_AOLSERVER, [
     else
         AOL_DIR=${ac_cv_c_aolserver}
         AC_MSG_RESULT([found AOLserver in $AOL_DIR])
-        CFLAGS="${CFLAGS} -I${AOL_DIR}/include"
+        AOL_INCLUDES="-I\"${AOL_DIR}/include\""
         if test "`uname -s`" = Darwin ; then
-            aollibs=`ls ${AOL_DIR}/lib/libnsd* 2>/dev/null`
+            aollibs=`ls ${AOL_DIR}/lib/libns* 2>/dev/null`
             if test x"$aollibs" != x ; then
-                LIBS="${LIBS} -L${AOL_DIR}/lib -lnsd -lnsthread"
+                AOL_LIBS="-L\"${AOL_DIR}/lib\" -lnsd -lnsthread"
             fi
         fi
-        AC_SUBST(SHLIB_LD)
         AC_DEFINE(NS_AOLSERVER)
     fi
 ])

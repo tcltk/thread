@@ -32,7 +32,7 @@ Note for AOLserver users
 ------------------------
 
 The extension can be compiled as a loadable module for the AOLserver 
-version 3.5 or higher. In order to do this, use "--with-aolserver"
+version 4.0 or higher. In order to do this, use "--with-aolserver"
 configure option to specify the directory containing the AOLserver
 distribution. The CONFIG script has an example how to invoke configure
 in order to build the extension as AOLserver module.
@@ -49,15 +49,6 @@ at the beginning of the file for the:
 /* #define NSV_COMPAT 1 */
 
 So, uncomment the line, recompile and there you go.
-
-Since AOLserver, the 3.x series, does not support namespaced
-Tcl commands properly, there is a provision at the top of 
-generic/tclThread.h file to change the command namespace
-to the command prefix. Per default, the "thread::" namespace
-is changed to "thread_" prefix and "tpool::" namespace is 
-changed to "tpool_" prefix.
-For AOLserver 4.x, this is not needed since namespace support
-is available.
 
 
 II. Building optional support libraries
