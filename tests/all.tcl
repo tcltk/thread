@@ -7,7 +7,7 @@
 # Copyright (c) 1998-1999 by Scriptics Corporation.
 # All rights reserved.
 # 
-# RCS: @(#) $Id: all.tcl,v 1.3 2002/03/20 01:31:44 hobbs Exp $
+# RCS: @(#) $Id: all.tcl,v 1.4 2004/07/21 21:01:57 vasiljevic Exp $
 
 package require tcltest
 namespace import -force ::tcltest::*
@@ -43,26 +43,27 @@ puts stdout "Tests began at [eval $timeCmd]"
 # Require the accurate version for the tests so we don't pick up
 # older Thread packages by accident
 if {$::tcl_version == 8.3} {
-    package require Thread 2.1.4
+    package require Thread 2.1.6
 } else {
-    package require Thread 2.4
+    package require Thread 2.6
 }
 set ::tcltest::mainThread [thread::id]
 
 puts stdout "Thread [package provide Thread]"
 puts stdout "Mainthread id is $::tcltest::mainThread"
 
-# source each of the specified tests
+# Source each of the specified tests
 foreach file [lsort [::tcltest::getMatchingFiles]] {
     set tail [file tail $file]
     puts stdout $tail
     if {[catch {source $file} msg]} {
-	puts stdout $msg
+        puts stdout $msg
     }
 }
 
-# cleanup
+# Cleanup
 puts stdout "\nTests ended at [eval $timeCmd]"
 ::tcltest::cleanupTests 1
+
 return
 
