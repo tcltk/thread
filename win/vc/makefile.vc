@@ -4,7 +4,7 @@
 # Microsoft Visual C++ descriptions file for their program
 # maintenance utility -> nmake.exe
 #
-# RCS: @(#) $Id: makefile.vc,v 1.8 2000/08/20 07:40:12 davidg Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.9 2000/08/20 08:00:42 davidg Exp $
 ######################################################################
 
 
@@ -70,6 +70,10 @@ NOMSVCRT	= 0
 # Macro setups
 ######################################################################
 
+# remember to change thread.h as well when this changes
+#
+VER	= 20
+
 !if $(NODEBUG)
 TMPDIRNAME = Release
 DBGX =
@@ -103,7 +107,8 @@ TMPDIR		= $(WINDIR)\$(TMPDIRNAME)
 OUTDIR		= $(WINDIR)\$(TMPDIRNAME)
 !endif
 
-THREADLIB	= $(OUTDIR)\thread$(STCX)$(DBGX).$(OUTEXT)
+THREADLIB	= $(OUTDIR)\thread$(VER)$(STCX)$(DBGX).$(OUTEXT)
+THREADLIBPREFIX	= $(OUTDIR)\thread$(VER)$(STCX)$(DBGX).
 
 THREADOBJS	= \
 	$(TMPDIR)\threadCmd.obj \
@@ -204,7 +209,9 @@ $(THREADLIB) : $(THREADOBJS) $(TCLSTUBSLIB)
 !endif
 $(THREADOBJS)
 <<nokeep
-
+!if $(STATIC_BUILD) == 0
+	-del $(THREADLIBPREFIX)exp $(THREADLIBPREFIX)lib
+!endif
 
 ######################################################################
 # Inference rules.  Use batch-mode when supported.
