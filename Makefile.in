@@ -22,7 +22,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: Makefile.in,v 1.9 2002/03/20 01:35:30 hobbs Exp $
+# RCS: @(#) $Id: Makefile.in,v 1.10 2002/03/20 02:08:01 hobbs Exp $
 
 #========================================================================
 # Enumerate the names of the source files included in this package.
@@ -331,7 +331,6 @@ install-lib-binaries: installdirs
 		    echo " $(INSTALL_DATA) $$lib $(DESTDIR)$(pkglibdir)/$$lib"; \
 	            $(INSTALL_DATA) $$lib $(DESTDIR)$(pkglibdir)/$$lib; \
 		fi; \
-	    else \
 	    fi; \
 	  else :; fi; \
 	done
