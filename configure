@@ -972,13 +972,13 @@ CONFIGDIR=${srcdir}/config
 PACKAGE=thread
 
 THREAD_MAJOR=2
-THREAD_MINOR=3
+THREAD_MINOR=4
 THREAD_PATCHLEVEL=
+
+THREAD_VERSION_SUBSET83="2.1.4"
 
 VERSION=${THREAD_MAJOR}.${THREAD_MINOR}${THREAD_PATCHLEVEL}
 NODOT_VERSION=${THREAD_MAJOR}${THREAD_MINOR}
-
-THREAD_VERSION_SUBSET83="2.1.3"
 
 #--------------------------------------------------------------------
 # We put this here so that you can compile with -DVERSION="1.2" to
@@ -1938,7 +1938,10 @@ build_cpu=`echo $ac_cv_build | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\1/'`
 build_vendor=`echo $ac_cv_build | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
 build_os=`echo $ac_cv_build | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 
-echo "$as_me:1941: checking host system type" >&5
+test -z "$build_alias" &&
+  build_alias=$ac_cv_build
+
+echo "$as_me:1944: checking host system type" >&5
 echo $ECHO_N "checking host system type... $ECHO_C" >&6
 if test "${ac_cv_host+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -1947,17 +1950,20 @@ else
 test -z "$ac_cv_host_alias" &&
   ac_cv_host_alias=$ac_cv_build_alias
 ac_cv_host=`$ac_config_sub $ac_cv_host_alias` ||
-  { { echo "$as_me:1950: error: $ac_config_sub $ac_cv_host_alias failed" >&5
+  { { echo "$as_me:1953: error: $ac_config_sub $ac_cv_host_alias failed" >&5
 echo "$as_me: error: $ac_config_sub $ac_cv_host_alias failed" >&2;}
    { (exit 1); exit 1; }; }
 
 fi
-echo "$as_me:1955: result: $ac_cv_host" >&5
+echo "$as_me:1958: result: $ac_cv_host" >&5
 echo "${ECHO_T}$ac_cv_host" >&6
 host=$ac_cv_host
 host_cpu=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\1/'`
 host_vendor=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\2/'`
 host_os=`echo $ac_cv_host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
+
+test -z "$host_alias" &&
+  host_alias=$ac_cv_host
 
 case $host_os in
   *cygwin* ) CYGWIN=yes;;
@@ -2011,7 +2017,7 @@ if test "${with_tcl+set}" = set; then
   withval="$with_tcl"
   with_tclconfig=${withval}
 fi;
-	echo "$as_me:2014: checking for Tcl configuration" >&5
+	echo "$as_me:2020: checking for Tcl configuration" >&5
 echo $ECHO_N "checking for Tcl configuration... $ECHO_C" >&6
 	if test "${ac_cv_c_tclconfig+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -2022,7 +2028,7 @@ else
 		if test -f "${with_tclconfig}/tclConfig.sh" ; then
 		    ac_cv_c_tclconfig=`(cd ${with_tclconfig}; pwd)`
 		else
-		    { { echo "$as_me:2025: error: ${with_tclconfig} directory doesn't contain tclConfig.sh" >&5
+		    { { echo "$as_me:2031: error: ${with_tclconfig} directory doesn't contain tclConfig.sh" >&5
 echo "$as_me: error: ${with_tclconfig} directory doesn't contain tclConfig.sh" >&2;}
    { (exit 1); exit 1; }; }
 		fi
@@ -2072,26 +2078,26 @@ fi
 
 	if test x"${ac_cv_c_tclconfig}" = x ; then
 	    TCL_BIN_DIR="# no Tcl configs found"
-	    { echo "$as_me:2075: WARNING: Can't find Tcl configuration definitions" >&5
+	    { echo "$as_me:2081: WARNING: Can't find Tcl configuration definitions" >&5
 echo "$as_me: WARNING: Can't find Tcl configuration definitions" >&2;}
 	    exit 0
 	else
 	    no_tcl=
 	    TCL_BIN_DIR=${ac_cv_c_tclconfig}
-	    echo "$as_me:2081: result: found $TCL_BIN_DIR/tclConfig.sh" >&5
+	    echo "$as_me:2087: result: found $TCL_BIN_DIR/tclConfig.sh" >&5
 echo "${ECHO_T}found $TCL_BIN_DIR/tclConfig.sh" >&6
 	fi
     fi
 
-    echo "$as_me:2086: checking for existence of $TCL_BIN_DIR/tclConfig.sh" >&5
+    echo "$as_me:2092: checking for existence of $TCL_BIN_DIR/tclConfig.sh" >&5
 echo $ECHO_N "checking for existence of $TCL_BIN_DIR/tclConfig.sh... $ECHO_C" >&6
 
     if test -f "$TCL_BIN_DIR/tclConfig.sh" ; then
-        echo "$as_me:2090: result: loading" >&5
+        echo "$as_me:2096: result: loading" >&5
 echo "${ECHO_T}loading" >&6
 	. $TCL_BIN_DIR/tclConfig.sh
     else
-        echo "$as_me:2094: result: file not found" >&5
+        echo "$as_me:2100: result: file not found" >&5
 echo "${ECHO_T}file not found" >&6
     fi
 
@@ -2112,7 +2118,7 @@ echo "${ECHO_T}file not found" >&6
 # This MUST be called after SC_PATH_TCLCONFIG/SC_LOAD_TCLCONFIG
 #--------------------------------------------------------------------
 
-    echo "$as_me:2115: checking for Tcl public headers" >&5
+    echo "$as_me:2121: checking for Tcl public headers" >&5
 echo $ECHO_N "checking for Tcl public headers... $ECHO_C" >&6
 
 # Check whether --with-tclinclude or --without-tclinclude was given.
@@ -2125,7 +2131,7 @@ fi;
 	if test -f "${with_tclinclude}/tcl.h" ; then
 	    ac_cv_c_tclh=${with_tclinclude}
 	else
-	    { { echo "$as_me:2128: error: ${with_tclinclude} directory does not contain Tcl public header file tcl.h" >&5
+	    { { echo "$as_me:2134: error: ${with_tclinclude} directory does not contain Tcl public header file tcl.h" >&5
 echo "$as_me: error: ${with_tclinclude} directory does not contain Tcl public header file tcl.h" >&2;}
    { (exit 1); exit 1; }; }
 	fi
@@ -2161,11 +2167,11 @@ fi
     # Print a message based on how we determined the include path
 
     if test x"${ac_cv_c_tclh}" = x ; then
-	{ { echo "$as_me:2164: error: tcl.h not found.  Please specify its location with --with-tclinclude" >&5
+	{ { echo "$as_me:2170: error: tcl.h not found.  Please specify its location with --with-tclinclude" >&5
 echo "$as_me: error: tcl.h not found.  Please specify its location with --with-tclinclude" >&2;}
    { (exit 1); exit 1; }; }
     else
-	echo "$as_me:2168: result: ${ac_cv_c_tclh}" >&5
+	echo "$as_me:2174: result: ${ac_cv_c_tclh}" >&5
 echo "${ECHO_T}${ac_cv_c_tclh}" >&6
     fi
 
@@ -2205,6 +2211,7 @@ EOF
     ;;
     *)
 	CLEANFILES=
+
     ;;
 esac
 
@@ -2213,7 +2220,7 @@ esac
 # So far only Tcl responds to this one.
 #--------------------------------------------------------------------
 
-    echo "$as_me:2216: checking for building with threads" >&5
+    echo "$as_me:2223: checking for building with threads" >&5
 echo $ECHO_N "checking for building with threads... $ECHO_C" >&6
     # Check whether --enable-threads or --disable-threads was given.
 if test "${enable_threads+set}" = set; then
@@ -2235,11 +2242,11 @@ EOF
 
 	case "`uname -s`" in
 	    *win32* | *WIN32* | *CYGWIN_NT* | *CYGWIN_98* | *CYGWIN_95*)
-		    echo "$as_me:2238: result: yes" >&5
+		    echo "$as_me:2245: result: yes" >&5
 echo "${ECHO_T}yes" >&6
 		;;
 	    *)
-		echo "$as_me:2242: checking for pthread_mutex_init in -lpthread" >&5
+		echo "$as_me:2249: checking for pthread_mutex_init in -lpthread" >&5
 echo $ECHO_N "checking for pthread_mutex_init in -lpthread... $ECHO_C" >&6
 if test "${ac_cv_lib_pthread_pthread_mutex_init+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -2247,7 +2254,7 @@ else
   ac_check_lib_save_LIBS=$LIBS
 LIBS="-lpthread  $LIBS"
 cat >conftest.$ac_ext <<_ACEOF
-#line 2250 "configure"
+#line 2257 "configure"
 #include "confdefs.h"
 
 /* Override any gcc2 internal prototype to avoid an error.  */
@@ -2266,16 +2273,16 @@ pthread_mutex_init ();
 }
 _ACEOF
 rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:2269: \"$ac_link\"") >&5
+if { (eval echo "$as_me:2276: \"$ac_link\"") >&5
   (eval $ac_link) 2>&5
   ac_status=$?
-  echo "$as_me:2272: \$? = $ac_status" >&5
+  echo "$as_me:2279: \$? = $ac_status" >&5
   (exit $ac_status); } &&
          { ac_try='test -s conftest$ac_exeext'
-  { (eval echo "$as_me:2275: \"$ac_try\"") >&5
+  { (eval echo "$as_me:2282: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
-  echo "$as_me:2278: \$? = $ac_status" >&5
+  echo "$as_me:2285: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   ac_cv_lib_pthread_pthread_mutex_init=yes
 else
@@ -2286,7 +2293,7 @@ fi
 rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-echo "$as_me:2289: result: $ac_cv_lib_pthread_pthread_mutex_init" >&5
+echo "$as_me:2296: result: $ac_cv_lib_pthread_pthread_mutex_init" >&5
 echo "${ECHO_T}$ac_cv_lib_pthread_pthread_mutex_init" >&6
 if test $ac_cv_lib_pthread_pthread_mutex_init = yes; then
   tcl_ok=yes
@@ -2297,20 +2304,20 @@ fi
 		if test "$tcl_ok" = "yes"; then
 		    # The space is needed
 		    THREADS_LIBS=" -lpthread"
-		    echo "$as_me:2300: result: yes" >&5
+		    echo "$as_me:2307: result: yes" >&5
 echo "${ECHO_T}yes" >&6
 		else
 		    TCL_THREADS=0
-		    echo "$as_me:2304: result: no" >&5
+		    echo "$as_me:2311: result: no" >&5
 echo "${ECHO_T}no" >&6
-		    { echo "$as_me:2306: WARNING: \"Don t know how to find pthread lib on your system - you must disable thread support or edit the LIBS in the Makefile...\"" >&5
+		    { echo "$as_me:2313: WARNING: \"Don t know how to find pthread lib on your system - you must disable thread support or edit the LIBS in the Makefile...\"" >&5
 echo "$as_me: WARNING: \"Don t know how to find pthread lib on your system - you must disable thread support or edit the LIBS in the Makefile...\"" >&2;}
 		fi
 		;;
 	esac
     else
 	TCL_THREADS=0
-	echo "$as_me:2313: result: no (default)" >&5
+	echo "$as_me:2320: result: no (default)" >&5
 echo "${ECHO_T}no (default)" >&6
     fi
 
@@ -2319,7 +2326,7 @@ echo "${ECHO_T}no (default)" >&6
 # building as a shared library instead of a static library.
 #--------------------------------------------------------------------
 
-    echo "$as_me:2322: checking how to build libraries" >&5
+    echo "$as_me:2329: checking how to build libraries" >&5
 echo $ECHO_N "checking how to build libraries... $ECHO_C" >&6
     # Check whether --enable-shared or --disable-shared was given.
 if test "${enable_shared+set}" = set; then
@@ -2337,11 +2344,11 @@ fi;
     fi
 
     if test "$tcl_ok" = "yes" ; then
-	echo "$as_me:2340: result: shared" >&5
+	echo "$as_me:2347: result: shared" >&5
 echo "${ECHO_T}shared" >&6
 	SHARED_BUILD=1
     else
-	echo "$as_me:2344: result: static" >&5
+	echo "$as_me:2351: result: static" >&5
 echo "${ECHO_T}static" >&6
 	SHARED_BUILD=0
 	cat >>confdefs.h <<\EOF
@@ -2378,7 +2385,7 @@ SHLIB_CFLAGS=${TCL_SHLIB_CFLAGS}
 	;;
     esac
 
-    echo "$as_me:2381: checking for build with symbols" >&5
+    echo "$as_me:2388: checking for build with symbols" >&5
 echo $ECHO_N "checking for build with symbols... $ECHO_C" >&6
     # Check whether --enable-symbols or --disable-symbols was given.
 if test "${enable_symbols+set}" = set; then
@@ -2392,14 +2399,14 @@ fi;
 	LDFLAGS_DEFAULT="${LDFLAGS_DEBUG}"
 	DBGX=${tcl_dbgx}
 	TCL_DBGX=${tcl_dbgx}
-	echo "$as_me:2395: result: yes" >&5
+	echo "$as_me:2402: result: yes" >&5
 echo "${ECHO_T}yes" >&6
     else
 	CFLAGS_DEFAULT="${CFLAGS_OPTIMIZE}"
 	LDFLAGS_DEFAULT="${LDFLAGS_OPTIMIZE}"
 	DBGX=""
 	TCL_DBGX=""
-	echo "$as_me:2402: result: no" >&5
+	echo "$as_me:2409: result: no" >&5
 echo "${ECHO_T}no" >&6
     fi
 
@@ -2490,7 +2497,7 @@ esac
 # versions have bugs in the pkg_mkIndex routine.
 #--------------------------------------------------------------------
 
-    echo "$as_me:2493: checking for tclsh" >&5
+    echo "$as_me:2500: checking for tclsh" >&5
 echo $ECHO_N "checking for tclsh... $ECHO_C" >&6
 
     if test "${ac_cv_path_tclsh+set}" = set; then
@@ -2514,10 +2521,10 @@ fi
 
     if test -f "$ac_cv_path_tclsh" ; then
 	TCLSH_PROG=$ac_cv_path_tclsh
-	echo "$as_me:2517: result: $TCLSH_PROG" >&5
+	echo "$as_me:2524: result: $TCLSH_PROG" >&5
 echo "${ECHO_T}$TCLSH_PROG" >&6
     else
-	{ { echo "$as_me:2520: error: No tclsh found in PATH:  $search_path" >&5
+	{ { echo "$as_me:2527: error: No tclsh found in PATH:  $search_path" >&5
 echo "$as_me: error: No tclsh found in PATH:  $search_path" >&2;}
    { (exit 1); exit 1; }; }
     fi
@@ -2636,7 +2643,7 @@ rm -f confdef2opt.sed
 : ${CONFIG_STATUS=./config.status}
 ac_clean_files_save=$ac_clean_files
 ac_clean_files="$ac_clean_files $CONFIG_STATUS"
-{ echo "$as_me:2639: creating $CONFIG_STATUS" >&5
+{ echo "$as_me:2646: creating $CONFIG_STATUS" >&5
 echo "$as_me: creating $CONFIG_STATUS" >&6;}
 cat >$CONFIG_STATUS <<_ACEOF
 #! $SHELL
@@ -2804,7 +2811,7 @@ cat >>$CONFIG_STATUS <<\EOF
     echo "$ac_cs_version"; exit 0 ;;
   --he | --h)
     # Conflict between --help and --header
-    { { echo "$as_me:2807: error: ambiguous option: $1
+    { { echo "$as_me:2814: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -2823,7 +2830,7 @@ Try \`$0 --help' for more information." >&2;}
     ac_need_defaults=false;;
 
   # This is an error.
-  -*) { { echo "$as_me:2826: error: unrecognized option: $1
+  -*) { { echo "$as_me:2833: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -2860,7 +2867,7 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "pkgIndex.tcl" ) CONFIG_FILES="$CONFIG_FILES pkgIndex.tcl" ;;
-  *) { { echo "$as_me:2863: error: invalid argument: $ac_config_target" >&5
+  *) { { echo "$as_me:2870: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
   esac
@@ -2943,6 +2950,7 @@ s,@LIBS@,$LIBS,;t t
 s,@CONFIGDIR@,$CONFIGDIR,;t t
 s,@PACKAGE@,$PACKAGE,;t t
 s,@VERSION@,$VERSION,;t t
+s,@THREAD_VERSION_SUBSET83@,$THREAD_VERSION_SUBSET83,;t t
 s,@CC@,$CC,;t t
 s,@CFLAGS@,$CFLAGS,;t t
 s,@LDFLAGS@,$LDFLAGS,;t t
@@ -3110,7 +3118,7 @@ done; }
   esac
 
   if test x"$ac_file" != x-; then
-    { echo "$as_me:3113: creating $ac_file" >&5
+    { echo "$as_me:3121: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
     rm -f "$ac_file"
   fi
@@ -3128,7 +3136,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:3131: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:3139: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -3141,7 +3149,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:3144: error: cannot find input file: $f" >&5
+           { { echo "$as_me:3152: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
