@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.25 2001/04/28 21:56:15 davygrvy Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.26 2001/08/04 02:09:21 hobbs Exp $
  */
 
 #include "thread.h"
@@ -156,6 +156,11 @@ static char *errorProcString;
 
 TCL_DECLARE_MUTEX(threadMutex)
 
+#ifdef BUILD_thread
+#   undef TCL_STORAGE_CLASS
+#   define TCL_STORAGE_CLASS DLLEXPORT
+#endif
+
 /*
  * Forward declaration of functions used within this file
  */
@@ -195,7 +200,7 @@ static void	ThreadExitProc _ANSI_ARGS_((ClientData clientData));
  */
 
 	/* ARGSUSED */
-int
+EXTERN int
 Thread_Init(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
@@ -311,6 +316,13 @@ Thread_Init(interp)
 		"This Tcl core wasn't compiled for multithreading.", -1));
 	return TCL_ERROR;
     }
+}
+
+EXTERN int
+Thread_SafeInit(interp)
+    Tcl_Interp *interp;
+{
+    return Thread_Init(interp);
 }
 
 /*

@@ -1,3 +1,12 @@
+2001-08-03  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* Makefile.in: corrected handling of VERSION
+
+	* generic/threadCmd.c:
+	* generic/thread.h: added Thread_SafeInit
+
+	* win/vc/makefile.vc: added -DBUILD_thread to cflags.
+
 2001-05-27  David Gravereaux <davygrvy@pobox.com>
 
 	* configure:
