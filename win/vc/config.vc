@@ -3,9 +3,9 @@
 #  Edit for your local configuration.
 #
 ######################################################################
-# RCS: @(#) $Id: config.vc,v 1.14 2001/04/27 02:40:45 davygrvy Exp $
+# RCS: @(#) $Id: config.vc,v 1.15 2001/09/05 22:59:42 davygrvy Exp $
 
-!error you must edit this file before using.
+#!error you must edit this file before using.
 
 # only affects the linker and resource compiler
 # pick from:
@@ -26,16 +26,16 @@ MSDEVROOT	= C:\Dev\DevStudio
 
 # Where is Tcl ?
 #
-TCLROOT		= D:\aj_ws\tcl8.3.2
+TCLROOT		= C:\program Files\Tcl
 
 # Does the above Tcl path point to the install or sources ?
 #
-ISTCLINSTALL	= 0
+ISTCLINSTALL	= 1
 
 # What Tcl version are we grabbing ?
 #
 TCLMAJOR	= 8
-TCLMINOR	= 3
+TCLMINOR	= 4
 
 !if "$(MACHINE)" == "IA64"
 # untested logic path
