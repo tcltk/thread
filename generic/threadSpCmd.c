@@ -22,7 +22,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.19 2004/07/21 20:58:12 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.20 2004/08/14 20:36:27 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -103,8 +103,6 @@ static Tcl_ObjCmdProc ThreadEvalObjCmd;
 /*
  * Forward declaration of functions used only within this file
  */
-
-static void      SpFinalizeAll   (ClientData);
 
 static void      SpMutexLock     (SpMutex*);
 static void      SpMutexUnlock   (SpMutex*);
@@ -1016,28 +1014,6 @@ Sp_Init (interp)
     TCL_CMD(interp, THNS"::eval",    ThreadEvalObjCmd);
 
     return TCL_OK;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * SpFinalizeAll --
- *
- *      Garbage-collect hash table on application exit. 
- *
- * Results:
- *      None. 
- *
- * Side effects:
- *      Memory gets reclaimed.  
- *
- *----------------------------------------------------------------------
- */
-
-static void
-SpFinalizeAll(ClientData clientData)
-{
-    return; /* Does nothing since it is not safe! */
 }
 
 /*
