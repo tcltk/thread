@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.7 2002/12/04 11:11:32 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.8 2002/12/04 16:51:52 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -159,7 +159,7 @@ static int
 TpoolRelease   _ANSI_ARGS_((ThreadPool *tpoolPtr));
 
 static void
-InitPoster     _ANSI_ARGS_((void));
+InitWaiter     _ANSI_ARGS_((void));
 
 
 /*
@@ -221,9 +221,14 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
                 return TCL_ERROR;
             }
         } else if (OPT_CMP(opt, "-idletimer")) {
+#if (TCL_MAJOR_VERSION >= 8) && (TCL_MINOR_VERSION <= 3)
+            Tcl_AppendResult(interp, "-idletimer requires Tcl 8.4+", NULL);
+            return TCL_ERROR;
+#else
             if (Tcl_GetIntFromObj(interp, objv[ii+1], &idle) != TCL_OK) {
                 return TCL_ERROR;
             }
+#endif
         } else if (OPT_CMP(opt, "-initscript")) {
             char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
             cmd  = strcpy(Tcl_Alloc(len+1), val);
@@ -232,6 +237,16 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
         }
     }
 
+    /*
+     * Do some consistency checking
+     */
+
+    if (minw < 0) {
+        minw = 0;
+    }
+    if (maxw < 0) {
+        maxw = TPOOL_MAXWORKERS;
+    }
     if (minw > maxw) {
         minw = maxw;
     }
@@ -272,10 +287,6 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     SpliceIn(tpoolPtr, tpoolList);
 
     Tcl_MutexUnlock(&listMutex);
-
-    /*
-     * Plug the pool in the list of available pools
-     */
 
     sprintf(buf, "%s%u", TPOOL_HNDLPREFIX, tpoolId);
     Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, -1));
@@ -352,7 +363,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
      * Initialize per-thread private data for this caller
      */
     
-    InitPoster();
+    InitWaiter();
 
     /*
      * Wait for an idle worker thread
@@ -368,7 +379,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
                 return TCL_ERROR;
             }
         }
-        /* We wait while servicing the event loop */
+        /* Wait for worker and service the event loop */
         Tcl_MutexUnlock(&tpoolPtr->mutex);
         tsdPtr->stop = -1;
         while(tsdPtr->stop == -1) {
@@ -378,7 +389,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     }
 
     /*
-     * Create new job ticket and put it on the list
+     * Create new job ticket and put it on the list.
      */
 
     rPtr = (TpoolResult*)Tcl_Alloc(sizeof(TpoolResult));
@@ -388,6 +399,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
         jobId = tpoolPtr->jobId++;
         rPtr->jobId = jobId;
     }
+
     rPtr->script    = strcpy(Tcl_Alloc(len+1), script);
     rPtr->scriptLen = len;
     rPtr->detached  = detached;
@@ -463,7 +475,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    InitPoster();
+    InitWaiter();
     done = 0; /* Number of elements in the done list */
     doneList = Tcl_NewListObj(0, NULL);
 
@@ -486,10 +498,8 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
             if (rPtr->result) {
                 done++; /* Job has been processed */
                 Tcl_ListObjAppendElement(interp, doneList, wObjv[ii]);
-            } else {
-                if (listVar) {
-                    Tcl_ListObjAppendElement(interp, waitList, wObjv[ii]);
-                }
+            } else if (listVar) {
+                Tcl_ListObjAppendElement(interp, waitList, wObjv[ii]);
             }
         }
         if (done) {
@@ -815,6 +825,7 @@ TpoolWorker(clientData)
     Tcl_Interp *interp;
     Tcl_HashEntry *hPtr;
     Tcl_Time waitTime, *idlePtr;
+    char *errMsg = "can't create new Tcl interpreter";
 
     /*
      * Initialize the Tcl interpreter
@@ -835,19 +846,26 @@ TpoolWorker(clientData)
     if (!((maj == 8) && (min == 3) && (ptch <= 2))
         && !((maj == 8) && (min == 4) && (ptch == 1)
              && (type == TCL_ALPHA_RELEASE)) && (rPtr->retcode != TCL_OK)) {
+        rPtr->result = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
         Tcl_ConditionNotify(&tpoolPtr->cond);
         goto out;
     }
     rPtr->retcode = Thread_Init(interp);
 #endif
     
+    if (rPtr->retcode != TCL_OK) {
+        rPtr->result = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
+        Tcl_ConditionNotify(&tpoolPtr->cond);
+        goto out;
+    }
+
     /*
      * Initialize the interpreter
      */
 
-    if (rPtr->retcode != TCL_ERROR && tpoolPtr->initScript) {
+    if (tpoolPtr->initScript) {
         TpoolEval(interp, tpoolPtr->initScript, -1, rPtr);
-        if (rPtr->retcode == TCL_ERROR) {
+        if (rPtr->retcode != TCL_OK) {
             Tcl_ConditionNotify(&tpoolPtr->cond);
             goto out;
         }
@@ -936,13 +954,13 @@ TpoolWorker(clientData)
  *
  * RunStopEvent --
  *
- *      Signalizes the waiter thread to stop waiting.
+ *  Signalizes the waiter thread to stop waiting.
  *
  * Results:
- *      1 (always)
+ *  1 (always)
  *
  * Side effects:
- *      None. 
+ *  None. 
  *
  *----------------------------------------------------------------------
  */
@@ -962,13 +980,13 @@ RunStopEvent(eventPtr, mask)
  *
  * PushWork --
  *
- *      Adds a worker thread to the end of the workers list.
+ *  Adds a worker thread to the end of the workers list.
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      None.
+ *  None.
  *
  *----------------------------------------------------------------------
  */
@@ -989,13 +1007,13 @@ PushWork(rPtr, tpoolPtr)
  *
  * PopWork --
  *
- *      Pops the work ticket from the list
+ *  Pops the work ticket from the list
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      None.
+ *  None.
  *
  *----------------------------------------------------------------------
  */
@@ -1023,13 +1041,13 @@ PopWork(tpoolPtr)
  *
  * PushWaiter --
  *
- *      Adds a waiter thread to the end of the waiters list.
+ *  Adds a waiter thread to the end of the waiters list.
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      None.
+ *  None.
  *
  *----------------------------------------------------------------------
  */
@@ -1051,13 +1069,13 @@ PushWaiter(tpoolPtr)
  *
  * PopWaiter --
  *
- *      Pops the first waiter from the head of the waiters list.
+ *  Pops the first waiter from the head of the waiters list.
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      None.
+ *  None.
  *
  *----------------------------------------------------------------------
  */
@@ -1085,14 +1103,14 @@ PopWaiter(tpoolPtr)
  *
  * GetTpool 
  *
- *      Parses the Tcl threadpool handle and locates the
- *      corresponding threadpool maintenance structure. 
+ *  Parses the Tcl threadpool handle and locates the
+ *  corresponding threadpool maintenance structure. 
  *
  * Results:
- *      Pointer to the threadpool struct or NULL if none found, 
+ *  Pointer to the threadpool struct or NULL if none found, 
  *
  * Side effects:
- *      None.
+ *  None.
  *
  *----------------------------------------------------------------------
  */
@@ -1114,15 +1132,15 @@ GetTpool(tpoolName)
  *
  * GetTpoolUnl 
  *
- *      Parses the threadpool handle and locates the
- *      corresponding threadpool maintenance structure. 
- *      Assumes caller holds the listMutex,
+ *  Parses the threadpool handle and locates the
+ *  corresponding threadpool maintenance structure. 
+ *  Assumes caller holds the listMutex,
  *
  * Results:
- *      Pointer to the threadpool struct or NULL if none found, 
+ *  Pointer to the threadpool struct or NULL if none found, 
  *
  * Side effects:
- *      None.
+ *  None.
  *
  *----------------------------------------------------------------------
  */
@@ -1157,13 +1175,13 @@ GetTpoolUnl (tpoolName)
  *
  * TpoolEval 
  *
- *      Evaluates the script and fills in the result structure. 
+ *  Evaluates the script and fills in the result structure. 
  *
  * Results:
- *      Standard Tcl result, 
+ *  Standard Tcl result, 
  *
  * Side effects:
- *      Many, depending on the script.
+ *  Many, depending on the script.
  *
  *----------------------------------------------------------------------
  */
@@ -1212,13 +1230,13 @@ TpoolEval(interp, script, scriptLen, rPtr)
  *
  * SetResult
  *
- *      Sets the result in current interpreter.
+ *  Sets the result in current interpreter.
  *
  * Results:
- *      Standard Tcl result, 
+ *  Standard Tcl result, 
  *
  * Side effects:
- *      None.
+ *  None.
  *
  *----------------------------------------------------------------------
  */
@@ -1255,14 +1273,14 @@ SetResult(interp, rPtr)
  *
  * TpoolReserve --
  *
- *      Does the pool preserve and/or release. Assumes caller holds 
- *      the listMutex.
+ *  Does the pool preserve and/or release. Assumes caller holds 
+ *  the listMutex.
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      May tear-down the threadpool if refcount drops to 0 or below.
+ *  May tear-down the threadpool if refcount drops to 0 or below.
  *
  *----------------------------------------------------------------------
  */
@@ -1278,14 +1296,14 @@ TpoolReserve(tpoolPtr)
  *
  * TpoolRelease --
  *
- *      Does the pool preserve and/or release. Assumes caller holds 
- *      the listMutex.
+ *  Does the pool preserve and/or release. Assumes caller holds 
+ *  the listMutex.
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      May tear-down the threadpool if refcount drops to 0 or below.
+ *  May tear-down the threadpool if refcount drops to 0 or below.
  *
  *----------------------------------------------------------------------
  */
@@ -1294,14 +1312,12 @@ TpoolRelease(tpoolPtr)
     ThreadPool *tpoolPtr;
 {
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
-    int refCount;
     TpoolResult *rPtr;
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
 
-    refCount = --tpoolPtr->refCount;
-    if (refCount > 0) { 
-        return refCount;
+    if (--tpoolPtr->refCount > 0) { 
+        return tpoolPtr->refCount;
     }
 
     /*
@@ -1309,12 +1325,7 @@ TpoolRelease(tpoolPtr)
      */ 
     
     SpliceOut(tpoolPtr, tpoolList);
-    
-    if (tsdPtr->waitPtr == NULL) {
-        tsdPtr->waitPtr = (TpoolWaiter*)Tcl_Alloc(sizeof(TpoolWaiter));
-        memset(tsdPtr->waitPtr, 0, sizeof(TpoolWaiter));
-        tsdPtr->waitPtr->threadId = Tcl_GetCurrentThread();
-    }
+    InitWaiter();
     
     /*
      * Signal and wait for all workers to die.
@@ -1385,13 +1396,13 @@ TpoolRelease(tpoolPtr)
  *
  * SignalWaiter --
  *
- *      Signals the waiter thread.
+ *  Signals the waiter thread.
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      The waiter thread will exit from the event loop.
+ *  The waiter thread will exit from the event loop.
  *
  *----------------------------------------------------------------------
  */
@@ -1417,20 +1428,20 @@ SignalWaiter(tpoolPtr)
 /*
  *----------------------------------------------------------------------
  *
- * InitPoster --
+ * InitWaiter --
  *
- *      Setup poster thread to be able to wait in the event loop.
+ *  Setup poster thread to be able to wait in the event loop.
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      None..
+ *  None.
  *
  *----------------------------------------------------------------------
  */
 static void
-InitPoster ()
+InitWaiter ()
 {
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
@@ -1448,13 +1459,13 @@ InitPoster ()
  *
  * ExitHandler --
  *
- *      Performs cleanup when a caller (poster) thread exits.
+ *  Performs cleanup when a caller (poster) thread exits.
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      None.
+ *  None.
  *
  *----------------------------------------------------------------------
  */
@@ -1473,13 +1484,13 @@ ExitHandler(clientData)
  *
  * Tpool_Init --
  *
- *      Create commands in current interpreter.
+ *  Create commands in current interpreter.
  *
  * Results:
- *      None.
+ *  None.
  *
  * Side effects:
- *      None.
+ *  None.
  *
  *----------------------------------------------------------------------
  */
