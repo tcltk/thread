@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.21 2001/04/25 23:12:17 davygrvy Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.22 2001/04/26 01:23:35 davygrvy Exp $
  */
 
 #include "thread.h"
@@ -230,7 +230,7 @@ Thread_Init(interp)
      */
 
 #if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
-    subset83 = ((maj > 8) || ((maj == 8) && (min == 3))) ? 1 : 0;
+    subset83 = ((maj == 8) && (min == 3)) ? 1 : 0;
 #else
     subset83 = 1;
 #endif
