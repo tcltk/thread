@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.10 2003/09/03 11:27:53 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.11 2003/09/03 11:34:49 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -170,8 +170,6 @@ typedef struct Array {
     Tcl_HashEntry *handlePtr;  /* Entry in handles table */
     Tcl_HashTable vars;        /* Table of variables. */
 } Array;
-
-#define UnlockArray(a) Tcl_MutexUnlock(&((a)->bucketPtr->lock))
 
 /*
  * The object container for Tcl-objects stored within shared arrays.
