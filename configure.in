@@ -3,7 +3,7 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
 #
-# RCS: @(#) $Id: configure.in,v 1.18 2003/09/03 11:30:05 vasiljevic Exp $
+# RCS: @(#) $Id: configure.in,v 1.19 2003/12/22 21:23:04 vasiljevic Exp $
 
 #--------------------------------------------------------------------
 # This configure.in is based on the Tcl Extension Architecture (TEA)
@@ -32,13 +32,19 @@ THREAD_MAJOR=2
 THREAD_MINOR=6
 THREAD_PATCHLEVEL=
 
+TTRACE_MAJOR=1
+TTRACE_MINOR=0
+TTRACE_PATCHLEVEL=
+
 THREAD_VERSION_SUBSET83="${THREAD_MAJOR}.1.${THREAD_MINOR}"
 
 VERSION=${THREAD_MAJOR}.${THREAD_MINOR}${THREAD_PATCHLEVEL}
 NODOT_VERSION=${THREAD_MAJOR}${THREAD_MINOR}
+TTRACE_VERSION=${TTRACE_MAJOR}.${TTRACE_MINOR}${TTRACE_PATCHLEVEL}
 
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
+AC_SUBST(TTRACE_VERSION)
 AC_SUBST(THREAD_VERSION_SUBSET83)
 # This package name must be replaced statically for AC_SUBST to work
 AC_SUBST(thread_LIB_FILE)
