@@ -1,4 +1,7 @@
 
+I. Building the Tcl thread extension for Windows
+================================================
+
 Thread extension supports two build scenarios under Windows:
 
 
@@ -70,5 +73,21 @@ shell won't start correctly.
 
 After building the Tcl core, repeat steps 3-5 above from this
 directory for building the Threading extension.
+
+
+II. Building optional support libraries
+=======================================
+
+As of 2.6 release, this extension supports persistent shared 
+variables. To use this functionality, you might need to download 
+and compile some other supporting libraries. Currently, there is 
+a simple implementation of shared variable persistency built atop
+of popular GNU Gdbm package. You can obtain the latest version of
+the Gdbm from: http://www.gnu.org/software/gdbm/gdbm.html.
+
+For the impatient, there are Windows ports of GNU Gdbm found on
+various places on the Internet. The easiest way to start is to go 
+to the GnuWin32 project: http://sourceforge.net/projects/gnuwin32
+and fetch yourself a compiled GNU Gdbm DLL. 
 
 -EOF-
