@@ -233,13 +233,13 @@ count drops to zero, the thread is marked for exit. This kicks the thread out
 of the event loop servicing and the thread continues to execute commands passed
 in the \fIscript\fR argument, following the \fBthread::wait\fP command.
 If this was the last command in the script, as usualy the case, the thread will
-exit. It is possible to create a situation in which it may be impossible to
+exit.
+It is possible to create a situation in which it may be impossible to
 terminate the thread, for example by putting some endless loop after the
 \&\fBthread::wait\fP or entering the event loop again by doing an vwait-type
 of command. In such cases, the thread may never exit. This is considered to
 be a bad practice and should be avoided if possible.
 
-Consider:
 
 .CS
 
@@ -251,6 +251,7 @@ Consider:
     }]
 
 .CE
+.PP
 The thread created in the above example will never be able to exit.
 After it has been released with the last matching \fBthread::release\fP call
 the thread will jump out of the \fBthread::wait\fP and continue to execute
@@ -271,15 +272,11 @@ created with this flag have the initial value of the reference counter of 1 (one
 to this command increments the reference counter by one (1). Command returns
 the value of the reference counter after the increment.
 If called with the optional thread \fIid\fR, the command preserves the given
-thread. Otherwise the current thread is preserved.
-.RS
-.PP
+thread. Otherwise the current thread is preserved.\fB\fR
 With reference counting, one can implement controlled access to a shared Tcl
 thread.  By incrementing the reference counter, the caller signalizes that
 he/she wishes to use the thread for a longer period of time. By decrementing
-the counter, using the  \fBthread::release\fP command, caller signalizes
-that he/she has finished using the thread.
-.RE
+the counter, caller signalizes that he/she has finished using the thread.
 .TP
 \&\fB \fBthread::release\fP ?\fI-wait\fB? ?\fIid\fB?
 \&\fRThis command decrements the thread reference counter. Each call to this
@@ -291,15 +288,12 @@ reference counter reaches zero (0), the target thread is marked for termination.
 You should not reference the thread after the \fBthread::release\fP command
 returns zero or negative integer. The handle of the thread goes out of scope and
 should not be used any more. Any following reference to the same thread handle
-will result in Tcl error.
-.RS
-.PP
+will result in Tcl error.\fB\fR
 Optional flag \fI-wait\fR instructs the caller thread to wait for the target
 thread to exit, if the effect of the command would result in termination of the
 target thread, i.e. if the return result would be zero (0). Without the flag, the
 caller thread does not wait for the target thread to exit. Care must be taken
 when using the \fI-wait\fR, since this may block the caller thread indefinitely.
-.RE
 .TP
 \&\fB\fBthread::id\fP
 \&\fRThis command returns the ID of the current thread.
@@ -328,14 +322,12 @@ This command is deprecated in favour of more advanced thread reservation system
 implemented with \fBthread::preserve\fP and \fBthread::release\fP
 commands. Support for \fBthread::wait\fP will dissapear in some future
 major release of the extension.
-.RS
-.PP
+\&\fB\fR
 This stops a prior \fBthread::wait\fP. Execution of the script will
 continue from the \fBthread::wait\fP command. If \fBthread::wait\fP
 was the last command in the script passed to the thread at the time of its
 creation, the thread will exit. The command usually returns empty result but
 may trigger Tcl error with the message "target thread died" in some situations.
-.RE
 .TP
 \&\fB\fBthread::exit\fP
 \&\fR
@@ -343,14 +335,12 @@ Use of this command is deprecated in favour of the more advanced thread reservat
 system implemented with \fBthread::preserve\fP and \fBthread::release\fP
 commands. Use on your own risk and with extreme precaution. Support for
 \&\fBthread::exit\fP will dissapear in  some future major release of the extension.
-.RS
-.PP
+\&\fB\fR
 This forces a thread stuck in the \fBthread::wait\fP to unconditionaly
 exit. This command is guaranteed to leave the program memory in the unconsistent
 state, produce memory leaks and otherwise affect other subsytem(s) of the Tcl
 application in an unpredictable manner. The command usually  returns empty result.
 but may trigger Tcl error with the message "target thread died" in some situations.
-.RE
 .TP
 \&\fB\fBthread::names\fP
 \&\fRThis command returns a list of thread IDs. These are only for
