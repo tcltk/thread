@@ -1,3 +1,13 @@
+2003-01-25  Mo DeJong  <mdejong@users.sourceforge.net>
+
+	* generic/threadCmd.c (ThreadSendObjCmd):
+	The thread::send command was not working
+	under Win32 because threads that had an id
+	that was a negative number were generating
+	a usage error in the thread::send command.
+	* tests/thread.test: Add test for negative
+	number as thread id.
+
 2003-01-22 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadCmd.c: fixed reference to errorInfo

@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.63 2003/01/22 14:47:16 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.64 2003/01/26 03:57:16 mdejong Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -818,16 +818,12 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     if (objc < 3 || objc > 5) {
         goto usage;
     }
-    while(++ii < objc) {
-        arg = Tcl_GetStringFromObj(objv[ii], NULL);
-        if (*arg != '-') {
-            break;
-        }
-        if (OPT_CMP(arg, "-async")) {
-            wait = 0;
-        } else {
-            goto usage;
-        }
+
+    ii = 1;
+    arg = Tcl_GetStringFromObj(objv[ii], NULL);
+    if (OPT_CMP(arg, "-async")) {
+        wait = 0;
+        ii++;
     }
 
     if (ii >= objc) {
