@@ -1,298 +1,336 @@
-<html>
-<head>
-<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: tsv.html,v $ $Revision: 1.3 $">
-</head><body>
-<div class="header">
-<div class="navbar" align="center">
-<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode268">DESCRIPTION</a> · <a href="#SECTnode280">COMMANDS</a> · <a href="#SECTnode783">DISCUSSION</a> · <a href="#SECTnode795">CREDITS</a> · <a href="#SECTnode804">SEE ALSO</a> · <a href="#SECTnode810">KEYWORDS</a>
-</div><hr class="navsep">
-</div><div class="body">
+<! -- -*- tcl -*- doctools manpage
+   -->
+<html><head>
+<title>tsv - Tcl Threading </title>
+</head>
+<! -- Generated from file '' by tcllib/doctools with format 'html'
+   -->
+<! -- CVS: $Id: tsv.html,v 1.4 2003/11/25 18:18:28 vasiljevic Exp $ tsv.n
+   -->
 
-
-<h2><a name="SECTnode5">NAME</a></h2><p class="namesection">
-<b class="names">tsv - </b><br>Part of the Tcl threading extension allowing script-level manipulation
-of data shared between threads in a simple, safe and protected fashion.</p>
-
-<h2><a name="SECTnode14">SYNOPSIS</a></h2><pre class="syntax">
+<body>
+<h1> tsv(n) 2.6  &quot;Tcl Threading&quot;</h1>
+<h2><a name="name">NAME</a></h2>
 <p>
-<b class="cmd">package require Thread ?2.5?</b>
-</p>
-<b class="cmd">tsv::names</b> ?<i class="m">pattern</i>?
-<b class="cmd">tsv::object</b> <i class="m">array</i> <i class="m">element</i>
-<b class="cmd">tsv::set</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> 
-<b class="cmd">tsv::get</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">varname</i>?
-<b class="cmd">tsv::unset</b> <i class="m">array</i> ?<i class="m">element</i>?
-<b class="cmd">tsv::exists</b> <i class="m">array</i> ?<i class="m">element</i>?
-<b class="cmd">tsv::pop</b> <i class="m">array</i> <i class="m">element</i>
-<b class="cmd">tsv::move</b> <i class="m">array</i> <i class="m">old</i> <i class="m">new</i>
-<b class="cmd">tsv::incr</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">increment</i>?
-<b class="cmd">tsv::append</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> ?<i class="m">value</i> ...?
-<b class="cmd">tsv::lappend</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> ?<i class="m">value</i> ...?
-<b class="cmd">tsv::linsert</b> <i class="m">array</i> <i class="m">element</i> <i class="m">index</i> <i class="m">value</i> ?<i class="m">value</i> ...?
-<b class="cmd">tsv::lreplace</b> <i class="m">array</i> <i class="m">element</i> <i class="m">first</i> <i class="m">last</i> ?<i class="m">value</i> ...?
-<b class="cmd">tsv::llength</b> <i class="m">array</i> <i class="m">element</i>
-<b class="cmd">tsv::lindex</b> <i class="m">array</i> <i class="m">element</i> <i class="m">index</i>
-<b class="cmd">tsv::lrange</b> <i class="m">array</i> <i class="m">element</i> <i class="m">first</i> <i class="m">last</i>
-<b class="cmd">tsv::lsearch</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">mode</i>? <i class="m">pattern</i>
-<b class="cmd">tsv::lpop</b> <i class="m">array</i> <i class="m">element</i> ?<i class="m">index</i>?
-<b class="cmd">tsv::lpush</b> <i class="m">array</i> <i class="m">element</i> <i class="m">value</i> ?<i class="m">index</i>?
-<b class="cmd">tsv::lock</b> <i class="m">arg</i> ?<i class="m">arg ...</i>?
-</pre>
-
-<h2><a name="SECTnode268">DESCRIPTION</a></h2><p>
-This section describes commands implementing thread shared variables. A thread
-shared variable is very similar to a Tcl array but in contrast to a Tcl array
-it is created in thread-shared memory and can be accessed from many threads at
-the same time. Important feature of thread shared variable is that each access
-to the variable is internaly protected by a mutex so script programmer does not have
-to take care about locking the variable himself.</p><p>
-Thread shared variables are not bound to any thread explicitly. That means that
-when a thread which created any of thread shared variables exits, the variable
-and associated memory is not unset/reclaimed. User has to explicitly unset the
-variable to reclaim the memory consumed by the variable.</p>
-
-<h2><a name="SECTnode280">COMMANDS</a></h2><dl class="commandlist">
-
-
-<dt><b class="cmd">tsv::names</b></dt>
-<dd>Returns names of shared variables matching optional <i class="m">pattern</i> or all known
-variables if pattern is ommited. The <b class="cmd">tsv::names</b> returns an empty list on 
-process start. All thread shared variables are created by explicit user action.
-</dd>
+<p> tsv - 
+    Part of the Tcl threading extension allowing script level
+    manipulation of data shared between threads.
 
 
 
-<dt><b class="cmd">tsv::object</b></dt>
-<dd>Creates object accessor command for the <i class="m">element</i> in the given shared 
-<i class="m">array</i>. Using this command, one can apply most of the other shared variable
-commands as method functions of the element object command. The object command is
-automatically deleted when the element which this command is pointing to is unset.
-<pre class="example">
-% tsv::set foo bar &quot;A shared string&quot;
-% set string [tsv::object foo bar]
-% $string append &quot; appended&quot;
-=&gt; A shared string appended</pre>
-</dd>
 
 
 
-<dt><b class="cmd">tsv::set</b></dt>
-<dd>Sets the value of the <i class="m">element</i>  in the shared <i class="m">array</i> to
-<i class="m">value</i> and returns the value. The <i class="m">value</i> may be ommited, and
-the command will return the current value of the <i class="m">element</i>. If the 
-element cannot be found, error is triggered.
-</dd>
+<h2><a name="synopsis">SYNOPSIS</a></h2>
+<p>
+package require <b>Tcl 8.3</b><br>
+package require <b>Thread ?2.6?</b><br>
+<br><table border=1 width=100% cellspacing=0 cellpadding=0><tr            bgcolor=lightyellow><td bgcolor=lightyellow><table 0 width=100% cellspacing=0 cellpadding=0><tr valign=top ><td ><a href="#1"><b class='cmd'>tsv::names</b> ?pattern?</a></td></tr>
+<tr valign=top ><td ><a href="#2"><b class='cmd'>tsv::object</b> <i class='arg'>array</i> <i class='arg'>element</i></a></td></tr>
+<tr valign=top ><td ><a href="#3"><b class='cmd'>tsv::set</b> <i class='arg'>array</i> <i class='arg'>element</i> ?value?</a></td></tr>
+<tr valign=top ><td ><a href="#4"><b class='cmd'>tsv::get</b> <i class='arg'>array</i> <i class='arg'>element</i> ?varname?</a></td></tr>
+<tr valign=top ><td ><a href="#5"><b class='cmd'>tsv::unset</b> <i class='arg'>array</i> ?element?</a></td></tr>
+<tr valign=top ><td ><a href="#6"><b class='cmd'>tsv::exists</b> <i class='arg'>array</i> <i class='arg'>element</i></a></td></tr>
+<tr valign=top ><td ><a href="#7"><b class='cmd'>tsv::pop</b> <i class='arg'>array</i> <i class='arg'>element</i></a></td></tr>
+<tr valign=top ><td ><a href="#8"><b class='cmd'>tsv::move</b> <i class='arg'>array</i> <i class='arg'>oldname</i> <i class='arg'>newname</i></a></td></tr>
+<tr valign=top ><td ><a href="#9"><b class='cmd'>tsv::incr</b> <i class='arg'>array</i> <i class='arg'>element</i> ?count?</a></td></tr>
+<tr valign=top ><td ><a href="#10"><b class='cmd'>tsv::append</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>value</i> ?value ...?</a></td></tr>
+<tr valign=top ><td ><a href="#11"><b class='cmd'>tsv::lappend</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>value</i> ?value ...?</a></td></tr>
+<tr valign=top ><td ><a href="#12"><b class='cmd'>tsv::linsert</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>index</i> <i class='arg'>value</i> ?value ...?</a></td></tr>
+<tr valign=top ><td ><a href="#13"><b class='cmd'>tsv::lreplace</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>first</i> <i class='arg'>last</i> ?value ...?</a></td></tr>
+<tr valign=top ><td ><a href="#14"><b class='cmd'>tsv::llength</b> <i class='arg'>array</i> <i class='arg'>element</i></a></td></tr>
+<tr valign=top ><td ><a href="#15"><b class='cmd'>tsv::lindex</b> <i class='arg'>array</i> <i class='arg'>element</i> ?index?</a></td></tr>
+<tr valign=top ><td ><a href="#16"><b class='cmd'>tsv::lrange</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>from</i> <i class='arg'>to</i></a></td></tr>
+<tr valign=top ><td ><a href="#17"><b class='cmd'>tsv::lsearch</b> <i class='arg'>array</i> <i class='arg'>element</i> ?options? <i class='arg'>pattern</i></a></td></tr>
+<tr valign=top ><td ><a href="#18"><b class='cmd'>tsv::lpop</b> <i class='arg'>array</i> <i class='arg'>element</i> ?index?</a></td></tr>
+<tr valign=top ><td ><a href="#19"><b class='cmd'>tsv::lpush</b> <i class='arg'>array</i> <i class='arg'>element</i> ?index?</a></td></tr>
+<tr valign=top ><td ><a href="#20"><b class='cmd'>tsv::lock</b> <i class='arg'>array</i> <i class='arg'>arg</i> ?arg ...?</a></td></tr>
+<tr valign=top ><td ><a href="#21"><b class='cmd'>tsv::array</b> </a></td></tr>
+<tr valign=top ><td ><a href="#22"><b class='cmd'>tsv::array set</b> <i class='arg'>array</i> <i class='arg'>list</i></a></td></tr>
+<tr valign=top ><td ><a href="#23"><b class='cmd'>tsv::array get</b> <i class='arg'>array</i> ?pattern?</a></td></tr>
+<tr valign=top ><td ><a href="#24"><b class='cmd'>tsv::array names</b> <i class='arg'>array</i> ?pattern?</a></td></tr>
+<tr valign=top ><td ><a href="#25"><b class='cmd'>tsv::array size</b> <i class='arg'>array</i></a></td></tr>
+<tr valign=top ><td ><a href="#26"><b class='cmd'>tsv::array reset</b> <i class='arg'>array</i> <i class='arg'>list</i></a></td></tr>
+</table></td></tr></table>
+<h2><a name="description">DESCRIPTION</a></h2>
+<p>
+This section describes commands implementing thread shared variables.
+A thread shared variable is very similar to a Tcl array but in 
+contrast to a Tcl array it is created in thread-shared memory and can
+be accessed from many threads at the same time. Important feature of
+thread shared variable is that each access to the variable is internaly
+protected by a mutex so script programmer does not have to take care 
+about locking the variable himself.
+<p>
+Thread shared variables are not bound to any thread explicitly. That 
+means that when a thread which created any of thread shared variables
+exits, the variable and associated memory is not unset/reclaimed.
+User has to explicitly unset the variable to reclaim the memory 
+consumed by the variable.
+
+<h2><a name="commands">COMMANDS</a></h2>
+<p>
+
+<dl>
+
+<dt><a name="1"><b class='cmd'>tsv::names</b> ?pattern?</a><dd>
 
 
+Returns names of shared variables matching optional ?pattern? 
+or all known variables if pattern is ommited. The command returns
+an empty list on process start. All thread shared variables are 
+created by explicit user action.
 
-<dt><b class="cmd">tsv::get</b></dt>
-<dd>Retrieves a value of the <i class="m">element</i> located in the shared <i class="m">array</i>.
-The command triggers error if the <i class="m">element</i> is not found. If the optional 
-<i class="m">varname</i> is given, the value  is stored in the named variable. In this case, 
-the command returns true (1) if <i class="m">element</i> is found or false (0) if the 
-<i class="m">element</i> is not found.
-</dd>
-
+<br><br>
+<dt><a name="2"><b class='cmd'>tsv::object</b> <i class='arg'>array</i> <i class='arg'>element</i></a><dd>
 
 
-<dt><b class="cmd">tsv::unset</b></dt>
-<dd>Deletes the <i class="m">element</i> in the shared <i class="m">array</i>. If the <i class="m">element</i>
-is not given, it deletes the whole <i class="m">array</i>.
-</dd>
+Creates object accessor command for the <i class='arg'>element</i> in the
+shared <i class='arg'>array</i>. Using this command, one can apply most 
+of the other shared variable commands as method functions of
+the element object command. The object command is automatically
+deleted when the element which this command is pointing to is unset.
+
+<br><br>
+
+<p><table><tr><td bgcolor=black>&nbsp;</td><td><pre class='sample'>
+    % tsv::set foo bar &quot;A shared string&quot;
+    % set string [tsv::object foo bar]
+    % $string append &quot; appended&quot;
+    =&gt; A shared string appended
+</pre></td></tr></table></p>
+
+<br><br>
+<dt><a name="3"><b class='cmd'>tsv::set</b> <i class='arg'>array</i> <i class='arg'>element</i> ?value?</a><dd>
 
 
+Sets the value of the <i class='arg'>element</i> in the shared <i class='arg'>array</i> 
+to <strong>value</strong> and returns the value to caller. The <strong>value</strong>
+may be ommited, in which case the command will return the current 
+value of the element. If the element cannot be found, error is triggered.
 
-<dt><b class="cmd">tsv::exists</b></dt>
-<dd>Checks wether the <i class="m">element</i> exists in the shared <i class="m">array</i>.
-If the <i class="m">element</i> is not given it tests the existence of the 
-<i class="m">array</i> itself. Returns true (1) if the item exists, 
-false (0) if not.
-</dd>
-
-
-
-<dt><b class="cmd">tsv::pop</b></dt>
-<dd>Returns value of the <i class="m">element</i> in the shared <i class="m">array</i> variable
-and unsets the <i class="m">element</i> in one atomic operation.
-</dd>
+<br><br>
+<dt><a name="4"><b class='cmd'>tsv::get</b> <i class='arg'>array</i> <i class='arg'>element</i> ?varname?</a><dd>
 
 
+Retrieves the value of the <i class='arg'>element</i> from the shared <i class='arg'>array</i>.
+If the optional argument <strong>varname</strong> is given, the value is
+stored in the named variable. Return value of the command depends 
+of the existence of the optional argument <strong>varname</strong>.
+If the argument is ommited and the requested element cannot be found 
+in the shared array, the command triggers error. If, however, the 
+optional argument <strong>varname</strong> is given on the command line, the
+command returns true (1) if the element is found or false (0) if the 
+element is not found in the shared array.
 
-<dt><b class="cmd">tsv::move</b></dt>
-<dd>Renames the element <i class="m">old</i> to <i class="m">new</i> in the shared <i class="m">array</i>.
-This effectively performs an get/unset/set sequence of operations
-but in one atomic step.
-</dd>
-
-
-
-<dt><b class="cmd">tsv::incr</b></dt>
-<dd>Similar to standard Tcl <b class="cmd">incr</b> but increments the value of the
-<i class="m">element</i> in shared <i class="m">array</i> instead of the Tcl variable.
-</dd>
-
+<br><br>
+<dt><a name="5"><b class='cmd'>tsv::unset</b> <i class='arg'>array</i> ?element?</a><dd>
 
 
-<dt><b class="cmd">tsv::append</b></dt>
-<dd>Similar to standard Tcl <b class="cmd">append</b> but appends one or more values
-to the <i class="m">element</i> in the shared <i class="m">array</i> instead of the Tcl variable.
-</dd>
+Unsets the <i class='arg'>element</i> from the shared <i class='arg'>array</i>.
+If the optional element is not given, it deletes the whole array.
+
+<br><br>
+<dt><a name="6"><b class='cmd'>tsv::exists</b> <i class='arg'>array</i> <i class='arg'>element</i></a><dd>
 
 
+Checks wether the <i class='arg'>element</i> exists in the shared <i class='arg'>array</i>
+and returns true (1) if it does or false (0) if it doesn't.
 
-<dt><b class="cmd">tsv::lappend</b></dt>
-<dd>Similar to standard Tcl <b class="cmd">lappend</b> but appends one or more values
-to the list <i class="m">element</i> in the shared <i class="m">array</i> instead of the Tcl variable.
-</dd>
+<br><br>
+<dt><a name="7"><b class='cmd'>tsv::pop</b> <i class='arg'>array</i> <i class='arg'>element</i></a><dd>
 
 
+Returns value of the <i class='arg'>element</i> in the shared <i class='arg'>array</i>
+and unsets the element, all in one atomic operation.
 
-<dt><b class="cmd">tsv::linsert</b></dt>
-<dd>Similar to standard Tcl <b class="cmd">linsert</b> but inserts one or more values at the 
-<i class="m">index</i> list position in the list <i class="m">element</i> in the shared <i class="m">array</i>
+<br><br>
+<dt><a name="8"><b class='cmd'>tsv::move</b> <i class='arg'>array</i> <i class='arg'>oldname</i> <i class='arg'>newname</i></a><dd>
+
+
+Renames the element <i class='arg'>oldname</i> to the <i class='arg'>newname</i> in the
+shared <i class='arg'>array</i>. This effectively performs an get/unset/set
+sequence of operations but all in one atomic step.
+
+<br><br>
+<dt><a name="9"><b class='cmd'>tsv::incr</b> <i class='arg'>array</i> <i class='arg'>element</i> ?count?</a><dd>
+
+
+Similar to standard Tcl <b class='cmd'>incr</b> command but increments the value
+of the <i class='arg'>element</i> in shared <i class='arg'>array</i> instead of the Tcl variable.
+
+<br><br>
+<dt><a name="10"><b class='cmd'>tsv::append</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>value</i> ?value ...?</a><dd>
+
+
+Similar to standard Tcl <b class='cmd'>append</b> command but appends one or more
+values to the <i class='arg'>element</i> in shared <i class='arg'>array</i> instead of the 
+Tcl variable.
+
+<br><br>
+<dt><a name="11"><b class='cmd'>tsv::lappend</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>value</i> ?value ...?</a><dd>
+
+
+Similar to standard Tcl <b class='cmd'>lappend</b> command but appends one
+or more values to the <i class='arg'>element</i> in shared <i class='arg'>array</i> 
 instead of the Tcl variable.
-</dd>
+
+<br><br>
+<dt><a name="12"><b class='cmd'>tsv::linsert</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>index</i> <i class='arg'>value</i> ?value ...?</a><dd>
 
 
+Similar to standard Tcl <b class='cmd'>linsert</b> command but inserts one
+or more values at the <i class='arg'>index</i> list position in the 
+<i class='arg'>element</i> in the shared <i class='arg'>array</i> instead of the Tcl variable.
 
-<dt><b class="cmd">tsv::lreplace</b></dt>
-<dd>Similar to standard Tcl <b class="cmd">lreplace</b> but replaces one or more values
-from the list <i class="m">element</i> in the shared <i class="m">array</i> instead of the Tcl variable.
-</dd>
-
-
-
-<dt><b class="cmd">tsv::llength</b></dt>
-<dd>Similar to standard Tcl <b class="cmd">llength</b> but returns length of the list
-<i class="m">element</i> in the shared <i class="m">array</i> instead of the Tcl variable.
-</dd>
+<br><br>
+<dt><a name="13"><b class='cmd'>tsv::lreplace</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>first</i> <i class='arg'>last</i> ?value ...?</a><dd>
 
 
+Similar to standard Tcl <b class='cmd'>lreplace</b> command but replaces one
+or more values between the <i class='arg'>first</i> and <i class='arg'>last</i> position 
+in the <i class='arg'>element</i> of the shared <i class='arg'>array</i> instead of 
+the Tcl variable.
 
-<dt><b class="cmd">tsv::lindex</b></dt>
-<dd>Similar to standard Tcl <b class="cmd">lindex</b> but returns value at the <i class="m">index</i>
-list position from the list <i class="m">element</i> in the shared <i class="m">array</i>
-instead of the Tcl variable.
-</dd>
-
-
-
-<dt><b class="cmd">tsv::lrange</b></dt>
-<dd>Similar to standard Tcl <b class="cmd">lrange</b> but returns values between <i class="m">first</i>
-and <i class="m">last</i> list position from the list <i class="m">element</i> in the shared <i class="m">array</i>
-instead of the Tcl variable.
-</dd>
+<br><br>
+<dt><a name="14"><b class='cmd'>tsv::llength</b> <i class='arg'>array</i> <i class='arg'>element</i></a><dd>
 
 
+Similar to standard Tcl <b class='cmd'>llength</b> command but returns length 
+of the <i class='arg'>element</i> in the shared <i class='arg'>array</i> instead of the Tcl
+variable.
 
-<dt><b class="cmd">tsv::lsearch</b></dt>
-<dd>Similar to standard Tcl <b class="cmd">lsearch</b> but searches the list <i class="m">element</i>
-in the shared <i class="m">array</i> instead of the Tcl variable.
-</dd>
-
-
-
-<dt><b class="cmd">tsv::lpop</b></dt>
-<dd>Splices out the value at the <i class="m">index</i> list position from the list <i class="m">element</i>
-in the shared <i class="m">array</i>. If <i class="m">index</i> is not specified, it defaults to zero.
-</dd>
+<br><br>
+<dt><a name="15"><b class='cmd'>tsv::lindex</b> <i class='arg'>array</i> <i class='arg'>element</i> ?index?</a><dd>
 
 
+Similar to standard Tcl <b class='cmd'>lindex</b> command but returns the value
+at the <i class='arg'>index</i> list position of the <i class='arg'>element</i> from
+the shared <i class='arg'>array</i> instead of the Tcl variable.
 
-<dt><b class="cmd">tsv::lpush</b></dt>
-<dd>Inserts the <i class="m">value</i> at the <i class="m">index</i> list position in the list <i class="m">element</i>
-in the shared <i class="m">array</i>. If <i class="m">index</i> is not specified, it defaults to zero.
-</dd>
+<br><br>
+<dt><a name="16"><b class='cmd'>tsv::lrange</b> <i class='arg'>array</i> <i class='arg'>element</i> <i class='arg'>from</i> <i class='arg'>to</i></a><dd>
 
 
+Similar to standard Tcl <b class='cmd'>lrange</b> command but returns values
+between <i class='arg'>from</i> and <i class='arg'>to</i> list positions from the
+<i class='arg'>element</i> in the shared <i class='arg'>array</i> instead of the Tcl variable.
 
-<dt><b class="cmd">tsv::lock</b></dt>
-<dd>This command concatenates passed arguments and evaluates the
+<br><br>
+<dt><a name="17"><b class='cmd'>tsv::lsearch</b> <i class='arg'>array</i> <i class='arg'>element</i> ?options? <i class='arg'>pattern</i></a><dd>
+
+
+Similar to standard Tcl <b class='cmd'>lsearch</b> but searches the <i class='arg'>element</i>
+in the shared <i class='arg'>array</i> instead of the Tcl variable.
+
+<br><br>
+<dt><a name="18"><b class='cmd'>tsv::lpop</b> <i class='arg'>array</i> <i class='arg'>element</i> ?index?</a><dd>
+
+
+Similar to the standard Tcl <b class='cmd'>lindex</b> command but in addition to
+returning, it also splices the value out of the <i class='arg'>element</i>
+from the shared <i class='arg'>array</i> in one atomic operation. In contrast to
+the Tcl <b class='cmd'>lindex</b> command, this command returns no value.
+
+<br><br>
+<dt><a name="19"><b class='cmd'>tsv::lpush</b> <i class='arg'>array</i> <i class='arg'>element</i> ?index?</a><dd>
+
+
+This command performes the opposite of the <b class='cmd'>tsv::lpop</b> command.
+As its counterpart, it returns no value to the caller.
+
+<br><br>
+<dt><a name="20"><b class='cmd'>tsv::lock</b> <i class='arg'>array</i> <i class='arg'>arg</i> ?arg ...?</a><dd>
+
+
+This command concatenates passed arguments and evaluates the
 resulting script under the internal mutex protection. During the
 script evaluation, the entire shared array is locked. For shared
 variable commands within the script, internal locking is disabled
 so no deadlock can occur. It is also allowed to unset the shared
 variable from within the script. The shared variable is automatically
 created if it did not exists at the time of the first lock operation.
-<pre class="example">
-% tsv::lock foo {
-    # Atomically append two elements
-    tsv::lappend foo bar 1
-    tsv::lappend foo bar 2
-    puts stderr [tsv::array get foo]
-    tsv::unset foo
-}
-%</pre>
-</dd>
+
+<br><br>
+
+<p><table><tr><td bgcolor=black>&nbsp;</td><td><pre class='sample'>
+    % tsv::lock foo {
+        tsv::lappend foo bar 1
+        tsv::lappend foo bar 2
+        puts stderr [tsv::set foo bar]
+        tsv::unset foo
+    }
+</pre></td></tr></table></p>
+
+<br><br>
+<dt><a name="21"><b class='cmd'>tsv::array</b> </a><dd>
 
 
+This command supports most of the options of the standard Tcl
+<b class='cmd'>array</b> command:
 
-<dt><b class="cmd">tsv::array</b></dt>
-<dd>This command supports most of the options of the standard Tcl <b class="cmd">array</b>
-command like:
-<dl class="commandlist">
+<br><br>
+<dl>
 
-
-<dt><b class="cmd">tsv::array set</b></dt>
-<dd>Does the same as standard Tcl <tt class="samp">array set</tt>
-</dd>
+<dt><a name="22"><b class='cmd'>tsv::array set</b> <i class='arg'>array</i> <i class='arg'>list</i></a><dd>
 
 
+Does the same as standard Tcl <b class='cmd'>array set</b>.
 
-<dt><b class="cmd">tsv::array get</b></dt>
-<dd>Does the same as standard Tcl <tt class="samp">array get</tt>
-</dd>
-
-
-
-<dt><b class="cmd">tsv::array names</b></dt>
-<dd>Does the same as standard Tcl <tt class="samp">array names</tt>
-</dd>
+<br><br>
+<dt><a name="23"><b class='cmd'>tsv::array get</b> <i class='arg'>array</i> ?pattern?</a><dd>
 
 
+Does the same as standard Tcl <b class='cmd'>array get</b>.
 
-<dt><b class="cmd">tsv::array size</b></dt>
-<dd>Does the same as standard Tcl <tt class="samp">array size</tt>
-</dd>
+<br><br>
+<dt><a name="24"><b class='cmd'>tsv::array names</b> <i class='arg'>array</i> ?pattern?</a><dd>
 
 
+Does the same as standard Tcl <b class='cmd'>array names</b>.
 
-<dt><b class="cmd">tsv::array reset</b></dt>
-<dd>Does the same as standard Tcl <tt class="samp">array set</tt> but
-it clears the array and sets new values atomically.
-</dd>
+<br><br>
+<dt><a name="25"><b class='cmd'>tsv::array size</b> <i class='arg'>array</i></a><dd>
 
+
+Does the same as standard Tcl <b class='cmd'>array size</b>.
+
+<br><br>
+<dt><a name="26"><b class='cmd'>tsv::array reset</b> <i class='arg'>array</i> <i class='arg'>list</i></a><dd>
+
+
+Does the same as standard Tcl <b class='cmd'>array set</b> but it clears
+the <i class='arg'>array</i> and sets new values from the list atomically.
 
 </dl>
-</dd>
 
 </dl>
 
-<h2><a name="SECTnode783">DISCUSSION</a></h2><p>The current implementation of thread shared variables allows easy and
+<h2><a name="discussion">DISCUSSION</a></h2>
+<p>
+The current implementation of thread shared variables allows easy and
 convenient access to data to be shared between different threads.
 Internally, the data is stored in Tcl objects and all package commands
-operate on internal data representation, thus minimizing shimmering and
+operate on internal data representation, thus minimizing shimering and
 improving performance. Special care has been taken in assuring that all 
-object data is properly locked and copied when moving objects between threads.</p><p>
+object data is properly locked and copied when moving objects between
+threads.
+<p>
 Due to the internal design of the Tcl core, there is no provision of full 
 integration of shared variables within the Tcl syntax, unfortunately. All
 access to shared data must be performed with the supplied package commands.
 Also, variable traces are not supported. But even so, benefits of easy, 
-simple and safe shared data manipulation outweights imposed limitations.</p>
-<h2><a name="SECTnode795">CREDITS</a></h2><p>Thread shared variables are inspired by the nsv interface found in 
-AOLserver 3.+ highly scalable Web server from America Online.
-</p>
-<h2><a name="SECTnode804">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
-</a></p>
-<h2><a name="SECTnode810">KEYWORDS</a></h2><p class="keywords">
-<a class="keyword" href="keyword-index.html#KW-threads">threads</a>, <a class="keyword" href="keyword-index.html#KW-synchronization">synchronization</a>, <a class="keyword" href="keyword-index.html#KW-locking">locking</a>, <a class="keyword" href="keyword-index.html#KW-threadshareddata">thread shared data</a>
-</p>
-</div><div class="footer">
-<hr class="navsep"><!-- footer.html: Standard navigational footer --><div class="navbar" align="center">
-	<a class="navaid" href="index.html">Table of Contents</a>
- ·	<a class="navaid" href="category-index.html">Index</a>
- ·	<a class="navaid" href="keyword-index.html">Keywords</a>
-</div>
-</div>
-</body>
-</html>
+simple and safe shared data manipulation outweights imposed limitations.
+
+<h2><a name="credits">CREDITS</a></h2>
+<p>
+Thread shared variables are inspired by the nsv interface found in 
+AOLserver, a highly scalable Web server from America Online.
+
+
+
+<h2><a name="keywords">KEYWORDS</a></h2>
+<p>
+locking, synchronization, thread shared data, threads
+</body></html>
+

@@ -1,10 +1,71 @@
+'\" The definitions below are for supplemental macros used in Tcl/Tk
+'\" manual entries.
 '\"
-'\" Generated from tsv.tmml
+'\" .AP type name in/out ?indent?
+'\"	Start paragraph describing an argument to a library procedure.
+'\"	type is type of argument (int, etc.), in/out is either "in", "out",
+'\"	or "in/out" to describe whether procedure reads or modifies arg,
+'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+'\"	needed;  use .AS below instead)
 '\"
-'\" BEGIN man.macros
+'\" .AS ?type? ?name?
+'\"	Give maximum sizes of arguments for setting tab stops.  Type and
+'\"	name are examples of largest possible arguments that will be passed
+'\"	to .AP later.  If args are omitted, default tab stops are used.
+'\"
+'\" .BS
+'\"	Start box enclosure.  From here until next .BE, everything will be
+'\"	enclosed in one large box.
+'\"
+'\" .BE
+'\"	End of box enclosure.
+'\"
+'\" .CS
+'\"	Begin code excerpt.
+'\"
+'\" .CE
+'\"	End code excerpt.
+'\"
+'\" .VS ?version? ?br?
+'\"	Begin vertical sidebar, for use in marking newly-changed parts
+'\"	of man pages.  The first argument is ignored and used for recording
+'\"	the version when the .VS was added, so that the sidebars can be
+'\"	found and removed when they reach a certain age.  If another argument
+'\"	is present, then a line break is forced before starting the sidebar.
+'\"
+'\" .VE
+'\"	End of vertical sidebar.
+'\"
+'\" .DS
+'\"	Begin an indented unfilled display.
+'\"
+'\" .DE
+'\"	End of indented unfilled display.
+'\"
+'\" .SO
+'\"	Start of list of standard options for a Tk widget.  The
+'\"	options follow on successive lines, in four columns separated
+'\"	by tabs.
+'\"
+'\" .SE
+'\"	End of list of standard options for a Tk widget.
+'\"
+'\" .OP cmdName dbName dbClass
+'\"	Start of description of a specific option.  cmdName gives the
+'\"	option's name as specified in the class command, dbName gives
+'\"	the option's name in the option database, and dbClass gives
+'\"	the option's class in the option database.
+'\"
+'\" .UL arg1 arg2
+'\"	Print arg1 underlined, then print arg2 normally.
+'\"
+'\" RCS: @(#) $Id: tsv.n,v 1.3 2003/11/25 18:18:29 vasiljevic Exp $
+'\"
+'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
 .nr ^l \n(.l
 .ad b
+'\"	# Start an argument description
 .de AP
 .ie !"\\$4"" .TP \\$4
 .el \{\
@@ -26,6 +87,7 @@
 .\}
 .\}
 ..
+'\"	# define tabbing values for .AP
 .de AS
 .nr )A 10n
 .if !"\\$1"" .nr )A \\w'\\$1'u+3n
@@ -35,6 +97,9 @@
 .nr )C \\n()Bu+\\w'(in/out)'u+2n
 ..
 .AS Tcl_Interp Tcl_CreateInterp in/out
+'\"	# BS - start boxed text
+'\"	# ^y = starting y location
+'\"	# ^b = 1
 .de BS
 .br
 .mk ^y
@@ -44,6 +109,7 @@
 .if n \l'\\n(.lu\(ul'
 .if n .fi
 ..
+'\"	# BE - end boxed text (draw box now)
 .de BE
 .nf
 .ti 0
@@ -63,12 +129,16 @@
 .br
 .nr ^b 0
 ..
+'\"	# VS - start vertical sidebar
+'\"	# ^Y = starting y location
+'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
 .de VS
 .if !"\\$2"" .br
 .mk ^Y
 .ie n 'mc \s12\(br\s0
 .el .nr ^v 1u
 ..
+'\"	# VE - end of vertical sidebar
 .de VE
 .ie n 'mc
 .el \{\
@@ -83,6 +153,9 @@
 .\}
 .nr ^v 0
 ..
+'\"	# Special macro to handle page bottom:  finish off current
+'\"	# box/sidebar if in box/sidebar mode, then invoked standard
+'\"	# page bottom macro.
 .de ^B
 .ev 2
 'ti 0
@@ -109,16 +182,19 @@
 .mk ^Y
 .\}
 ..
+'\"	# DS - begin display
 .de DS
 .RS
 .nf
 .sp
 ..
+'\"	# DE - end display
 .de DE
 .fi
 .RE
 .sp
 ..
+'\"	# SO - start of list of standard options
 .de SO
 .SH "STANDARD OPTIONS"
 .LP
@@ -126,12 +202,14 @@
 .ta 5.5c 11c
 .ft B
 ..
+'\"	# SE - end of list of standard options
 .de SE
 .fi
 .ft R
 .LP
 See the \\fBoptions\\fR manual entry for details on the standard options.
 ..
+'\"	# OP - start of full description for a single option
 .de OP
 .LP
 .nf
@@ -142,12 +220,14 @@ Database Class:	\\fB\\$3\\fR
 .fi
 .IP
 ..
+'\"	# CS - begin code excerpt
 .de CS
 .RS
 .nf
 .ta .25i .5i .75i 1i
 .if t .ft C
 ..
+'\"	# CE - end code excerpt
 .de CE
 .fi
 .if t .ft R
@@ -156,221 +236,255 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-'\" END man.macros
-.TH "Tcl Threading" n "2.5" Tcl ""
+
+'\"
+'\" Generated from file '' by tcllib/doctools with format 'nroff'
+'\"
+'\" -*- tcl -*- doctools manpage
+.so man.macros
+.TH "tsv" n 2.6  "Tcl Threading"
 .BS
-.SH NAME
-tsv \- Part of the Tcl threading extension allowing script-level manipulation
-of data shared between threads in a simple, safe and protected fashion.
-.SH SYNOPSIS
-.nf
-
-
-.PP
-
-\&\fBpackage require Thread ?2.5?\fP
-
-\&\fBtsv::names\fP ?\fIpattern\fR?
-\&\fBtsv::object\fP \fIarray\fR \fIelement\fR
-\&\fBtsv::set\fP \fIarray\fR \fIelement\fR \fIvalue\fR 
-\&\fBtsv::get\fP \fIarray\fR \fIelement\fR ?\fIvarname\fR?
-\&\fBtsv::unset\fP \fIarray\fR ?\fIelement\fR?
-\&\fBtsv::exists\fP \fIarray\fR ?\fIelement\fR?
-\&\fBtsv::pop\fP \fIarray\fR \fIelement\fR
-\&\fBtsv::move\fP \fIarray\fR \fIold\fR \fInew\fR
-\&\fBtsv::incr\fP \fIarray\fR \fIelement\fR ?\fIincrement\fR?
-\&\fBtsv::append\fP \fIarray\fR \fIelement\fR \fIvalue\fR ?\fIvalue\fR ...?
-\&\fBtsv::lappend\fP \fIarray\fR \fIelement\fR \fIvalue\fR ?\fIvalue\fR ...?
-\&\fBtsv::linsert\fP \fIarray\fR \fIelement\fR \fIindex\fR \fIvalue\fR ?\fIvalue\fR ...?
-\&\fBtsv::lreplace\fP \fIarray\fR \fIelement\fR \fIfirst\fR \fIlast\fR ?\fIvalue\fR ...?
-\&\fBtsv::llength\fP \fIarray\fR \fIelement\fR
-\&\fBtsv::lindex\fP \fIarray\fR \fIelement\fR \fIindex\fR
-\&\fBtsv::lrange\fP \fIarray\fR \fIelement\fR \fIfirst\fR \fIlast\fR
-\&\fBtsv::lsearch\fP \fIarray\fR \fIelement\fR ?\fImode\fR? \fIpattern\fR
-\&\fBtsv::lpop\fP \fIarray\fR \fIelement\fR ?\fIindex\fR?
-\&\fBtsv::lpush\fP \fIarray\fR \fIelement\fR \fIvalue\fR ?\fIindex\fR?
-\&\fBtsv::lock\fP \fIarg\fR ?\fIarg ...\fR?
-
-.fi
+.SH "NAME"
+tsv \-
+Part of the Tcl threading extension allowing script level
+manipulation of data shared between threads.
+.SH "SYNOPSIS"
+package require \fBTcl  8.3\fR
+.sp
+package require \fBThread  ?2.6?\fR
+.sp
+\fBtsv::names\fR ?pattern?\fR
+.sp
+\fBtsv::object\fR \fIarray\fR \fIelement\fR\fR
+.sp
+\fBtsv::set\fR \fIarray\fR \fIelement\fR ?value?\fR
+.sp
+\fBtsv::get\fR \fIarray\fR \fIelement\fR ?varname?\fR
+.sp
+\fBtsv::unset\fR \fIarray\fR ?element?\fR
+.sp
+\fBtsv::exists\fR \fIarray\fR \fIelement\fR\fR
+.sp
+\fBtsv::pop\fR \fIarray\fR \fIelement\fR\fR
+.sp
+\fBtsv::move\fR \fIarray\fR \fIoldname\fR \fInewname\fR\fR
+.sp
+\fBtsv::incr\fR \fIarray\fR \fIelement\fR ?count?\fR
+.sp
+\fBtsv::append\fR \fIarray\fR \fIelement\fR \fIvalue\fR ?value ...?\fR
+.sp
+\fBtsv::lappend\fR \fIarray\fR \fIelement\fR \fIvalue\fR ?value ...?\fR
+.sp
+\fBtsv::linsert\fR \fIarray\fR \fIelement\fR \fIindex\fR \fIvalue\fR ?value ...?\fR
+.sp
+\fBtsv::lreplace\fR \fIarray\fR \fIelement\fR \fIfirst\fR \fIlast\fR ?value ...?\fR
+.sp
+\fBtsv::llength\fR \fIarray\fR \fIelement\fR\fR
+.sp
+\fBtsv::lindex\fR \fIarray\fR \fIelement\fR ?index?\fR
+.sp
+\fBtsv::lrange\fR \fIarray\fR \fIelement\fR \fIfrom\fR \fIto\fR\fR
+.sp
+\fBtsv::lsearch\fR \fIarray\fR \fIelement\fR ?options? \fIpattern\fR\fR
+.sp
+\fBtsv::lpop\fR \fIarray\fR \fIelement\fR ?index?\fR
+.sp
+\fBtsv::lpush\fR \fIarray\fR \fIelement\fR ?index?\fR
+.sp
+\fBtsv::lock\fR \fIarray\fR \fIarg\fR ?arg ...?\fR
+.sp
+\fBtsv::array\fR \fR
+.sp
+\fBtsv::array set\fR \fIarray\fR \fIlist\fR\fR
+.sp
+\fBtsv::array get\fR \fIarray\fR ?pattern?\fR
+.sp
+\fBtsv::array names\fR \fIarray\fR ?pattern?\fR
+.sp
+\fBtsv::array size\fR \fIarray\fR\fR
+.sp
+\fBtsv::array reset\fR \fIarray\fR \fIlist\fR\fR
+.sp
 .BE
-.SH DESCRIPTION
+.SH "DESCRIPTION"
+This section describes commands implementing thread shared variables.
+A thread shared variable is very similar to a Tcl array but in
+contrast to a Tcl array it is created in thread-shared memory and can
+be accessed from many threads at the same time. Important feature of
+thread shared variable is that each access to the variable is internaly
+protected by a mutex so script programmer does not have to take care
+about locking the variable himself.
 .PP
-This section describes commands implementing thread shared variables. A thread
-shared variable is very similar to a Tcl array but in contrast to a Tcl array
-it is created in thread-shared memory and can be accessed from many threads at
-the same time. Important feature of thread shared variable is that each access
-to the variable is internaly protected by a mutex so script programmer does not have
-to take care about locking the variable himself.
-.PP
-Thread shared variables are not bound to any thread explicitly. That means that
-when a thread which created any of thread shared variables exits, the variable
-and associated memory is not unset/reclaimed. User has to explicitly unset the
-variable to reclaim the memory consumed by the variable.
-.SH COMMANDS
+Thread shared variables are not bound to any thread explicitly. That
+means that when a thread which created any of thread shared variables
+exits, the variable and associated memory is not unset/reclaimed.
+User has to explicitly unset the variable to reclaim the memory
+consumed by the variable.
+.SH "COMMANDS"
 .TP
-\&\fB\fBtsv::names\fP
-\&\fRReturns names of shared variables matching optional \fIpattern\fR or all known
-variables if pattern is ommited. The \fBtsv::names\fP returns an empty list on
-process start. All thread shared variables are created by explicit user action.
+\fBtsv::names\fR ?pattern?\fR
+Returns names of shared variables matching optional ?pattern?
+or all known variables if pattern is ommited. The command returns
+an empty list on process start. All thread shared variables are
+created by explicit user action.
 .TP
-\&\fB\fBtsv::object\fP
-\&\fRCreates object accessor command for the \fIelement\fR in the given shared 
-\&\fIarray\fR. Using this command, one can apply most of the other shared variable
-commands as method functions of the element object command. The object command is
-automatically deleted when the element which this command is pointing to is unset.
-
-.RS
-.CS
-
-% tsv::set foo bar "A shared string"
-% set string [tsv::object foo bar]
-% $string append " appended"
-=> A shared string appended
-.CE
-.RE
+\fBtsv::object\fR \fIarray\fR \fIelement\fR\fR
+Creates object accessor command for the \fIelement\fR in the
+shared \fIarray\fR. Using this command, one can apply most
+of the other shared variable commands as method functions of
+the element object command. The object command is automatically
+deleted when the element which this command is pointing to is unset.
+.sp
+.nf
+    % tsv::set foo bar "A shared string"
+    % set string [tsv::object foo bar]
+    % $string append " appended"
+    => A shared string appended
+.fi
 .TP
-\&\fB\fBtsv::set\fP
-\&\fRSets the value of the \fIelement\fR  in the shared \fIarray\fR to
-\&\fIvalue\fR and returns the value. The \fIvalue\fR may be ommited, and
-the command will return the current value of the \fIelement\fR. If the
-element cannot be found, error is triggered.
+\fBtsv::set\fR \fIarray\fR \fIelement\fR ?value?\fR
+Sets the value of the \fIelement\fR in the shared \fIarray\fR
+to \fBvalue\fR and returns the value to caller. The \fBvalue\fR
+may be ommited, in which case the command will return the current
+value of the element. If the element cannot be found, error is triggered.
 .TP
-\&\fB\fBtsv::get\fP
-\&\fRRetrieves a value of the \fIelement\fR located in the shared \fIarray\fR.
-The command triggers error if the \fIelement\fR is not found. If the optional
-\&\fIvarname\fR is given, the value  is stored in the named variable. In this case,
-the command returns true (1) if \fIelement\fR is found or false (0) if the
-\&\fIelement\fR is not found.
+\fBtsv::get\fR \fIarray\fR \fIelement\fR ?varname?\fR
+Retrieves the value of the \fIelement\fR from the shared \fIarray\fR.
+If the optional argument \fBvarname\fR is given, the value is
+stored in the named variable. Return value of the command depends
+of the existence of the optional argument \fBvarname\fR.
+If the argument is ommited and the requested element cannot be found
+in the shared array, the command triggers error. If, however, the
+optional argument \fBvarname\fR is given on the command line, the
+command returns true (1) if the element is found or false (0) if the
+element is not found in the shared array.
 .TP
-\&\fB\fBtsv::unset\fP
-\&\fRDeletes the \fIelement\fR in the shared \fIarray\fR. If the \fIelement\fR
-is not given, it deletes the whole \fIarray\fR.
+\fBtsv::unset\fR \fIarray\fR ?element?\fR
+Unsets the \fIelement\fR from the shared \fIarray\fR.
+If the optional element is not given, it deletes the whole array.
 .TP
-\&\fB\fBtsv::exists\fP
-\&\fRChecks wether the \fIelement\fR exists in the shared \fIarray\fR.
-If the \fIelement\fR is not given it tests the existence of the
-\&\fIarray\fR itself. Returns true (1) if the item exists,
-false (0) if not.
+\fBtsv::exists\fR \fIarray\fR \fIelement\fR\fR
+Checks wether the \fIelement\fR exists in the shared \fIarray\fR
+and returns true (1) if it does or false (0) if it doesn't.
 .TP
-\&\fB\fBtsv::pop\fP
-\&\fRReturns value of the \fIelement\fR in the shared \fIarray\fR variable
-and unsets the \fIelement\fR in one atomic operation.
+\fBtsv::pop\fR \fIarray\fR \fIelement\fR\fR
+Returns value of the \fIelement\fR in the shared \fIarray\fR
+and unsets the element, all in one atomic operation.
 .TP
-\&\fB\fBtsv::move\fP
-\&\fRRenames the element \fIold\fR to \fInew\fR in the shared \fIarray\fR.
-This effectively performs an get/unset/set sequence of operations
-but in one atomic step.
+\fBtsv::move\fR \fIarray\fR \fIoldname\fR \fInewname\fR\fR
+Renames the element \fIoldname\fR to the \fInewname\fR in the
+shared \fIarray\fR. This effectively performs an get/unset/set
+sequence of operations but all in one atomic step.
 .TP
-\&\fB\fBtsv::incr\fP
-\&\fRSimilar to standard Tcl \fBincr\fP but increments the value of the
-\&\fIelement\fR in shared \fIarray\fR instead of the Tcl variable.
+\fBtsv::incr\fR \fIarray\fR \fIelement\fR ?count?\fR
+Similar to standard Tcl \fBincr\fR command but increments the value
+of the \fIelement\fR in shared \fIarray\fR instead of the Tcl variable.
 .TP
-\&\fB\fBtsv::append\fP
-\&\fRSimilar to standard Tcl \fBappend\fP but appends one or more values
-to the \fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
+\fBtsv::append\fR \fIarray\fR \fIelement\fR \fIvalue\fR ?value ...?\fR
+Similar to standard Tcl \fBappend\fR command but appends one or more
+values to the \fIelement\fR in shared \fIarray\fR instead of the
+Tcl variable.
 .TP
-\&\fB\fBtsv::lappend\fP
-\&\fRSimilar to standard Tcl \fBlappend\fP but appends one or more values
-to the list \fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
-.TP
-\&\fB\fBtsv::linsert\fP
-\&\fRSimilar to standard Tcl \fBlinsert\fP but inserts one or more values at the
-\&\fIindex\fR list position in the list \fIelement\fR in the shared \fIarray\fR
+\fBtsv::lappend\fR \fIarray\fR \fIelement\fR \fIvalue\fR ?value ...?\fR
+Similar to standard Tcl \fBlappend\fR command but appends one
+or more values to the \fIelement\fR in shared \fIarray\fR
 instead of the Tcl variable.
 .TP
-\&\fB\fBtsv::lreplace\fP
-\&\fRSimilar to standard Tcl \fBlreplace\fP but replaces one or more values
-from the list \fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
+\fBtsv::linsert\fR \fIarray\fR \fIelement\fR \fIindex\fR \fIvalue\fR ?value ...?\fR
+Similar to standard Tcl \fBlinsert\fR command but inserts one
+or more values at the \fIindex\fR list position in the
+\fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
 .TP
-\&\fB\fBtsv::llength\fP
-\&\fRSimilar to standard Tcl \fBllength\fP but returns length of the list
-\&\fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
+\fBtsv::lreplace\fR \fIarray\fR \fIelement\fR \fIfirst\fR \fIlast\fR ?value ...?\fR
+Similar to standard Tcl \fBlreplace\fR command but replaces one
+or more values between the \fIfirst\fR and \fIlast\fR position
+in the \fIelement\fR of the shared \fIarray\fR instead of
+the Tcl variable.
 .TP
-\&\fB\fBtsv::lindex\fP
-\&\fRSimilar to standard Tcl \fBlindex\fP but returns value at the \fIindex\fR
-list position from the list \fIelement\fR in the shared \fIarray\fR
-instead of the Tcl variable.
+\fBtsv::llength\fR \fIarray\fR \fIelement\fR\fR
+Similar to standard Tcl \fBllength\fR command but returns length
+of the \fIelement\fR in the shared \fIarray\fR instead of the Tcl
+variable.
 .TP
-\&\fB\fBtsv::lrange\fP
-\&\fRSimilar to standard Tcl \fBlrange\fP but returns values between \fIfirst\fR
-and \fIlast\fR list position from the list \fIelement\fR in the shared \fIarray\fR
-instead of the Tcl variable.
+\fBtsv::lindex\fR \fIarray\fR \fIelement\fR ?index?\fR
+Similar to standard Tcl \fBlindex\fR command but returns the value
+at the \fIindex\fR list position of the \fIelement\fR from
+the shared \fIarray\fR instead of the Tcl variable.
 .TP
-\&\fB\fBtsv::lsearch\fP
-\&\fRSimilar to standard Tcl \fBlsearch\fP but searches the list \fIelement\fR
+\fBtsv::lrange\fR \fIarray\fR \fIelement\fR \fIfrom\fR \fIto\fR\fR
+Similar to standard Tcl \fBlrange\fR command but returns values
+between \fIfrom\fR and \fIto\fR list positions from the
+\fIelement\fR in the shared \fIarray\fR instead of the Tcl variable.
+.TP
+\fBtsv::lsearch\fR \fIarray\fR \fIelement\fR ?options? \fIpattern\fR\fR
+Similar to standard Tcl \fBlsearch\fR but searches the \fIelement\fR
 in the shared \fIarray\fR instead of the Tcl variable.
 .TP
-\&\fB\fBtsv::lpop\fP
-\&\fRSplices out the value at the \fIindex\fR list position from the list \fIelement\fR
-in the shared \fIarray\fR. If \fIindex\fR is not specified, it defaults to zero.
+\fBtsv::lpop\fR \fIarray\fR \fIelement\fR ?index?\fR
+Similar to the standard Tcl \fBlindex\fR command but in addition to
+returning, it also splices the value out of the \fIelement\fR
+from the shared \fIarray\fR in one atomic operation. In contrast to
+the Tcl \fBlindex\fR command, this command returns no value.
 .TP
-\&\fB\fBtsv::lpush\fP
-\&\fRInserts the \fIvalue\fR at the \fIindex\fR list position in the list \fIelement\fR
-in the shared \fIarray\fR. If \fIindex\fR is not specified, it defaults to zero.
+\fBtsv::lpush\fR \fIarray\fR \fIelement\fR ?index?\fR
+This command performes the opposite of the \fBtsv::lpop\fR command.
+As its counterpart, it returns no value to the caller.
 .TP
-\&\fB\fBtsv::lock\fP
-\&\fRThis command concatenates passed arguments and evaluates the
+\fBtsv::lock\fR \fIarray\fR \fIarg\fR ?arg ...?\fR
+This command concatenates passed arguments and evaluates the
 resulting script under the internal mutex protection. During the
 script evaluation, the entire shared array is locked. For shared
 variable commands within the script, internal locking is disabled
 so no deadlock can occur. It is also allowed to unset the shared
 variable from within the script. The shared variable is automatically
 created if it did not exists at the time of the first lock operation.
-
-.RS
-.CS
-
-% tsv::lock foo {
-    # Atomically append two elements
-    tsv::lappend foo bar 1
-    tsv::lappend foo bar 2
-    puts stderr [tsv::array get foo]
-    tsv::unset foo
-}
-%
-.CE
-.RE
+.sp
+.nf
+    % tsv::lock foo {
+        tsv::lappend foo bar 1
+        tsv::lappend foo bar 2
+        puts stderr [tsv::set foo bar]
+        tsv::unset foo
+    }
+.fi
 .TP
-\&\fB\fBtsv::array\fP
-\&\fRThis command supports most of the options of the standard Tcl \fBarray\fP
-command like:
+\fBtsv::array\fR \fR
+This command supports most of the options of the standard Tcl
+\fBarray\fR command:
 .RS
 .TP
-\&\fB\fBtsv::array set\fP
-\&\fRDoes the same as standard Tcl \fBarray set\fR
+\fBtsv::array set\fR \fIarray\fR \fIlist\fR\fR
+Does the same as standard Tcl \fBarray set\fR.
 .TP
-\&\fB\fBtsv::array get\fP
-\&\fRDoes the same as standard Tcl \fBarray get\fR
+\fBtsv::array get\fR \fIarray\fR ?pattern?\fR
+Does the same as standard Tcl \fBarray get\fR.
 .TP
-\&\fB\fBtsv::array names\fP
-\&\fRDoes the same as standard Tcl \fBarray names\fR
+\fBtsv::array names\fR \fIarray\fR ?pattern?\fR
+Does the same as standard Tcl \fBarray names\fR.
 .TP
-\&\fB\fBtsv::array size\fP
-\&\fRDoes the same as standard Tcl \fBarray size\fR
+\fBtsv::array size\fR \fIarray\fR\fR
+Does the same as standard Tcl \fBarray size\fR.
 .TP
-\&\fB\fBtsv::array reset\fP
-\&\fRDoes the same as standard Tcl \fBarray set\fR but
-it clears the array and sets new values atomically.
+\fBtsv::array reset\fR \fIarray\fR \fIlist\fR\fR
+Does the same as standard Tcl \fBarray set\fR but it clears
+the \fIarray\fR and sets new values from the list atomically.
 .RE
-.SH DISCUSSION
-.PP
+.SH "DISCUSSION"
 The current implementation of thread shared variables allows easy and
 convenient access to data to be shared between different threads.
 Internally, the data is stored in Tcl objects and all package commands
-operate on internal data representation, thus minimizing shimmering and
+operate on internal data representation, thus minimizing shimering and
 improving performance. Special care has been taken in assuring that all
-object data is properly locked and copied when moving objects between threads.
+object data is properly locked and copied when moving objects between
+threads.
 .PP
 Due to the internal design of the Tcl core, there is no provision of full
 integration of shared variables within the Tcl syntax, unfortunately. All
 access to shared data must be performed with the supplied package commands.
 Also, variable traces are not supported. But even so, benefits of easy,
 simple and safe shared data manipulation outweights imposed limitations.
-.SH CREDITS
-.PP
+.SH "CREDITS"
 Thread shared variables are inspired by the nsv interface found in
-AOLserver 3.+ highly scalable Web server from America Online.
-.SH "SEE ALSO"
-Guide to the Tcl threading model
-.SH KEYWORDS
-threads, synchronization, locking, thread shared data
+AOLserver, a highly scalable Web server from America Online.
+.SH "KEYWORDS"
+locking, synchronization, thread shared data, threads
