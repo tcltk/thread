@@ -1,3 +1,18 @@
+2005-03-05 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadSvCmd.c: fixed potential access
+	to the unlocked (and thus eventually freed) container
+
+	* lib/ttrace.tcl: the overloaded [info] command now
+	does the right thing when applied to non-existing 
+	procedures. We now transparently resolve them and
+	then allow the [info] to operate on them.
+
+	The ttrace::enable can now be called recursively.
+
+	Also, fixed stript generation issues for namespaced
+	variables containing wild escape sequences.
+
 2005-01-03 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: fixed Tcl Bug #1095370.
