@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.65 2003/02/08 12:45:46 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.66 2003/02/24 14:59:30 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -2747,7 +2747,8 @@ ThreadSetResult(interp, code, resultPtr)
             errorCode = Tcl_GetVar(interp, "errorCode", TCL_GLOBAL_ONLY);
             errorInfo = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
         } else {
-            errorCode = errorInfo = NULL;
+            errorCode = NULL;
+            errorInfo = NULL;
         }
     }
     
@@ -2760,10 +2761,14 @@ ThreadSetResult(interp, code, resultPtr)
     if (errorCode != NULL) {
         resultPtr->errorCode = Tcl_Alloc(1+strlen(errorCode));
         strcpy(resultPtr->errorCode, errorCode);
+    } else {
+        resultPtr->errorCode = NULL;
     }
     if (errorInfo != NULL) {
         resultPtr->errorInfo = Tcl_Alloc(1+strlen(errorInfo));
         strcpy(resultPtr->errorInfo, errorInfo);
+    } else {
+        resultPtr->errorInfo = NULL;
     }
 }
 
