@@ -1,4 +1,4 @@
-# RCS: @(#) $Id: makefile.vc,v 1.4 2000/04/19 16:52:20 welch Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.5 2000/08/10 01:35:59 davidg Exp $
 
 !include "config.vc"
 
@@ -10,18 +10,20 @@ TMPDIRNAME = Release
 DBGX =
 !endif
 
-SOURCEROOT    = ..\..
-GENERICDIR    = $(SOURCEROOT)\generic
-TESTDIR        = $(SOURCEROOT)\tests
-WINDIR        = $(SOURCEROOT)\win\vc
-TMPDIR        = $(WINDIR)\$(TMPDIRNAME)
-OUTDIR        = $(WINDIR)\$(TMPDIRNAME)
+SOURCEROOT	= ..\..
+GENERICDIR	= $(SOURCEROOT)\generic
+TESTDIR		= $(SOURCEROOT)\tests
+WINDIR		= $(SOURCEROOT)\win\vc
+TMPDIR		= $(WINDIR)\$(TMPDIRNAME)
+OUTDIR		= $(WINDIR)\$(TMPDIRNAME)
 
 THREADLIB  = $(OUTDIR)\thread$(DBGX).dll
 
 THREADOBJS  = \
-  $(TMPDIR)\threadCmd.obj \
-  $(TMPDIR)\resource.obj
+	$(TMPDIR)\threadCmd.obj \
+	$(TMPDIR)\threadSpCmd.obj \
+	$(TMPDIR)\threadSvCmd.obj \
+	$(TMPDIR)\resource.obj
 
 
 ######################################################################
@@ -45,6 +47,7 @@ cflags = -c -W3 -nologo -YX $(cdebug) $(cvarsmt) $(include32) \
 ######################################################################
 
 !if "$(NODEBUG)" == "0"
+# we need to strip the reference to msvcrt from the Stubs static library
 ldebug = -opt:noref -debug -debugtype:cv -nodefaultlib:msvcrt
 !else
 ldebug = -opt:ref -release
@@ -70,42 +73,34 @@ regsub -all {\\} {$(TESTDIR)} {/} testdir
 source [file join $$testdir all.tcl]
 <<nokeep
 
-$(THREADLIB) : $(TMPDIR)\nul $(OUTDIR)\nul $(THREADOBJS)
-  @echo Linking...
-  @$(link32) $(dlllflags) -out:$@ $(TCLSTUBSLIB) @<<
+$(THREADLIB) : $(TMPDIR) $(OUTDIR) $(THREADOBJS)
+	@echo Linking...
+	@$(link32) $(dlllflags) -out:$@ $(TCLSTUBSLIB) @<<
 $(THREADOBJS)
 <<nokeep
 
 # Create the output and temp directories, if not already there.
 # Won't error with a forced rebuild_all (ie. nmake -a ...).
 #
-$(TMPDIR)\nul :
-    @if not exist $(TMPDIR)\nul md $(TMPDIR) &\
-      echo Created directory '$(TMPDIR)'
+$(TMPDIR) :
+	@if not exist $(TMPDIR)\nul mkdir $(TMPDIR) &\
+		echo Created directory '$(TMPDIR)'
 
 !if "$(TMPDIR)" != "$(OUTDIR)"
-$(OUTDIR)\nul :
-    @if not exist $(OUTDIR)\nul md $(OUTDIR) &\
-      echo Created directory '$(OUTDIR)'
+$(OUTDIR) :
+	@if not exist $(OUTDIR)\nul mkdir $(OUTDIR) &\
+		echo Created directory '$(OUTDIR)'
 !endif
 
 ######################################################################
-# Inference rules
+# Batch mode inference rules
 ######################################################################
 
-# use batch-mode when nmake supports it.
-#
-!if $(_NMAKE_VER) < 162
-{$(GENERICDIR)}.c{$(TMPDIR)}.obj :
-  @echo Compiling...
-  @$(cc32) $(cflags) -DUSE_TCL_STUBS -DTCL_THREADS=1 $<
-!else
 {$(GENERICDIR)}.c{$(TMPDIR)}.obj ::
-  @echo Compiling...
-  @$(cc32) $(cflags) -DUSE_TCL_STUBS -DTCL_THREADS=1 @<<
+	@echo Compiling...
+	@$(cc32) $(cflags) -DUSE_TCL_STUBS -DTCL_THREADS=1 @<<
 $<
 <<nokeep
-!endif
 
 
 ######################################################################
@@ -113,11 +108,12 @@ $<
 ######################################################################
 
 $(TMPDIR)\thread.res : $(WINDIR)\thread.rc
-  @echo Compiling resources...
-  @$(rc32) -fo"$@" -i "$(GENERICDIR)" -r -DNODEBUG=$(NODEBUG) $(WINDIR)\thread.rc
+	@echo Compiling resources...
+	$(rc32) -fo"$@" -i "$(GENERICDIR)" -i "$(TCLROOT)\generic" -r \
+	    -DNODEBUG=$(NODEBUG) -DRESOURCE_INCLUDED $(WINDIR)\thread.rc
 
 $(TMPDIR)\resource.obj : $(TMPDIR)\thread.res
-  @$(cvtres32) -nologo -machine:$(MACHINE) -out:$@ $(TMPDIR)\thread.res
+	@$(cvtres32) -nologo -machine:$(MACHINE) -out:$@ $(TMPDIR)\thread.res
 
 
 ######################################################################
@@ -134,5 +130,5 @@ $(GENERICDIR)\threadCmd.c : $(GENERICDIR)\thread.h
 ######################################################################
 
 clean:
-  @if exist $(OUTDIR)\nul rmdir /s /q $(OUTDIR)
-  @if exist $(TMPDIR)\nul rmdir /s /q $(TMPDIR)
+	@if exist $(OUTDIR)\nul rmdir /s /q $(OUTDIR)
+	@if exist $(TMPDIR)\nul rmdir /s /q $(TMPDIR)

@@ -1,4 +1,4 @@
-// RCS: @(#) $Id: thread.rc,v 1.4 2000/04/17 20:37:46 welch Exp $
+// RCS: @(#) $Id: thread.rc,v 1.5 2000/08/10 01:35:59 davidg Exp $
 //
 // Version resource script
 //
@@ -32,9 +32,9 @@ BEGIN
 #else
             VALUE "OriginalFilename", "thread.dll\0"
 #endif
-            VALUE "CompanyName", "Scriptics Corporation\0"
+            VALUE "CompanyName", "Ajuba Solutions\0"
             VALUE "FileVersion", THREAD_VERSION
-            VALUE "LegalCopyright", "Copyright (c) 2000 by Scriptics Corporation\0"
+            VALUE "LegalCopyright", "Copyright (c) 2000 by Ajuba Solutions\0"
             VALUE "ProductName", "Tcl for Windows\0"
             VALUE "ProductVersion", THREAD_VERSION
         END            

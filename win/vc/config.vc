@@ -9,10 +9,36 @@
 # ALPHA|ARM|IX86|MIPS|MIPS16|MIPSR41XX|PPC|SH3|SH4
 MACHINE   = IX86
 
-MSDEVROOT    = C:\Dev\DevStudio
-TCLROOT        = ..\..\..\tcl8.3
-TCLSTUBSLIB = "$(TCLROOT)\win\release\tclstub83.lib"
-TCLSH_PROG    = "$(TCLROOT)\win\release\tclsh83.exe"
+MSDEVROOT	= C:\Dev\DevStudio60
+
+# are we 5 or 6 ?
+MSDEV_VER	= 6
+
+
+TCLROOT		= ..\..\..\tcl
+TCLSTUBSLIB	= "$(TCLROOT)\win\release\tclstub84.lib"
+TCLSH_PROG	= "$(TCLROOT)\win\release\tclsh84.exe"
+
+
+!if $(MSDEV_VER) == 5
+
+MSDEVBIN  = $(MSDEVROOT)\vc\bin
+rc32      = "$(MSDEVROOT)\SharedIDE\bin\rc.exe"
+libpath32 = /libpath:"$(MSDEVROOT)\vc\lib"
+include32 = -I "$(MSDEVROOT)\vc\include"
+
+!elseif $(MSDEV_VER) == 6
+
+MSDEVBIN  = $(MSDEVROOT)\vc98\bin
+rc32      = "$(MSDEVROOT)\Common\MSDev98\bin\rc.exe"
+libpath32 = /libpath:"$(MSDEVROOT)\vc98\lib"
+include32 = -I "$(MSDEVROOT)\vc98\include"
+
+!endif
+
+cc32      = "$(MSDEVBIN)\cl.exe"
+link32    = "$(MSDEVBIN)\link.exe"
+cvtres32  = "$(MSDEVBIN)\cvtres.exe"
 
 
 # Set NODEBUG to 0 to compile with symbols.
@@ -20,12 +46,3 @@ TCLSH_PROG    = "$(TCLROOT)\win\release\tclsh83.exe"
 !ifndef NODEBUG
 NODEBUG   = 1
 !endif
-
-MSDEVBIN  = $(MSDEVROOT)\vc\bin
-libpath32 = /libpath:"$(MSDEVROOT)\vc\lib"
-include32 = -I "$(MSDEVROOT)\vc\include"
-
-cc32      = "$(MSDEVBIN)\cl.exe"
-rc32      = "$(MSDEVROOT)\sharedide\bin\rc.exe"
-link32    = "$(MSDEVBIN)\link.exe"
-cvtres32  = "$(MSDEVBIN)\cvtres.exe"
