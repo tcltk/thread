@@ -1,0 +1,235 @@
+'\"
+'\" Generated from tpool.tmml
+'\"
+'\" BEGIN man.macros
+.if t .wh -1.3i ^B
+.nr ^l \n(.l
+.ad b
+.de AP
+.ie !"\\$4"" .TP \\$4
+.el \{\
+.   ie !"\\$2"" .TP \\n()Cu
+.   el          .TP 15
+.\}
+.ta \\n()Au \\n()Bu
+.ie !"\\$3"" \{\
+\&\\$1	\\fI\\$2\\fP	(\\$3)
+.\".b
+.\}
+.el \{\
+.br
+.ie !"\\$2"" \{\
+\&\\$1	\\fI\\$2\\fP
+.\}
+.el \{\
+\&\\fI\\$1\\fP
+.\}
+.\}
+..
+.de AS
+.nr )A 10n
+.if !"\\$1"" .nr )A \\w'\\$1'u+3n
+.nr )B \\n()Au+15n
+.\"
+.if !"\\$2"" .nr )B \\w'\\$2'u+\\n()Au+3n
+.nr )C \\n()Bu+\\w'(in/out)'u+2n
+..
+.AS Tcl_Interp Tcl_CreateInterp in/out
+.de BS
+.br
+.mk ^y
+.nr ^b 1u
+.if n .nf
+.if n .ti 0
+.if n \l'\\n(.lu\(ul'
+.if n .fi
+..
+.de BE
+.nf
+.ti 0
+.mk ^t
+.ie n \l'\\n(^lu\(ul'
+.el \{\
+.\"	Draw four-sided box normally, but don't draw top of
+.\"	box if the box started on an earlier page.
+.ie !\\n(^b-1 \{\
+\h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.el \}\
+\h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\l'|0u-1.5n\(ul'
+.\}
+.\}
+.fi
+.br
+.nr ^b 0
+..
+.de VS
+.if !"\\$2"" .br
+.mk ^Y
+.ie n 'mc \s12\(br\s0
+.el .nr ^v 1u
+..
+.de VE
+.ie n 'mc
+.el \{\
+.ev 2
+.nf
+.ti 0
+.mk ^t
+\h'|\\n(^lu+3n'\L'|\\n(^Yu-1v\(bv'\v'\\n(^tu+1v-\\n(^Yu'\h'-|\\n(^lu+3n'
+.sp -1
+.fi
+.ev
+.\}
+.nr ^v 0
+..
+.de ^B
+.ev 2
+'ti 0
+'nf
+.mk ^t
+.if \\n(^b \{\
+.\"	Draw three-sided box if this is the box's first page,
+.\"	draw two sides but no top otherwise.
+.ie !\\n(^b-1 \h'-1.5n'\L'|\\n(^yu-1v'\l'\\n(^lu+3n\(ul'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.el \h'-1.5n'\L'|\\n(^yu-1v'\h'\\n(^lu+3n'\L'\\n(^tu+1v-\\n(^yu'\h'|0u'\c
+.\}
+.if \\n(^v \{\
+.nr ^x \\n(^tu+1v-\\n(^Yu
+\kx\h'-\\nxu'\h'|\\n(^lu+3n'\ky\L'-\\n(^xu'\v'\\n(^xu'\h'|0u'\c
+.\}
+.bp
+'fi
+.ev
+.if \\n(^b \{\
+.mk ^y
+.nr ^b 2
+.\}
+.if \\n(^v \{\
+.mk ^Y
+.\}
+..
+.de DS
+.RS
+.nf
+.sp
+..
+.de DE
+.fi
+.RE
+.sp
+..
+.de SO
+.SH "STANDARD OPTIONS"
+.LP
+.nf
+.ta 5.5c 11c
+.ft B
+..
+.de SE
+.fi
+.ft R
+.LP
+See the \\fBoptions\\fR manual entry for details on the standard options.
+..
+.de OP
+.LP
+.nf
+.ta 4c
+Command-Line Name:	\\fB\\$1\\fR
+Database Name:	\\fB\\$2\\fR
+Database Class:	\\fB\\$3\\fR
+.fi
+.IP
+..
+.de CS
+.RS
+.nf
+.ta .25i .5i .75i 1i
+.if t .ft C
+..
+.de CE
+.fi
+.if t .ft R
+.RE
+..
+.de UL
+\\$1\l'|0\(ul'\\$2
+..
+'\" END man.macros
+.TH "Tcl Threading" n "2.5" Tcl ""
+.BS
+.SH NAME
+tsv \- Part of the Tcl threading extension implementing pools of worker threads.
+.SH SYNOPSIS
+.nf
+
+
+.PP
+
+\&\fBpackage require Thread ?2.5?\fP
+
+\&\fBtpool::names\fP
+\&\fBtpool::create\fP ?\fIoptions\fR?
+\&\fBtpool::post\fP \fItpoolId\fR \fIscript\fR
+\&\fBtpool::wait\fP \fItpoolId\fR \fIjobIdList\fR ?\fIvarName\fR?
+\&\fBtpool::get\fP \fItpoolId\fR \fIjobId\fR
+\&\fBtpool::preserve\fP \fItpoolId\fR
+\&\fBtpool::release\fP \fItpoolId\fR
+
+.fi
+.BE
+.SH DESCRIPTION
+.PP
+.SH COMMANDS
+.TP
+\&\fB\fBtpool::names\fP
+\&\fRThis command returns a list of IDs of threadpools created with the
+\&\fBtpool::create\fP command.
+.TP
+\&\fB\fBtpool::create \fP ?\fIoptions\fB?
+\&\fR
+.TP
+\&\fB\fBtpool::post\fP \fItpoolId\fB \fIscript\fB
+\&\fRThis command sends a \fIscript\fR to the target \fItpoolId\fR threadpool
+for execution. The script will be executed in the first available worker thread.
+If there are no idle worker threads available, the command will create
+new one, enter the event loop and service events until the newly created
+thread is initialized. If the current number of worker threads is equal to
+the maximum number of worker threads, as defined during the threadpool creation
+with the \fBtpool::create\fP command, the command will enter the event loop
+and service events while waiting for one of the worker threads to become
+available.
+.RS
+.PP
+The command returns the ID of the posted job. This ID is used for subsequent
+\&\fBtpool::wait\fP and \fBtpool::get\fP commands to wait for and
+retrieve result of the posted script. If the pool \fItpoolId\fR is not found
+in the list of active thread pools, the command will throw error. The error
+will also be triggered if the newly created worker thread fails to initialize.
+.RE
+.TP
+\&\fB\fBtpool::wait\fP \fItpoolId\fB \fIjobIdList\fB ?\fIvarName\fB?
+\&\fR
+.TP
+\&\fB\fBtpool::get\fP \fItpoolId\fB \fIjobId\fB
+\&\fR
+This command retrieves the result of the previously posted job \fIjobId\fR.
+Only results of jobs waited upon with the \fBtpool::wait\fP command can
+be retrieved. If the execution of the script resulted in error, it will throw
+the error and update the \fBerrorInfo\fR and \fBerrorCode\fR
+variables correspondingly. If the pool \fItpoolId\fR is not found in the list
+of threadpools, the command will throw error. If the job \fIjobId\fR
+is not ready for retrieval, while still not processed, or currently
+being executed by the worker thread, the command will throw error.
+.TP
+\&\fB\fBtpool::preserve\fP \fItpoolId\fB
+\&\fR
+.TP
+\&\fB\fBtpool::release\fP \fItpoolId\fB
+\&\fR
+.SH DISCUSSION
+.SH "SEE ALSO"
+Guide to the Tcl threading model
+.SH KEYWORDS
+threads, pool
