@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.4 2004/07/21 21:01:12 vasiljevic Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.5 2005/01/03 19:24:47 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -14,6 +14,7 @@
 #   ttrace::eval           top-level wrapper (ttrace-savvy eval)
 #   ttrace::enable         activates registered Tcl command traces
 #   ttrace::disable        terminates tracing of Tcl commands
+#   ttrace::isenabled      returns true if ttrace is enabled
 #   ttrace::cleanup        bring the interp to a pristine state
 #   ttrace::update         update interp to the latest trace epoch
 #   ttrace::getscript      returns a script for initializing interps
@@ -68,6 +69,7 @@ namespace eval ttrace {
     variable enables   ""     ; # List of trace-enable callbacks
     variable disables  ""     ; # List of trace-disable callbacks
     variable preloads  ""     ; # List of procedure names to preload
+    variable enabled   0      ; # True if trace is enabled
 
     variable epoch     -1     ; # The initialization epoch
     variable cleancnt   0     ; # Counter of registered cleaners
@@ -111,9 +113,11 @@ namespace eval ttrace {
     }
 
     proc enable {} {
+        variable enabled
         variable epoch [_newepoch]
         variable tracers
         variable enables
+        set enabled 1
         set nsp [namespace current]
         foreach enabler $enables {
             enable::_$enabler
@@ -126,8 +130,10 @@ namespace eval ttrace {
     }
 
     proc disable {} {
+        variable enabled
         variable tracers
         variable disables
+        set enabled 0
         set nsp [namespace current]
         foreach disabler $disables {
             disable::_$disabler
@@ -137,6 +143,11 @@ namespace eval ttrace {
                 trace remove execution $trace leave ${nsp}::trace::_$trace
             }
         }
+    }
+
+    proc isenabled {} {
+        variable enabled
+        return $enabled
     }
 
     proc update {{from -1}} {
@@ -207,9 +218,12 @@ namespace eval ttrace {
         variable tracers
         if {[lsearch $tracers $cmd] == -1} {
             lappend tracers $cmd
-            set cmd [namespace current]::trace::_$cmd
-            proc $cmd $arglist $body
-            return $cmd
+            set tracer [namespace current]::trace::_$cmd
+            proc $tracer $arglist $body
+            if {[isenabled]} {
+                trace add execution $cmd leave $tracer
+            }
+            return $tracer
         }
     }
 
@@ -433,7 +447,7 @@ eval {
     # the following key/value pair in the "load" store:
     #
     #  --- key ----              --- value ---
-    #  <path_of_loaeded_image>   <name_of_the_init_proc>
+    #  <path_of_loaded_image>   <name_of_the_init_proc>
     #
     # We normally need only the name_of_the_init_proc for
     # being able to load the package in other interpreters,
