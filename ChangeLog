@@ -4,6 +4,17 @@
 	AOLserver 4.x or higher, since namespaced commands are
 	now supported.
 
+	* generic/threadCmd.c: allows for re-initializing of package
+	commands for AOLserver 4.x (or higheri) interpreters. This way
+	we assure to have correct set of commands even if nobody
+	loaded the package on server startup.
+	Also, thread handles returned by the package now have the form:
+	"tid<number>" in (yet another) attempt to rectify problems found
+	on Cray computers.
+
+	* generic/threadPoolCmd.c: adjusted handles of the pools to
+	match ones of threads (see above).
+
 2004-07-21 Zoran Vasiljevic <zoran@archiware.com>
 
 	* doc/*: reformatted docs and added some clarifications 
