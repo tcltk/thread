@@ -1,3 +1,10 @@
+2003-08-27 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadPoolCmd.c: after expiration of the idle
+	timer, all idle workers exit unconditionaly. Before the
+	change, idle threads exited after getting the first job
+	posted. This way we were loosing work.
+
 2003-08-26 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadPoolCmd.c: fixed result list corruption
