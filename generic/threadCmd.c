@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.17 2000/10/27 03:24:50 davidg Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.18 2000/10/27 03:26:23 davidg Exp $
  */
 
 #include "thread.h"
@@ -232,7 +232,7 @@ Thread_Init(interp)
 #if (TCL_MAJOR_VERSION > 8) || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 4)
     subset83 = ((maj > 8) || ((maj == 8) && (min == 3))) ? 1 : 0;
 #else
-    subset83 = 1
+    subset83 = 1;
 #endif
 
     boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", 0);
