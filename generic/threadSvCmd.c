@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.27 2002/12/05 15:14:06 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.28 2002/12/05 23:25:35 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1599,6 +1599,7 @@ SvLockObjCmd(dummy, interp, objc, objv)
 {
     int ret;
     Tcl_Obj *scriptObj;
+    Bucket *bucketPtr;
     Tcl_Mutex savelock = (Tcl_Mutex)-1;
     Array *arrayPtr = NULL;
 
@@ -1614,10 +1615,12 @@ SvLockObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    arrayPtr = LockArray(interp, Tcl_GetString(objv[1]), FLAGS_CREATEARRAY);
-    if (arrayPtr->bucketPtr->lock != (Tcl_Mutex)-1) {
-        savelock = arrayPtr->bucketPtr->lock;
-        arrayPtr->bucketPtr->lock = (Tcl_Mutex)-1;
+    arrayPtr  = LockArray(interp, Tcl_GetString(objv[1]), FLAGS_CREATEARRAY);
+    bucketPtr = arrayPtr->bucketPtr;
+
+    if (bucketPtr->lock != (Tcl_Mutex)-1) {
+        savelock = bucketPtr->lock;
+        bucketPtr->lock = (Tcl_Mutex)-1;
     }
 
     /*
@@ -1643,9 +1646,15 @@ SvLockObjCmd(dummy, interp, objc, objv)
     }
 
     if (savelock != (Tcl_Mutex)-1) {
-        arrayPtr->bucketPtr->lock = savelock;
+        bucketPtr->lock = savelock;
     }
-    Sv_Unlock(arrayPtr);
+
+    /*
+     * We unlock the bucket directly, w/o going to Sv_Unlock()
+     * since it needs the array which may be unset by the script.
+     */
+
+    UNLOCK_BUCKET(bucketPtr);
 
     return ret;
 }
