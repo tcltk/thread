@@ -1,6 +1,7 @@
 2002-12-09 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadPoolCmd.c: added tpool::names command
+	added -exitscript for tpool::create
 
 2002-12-06 Zoran Vasiljevic <zoran@archiware.com>
 
