@@ -1,3 +1,8 @@
+2002-04-27  Zoran Vasiljevic <zoran@archiware.com>  
+
+	* generic/threadCmd.c: fixed processing of -eventmark. We now
+	properly wait for target thread to catch up with processing events.
+
 2002-04-07  Zoran Vasiljevic <zoran@archiware.com>  
 
 	* generic/threadCmd.c: added call to Ns_TclMarkForDelete(interp)
