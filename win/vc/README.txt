@@ -3,9 +3,6 @@ The files in this vc subdirectory may be useful if you have not set
 up your TEA (i.e., Cygwin) environment.  They have been contributed
 by David Gravereaux <davygrvy@pobox.com>
 
-If you have TEA, then ignore these files;
-you should run "../configure", then "make" from the thread/win directory
-
 The MSVC++ v5 project files (thread.dsw/thread.dsp) are just for convienience.
 The real build instructions are in makefile.vc with the user editable
 information contained in config.vc.  Before building the extension, 
