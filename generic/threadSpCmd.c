@@ -15,7 +15,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.14 2003/04/02 12:57:47 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.15 2003/05/31 10:46:00 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -556,6 +556,8 @@ Sp_Init (interp)
     TCL_CMD(interp, THNS"::mutex", ThreadMutexObjCmd);
     TCL_CMD(interp, THNS"::cond",  ThreadCondObjCmd);
     TCL_CMD(interp, THNS"::eval",  ThreadEvalObjCmd);
+
+    return TCL_OK;
 }
 
 /*
