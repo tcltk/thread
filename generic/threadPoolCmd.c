@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.21 2003/04/02 12:57:47 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.22 2003/07/27 17:37:49 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -107,6 +107,7 @@ static char *threadEmptyResult = "";
 static Tcl_ObjCmdProc TpoolCreateObjCmd;
 static Tcl_ObjCmdProc TpoolPostObjCmd;
 static Tcl_ObjCmdProc TpoolWaitObjCmd;
+static Tcl_ObjCmdProc TpoolCancelObjCmd;
 static Tcl_ObjCmdProc TpoolGetObjCmd;
 static Tcl_ObjCmdProc TpoolReserveObjCmd;
 static Tcl_ObjCmdProc TpoolReleaseObjCmd;
@@ -335,7 +336,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
     unsigned int jobId = 0;
-    int detached, len;
+    int ii, detached = 0, nowait = 0, len;
     char *tpoolName, *script;
     TpoolResult *rPtr;
     ThreadPool *tpoolPtr;
@@ -343,26 +344,28 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     /* 
-     * Syntax: tpool::post ?-detached? tpoolId script
+     * Syntax: tpool::post ?-detached? ?-nowait? tpoolId script
      */
 
-    if (objc < 3 || objc > 4) {
+    if (objc < 3 || objc > 5) {
         goto usage;
     }
-    if (objc == 4) {
-        if (OPT_CMP(Tcl_GetString(objv[1]), "-detached") == 0) {
+    for (ii = 1; ii < objc; ii++) {
+        char *opt = Tcl_GetString(objv[ii]);
+        if (*opt != '-') {
+            break;
+        } else if (OPT_CMP(opt, "-detached")) {
+            detached  = 1;
+        } else if (OPT_CMP(opt, "-nowait")) {
+            nowait = 1;
+        } else {
             goto usage;
         }
-        detached  = 1;
-        tpoolName = Tcl_GetString(objv[2]);
-        script    = Tcl_GetStringFromObj(objv[3], &len);
-    } else {
-        detached  = 0;
-        tpoolName = Tcl_GetString(objv[1]);
-        script    = Tcl_GetStringFromObj(objv[2], &len);
     }
 
-    tpoolPtr = GetTpool(tpoolName);
+    tpoolName = Tcl_GetString(objv[ii]);
+    script    = Tcl_GetStringFromObj(objv[ii+1], &len);
+    tpoolPtr  = GetTpool(tpoolName);
     if (tpoolPtr == NULL) {
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName, 
                          "\"", NULL);
@@ -376,26 +379,45 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     InitWaiter();
 
     /*
-     * Wait for an idle worker thread
+     * Wait for an idle worker thread or just assure that
+     * there is at least one running worker thread if 
+     * caller decides not to wait for the idle worker thread.
      */
 
     Tcl_MutexLock(&tpoolPtr->mutex);
-    while (tpoolPtr->idleWorkers == 0) {
-        PushWaiter(tpoolPtr);
+    if (nowait) {
         if (tpoolPtr->numWorkers < tpoolPtr->maxWorkers) {
-            /* No more free workers; start new one */
+            PushWaiter(tpoolPtr);
             if (CreateWorker(interp, tpoolPtr) != TCL_OK) {
                 Tcl_MutexUnlock(&tpoolPtr->mutex);
                 return TCL_ERROR;
             }
+            /* Wait for worker to start and service the event loop */
+            Tcl_MutexUnlock(&tpoolPtr->mutex);
+            tsdPtr->stop = -1;
+            while(tsdPtr->stop == -1) {
+                Tcl_DoOneEvent(TCL_ALL_EVENTS);
+            }
+            Tcl_MutexLock(&tpoolPtr->mutex);
         }
-        /* Wait for worker and service the event loop */
-        Tcl_MutexUnlock(&tpoolPtr->mutex);
-        tsdPtr->stop = -1;
-        while(tsdPtr->stop == -1) {
-            Tcl_DoOneEvent(TCL_ALL_EVENTS);
+    } else {
+        while (tpoolPtr->idleWorkers == 0) {
+            PushWaiter(tpoolPtr);
+            if (tpoolPtr->numWorkers < tpoolPtr->maxWorkers) {
+                /* No more free workers; start new one */
+                if (CreateWorker(interp, tpoolPtr) != TCL_OK) {
+                    Tcl_MutexUnlock(&tpoolPtr->mutex);
+                    return TCL_ERROR;
+                }
+            }
+            /* Wait for any idle worker and service the event loop */
+            Tcl_MutexUnlock(&tpoolPtr->mutex);
+            tsdPtr->stop = -1;
+            while(tsdPtr->stop == -1) {
+                Tcl_DoOneEvent(TCL_ALL_EVENTS);
+            }
+            Tcl_MutexLock(&tpoolPtr->mutex);
         }
-        Tcl_MutexLock(&tpoolPtr->mutex);
     }
 
     /*
@@ -427,7 +449,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     return TCL_OK;
 
   usage:
-    Tcl_WrongNumArgs(interp, 1, objv, "?-detached? tpoolId script");
+    Tcl_WrongNumArgs(interp, 1, objv, "?-detached? ?-nowait? tpoolId script");
     return TCL_ERROR;
 }
 
@@ -535,6 +557,89 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
 
     if (listVar) {
         Tcl_SetVar2Ex(interp, listVar, NULL, waitList, 0);
+    }
+
+    Tcl_SetObjResult(interp, doneList);
+
+    return TCL_OK;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * TpoolCancelObjCmd --
+ *
+ *  This procedure is invoked to process the "tpool::cancel" Tcl 
+ *  command. See the user documentation for details on what it does.
+ *
+ * Results:
+ *  A standard Tcl result.
+ *
+ * Side effects:
+ *  None.
+ *
+ *----------------------------------------------------------------------
+ */
+static int
+TpoolCancelObjCmd(dummy, interp, objc, objv)
+    ClientData  dummy;          /* Not used. */
+    Tcl_Interp *interp;         /* Current interpreter. */
+    int         objc;           /* Number of arguments. */
+    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+{
+    int ii, done, wObjc, jobId;
+    char *tpoolName;
+    Tcl_Obj *doneList, **wObjv;
+    ThreadPool *tpoolPtr;
+    TpoolResult *rPtr;
+
+    /* 
+     * Syntax: tpool::cancel tpoolId jobIdList
+     */
+
+    if (objc != 3) {
+        Tcl_WrongNumArgs(interp, 1, objv, "tpoolId jobIdList");
+        return TCL_ERROR;
+    }
+    if (Tcl_ListObjGetElements(interp, objv[2], &wObjc, &wObjv) != TCL_OK) {
+        return TCL_ERROR;
+    }
+    tpoolName = Tcl_GetString(objv[1]);
+    tpoolPtr  = GetTpool(tpoolName);
+    if (tpoolPtr == NULL) {
+        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
+                         "\"", NULL);
+        return TCL_ERROR;
+    }
+    
+    InitWaiter();
+    done = 0; /* Number of elements in the done list */
+    doneList = Tcl_NewListObj(0, NULL);
+    
+    for (ii = 0; ii < wObjc; ii++) {
+        if (Tcl_GetIntFromObj(interp, wObjv[ii], &jobId) != TCL_OK) {
+            return TCL_ERROR;
+        }
+        Tcl_MutexLock(&tpoolPtr->mutex);
+        for (rPtr = tpoolPtr->workHead; rPtr; rPtr = rPtr->nextPtr) {
+            if (rPtr->jobId == (unsigned int)jobId) {
+                if (rPtr->prevPtr != NULL) {
+                    rPtr->prevPtr->nextPtr = rPtr->nextPtr;
+                } else {
+                    tpoolPtr->workHead = rPtr->nextPtr;
+                }
+                if (rPtr->nextPtr != NULL) {
+                    rPtr->nextPtr->prevPtr = rPtr->prevPtr;
+                } else {
+                    tpoolPtr->workTail = rPtr->prevPtr;
+                }
+                SetResult(NULL, rPtr); /* Just to free the result */
+                Tcl_Free(rPtr->script);
+                Tcl_Free((char*)rPtr);
+                Tcl_ListObjAppendElement(interp, doneList, wObjv[ii]);
+            }
+        }
+        Tcl_MutexUnlock(&tpoolPtr->mutex);
     }
 
     Tcl_SetObjResult(interp, doneList);
@@ -1309,21 +1414,29 @@ SetResult(interp, rPtr)
 {
     if (rPtr->result) {
         if (rPtr->result == threadEmptyResult) {
-            Tcl_ResetResult(interp);
+            if (interp) {
+                Tcl_ResetResult(interp);
+            }
         } else {
-            Tcl_SetObjResult(interp, Tcl_NewStringObj(rPtr->result,-1));
+            if (interp) {
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(rPtr->result,-1));
+            }
             Tcl_Free(rPtr->result);
             rPtr->result = NULL;
         }
     }
     if (rPtr->retcode == TCL_ERROR) {
         if (rPtr->errorCode) {
-            Tcl_SetObjErrorCode(interp,Tcl_NewStringObj(rPtr->errorCode,-1));
+            if (interp) {
+                Tcl_SetObjErrorCode(interp,Tcl_NewStringObj(rPtr->errorCode,-1));
+            }
             Tcl_Free(rPtr->errorCode);
             rPtr->errorCode = NULL;
         }
         if (rPtr->errorInfo) {
-            Tcl_AddObjErrorInfo(interp, rPtr->errorInfo, -1);
+            if (interp) {
+                Tcl_AddObjErrorInfo(interp, rPtr->errorInfo, -1);
+            }
             Tcl_Free(rPtr->errorInfo);
             rPtr->errorInfo = NULL;
         }
@@ -1627,12 +1740,13 @@ int
 Tpool_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
 {
-    static initialized;
+    static int initialized;
 
     TCL_CMD(interp, TPNS"create",   TpoolCreateObjCmd);
     TCL_CMD(interp, TPNS"names",    TpoolNamesObjCmd);
     TCL_CMD(interp, TPNS"post",     TpoolPostObjCmd);
     TCL_CMD(interp, TPNS"wait",     TpoolWaitObjCmd);
+    TCL_CMD(interp, TPNS"cancel",   TpoolCancelObjCmd);
     TCL_CMD(interp, TPNS"get",      TpoolGetObjCmd);
     TCL_CMD(interp, TPNS"preserve", TpoolReserveObjCmd);
     TCL_CMD(interp, TPNS"release",  TpoolReleaseObjCmd);
