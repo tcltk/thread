@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.13 2002/12/18 18:22:23 vasiljevic Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.14 2002/12/19 09:55:43 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -38,16 +38,23 @@
 #undef  TCL_STORAGE_CLASS
 #define TCL_STORAGE_CLASS DLLEXPORT
 
-
 /*
- * Allow for some command/namespace customization.
+ * Allow for some command names customization.
+ * Only thread:: and tpool:: are handled here.
+ * The shared variable is more complicated.
+ * Look into the threadSvCmd.h for more info.
+ * The reason for this is that eralier versions
+ * of AOLserver do not handle namespaced Tcl
+ * commands properly.
  */
 
 #ifdef NS_AOLSERVER
 # include <ns.h>
-# define NS "thread::"
+# define THNS "thread_"
+# define TPNS "tpool_"
 #else
-# define NS "thread::"
+# define THNS "thread::"
+# define TPNS "tpool::"
 #endif
 
 /*
