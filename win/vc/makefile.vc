@@ -1,89 +1,145 @@
 ######################################################################
 # makefile.vc --
 #
-# Microsoft Visual C++ descriptions file for their program
-# maintenance utility -> nmake.exe that builds the Tcl thread
-# extension.  See README.txt for commandline options and instructions.
+# Microsoft Visual C++ makefile for use with nmake.exe v1.62+ (VC++ 5.0+)
 #
-# RCS: @(#) $Id: makefile.vc,v 1.23 2002/12/06 22:40:10 vasiljevic Exp $
+# RCS: @(#) $Id: makefile.vc,v 1.24 2003/02/15 00:18:39 davygrvy Exp $
 ######################################################################
 
-!include "config.vc"
+!if "$(MSVCDIR)" == ""
+MSG = ^
+You'll need to run vcvars32.bat from Developer Studio, first, to setup^
+the environment.  Jump to this line to read the new instructions.
+!error $(MSG)
+!endif
+
+#------------------------------------------------------------------------------
+# HOW TO USE this makefile:
+#
+# 1)  It is now necessary to have MSVCDir set in the environment.  This is used
+#     as a check to see if vcvars32.bat had been run prior to running nmake or
+#     during the install of Microsoft Developer Studio, MSVCDir had been set
+#     globally and the PATH adjusted.  Either way is valid.
+#
+#     You'll need to run vcvars32.bat contained in the MsDev's vc(98)/bin
+#     directory to setup the proper environment, if needed, for your current
+#     setup.  This is a needed bootstrap requirement and allows the swapping of
+#     different environments to be easier.
+#
+# 2)  To use the Platform SDK (not expressly needed), run setenv.bat after
+#     vcvars32.bat according to the instructions for it.  This can also turn on
+#     the 64-bit compiler, if your SDK has it.
+#
+# 3)  Targets are:
+#	release  -- builds the core, the shell. (default)
+#	all      -- builds everything.
+#	test     -- builds and runs the test suite.
+#	install  -- installs the built binaries and libraries to $(INSTALLDIR)
+#		    as the root of the install tree.
+#	clean    -- removes the contents of $(TMP_DIR)
+#	hose     -- removes the contents of $(TMP_DIR) and $(OUT_DIR)
+#	genstubs -- rebuilds the Stubs table and support files (dev only).
+#	depend   -- Generates an accurate set of source dependancies for this
+#		    makefile.  Helpful to avoid problems when the sources are
+#		    refreshed and you rebuild, but can "overbuild" when common
+#		    headers like tkInt.h just get small changes.
+#
+# 4)  Macros usable on the commandline:
+#	TCLDIR=<path>
+#		Sets the location for where to find the Tcl headers and
+#		libraries.  The install point is assumed when not specified.
+#		Tk does need the source directory, though.  Tk comes very close
+#		to not needing the sources, but does, in fact, require them.
+#
+#	INSTALLDIR=<path>
+#		Sets where to install Tcl from the built binaries.
+#		C:\Progra~1\Tcl is assumed when not specified.
+#
+#	OPTS=static,msvcrt,linkexten,threads,symbols,profile,none
+#		Sets special options for the core.  The default is for none.
+#		Any combination of the above may be used (comma separated).
+#		'none' will over-ride everything to nothing.
+#
+#		static  =  Builds a static library of the core instead of a
+#			   dll.  The shell will be static (and large), as well.
+#		msvcrt  =  Effects the static option only to switch it from
+#			   using libcmt(d) as the C runtime [by default] to
+#			   msvcrt(d). This is useful for static embedding
+#			   support.
+#		symbols =  Adds symbols for step debugging.
+#		profile =  Adds profiling hooks.  Map file is assumed.
+#		loimpact =  Adds a flag for how NT treats the heap to keep memory
+#			   in use, low.  This is said to impact alloc performance.
+#
+#	STATS=memdbg,compdbg,none
+#		Sets optional memory and bytecode compiler debugging code added
+#		to the core.  The default is for none.  Any combination of the
+#		above may be used (comma separated).  'none' will over-ride
+#		everything to nothing.
+#
+#		memdbg   = Enables the debugging memory allocator.
+#		compdbg  = Enables byte compilation logging.
+#
+#	MACHINE=(IX86|IA64|ALPHA)
+#		Set the machine type used for the compiler, linker, and
+#		resource compiler.  This hook is needed to tell the tools
+#		when alternate platforms are requested.  IX86 is the default
+#		when not specified.
+#
+#	TMP_DIR=<path>
+#	OUT_DIR=<path>
+#		Hooks to allow the intermediate and output directories to be
+#		changed.  $(OUT_DIR) is assumed to be 
+#		$(BINROOT)\(Release|Debug) based on if symbols are requested.
+#		$(TMP_DIR) will de $(OUT_DIR)\<buildtype> by default.
+#
+#	TESTPAT=<file>
+#		Reads the tests requested to be run from this file.
+#
+# 5)  Examples:
+#
+#	Basic syntax of calling nmake looks like this:
+#	nmake [-nologo] -f makefile.vc [target|macrodef [target|macrodef] [...]]
+#
+#                        Standard (no frills)
+#       c:\tk_src\win\>c:\progra~1\micros~1\vc98\bin\vcvars32.bat
+#       Setting environment for using Microsoft Visual C++ tools.
+#       c:\tk_src\win\>nmake -f makefile.vc release
+#       c:\tk_src\win\>nmake -f makefile.vc install INSTALLDIR=c:\progra~1\tcl
+#
+#                         Building for Win64
+#       c:\tk_src\win\>c:\progra~1\micros~1\vc98\bin\vcvars32.bat
+#       Setting environment for using Microsoft Visual C++ tools.
+#       c:\tk_src\win\>c:\progra~1\platfo~1\setenv.bat /pre64 /RETAIL
+#       Targeting Windows pre64 RETAIL
+#       c:\tk_src\win\>nmake -f makefile.vc MACHINE=IA64
+#
+#------------------------------------------------------------------------------
+#==============================================================================
+###############################################################################
+
+
+#    //==================================================================\\
+#   >>[               -> Do not modify below this line. <-               ]<<
+#   >>[  Please, use the commandline macros to modify how Tcl is built.  ]<<
+#   >>[  If you need more features, send us a patch for more macros.     ]<<
+#    \\==================================================================//
+
+
+###############################################################################
+#==============================================================================
+#------------------------------------------------------------------------------
+
+!if !exist("makefile.vc")
+MSG = ^
+You must run this makefile only from the directory it is in.^
+Please `cd` to its location first.
+!error $(MSG) 
+!endif
+
+PROJECT=thread
+!include "rules.vc"
 !include "pkg.vc"
-
-######################################################################
-# Commandline checks and over-rides
-######################################################################
-
-
-# Set DEBUG to 1 to compile with symbols.
-#
-!ifndef DEBUG
-DEBUG		= 0
-!endif
-
-# Set STATIC_BUILD to 1 to make a static library rather
-# than a dll.
-#
-!ifndef STATIC_BUILD
-STATIC_BUILD	= 0
-!endif
-
-# Set USE_TCL_STUBS to 0 to disable Stubs support.  Stubs
-# will work fine even with static libraries, but you may
-# disable it if you want to.
-#
-!ifndef USE_TCL_STUBS
-USE_TCL_STUBS	= 1
-!endif
-
-# Set NOMSVCRT to 1 to use libcmt(d).lib instead of the
-# dynamic run-time.
-#
-!ifndef NOMSVCRT
-!if $(STATIC_BUILD)
-NOMSVCRT	= 1
-!else
-NOMSVCRT	= 0
-!endif
-!endif
-
-!if $(STATIC_BUILD) == 0 && $(NOMSVCRT) == 1
-!error "The static runtime in a loadable (dll) extension is a useless configuration that will cause abnormal and unnecessary code bloat."
-!endif
-
-
-######################################################################
-# Macro setups
-######################################################################
-
-!if $(DEBUG)
-TMPDIRNAMEPREFIX = Debug
-DBGX = d
-!else
-TMPDIRNAMEPREFIX = Release
-DBGX =
-!endif
-
-TMPDIRNAME	=
-
-!if $(STATIC_BUILD)
-!if $(NOMSVCRT) == 0
-TMPDIRNAME = $(TMPDIRNAMEPREFIX)_StaticX
-STCX	= x
-!else
-TMPDIRNAME = $(TMPDIRNAMEPREFIX)_Static
-STCX	= s
-!endif
-OUTEXT	= lib
-!else
-STCX	=
-OUTEXT	= dll
-!endif
-
-!if "$(TMPDIRNAME)" == ""
-TMPDIRNAME	= $(TMPDIRNAMEPREFIX)
-!endif
 
 SOURCEROOT	= ..\..
 GENERICDIR	= $(SOURCEROOT)\generic
@@ -91,24 +147,8 @@ TESTDIR		= $(SOURCEROOT)\tests
 WINDIR		= $(SOURCEROOT)\win
 TMP_DIR		= $(WINDIR)\$(TMPDIRNAME)
 
-!ifndef OUT_DIR
-OUT_DIR		= $(WINDIR)\$(TMPDIRNAME)
-!endif
-
-THREADLIBBASE	= $(OUT_DIR)\thread$(THREAD_MAJOR)$(THREAD_MINOR)$(STCX)$(DBGX)
-THREADLIB	= $(THREADLIBBASE).$(OUTEXT)
-
-# Is TCLROOT pointing to the sources or the install ?
-#
-!if $(ISTCLINSTALL)
-TCLSTUBSLIB	= "$(TCLROOT)\lib\tclstub$(TCLMAJOR)$(TCLMINOR).lib"
-TCLLIB		= "$(TCLROOT)\lib\tcl$(TCLMAJOR)$(TCLMINOR).lib"
-TCLSH_PROG	= "$(TCLROOT)\bin\tclsh$(TCLMAJOR)$(TCLMINOR).exe"
-!else
-TCLSTUBSLIB	= "$(TCLROOT)\win\$(TMPDIRNAMEPREFIX)\tclstub$(TCLMAJOR)$(TCLMINOR)$(DBGX).lib"
-TCLLIB		= "$(TCLROOT)\win\$(TMPDIRNAMEPREFIX)\tcl$(TCLMAJOR)$(TCLMINOR)$(DBGX).lib"
-TCLSH_PROG	= "$(TCLROOT)\win\$(TMPDIRNAMEPREFIX)\tclsh$(TCLMAJOR)$(TCLMINOR)$(DBGX).exe"
-!endif
+THREADLIBBASE	= $(OUT_DIR)\thread$(THREAD_MAJOR)$(THREAD_MINOR)$(SUFX)
+THREADLIB	= $(THREADLIBBASE).$(EXT)
 
 THREADOBJS	= \
 	$(TMP_DIR)\threadCmd.obj \
@@ -117,9 +157,17 @@ THREADOBJS	= \
 	$(TMP_DIR)\threadPoolCmd.obj \
 	$(TMP_DIR)\threadSvListCmd.obj \
 	$(TMP_DIR)\threadWin.obj \
-!if $(STATIC_BUILD) == 0
+!if !$(STATIC_BUILD)
 	$(TMP_DIR)\thread.res
 !endif
+
+!if $(TCLINSTALL)
+TCL_INCLUDES	= -I "$(_TCLDIR)\include"
+!else
+TCL_INCLUDES	= -I "$(_TCLDIR)\generic"
+!endif
+
+THREAD_DEFINES	= $(OPTDEFINES)
 
 
 ######################################################################
@@ -128,44 +176,38 @@ THREADOBJS	= \
 
 
 !if $(DEBUG)
-!if $(MSDEV_VER) < 6
-cdebug = -Zi -Od -WX
+!if "$(MACHINE)" == "IA64"
+cdebug = -Od -Zi
 !else
-cdebug = -ZI -Od -WX
+cdebug = -Z7 -Od -WX
 !endif
 !else
-cdebug = -Ox
-!endif
-
-!if $(NOMSVCRT)
-crt	= -MT$(DBGX)
-!else
-crt	= -MD$(DBGX)
+# This cranks the optimization level up to max speed.
+cdebug = -O2
 !endif
 
-!if $(USE_TCL_STUBS)
-ctclstubs   = -DUSE_TCL_STUBS
+!if $(MSVCRT)
+crt = -MD$(DBGX)
 !else
-ctclstubs   =
+crt = -MT$(DBGX)
 !endif
 
-!if $(ISTCLINSTALL)
-TCLINCLUDE	= -I"$(TCLROOT)\include"
-!else
-TCLINCLUDE	= -I"$(TCLROOT)\generic"
-!endif
-
-!if $(STATIC_BUILD)
-cdll	=
-!else
-cdll	= -GD
-!endif
-
-cflags = -nologo -c -W2 -YX -GB $(cdebug) $(crt) $(cdll) \
+cflags = -nologo -c -W2 -YX -GB $(cdebug) $(crt) \
 	-DTHREAD_VERSION=\"$(THREAD_VERSION)\" -DBUILD_thread \
 	-DTHREAD_VERSION_SUBSET83=\"$(THREAD_VERSION_SUBSET83)\" \
-	-Fp$(TMP_DIR)\ -Fo$(TMP_DIR)\ $(TCLINCLUDE)
+	-Fp$(TMP_DIR)\ -Fo$(TMP_DIR)\ $(TCL_INCLUDES)
 
+!if $(PENT_0F_ERRATA)
+cflags = $(cflags) -QI0f
+!endif
+
+!if $(ITAN_B_ERRATA)
+cflags = $(cflags) -QIA64_Bx
+!endif
+
+!if !$(STATIC_BUILD)
+cflags = $(cflags) -DUSE_TCL_STUBS
+!endif
 
 ######################################################################
 # Link flags
@@ -173,34 +215,35 @@ cflags = -nologo -c -W2 -YX -GB $(cdebug) $(crt) $(cdll) \
 
 
 !if $(DEBUG)
-ldebug = -debug -debugtype:cv
+ldebug	= -debug:full -debugtype:cv
 !else
-ldebug = -opt:ref -release
+ldebug	= -release -opt:ref -opt:icf,3
 !endif
 
 # declarations common to all linker options
-#
-lcommon = -nologo -machine:$(MACHINE) $(ldebug)
+lflags	= -nologo -machine:$(MACHINE) $(ldebug)
 
-!if $(NOMSVCRT)
-lrt	= libcmt$(DBGX).lib
-!else
-lrt	= msvcrt$(DBGX).lib
+!if $(PROFILE)
+lflags	= $(lflags) -profile
 !endif
 
-lflags = $(lcommon) -machine:$(MACHINE) -subsystem:windows -dll -link50compat $(lrt)
-
-!if $(USE_TCL_STUBS)
-# A reference to msvcrt.lib happens to be embedded into the
-# Stubs library.  This is a bug with no current resolution.
-# We need to strip this reference at link-time.
-#
-ltclstubs	    = -nodefaultlib:msvcrt.lib $(TCLSTUBSLIB)
-!else
-# Fall back to linking with the import library
-#
-ltclstubs	    = $(TCLLIB)
+!if $(ALIGN98_HACK) && !$(STATIC_BUILD)
+# align sections for PE size savings.
+lflags	= $(lflags) -opt:nowin98
+!else if !$(ALIGN98_HACK) && $(STATIC_BUILD)
+# align sections for speed in loading by choosing the virtual page size.
+lflags	= $(lflags) -align:4096
 !endif
+
+!if $(LOIMPACT)
+lflags	= $(lflags) -ws:aggressive
+!endif
+
+dlllflags = $(lflags) -dll
+conlflags = $(lflags) -subsystem:console
+guilflags = $(lflags) -subsystem:windows
+
+baselibs  = kernel32.lib advapi32.lib user32.lib
 
 
 ######################################################################
@@ -211,11 +254,8 @@ ltclstubs	    = $(TCLLIB)
 all: setup $(THREADLIB)
 
 setup:
-	@$(vcvars) > nul
-	@if not exist $(TMP_DIR)\nul mkdir $(TMP_DIR) &\
-		echo Created directory '$(TMP_DIR)'
-	@if not exist $(OUT_DIR)\nul mkdir $(OUT_DIR) &\
-		echo Created directory '$(OUT_DIR)'
+	@if not exist $(OUT_DIR)\nul mkdir $(OUT_DIR)
+	@if not exist $(TMP_DIR)\nul mkdir $(TMP_DIR)
 
 test: all
     $(TCLSH_PROG) <<
@@ -236,29 +276,29 @@ $(THREADLIB) : $(THREADOBJS)
 !else
 $(THREADLIB) : $(THREADOBJS) $(TCLSTUBSLIB)
 	@echo Linking...
-	$(link32) $(lflags) -out:$@ $(ltclstubs) @<<
+	$(link32) $(dlllflags) -out:$@ $(TCLSTUBLIB) $(baselibs) @<<
 !endif
 $(THREADOBJS)
 <<
 !if $(STATIC_BUILD) == 0
-	-del $(THREADLIBBASE).exp $(THREADLIBBASE).lib
+	-@del $*.exp
 !endif
 
 
 ######################################################################
-# Inference rules.  Use batch-mode when supported.
+# Inference rules.  Use batch-mode.
 ######################################################################
 
 
 {$(GENERICDIR)}.c{$(TMP_DIR)}.obj ::
 	@echo Compiling...
-	$(cc32) $(cflags) $(ctclstubs) -DTCL_THREADS=1 @<<
+	$(cc32) $(cflags) -DTCL_THREADS=1 @<<
 $<
 <<
 
 {$(WINDIR)}.c{$(TMP_DIR)}.obj ::
 	@echo Compiling...
-	$(cc32) $(cflags) $(ctclstubs) -DTCL_THREADS=1 @<<
+	$(cc32) $(cflags) -DTCL_THREADS=1 @<<
 $<
 <<
 
@@ -270,7 +310,7 @@ $<
 
 $(TMP_DIR)\thread.res : $(WINDIR)\thread.rc
 	@echo Compiling resources...
-	$(rc32) -fo"$@" -i "$(GENERICDIR)" $(TCLINCLUDE) -r \
+	$(rc32) -fo"$@" -i "$(GENERICDIR)" $(TCL_INCLUDES) -r \
 		-DDEBUG=$(DEBUG) -DTHREAD_MAJOR=$(THREAD_MAJOR) \
 		-DTHREAD_MINOR=$(THREAD_MINOR) -DTHREAD_VERSION=\"$(THREAD_VERSION)\" \
 		$(WINDIR)\thread.rc
@@ -296,7 +336,7 @@ $(GENERICDIR)\threadSvListCmd.c : $(GENERICDIR)\tclThread.h
 
 clean:
 	@echo Cleaning non-output build files...
-	@if exist $(TMP_DIR)\nul rmdir /s /q $(TMP_DIR)
+	@$(RMDIR) $(TMP_DIR)
 
 hose: clean
 	@echo Deleting output file $(THREADLIB) ...
