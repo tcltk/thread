@@ -1,0 +1,121 @@
+<html>
+<head>
+<link rel="stylesheet" href="manpage.css"><title>Tcl Threading: Tcl Threading</title><meta name="xsl-processor" content="Jochen Loewer et. al. (loewerj@hotmail.com)"><meta name="generator" content="$RCSfile: tpool.html,v $ $Revision: 1.1 $">
+</head><body>
+<div class="header">
+<div class="navbar" align="center">
+<a href="#SECTnode5">NAME</a> · <a href="#SECTnode14">SYNOPSIS</a> · <a href="#SECTnode76">DESCRIPTION</a> · <a href="#SECTnode85">COMMANDS</a> · <a href="#SECTnode234">DISCUSSION</a> · <a href="#SECTnode240">SEE ALSO</a> · <a href="#SECTnode246">KEYWORDS</a>
+</div><hr class="navsep">
+</div><div class="body">
+
+
+<h2><a name="SECTnode5">NAME</a></h2><p class="namesection">
+<b class="names">tsv - </b><br>Part of the Tcl threading extension implementing pools of worker threads.</p>
+
+<h2><a name="SECTnode14">SYNOPSIS</a></h2><pre class="syntax">
+<p>
+<b class="cmd">package require Thread ?2.5?</b>
+</p>
+<b class="cmd">tpool::names</b>
+<b class="cmd">tpool::create</b> ?<i class="m">options</i>?
+<b class="cmd">tpool::post</b> <i class="m">tpoolId</i> <i class="m">script</i>
+<b class="cmd">tpool::wait</b> <i class="m">tpoolId</i> <i class="m">jobIdList</i> ?<i class="m">varName</i>?
+<b class="cmd">tpool::get</b> <i class="m">tpoolId</i> <i class="m">jobId</i>
+<b class="cmd">tpool::preserve</b> <i class="m">tpoolId</i>
+<b class="cmd">tpool::release</b> <i class="m">tpoolId</i>
+</pre>
+
+<h2><a name="SECTnode76">DESCRIPTION</a></h2><p>
+</p>
+
+<h2><a name="SECTnode85">COMMANDS</a></h2><dl class="commandlist">
+
+
+<dt><b class="cmd">tpool::names</b></dt>
+<dd>This command returns a list of IDs of threadpools created with the 
+<b class="cmd">tpool::create</b> command.</dd>
+
+
+
+<dt>
+<b class="cmd">tpool::create </b> ?<i class="m">options</i>?</dt>
+<dd></dd>
+
+
+
+<dt>
+<b class="cmd">tpool::post</b> <i class="m">tpoolId</i> <i class="m">script</i>
+</dt>
+<dd>This command sends a <i class="m">script</i> to the target <i class="m">tpoolId</i> threadpool
+for execution. The script will be executed in the first available worker thread.
+If there are no idle worker threads available, the command will create
+new one, enter the event loop and service events until the newly created
+thread is initialized. If the current number of worker threads is equal to 
+the maximum number of worker threads, as defined during the threadpool creation
+with the <b class="cmd">tpool::create</b> command, the command will enter the event loop
+and service events while waiting for one of the worker threads to become 
+available.
+<p>
+The command returns the ID of the posted job. This ID is used for subsequent
+<b class="cmd">tpool::wait</b> and <b class="cmd">tpool::get</b> commands to wait for and 
+retrieve result of the posted script. If the pool <i class="m">tpoolId</i> is not found
+in the list of active thread pools, the command will throw error. The error
+will also be triggered if the newly created worker thread fails to initialize.</p>
+</dd>
+
+
+
+<dt>
+<b class="cmd">tpool::wait</b> <i class="m">tpoolId</i> <i class="m">jobIdList</i> ?<i class="m">varName</i>?</dt>
+<dd></dd>
+
+
+
+<dt>
+<b class="cmd">tpool::get</b> <i class="m">tpoolId</i> <i class="m">jobId</i>
+</dt>
+<dd>
+This command retrieves the result of the previously posted job <i class="m">jobId</i>.
+Only results of jobs waited upon with the <b class="cmd">tpool::wait</b> command can
+be retrieved. If the execution of the script resulted in error, it will throw
+the error and update the <tt class="samp">errorInfo</tt> and <tt class="samp">errorCode</tt> 
+variables correspondingly. If the pool <i class="m">tpoolId</i> is not found in the list
+of threadpools, the command will throw error. If the job <i class="m">jobId</i> 
+is not ready for retrieval, while still not processed, or currently 
+being executed by the worker thread, the command will throw error.
+</dd>
+
+
+
+<dt>
+<b class="cmd">tpool::preserve</b> <i class="m">tpoolId</i>
+</dt>
+<dd></dd>
+
+
+
+<dt>
+<b class="cmd">tpool::release</b> <i class="m">tpoolId</i>
+</dt>
+<dd></dd>
+
+
+</dl>
+
+<h2><a name="SECTnode234">DISCUSSION</a></h2>
+
+<h2><a name="SECTnode240">SEE ALSO</a></h2><p class="seealso"><a href="http://www.tcl.tk/doc/howto/thread_model.html">Guide to the Tcl threading model
+</a></p>
+
+<h2><a name="SECTnode246">KEYWORDS</a></h2><p class="keywords">
+<a class="keyword" href="keyword-index.html#KW-threads">threads</a>, <a class="keyword" href="keyword-index.html#KW-pool">pool</a>
+</p>
+</div><div class="footer">
+<hr class="navsep"><!-- footer.html: Standard navigational footer --><div class="navbar" align="center">
+	<a class="navaid" href="index.html">Table of Contents</a>
+ ·	<a class="navaid" href="category-index.html">Index</a>
+ ·	<a class="navaid" href="keyword-index.html">Keywords</a>
+</div>
+</div>
+</body>
+</html>
