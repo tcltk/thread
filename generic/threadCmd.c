@@ -1,7 +1,11 @@
 /* 
  * threadCmd.c --
  *
- *	This file implements the thread command.
+ *	This file implements the Tcl thread commands that allow script
+ *	level access to threading.  This is a standard extension and
+ *	will not load into a core that was not compiled for thread support.
+ *
+ *	see http://dev.ajubasolutions.com/doc/howto/thread_model.html
  *
  *	Some of this code is based on work done by Richard Hipp on behalf of
  *	Conservation Through Innovation, Limited, with their permission.
@@ -12,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.14 2000/08/28 23:14:21 davidg Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.15 2000/08/29 17:06:57 davidg Exp $
  */
 
 #include "thread.h"
@@ -179,7 +183,7 @@ static void	ThreadExitProc _ANSI_ARGS_((ClientData clientData));
  *
  * Thread_Init --
  *
- *	Initialize the thread command.
+ *	Initialize the thread commands.
  *
  * Results:
  *      TCL_OK if the package was properly initialized.
@@ -206,7 +210,7 @@ Thread_Init(interp)
     Tcl_GetVersion(&maj, &min, &ptch, &type);
 
     if ((maj == 8) && (min == 3) && (ptch < 1)) {
-	/* Truely depend on 8.3.1 and the new Tcl_CreateThread API
+	/* Truely depends on 8.3.1+ with the new Tcl_CreateThread API
 	 */
 	Tcl_SetObjResult(interp, Tcl_NewStringObj(
 		"The thread extension can't run in a Tcl core less than version 8.3.1", -1));
@@ -271,8 +275,8 @@ Thread_Init(interp)
 	}
 	return TCL_OK;
     } else {
-	Tcl_AppendResult(interp,
-	    "This Tcl core wasn't compiled for multithreading.", NULL);
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(
+		"This Tcl core wasn't compiled for multithreading.", -1));
 	return TCL_ERROR;
     }
 }
@@ -682,7 +686,8 @@ ThreadJoinObjCmd(dummy, interp, objc, objv)
 
     return ThreadJoin(interp, (Tcl_ThreadId) id);
 #else
-    Tcl_AppendResult(interp, "Thread join not supported in this Tcl version", NULL);
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(
+	    "Thread join not supported in this Tcl version.", -1));
     return TCL_ERROR;
 #endif
 }
@@ -735,7 +740,8 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
 
     return ThreadTransfer(interp, (Tcl_ThreadId) id, chan);
 #else
-    Tcl_AppendResult(interp, "Channel transfer not supported in this Tcl version", NULL);
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(
+	    "Channel transfer not supported in this Tcl version.", -1));
     return TCL_ERROR;
 #endif
 }
@@ -871,11 +877,15 @@ NewThread(clientData)
     char *threadEvalScript;
 
     /*
-     * Initialize the interpreter.  This should be more general.
+     * Initialize the interpreter.
      */
 
     tsdPtr->interp = Tcl_CreateInterp();
-    result = Tcl_Init(tsdPtr->interp);
+    if ((result = Tcl_Init(tsdPtr->interp)) != TCL_OK) {
+	Tcl_ConditionNotify(&ctrlPtr->condWait);
+	ThreadErrorProc(tsdPtr->interp);
+	Tcl_ExitThread(result);
+    }
     result = Thread_Init(tsdPtr->interp);
 
     /*
