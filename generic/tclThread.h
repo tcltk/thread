@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.8 2002/07/18 16:09:09 vasiljevic Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.9 2002/12/02 18:19:37 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -22,6 +22,7 @@
 #define _TCL_THREAD_H_
 
 #include <tcl.h>
+#include <stdlib.h> /* For strtoul */
 #include <string.h> /* For memset and friends */
 
 /*
@@ -35,6 +36,18 @@
 
 #undef  TCL_STORAGE_CLASS
 #define TCL_STORAGE_CLASS DLLEXPORT
+
+
+/*
+ * Allow for some command/namespace customization.
+ */
+
+#ifdef NS_AOLSERVER
+# include <ns.h>
+# define NS "Thread::"
+#else
+# define NS "thread::"
+#endif
 
 /*
  * Exported from threadCmd.c file.
@@ -56,9 +69,28 @@ EXTERN void Sv_Init _ANSI_ARGS_((Tcl_Interp *interp));
 EXTERN void Sp_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
- *  Platform specific functions.
+ * Exported from threadPoolCmd.c file.
  */
 
+EXTERN void Tpool_Init _ANSI_ARGS_((Tcl_Interp *interp));
+
+/*
+ * Macros for splicing in/out of linked lists
+ */
+
+#define SpliceIn(a,b)                          \
+    (a)->nextPtr = (b);                        \
+    if ((b) != NULL)                           \
+        (b)->prevPtr = (a);                    \
+    (a)->prevPtr = NULL, (b) = (a);
+
+#define SpliceOut(a,b)                         \
+    if ((a)->prevPtr != NULL)                  \
+        (a)->prevPtr->nextPtr = (a)->nextPtr;  \
+    else                                       \
+        (b) = (a)->nextPtr;                    \
+    if ((a)->nextPtr != NULL)                  \
+        (a)->nextPtr->prevPtr = (a)->prevPtr;
 
 /*
  * Utility macros
@@ -84,20 +116,32 @@ EXTERN void Sp_Init _ANSI_ARGS_((Tcl_Interp *interp));
 #if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION == 3)
 
 /* 412 */
-typedef int thread_JoinThread _ANSI_ARGS_((Tcl_ThreadId id, int* result));
+typedef int 
+thread_JoinThread           _ANSI_ARGS_((Tcl_ThreadId id, int* result));
+
 /* 413 */
-typedef int thread_IsChannelShared _ANSI_ARGS_((Tcl_Channel channel));
+typedef int
+thread_IsChannelShared      _ANSI_ARGS_((Tcl_Channel channel));
+
 /* 414 */
-typedef int thread_IsChannelRegistered _ANSI_ARGS_((Tcl_Interp* interp,
-	Tcl_Channel channel));
+typedef int 
+thread_IsChannelRegistered  _ANSI_ARGS_((Tcl_Interp* interp,
+                                         Tcl_Channel channel));
 /* 415 */
-typedef void thread_CutChannel _ANSI_ARGS_((Tcl_Channel channel));
+typedef void 
+thread_CutChannel           _ANSI_ARGS_((Tcl_Channel channel));
+
 /* 416 */
-typedef void thread_SpliceChannel _ANSI_ARGS_((Tcl_Channel channel));
+typedef void 
+thread_SpliceChannel        _ANSI_ARGS_((Tcl_Channel channel));
+
 /* 417 */
-typedef void thread_ClearChannelHandlers _ANSI_ARGS_((Tcl_Channel channel));
+typedef void 
+thread_ClearChannelHandlers _ANSI_ARGS_((Tcl_Channel channel));
+
 /* 418 */
-typedef int thread_IsChannelExisting _ANSI_ARGS_((CONST char* channelName));
+typedef int 
+thread_IsChannelExisting    _ANSI_ARGS_((CONST char* channelName));
 
 /*
  * Write up some macros hiding some very hackish pointer arithmetics to get
@@ -110,13 +154,13 @@ typedef int thread_IsChannelExisting _ANSI_ARGS_((CONST char* channelName));
 #define IDX(n)      (((n)-393) * procPtrSize)
 #define SLOT(n)     (STUB_BASE + IDX(n))
 
-#define Tcl_JoinThread		(*((thread_JoinThread**)	 (SLOT(412))))
-#define Tcl_IsChannelShared	(*((thread_IsChannelShared**)	 (SLOT(413))))
-#define Tcl_IsChannelRegistered	(*((thread_IsChannelRegistered**)(SLOT(414))))
-#define Tcl_CutChannel		(*((thread_CutChannel**)	 (SLOT(415))))
-#define Tcl_SpliceChannel	(*((thread_SpliceChannel**)	 (SLOT(416))))
+#define Tcl_JoinThread           (*((thread_JoinThread**)(SLOT(412))))
+#define Tcl_IsChannelShared      (*((thread_IsChannelShared**)(SLOT(413))))
+#define Tcl_IsChannelRegistered  (*((thread_IsChannelRegistered**)(SLOT(414))))
+#define Tcl_CutChannel           (*((thread_CutChannel**)(SLOT(415))))
+#define Tcl_SpliceChannel        (*((thread_SpliceChannel**)(SLOT(416))))
 #define Tcl_ClearChannelHandlers (*((thread_ClearChannelHandlers**)(SLOT(417))))
-#define Tcl_IsChannelExisting	(*((thread_IsChannelExisting**)	 (SLOT(418))))
+#define Tcl_IsChannelExisting    (*((thread_IsChannelExisting**)(SLOT(418))))
 
 #endif /* 8.3 compile compatibility */
 
