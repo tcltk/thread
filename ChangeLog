@@ -1,3 +1,14 @@
+2002-08-18 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c: updated some comments
+	* generic/threadSvCmd.c:
+	* generic/threadSvListCmd.c: fixed silly mem leak
+	where we were registering commands and object types
+	for each new thread, resulting in unnecessary table
+	grow. Not a memory leak per-se, therefore not found
+	by Purify, but shows itself by observing the size
+	of the process using the top utility. Gosh!
+
 2002-08-03  Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/threadSvListCmd.c: corrected "tsv::lpush"
