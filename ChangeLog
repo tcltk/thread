@@ -1,3 +1,10 @@
+
+2002-01-02  Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadCmd.c:
+	* generic/threadSvCmd.c:
+	* generic/threadSvListCmd.c (new):
+
 2001-09-05  David Gravereaux <davygrvy@pobox.com>
 
 	* generic/*:
