@@ -12,7 +12,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.13 2000/08/24 01:13:02 welch Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.14 2000/08/28 23:14:21 davidg Exp $
  */
 
 #include "thread.h"
@@ -197,16 +197,24 @@ Thread_Init(interp)
 {
     Tcl_Obj *boolObjPtr;
     int boolVar;
+    int maj, min, ptch, type;
 
     if (Tcl_InitStubs(interp, "8.3", 0) == NULL) {
-
-	/*
-	 * Truely depend on 8.3.1 and the new Tcl_CreateThread
-	 */
-
 	return TCL_ERROR;
     }
+
+    Tcl_GetVersion(&maj, &min, &ptch, &type);
+
+    if ((maj == 8) && (min == 3) && (ptch < 1)) {
+	/* Truely depend on 8.3.1 and the new Tcl_CreateThread API
+	 */
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(
+		"The thread extension can't run in a Tcl core less than version 8.3.1", -1));
+	return TCL_ERROR;
+    }
+
     boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", 0);
+
     if ((boolObjPtr != NULL)
 	 && (Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_ERROR)
 	 && boolVar) {
@@ -230,12 +238,17 @@ Thread_Init(interp)
 		(ClientData)NULL ,NULL);
 	Tcl_CreateObjCommand(interp,"thread::errorproc", ThreadErrorProcObjCmd, 
 		(ClientData)NULL ,NULL);
-	Tcl_CreateObjCommand(interp,"thread::join", ThreadJoinObjCmd, 
-		(ClientData)NULL ,NULL);
-	Tcl_CreateObjCommand(interp,"thread::transfer", ThreadTransferObjCmd, 
-		(ClientData)NULL ,NULL);
 	Tcl_CreateObjCommand(interp,"thread::exists", ThreadExistsObjCmd, 
 		(ClientData)NULL ,NULL);
+
+	if ((maj > 8) || ((maj == 8) && (min >= 4)) ) {
+	    /* Only 8.4+ supports the transfer of channels.
+	     */
+	    Tcl_CreateObjCommand(interp,"thread::join", ThreadJoinObjCmd, 
+		    (ClientData)NULL ,NULL);
+	    Tcl_CreateObjCommand(interp,"thread::transfer", ThreadTransferObjCmd, 
+		    (ClientData)NULL ,NULL);
+	}
 
 	/*
 	 * Add sv_* family of commands in the same namespace.
@@ -254,12 +267,12 @@ Thread_Init(interp)
 	Initialize_Sp(interp);
 
 	if (Tcl_PkgProvide(interp, "Thread", THREAD_VERSION) != TCL_OK) {
-        return TCL_ERROR;
+	    return TCL_ERROR;
 	}
 	return TCL_OK;
     } else {
 	Tcl_AppendResult(interp,
-	    "The Tcl core wasn't compiled for multithreading.  ", NULL);
+	    "This Tcl core wasn't compiled for multithreading.", NULL);
 	return TCL_ERROR;
     }
 }
