@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.2 2004/04/02 10:34:37 vasiljevic Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.3 2004/04/02 10:39:43 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -249,15 +249,24 @@ namespace eval ttrace {
     proc delentry {cmd var} {
         variable store
         variable epoch
+        set ei $::errorInfo
+        set ec $::errorCode
         catch {${store}unset ${epoch}-$cmd $var}
+        set ::errorInfo $ei
+        set ::errorCode $ec
     }
 
     proc getentry {cmd var} {
         variable store
         variable epoch
-        if {![catch {${store}set ${epoch}-$cmd $var} val]} {
-            return $val
+        set ei $::errorInfo
+        set ec $::errorCode
+        if {[catch {${store}set ${epoch}-$cmd $var} val]} {
+            set ::errorInfo $ei
+            set ::errorCode $ec
+            set val ""
         }
+        return $val
     }
 
     proc getentries {cmd {pattern *}} {
@@ -271,10 +280,13 @@ namespace eval ttrace {
         variable resolvers
         foreach resolver $resolvers {
             if {[uplevel [info comm resolve::$resolver] $cmd]} {
-                return [uplevel $cmd [lrange $args 1 end]]
+                set c [catch {uplevel $cmd [lrange $args 1 end]} r]
+                return -code $c -errorcode $::errorCode \
+                    -errorinfo $::errorInfo $r
             }
         }
-        ::eval ::tcl::unknown $args
+        set c [catch {::eval ::tcl::unknown $args} r]
+        return -code $c -errorcode $::errorCode -errorinfo $::errorInfo $r
     }
 
     proc _getthread {} {
@@ -409,10 +421,9 @@ namespace eval ttrace {
 # The code below will create traces for the following Tcl commands:
 #    "namespace", "variable", "load", "proc" and "rename"
 #
-# Also, the Tcl object extension XOTcl is handled and all XOTcl-related
-# items, like classes and objects are traced (many thanks to Gustaf
-# Neumann from XOTcl for its kind help and support). You will need at
-# least the XOTCl 1.1.0 release.
+# Also, the Tcl object extension XOTcl 1.1.0 is handled and all XOTcl
+# related things, like classes and objects are traced (many thanks to
+# Gustaf Neumann from XOTcl for his kind help and support). 
 #
 
 eval {
@@ -692,10 +703,10 @@ eval {
                 if {![string match "::*" $pat]} {
                     set pat ${cns}::$pat
                 }
-	        set fns [ttrace::getentries proc $pat]
-	        if {[string match $cmd* commands]} {
-		    set fns [concat $fns [ttrace::getentries xotcl $pat]]
-	        }
+                set fns [ttrace::getentries proc $pat]
+                if {[string match $cmd* commands]} {
+                    set fns [concat $fns [ttrace::getentries xotcl $pat]]
+                }
                 foreach entry $fns {
                     if {$cns != [namespace qual $entry]} {
                         set lazy($entry) 1
@@ -737,9 +748,8 @@ eval {
             set pdef [ttrace::getentry proc $gcmd]
             if {$pdef == ""} {
                 return 0
-            } else {
-                set cmd $gcmd
             }
+            set cmd $gcmd
         } else {
             set cmd $ncmd
         }
@@ -748,7 +758,7 @@ eval {
         if {$pnsp != ""} {
             set nsp [namespace qual $cmd]
             if {$nsp == ""} {
-                set nsp "::"
+                set nsp ::
             }
             set cmd ${pnsp}::$name
             if {[resolveprocs $cmd 1] == 0 && [info commands $cmd] == ""} {
@@ -756,13 +766,11 @@ eval {
             }
             namespace eval $nsp "namespace import -force $cmd"
         } else {
-            set args [lindex $pdef 2]
-            set body [lindex $pdef 3]
-            uplevel 0 [list ::proc $cmd $args $body]
+            uplevel 0 [list ::proc $cmd [lindex $pdef 2] [lindex $pdef 3]]
             if {$export} {
                 set nsp [namespace qual $cmd]
                 if {$nsp == ""} {
-                    set nsp "::"
+                    set nsp ::
                 }
                 namespace eval $nsp "namespace export $name"
             }
