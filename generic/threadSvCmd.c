@@ -12,15 +12,15 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.1 2000/07/03 18:47:59 zoran Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.2 2000/07/14 22:27:14 zoran Exp $
  */
 
 #include "thread.h"
 
 /*
- * The following structure defines a collection of arrays.  
- * Only the arrays within a given bucket share a lock, allowing for more
- * concurency.
+ * The following structure defines a collection of arrays.
+ * Only the arrays within a given bucket share a lock, allowing
+ * for more concurency.
  */
 
 typedef struct Bucket {
@@ -76,15 +76,15 @@ static Tcl_Mutex masterMutex; /* Protects the array of buckets */
  *
  * ThreadSvGetObjCmd --
  *
- *    This procedure is invoked to process "thread::sv_set" and
- *    "thread::sv_exists" commands.
- *    See the user documentation for details on what it does.
+ *      This procedure is invoked to process "thread::sv_set" and
+ *      "thread::sv_exists" commands.
+ *      See the user documentation for details on what it does.
  *
  * Results:
- *    A standard Tcl result.
+ *      A standard Tcl result.
  *
  * Side effects:
- *    See the user documentation.
+ *      See the user documentation.
  *
  *----------------------------------------------------------------------
  */
@@ -101,6 +101,7 @@ ThreadSvGetObjCmd(arg, interp, objc, objv)
     Array *arrayPtr;
     int cmd = (int)arg;
     char *key, *arrayName;
+    Tcl_Obj *valObj;
 
     if (objc != 3) {
         Tcl_WrongNumArgs(interp, 1, objv, "array key");
@@ -130,15 +131,18 @@ ThreadSvGetObjCmd(arg, interp, objc, objv)
     }
 
     /*
-     * Return the key value or 1, depending on flag passed via client data
+     * Depending on flag passed via client data we return
+     * 1 (exists) or the variable's value (set)
      */
 
-    if (cmd != 'e') {
-        Tcl_SetObjResult(interp, Tcl_NewStringObj(Tcl_GetHashValue(hPtr),-1));
+    if (cmd == 'e') {
+        valObj = Tcl_NewIntObj(1);
     } else {
-        Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
+        valObj = Tcl_NewStringObj(Tcl_GetHashValue(hPtr),-1);
     }
+    Tcl_SetObjResult(interp, valObj);
     UnlockArray(arrayPtr);
+
     return TCL_OK;
 }
 
@@ -147,14 +151,14 @@ ThreadSvGetObjCmd(arg, interp, objc, objv)
  *
  * ThreadSvSetObjCmd --
  *
- *    This procedure is invoked to process the "thread::sv_set" command.
- *    See the user documentation for details on what it does.
+ *      This procedure is invoked to process the "thread::sv_set"
+ *      command. See the user documentation for details on what it does.
  *
  * Results:
- *    A standard Tcl result.
+ *      A standard Tcl result.
  *
  * Side effects:
- *    See the user documentation.
+ *      See the user documentation.
  *
  *----------------------------------------------------------------------
  */
@@ -170,11 +174,16 @@ ThreadSvSetObjCmd(dummy, interp, objc, objv)
     Array *arrayPtr;
     char *arrayName, *key, *val;
 
+    /*
+     * Cover only setting the real value here. Interrogating value
+     * i.e. 'set' w/o value argument, is handled by the get command.
+     */
+
     if (objc != 3 && objc != 4) {
         Tcl_WrongNumArgs(interp, 1, objv, "array key ?value?");
         return TCL_ERROR;
     } else if (objc == 3) {
-        return ThreadSvGetObjCmd(NULL, interp, objc, objv);
+        return ThreadSvGetObjCmd((ClientData)'s', interp, objc, objv);
     }
     arrayName = Tcl_GetString(objv[1]);
 
@@ -193,14 +202,14 @@ ThreadSvSetObjCmd(dummy, interp, objc, objv)
  *
  * ThreadSvIncrObjCmd --
  *
- *    This procedure is invoked to process the "thread::sv_incr" command.
- *    See the user documentation for details on what it does.
+ *      This procedure is invoked to process the "thread::sv_incr"
+ *      command. See the user documentation for details on what it does.
  *
  * Results:
- *    A standard Tcl result.
+ *      A standard Tcl result.
  *
  * Side effects:
- *    See the user documentation.
+ *      See the user documentation.
  *
  *----------------------------------------------------------------------
  */
@@ -262,14 +271,14 @@ ThreadSvIncrObjCmd(dummy, interp, objc, objv)
  *
  * ThreadSvAppendObjCmd --
  *
- *    This procedure is invoked to process the "thread::sv_append" 
- *    command. See the user documentation for details on what it does.
+ *      This procedure is invoked to process the "thread::sv_append" 
+ *      command. See the user documentation for details on what it does.
  *
  * Results:
- *    A standard Tcl result.
+ *      A standard Tcl result.
  *
  * Side effects:
- *    See the user documentation.
+ *      See the user documentation.
  *
  *----------------------------------------------------------------------
  */
@@ -319,14 +328,14 @@ ThreadSvAppendObjCmd(arg, interp, objc, objv)
  *
  * ThreadSvArrayObjCmd --
  *
- *    This procedure is invoked to process the "thread::sv_array"
- *    command. See the user documentation for details on what it does.
+ *      This procedure is invoked to process the "thread::sv_array"
+ *      command. See the user documentation for details on what it does.
  *
  * Results:
- *    A standard Tcl result.
+ *      A standard Tcl result.
  *
  * Side effects:
- *    See the user documentation.
+ *      See the user documentation.
  *
  *----------------------------------------------------------------------
  */
@@ -412,7 +421,8 @@ ThreadSvArrayObjCmd(dummy, interp, objc, objv)
         Tcl_SetObjResult(interp, Tcl_NewIntObj(arrayPtr->vars.numEntries));
         break;
 
-    case ARESET: FlushArray(arrayPtr);
+    case ARESET: 
+        FlushArray(arrayPtr);
         /* FALL-THRU */
 
     case ASET:
@@ -448,14 +458,14 @@ ThreadSvArrayObjCmd(dummy, interp, objc, objv)
  *
  * ThreadSvUnsetObjCmd --
  *
- *    This procedure is invoked to process the "thread::sv_unset"
- *    command. See the user documentation for details on what it does.
+ *      This procedure is invoked to process the "thread::sv_unset"
+ *      command. See the user documentation for details on what it does.
  *
  * Results:
- *    A standard Tcl result.
+ *      A standard Tcl result.
  *
  * Side effects:
- *    See the user documentation.
+ *      See the user documentation.
  *
  *----------------------------------------------------------------------
  */
@@ -487,7 +497,7 @@ ThreadSvUnsetObjCmd(dummy, interp, objc, objv)
         key  = Tcl_GetString(objv[2]);
         hPtr = Tcl_FindHashEntry(&arrayPtr->vars, key);
         if (hPtr != NULL) {
-            Tcl_Free((char*)Tcl_GetHashValue(hPtr));
+            Tcl_Free((char *)Tcl_GetHashValue(hPtr));
             Tcl_DeleteHashEntry(hPtr);
         }
     }
@@ -495,7 +505,7 @@ ThreadSvUnsetObjCmd(dummy, interp, objc, objv)
         FlushArray(arrayPtr);
         Tcl_DeleteHashTable(&arrayPtr->vars);
         UnlockArray(arrayPtr);
-        Tcl_Free((char*)arrayPtr);
+        Tcl_Free((char *)arrayPtr);
     } else if (hPtr == NULL) {
         UnlockArray(arrayPtr);
         Tcl_AppendResult(interp, "no key \"", key, "\" in array ",
@@ -510,15 +520,15 @@ ThreadSvUnsetObjCmd(dummy, interp, objc, objv)
  *
  * LockArray --
  *
- *    Find (or create) the Array structure for an array and lock it.
- *    Array structure must be later unlocked with UnlockArray.
+ *      Find (or create) the Array structure for an array and lock it.
+ *      Array structure must be later unlocked with UnlockArray.
  *
  * Results:
- *    TCL_OK or TCL_ERROR if no such array.
+ *      TCL_OK or TCL_ERROR if no such array.
  *
  * Side effects;
- *    Sets *arrayPtrPtr with Array pointer or leave error in given
- *    interp.
+ *      Sets *arrayPtrPtr with Array pointer or leave error
+ *      in given interp.
  *
  *----------------------------------------------------------------------
  */
@@ -561,7 +571,7 @@ LockArray(interp, array, flags)
         if (!new) {
             arrayPtr = Tcl_GetHashValue(hPtr);
         } else {
-            arrayPtr = (Array*)Tcl_Alloc(sizeof(Array));
+            arrayPtr = (Array *)Tcl_Alloc(sizeof(Array));
             arrayPtr->bucketPtr = bucketPtr;
             arrayPtr->entryPtr = hPtr;
             Tcl_InitHashTable(&arrayPtr->vars, TCL_STRING_KEYS);
@@ -586,13 +596,13 @@ LockArray(interp, array, flags)
  *
  * UpdateVar --
  *
- *    Update a variable entry.
+ *      Update a variable entry.
  *
  * Results:
- *    None.
+ *      None.
  *
  * Side effects;
- *    New value is set.
+ *      New value is set.
  *
  *----------------------------------------------------------------------
  */
@@ -620,13 +630,13 @@ UpdateVar(hPtr, value)
  *
  * SetVar --
  *
- *    Set (or reset) an array entry.
+ *      Set (or reset) an array entry.
  *
  * Results:
- *    None.
+ *      None.
  *
  * Side effects;
- *    New entry is created and updated.
+ *      New entry is created and updated.
  *
  *----------------------------------------------------------------------
  */
@@ -648,13 +658,13 @@ SetVar(arrayPtr, key, value)
  *
  * FlushArray --
  *
- *    Unset all keys in an array.
+ *      Unset all keys in an array.
  *
  * Results:
- *    None.
+ *      None.
  *
  * Side effects
- *    None.
+ *      Array is cleaned but its variable hash-hable still lives.
  *
  *----------------------------------------------------------------------
  */
@@ -667,7 +677,7 @@ FlushArray(arrayPtr)
     
     hPtr = Tcl_FirstHashEntry(&arrayPtr->vars, &search);
     while (hPtr != NULL) {
-        Tcl_Free((char*)Tcl_GetHashValue(hPtr));
+        Tcl_Free((char *)Tcl_GetHashValue(hPtr));
         Tcl_DeleteHashEntry(hPtr);
         hPtr = Tcl_NextHashEntry(&search);
     }
@@ -678,13 +688,14 @@ FlushArray(arrayPtr)
  *
  * Initialize_Sv --
  *
- *    TBD
+ *      Creates thread::sv_* family of commands in current interpreter.
  *
  * Results:
  *    None.
  *
  * Side effects
- *    TBD
+ *    Many new command created in current interpreter. Global data
+ *    structures used by them initialized as well.
  *
  *----------------------------------------------------------------------
  */
@@ -723,16 +734,16 @@ Initialize_Sv (interp)
     if (buckets == NULL) {
         Tcl_MutexLock(&masterMutex);
         if (buckets == NULL) {
-            buckets = (Bucket*)Tcl_Alloc(sizeof(Bucket) * NUMBUCKETS);
+            buckets = (Bucket *)Tcl_Alloc(sizeof(Bucket) * NUMBUCKETS);
             for (i = 0; i < NUMBUCKETS; ++i) {
                 bucketPtr = &buckets[i];
                 memset(bucketPtr, 0, sizeof(Bucket));
-                bucketPtr->lock = (Tcl_Mutex*)Tcl_Alloc(sizeof(Tcl_Mutex));
+                bucketPtr->lock = (Tcl_Mutex *)Tcl_Alloc(sizeof(Tcl_Mutex));
                 *(bucketPtr->lock) = 0;
                 /* Tcl_MutexInitialize(bucketPtr->lock); (in core ?) */
                 Tcl_InitHashTable(&bucketPtr->arrays, TCL_STRING_KEYS);
             }
-            Tcl_CreateExitHandler((Tcl_ExitProc*) FinalizeSv, NULL);
+            Tcl_CreateExitHandler((Tcl_ExitProc *)FinalizeSv, NULL);
         }
         Tcl_MutexUnlock(&masterMutex);
     }
@@ -749,7 +760,7 @@ Initialize_Sv (interp)
  *    None.
  *
  * Side effects
- *    Memory gets free'd.
+ *    Memory gets reclaimed.
  *
  *----------------------------------------------------------------------
  */
@@ -765,36 +776,25 @@ FinalizeSv (clientData)
   
     if (buckets != NULL) {
         Tcl_MutexLock(&masterMutex);
-
-        /*
-         * Double-check to avoid a race condition.
-         */
-
         if (buckets != NULL) {
-
-          /*
-           * Walk the buckets and release memory
-           */
-
             for (i = 0; i < NUMBUCKETS; ++i) {
                 bucketPtr = &buckets[i];
                 hashPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
                 while (hashPtr != NULL) {
-                  arrayPtr = (Array*)Tcl_GetHashValue(hashPtr);
+                  arrayPtr = (Array *)Tcl_GetHashValue(hashPtr);
                   FlushArray(arrayPtr);
                   Tcl_DeleteHashTable(&arrayPtr->vars);
-                  Tcl_Free((char*)arrayPtr);
+                  Tcl_Free((char *)arrayPtr);
                   Tcl_DeleteHashEntry(hashPtr);
                   hashPtr = Tcl_NextHashEntry(&search);
                 }
                 if (*(bucketPtr->lock)) {
-                       Tcl_MutexFinalize(bucketPtr->lock);
+                    Tcl_MutexFinalize(bucketPtr->lock);
                 }
-                Tcl_Free((char*)bucketPtr->lock);
+                Tcl_Free((char *)bucketPtr->lock);
                 Tcl_DeleteHashTable(&bucketPtr->arrays);
             }
-            Tcl_Free((char*)buckets);
-            buckets = NULL;
+            Tcl_Free((char *)buckets), buckets = NULL;
         }
         Tcl_MutexUnlock(&masterMutex);
     }
