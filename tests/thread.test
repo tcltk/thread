@@ -11,7 +11,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: thread.test,v 1.12 2002/12/20 07:50:46 vasiljevic Exp $
+# RCS: @(#) $Id: thread.test,v 1.13 2003/01/26 03:57:16 mdejong Exp $
 
 package require tcltest
 namespace import -force ::tcltest::*
@@ -270,6 +270,10 @@ test thread-4.5 {Thread_Send preserve errorCode} {
     ThreadReap
     list $x $msg $errorCode
 } {1 ERR CODE}
+
+test thread-4.6 {Thread_Send negative number for thread id} {
+    list [catch {thread::send -59595959 script} err] $err
+} {1 {invalid thread id}}
 
 test thread-5.0 {Joining threads} {notFor83} {
     ThreadReap
