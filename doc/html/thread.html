@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: thread.html,v 1.14 2004/04/02 09:48:04 vasiljevic Exp $ thread.n
+<! -- CVS: $Id: thread.html,v 1.15 2004/07/21 20:51:05 vasiljevic Exp $ thread.n
    -->
 
 <body>
@@ -535,26 +535,27 @@ the command creates a recursive mutex.
 <dt><a name="21"><b class='cmd'>thread::mutex</b> <strong>destroy</strong> <i class='arg'>mutex</i></a><dd>
 
 
-Destroys the <i class='arg'>mutex</i>. Extreme care has to be taken that 
-nobody is currently using the <i class='arg'>mutex</i>, otherwise unexpected
-errors may happen.
+Destroys the <i class='arg'>mutex</i>. Mutex should be in unlocked state before
+the destroy attempt. If the mutex is locked, the command will throw 
+Tcl error. 
+
 
 <br><br>
 <dt><a name="22"><b class='cmd'>thread::mutex</b> <strong>lock</strong> <i class='arg'>mutex</i></a><dd>
 
 
-Locks the <i class='arg'>mutex</i>. Locking the exclusive mutex may deadlock the
-program if the same thread attempts to lock the same mutex twice 
-without unlocking it in between. If your program logic forces you
-to lock the same mutex twice or more from the same thread (this 
-may happen in recursive procedure invocations) you should use
-the recursive mutex. 
+Locks the <i class='arg'>mutex</i>. Locking the exclusive mutex may throw Tcl 
+error if on attempt to lock the same mutex twice from the same
+thread. If your program logic forces you to lock the same mutex 
+twice or more from the same thread (this may happen in recursive 
+procedure invocations) you should consider using the recursive mutexes. 
 
 <br><br>
 <dt><a name="23"><b class='cmd'>thread::mutex</b> <strong>unlock</strong> <i class='arg'>mutex</i></a><dd>
 
 
 Unlocks the <i class='arg'>mutex</i> so some other thread may lock it again.
+Attempt to unlock the already unlocked mutex will throw Tcl error.
 
 </dl>
 
@@ -562,9 +563,9 @@ Unlocks the <i class='arg'>mutex</i> so some other thread may lock it again.
 
 This command creates many-readers/single-writer mutexes. Reader/writer
 mutexes allow you to serialize access to a shared resource more optimally. 
-In situations where a shared resource gets mostly read and seldomly 
-modified, you might gain some performace by using reader/writer mutexes 
-instead of exclusive or recursive mutexes. 
+In situations where a shared resource gets mostly read and seldom modified, 
+you might gain some performace by using reader/writer mutexes instead of 
+exclusive or recursive mutexes. 
 <br><br>
 For reading the resource, thread should obtain a read lock on the resource.
 Read lock is non-exclusive, meaning that more than one thread can
@@ -593,9 +594,8 @@ created mutex.
 <dt><a name="26"><b class='cmd'>thread::rwmutex</b> <strong>destroy</strong> <i class='arg'>mutex</i></a><dd>
 
 
-Destroys the reader/writer <i class='arg'>mutex</i>. Extreme care has to be taken
-that nobody is currently using the <i class='arg'>mutex</i>, otherwise unexpected
-errors may happen.
+Destroys the reader/writer <i class='arg'>mutex</i>. If the mutex is already locked,
+attempt to destroy it will throw Tcl error.
 
 <br><br>
 <dt><a name="27"><b class='cmd'>thread::rwmutex</b> <strong>rlock</strong> <i class='arg'>mutex</i></a><dd>
@@ -609,13 +609,15 @@ the same <i class='arg'>mutex</i> at the same time.
 
 
 Locks the <i class='arg'>mutex</i> for writing. Only one thread may write-lock
-the same <i class='arg'>mutex</i> at the same time.
+the same <i class='arg'>mutex</i> at the same time. Attempt to write-lock same
+mutex twice from the same thread will throw Tcl error.
 
 <br><br>
 <dt><a name="29"><b class='cmd'>thread::rwmutex</b> <strong>unlock</strong> <i class='arg'>mutex</i></a><dd>
 
 
 Unlocks the <i class='arg'>mutex</i> so some other thread may lock it again.
+Attempt to unlock already unlocked mutex will throw Tcl error.
 
 </dl>
 
@@ -628,7 +630,7 @@ to test some condition, sleep on it when false and be awakened
 when it might have become true. A condition variable is always 
 used in the conjuction with an exclusive mutex. If you attempt
 to use other type of mutex in conjuction with the condition 
-variable, a Tcl error will be triggered.
+variable, a Tcl error will be thrown.
 
 <br><br>
 
@@ -648,9 +650,9 @@ created condition variable.
 <dt><a name="32"><b class='cmd'>thread::cond</b> <strong>destroy</strong> <i class='arg'>cond</i></a><dd>
 
 
-Destroys condition variable <i class='arg'>cond</i>. Extreme care has to be taken that
-nobody is using (i.e. waiting on) the condition variable, otherwise
-unexpected errors may happen.
+Destroys condition variable <i class='arg'>cond</i>. Extreme care has to be taken 
+that nobody is using (i.e. waiting on) the condition variable, 
+otherwise unexpected errors may happen.
 
 <br><br>
 <dt><a name="33"><b class='cmd'>thread::cond</b> <strong>notify</strong> <i class='arg'>cond</i></a><dd>
@@ -665,7 +667,7 @@ Wakes up all threads waiting on the condition variable <i class='arg'>cond</i>.
 This command is used to suspend program execution until the condition
 variable <i class='arg'>cond</i> has been signalled or the optional timer has expired.
 The exclusive <i class='arg'>mutex</i> must be locked by the calling thread on entrance
-to this command.
+to this command. If the mutex is not locked, Tcl error is thrown.
 While waiting on the <i class='arg'>cond</i>, the command releases <i class='arg'>mutex</i>. 
 Before returning to the calling thread, the command re-acquires the 
 <i class='arg'>mutex</i> again. Unlocking the <i class='arg'>mutex</i> and waiting on the 

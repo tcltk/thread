@@ -63,7 +63,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: thread.n,v 1.17 2004/04/02 09:48:04 vasiljevic Exp $
+'\" RCS: @(#) $Id: thread.n,v 1.18 2004/07/21 20:51:05 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -671,28 +671,28 @@ creates the exclusive mutex. With the ?-recursive? argument,
 the command creates a recursive mutex.
 .TP
 \fBthread::mutex\fR \fBdestroy\fR \fImutex\fR\fR
-Destroys the \fImutex\fR. Extreme care has to be taken that
-nobody is currently using the \fImutex\fR, otherwise unexpected
-errors may happen.
+Destroys the \fImutex\fR. Mutex should be in unlocked state before
+the destroy attempt. If the mutex is locked, the command will throw
+Tcl error.
 .TP
 \fBthread::mutex\fR \fBlock\fR \fImutex\fR\fR
-Locks the \fImutex\fR. Locking the exclusive mutex may deadlock the
-program if the same thread attempts to lock the same mutex twice
-without unlocking it in between. If your program logic forces you
-to lock the same mutex twice or more from the same thread (this
-may happen in recursive procedure invocations) you should use
-the recursive mutex.
+Locks the \fImutex\fR. Locking the exclusive mutex may throw Tcl
+error if on attempt to lock the same mutex twice from the same
+thread. If your program logic forces you to lock the same mutex
+twice or more from the same thread (this may happen in recursive
+procedure invocations) you should consider using the recursive mutexes.
 .TP
 \fBthread::mutex\fR \fBunlock\fR \fImutex\fR\fR
 Unlocks the \fImutex\fR so some other thread may lock it again.
+Attempt to unlock the already unlocked mutex will throw Tcl error.
 .RE
 .TP
 \fBthread::rwmutex\fR \fR
 This command creates many-readers/single-writer mutexes. Reader/writer
 mutexes allow you to serialize access to a shared resource more optimally.
-In situations where a shared resource gets mostly read and seldomly
-modified, you might gain some performace by using reader/writer mutexes
-instead of exclusive or recursive mutexes.
+In situations where a shared resource gets mostly read and seldom modified,
+you might gain some performace by using reader/writer mutexes instead of
+exclusive or recursive mutexes.
 .sp
 For reading the resource, thread should obtain a read lock on the resource.
 Read lock is non-exclusive, meaning that more than one thread can
@@ -712,9 +712,8 @@ This handle should be used for any future reference to the newly
 created mutex.
 .TP
 \fBthread::rwmutex\fR \fBdestroy\fR \fImutex\fR\fR
-Destroys the reader/writer \fImutex\fR. Extreme care has to be taken
-that nobody is currently using the \fImutex\fR, otherwise unexpected
-errors may happen.
+Destroys the reader/writer \fImutex\fR. If the mutex is already locked,
+attempt to destroy it will throw Tcl error.
 .TP
 \fBthread::rwmutex\fR \fBrlock\fR \fImutex\fR\fR
 Locks the \fImutex\fR for reading. More than one thread may read-lock
@@ -722,10 +721,12 @@ the same \fImutex\fR at the same time.
 .TP
 \fBthread::rwmutex\fR \fBwlock\fR \fImutex\fR\fR
 Locks the \fImutex\fR for writing. Only one thread may write-lock
-the same \fImutex\fR at the same time.
+the same \fImutex\fR at the same time. Attempt to write-lock same
+mutex twice from the same thread will throw Tcl error.
 .TP
 \fBthread::rwmutex\fR \fBunlock\fR \fImutex\fR\fR
 Unlocks the \fImutex\fR so some other thread may lock it again.
+Attempt to unlock already unlocked mutex will throw Tcl error.
 .RE
 .TP
 \fBthread::cond\fR \fR
@@ -735,7 +736,7 @@ to test some condition, sleep on it when false and be awakened
 when it might have become true. A condition variable is always
 used in the conjuction with an exclusive mutex. If you attempt
 to use other type of mutex in conjuction with the condition
-variable, a Tcl error will be triggered.
+variable, a Tcl error will be thrown.
 .sp
 The command supports following subcommands and options:
 .RS
@@ -746,9 +747,9 @@ This handle should be used for any future reference to newly
 created condition variable.
 .TP
 \fBthread::cond\fR \fBdestroy\fR \fIcond\fR\fR
-Destroys condition variable \fIcond\fR. Extreme care has to be taken that
-nobody is using (i.e. waiting on) the condition variable, otherwise
-unexpected errors may happen.
+Destroys condition variable \fIcond\fR. Extreme care has to be taken
+that nobody is using (i.e. waiting on) the condition variable,
+otherwise unexpected errors may happen.
 .TP
 \fBthread::cond\fR \fBnotify\fR \fIcond\fR\fR
 Wakes up all threads waiting on the condition variable \fIcond\fR.
@@ -757,7 +758,7 @@ Wakes up all threads waiting on the condition variable \fIcond\fR.
 This command is used to suspend program execution until the condition
 variable \fIcond\fR has been signalled or the optional timer has expired.
 The exclusive \fImutex\fR must be locked by the calling thread on entrance
-to this command.
+to this command. If the mutex is not locked, Tcl error is thrown.
 While waiting on the \fIcond\fR, the command releases \fImutex\fR.
 Before returning to the calling thread, the command re-acquires the
 \fImutex\fR again. Unlocking the \fImutex\fR and waiting on the
