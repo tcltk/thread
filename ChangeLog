@@ -1,3 +1,11 @@
+2001-04-25  David Gravereaux <davygrvy@pobox.com.com>
+
+	* generic/threadCmd.c (ThreadWait): Removed the event loop
+	sinking which was probably done because Tcl_FinalizeThread
+	was missing from NewThread().  Now the event loop is cleaned
+	by Tcl_FinalizeThread and ThreadWait doesn't manipulate events
+	that don't belong to it.
+
 2000-11-02  David Gravereaux <davygrvy@ajubasolutions.com>
 
 	* generic/threadCmd.c (NewThread): Added logic to test for a
