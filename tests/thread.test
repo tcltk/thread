@@ -11,7 +11,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: thread.test,v 1.14 2004/07/21 21:01:57 vasiljevic Exp $
+# RCS: @(#) $Id: thread.test,v 1.15 2004/10/18 23:32:29 andreas_kupries Exp $
 
 package require tcltest; namespace import -force ::tcltest::*
 
@@ -440,7 +440,7 @@ test thread-16.1 {thread::errorproc - errorproc change} {
     set new [thread::errorproc]
 } {ThreadError}
 
-test thread-16.1 {thread::errorproc - async reporting} {
+test thread-16.2 {thread::errorproc - async reporting} {
     set etid ""
     set emsg ""
     proc myerrproc {tid msg} {
