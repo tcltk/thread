@@ -197,6 +197,10 @@ SOURCE=..\..\generic\threadSvCmd.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\generic\threadPoolCmd.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\generic\threadSvListCmd.c
 # End Source File
 # End Group
