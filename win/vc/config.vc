@@ -1,16 +1,18 @@
 ######################################################################
 #
-#  edit for your paths
+#  Edit for your local configuration.
 #
 ######################################################################
-# RCS: @(#) $Id: config.vc,v 1.8 2000/08/10 04:15:07 davidg Exp $
+# RCS: @(#) $Id: config.vc,v 1.9 2000/08/20 07:24:09 davidg Exp $
 
 # only affects the linker and resource compiler
 # pick from:
 # ALPHA|ARM|IX86|MIPS|MIPS16|MIPSR41XX|PPC|SH3|SH4
+#
 MACHINE   = IX86
 
-# are we 5 or 6 ?
+# are we VC++ version 5.0 or 6.0 ?
+#
 MSDEV_VER	= 5
 MSDEVROOT	= C:\Dev\DevStudio
 
@@ -27,11 +29,5 @@ vcvars		= "$(MSDEVROOT)\vc98\bin\vcvars32.bat"
 rc32		= rc
 cc32		= cl
 link32		= link
+lib32		= lib
 cvtres32	= cvtres
-
-
-# Set NODEBUG to 0 to compile with symbols.
-# check if the macro was set on the commandline.
-!ifndef NODEBUG
-NODEBUG   = 1
-!endif
