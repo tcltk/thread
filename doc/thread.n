@@ -1,0 +1,86 @@
+'\" 
+'\" Copyright (c) 2000 Andreas Kupries
+'\" 
+'\" See the file "license.terms" for information on usage and redistribution
+'\" of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+'\" 
+'\" SCCS: @(#) thread.n
+'\" 
+.so man.macros
+.TH "thread" n 2.0 Tcl "Tcl Threading"
+.BS
+'\" Note:  do not modify the .SH NAME line immediately below!
+.SH NAME
+thread \- Script level threading
+.SH "SYNOPSIS"
+\fB thread create ?\fIscript\fR?
+\fB thread \fIid\fR
+\fB thread errorproc \fIprocname\fR
+\fB thread exit
+\fB thread names
+\fB thread send id ?\fI-async\fR? \fIscript\fR
+\fB thread wait
+.BE
+.SH "DESCRIPTION"
+.PP
+The \fBthread\fR command creates threads that contain Tcl interpreters, and
+it lets you send scripts to those threads.
+
+\fBthread create\fR creates a thread that contains a Tcl
+interpreter. The Tcl interpreter either evaluates the \fIscript\fR, if
+specified, or it waits in the event loop for scripts that arrive via
+the \fBthread send\fR command. The result of \fBthread create\fR
+is the ID of the thread. The result, if any, of \fIscript\fR is
+ignored.
+
+\fBthread id\fR returns the ID of the current thread. 
+
+\fBthread errorproc\fR sets a handler for errors that occur in other
+threads. By default, an uncaught error in a thread terminates that
+thread and causes an error message to be sent to the standard error
+channel. You can change the default reporting scheme by registering a
+procedure that is called to report the error. The \fIproc\fR is called
+in the interpreter that invoked the \fBthread errorproc\fR
+command. The original thread that has the uncaught error is terminated
+in any case. The \fIproc\fR is called like this:
+
+     myerrorproc thread_id errorInfo
+
+\fBthread exit\fR terminates the current thread. There is no way to force
+another thread to exit - you can only ask it to terminate by sending
+it a command.
+
+\fBthread names\fR returns a list of thread IDs. These are only for
+threads that have been created via \fBthread create\fR. If your
+application creates other threads at the C level, they are not
+reported by \fBthread names\fR.
+
+\fBthread send\fR passes a \fIscript\fR to another thread and,
+optionally, waits for the result. If the \fB-async\fR flag is
+specified then the caller does not wait for the result. The target
+thread must enter its event loop in order to receive script
+messages. This is done by default for threads created without a
+startup script. Threads can enter the event loop explicitly by calling
+\fBthread wait\fR or \fBvwait\fR.
+
+\fBthread wait\fR enters the event loop so a thread can receive
+messages from \fBthread send\fR. This is equivalent to \fBvwait\fR
+\fIunusedvariable\fR.
+.SH "DISCUSSION"
+The fundamental threading model in Tcl is that there can be one or
+more Tcl interpreters per thread, but each Tcl interpreter should only
+be used by a single thread. A "shared memory" abstraction is awkward
+to provide in Tcl because Tcl makes assumptions about variable and
+data ownership. Therefore this extension supports a simple form of
+threading where the main thread can manage several background, or
+"worker" threads. For example, an event-driven server can pass
+requests to worker threads, and then await responses from worker
+threads or new client requests. Everything goes through the common Tcl
+event loop, so message passing between threads works naturally with
+event-driven I/O, \fBvwait\fR on variables, and so forth.
+.SH "SEE ALSO"
+Guide to the Tcl threading model
+.SH "CREDITS"
+.PP
+.SH "KEYWORDS"
+threads, events, message passing
