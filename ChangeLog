@@ -15,6 +15,9 @@
 	meaning of that macro and MS decided to use a string instead
 	breaking the integer comparison test.
 
+	Also added vcvars32.bat to a new setup rule and got config.vc
+	much smaller.
+
 	* win/vc/thread.dsp: Added new files from Zoran's patch.
 
 	* win/.cvsignore(deleted):

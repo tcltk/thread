@@ -3,7 +3,7 @@
 #  edit for your paths
 #
 ######################################################################
-# RCS: @(#) $Id: config.vc,v 1.7 2000/08/10 04:08:04 davidg Exp $
+# RCS: @(#) $Id: config.vc,v 1.8 2000/08/10 04:15:07 davidg Exp $
 
 # only affects the linker and resource compiler
 # pick from:
@@ -19,9 +19,9 @@ TCLSTUBSLIB	= "$(TCLROOT)\win\release\tclstub84.lib"
 TCLSH_PROG	= "$(TCLROOT)\win\release\tclsh84.exe"
 
 !if $(MSDEV_VER) == 5
-vcvars		= $(MSDEVROOT)\vc\bin\vcvars32.bat
+vcvars		= "$(MSDEVROOT)\vc\bin\vcvars32.bat"
 !elseif $(MSDEV_VER) == 6
-vcvars		= $(MSDEVROOT)\vc98\bin\vcvars32.bat
+vcvars		= "$(MSDEVROOT)\vc98\bin\vcvars32.bat"
 !endif
 
 rc32		= rc
