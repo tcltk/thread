@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.59 2002/12/08 13:20:21 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.60 2002/12/14 14:14:20 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1419,7 +1419,6 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
 {
     ThreadCtrl ctrl;
     Tcl_ThreadId id;
-    ThreadSpecificData *tsdPtr;
 
     ctrl.script   = (char *)script;
     ctrl.condWait = NULL;

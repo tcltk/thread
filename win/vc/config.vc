@@ -3,7 +3,7 @@
 #  Edit for your local configuration.
 #
 ######################################################################
-# RCS: @(#) $Id: config.vc,v 1.16 2002/01/21 23:49:08 davygrvy Exp $
+# RCS: @(#) $Id: config.vc,v 1.17 2002/12/14 14:14:20 vasiljevic Exp $
 
 #!error you must edit this file before using.
 
@@ -11,37 +11,31 @@
 # pick from:
 # ALPHA|ARM|IX86|MIPS|MIPS16|MIPSR41XX|PPC|SH3|SH4
 #
-# Or set to IA64 to rearrange everything to use the Intel IA64 SDK.
-#
-MACHINE   = IX86
 
+MACHINE		= IX86
 
-# are we VC++ version 5.0 or 6.0 ?
+# Are we VC++ version 5.0 or 6.0 ?
 #
 MSDEV_VER	= 6
 
 # Where is this located?
 #
-MSDEVROOT	= C:\Dev\DevStudio60
+MSDEVROOT	= "C:\Programme\Microsoft Visual Studio"
 
 # Where is Tcl ?
 #
-TCLROOT		= C:\program Files\Tcl
+TCLROOT		= D:\Tcl8.4.1
 
 # Does the above Tcl path point to the install or sources ?
 #
-ISTCLINSTALL	= 1
+ISTCLINSTALL	= 0
 
 # What Tcl version are we grabbing ?
 #
 TCLMAJOR	= 8
 TCLMINOR	= 4
 
-!if "$(MACHINE)" == "IA64"
-# untested logic path
-#
-vcvars		= "c:\ia64sdk17\vcvars32.bat"
-!elseif $(MSDEV_VER) == 5
+!if $(MSDEV_VER) == 5
 vcvars		= "$(MSDEVROOT)\vc\bin\vcvars32.bat"
 !elseif $(MSDEV_VER) == 6
 vcvars		= "$(MSDEVROOT)\vc98\bin\vcvars32.bat"
