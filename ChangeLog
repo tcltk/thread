@@ -6,6 +6,9 @@
 	by Tcl_FinalizeThread and ThreadWait doesn't manipulate events
 	that don't belong to it.
 
+	* generic/threadCmd.c (Thread_Init): logic fix in a version check
+	for determining the 8.3 package subset.
+
 2000-11-02  David Gravereaux <davygrvy@ajubasolutions.com>
 
 	* generic/threadCmd.c (NewThread): Added logic to test for a
