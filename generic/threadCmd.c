@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.39 2002/03/20 01:33:03 hobbs Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.40 2002/04/07 09:16:17 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1428,6 +1428,7 @@ NewThread(clientData)
      */
 
 #ifdef NS_AOLSERVER
+    Ns_TclMarkForDelete(tsdPtr->interp);
     Ns_TclDeAllocateInterp(tsdPtr->interp);
 #else
     Tcl_DeleteInterp(tsdPtr->interp);
