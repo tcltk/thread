@@ -10,5 +10,5 @@
 # from in those directories with the appropriate flags.
 
 sh ../configure --enable-threads --enable-symbols \
-	--prefix=//z/install --exec-prefix=//z/install/solaris \
+	--prefix=//d/tcldev --exec-prefix=//d/tcldev/win32-ix86 \
 	--with-tcl=//z/cvs/tcl8.3/win/thread
