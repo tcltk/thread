@@ -1,3 +1,5 @@
+# This is how I configure for compiling under Solaris.
+# You'll want to modify these paths to suite your system, of course.
 sh ../../configure --enable-gcc --enable-threads --prefix=/home/welch/install \
 	--exec-prefix=/home/welch/install/solaris \
 	--with-tcl=/home/welch/cvs/tcl8.3/unix/sol-thread
