@@ -1,3 +1,13 @@
+2003-04-29 Zoran Vasiljevic <zoran@archiware.com>
+
+        Tagged interim 2.5.2 release.
+
+	* configure.in
+	* configure: Added quick fix for autoconf issues
+        related to $srcdir and building of the package
+        from the top-level dir instead of unix/win subdir.
+        Thanks to Mo DeJong for the fix.
+
 2003-04-10 Zoran Vasiljevic <zoran@archiware.com>
 
 	* threadCmd.c: removed checking of stopped flag
