@@ -1,3 +1,11 @@
+2002-06-17  Zoran Vasiljevic <zoran@archiware.com>  
+
+	* generic/threadCmd.c: cleanup of some unused variables
+	* generic/threadSv.c:
+	* generic/ThreadSpCmd.c:
+	* generic/threadSvList.c: added CONST qualifiers to avoid warnings
+	when compiling against 8.4 core. 
+
 2002-05-25  Zoran Vasiljevic <zoran@archiware.com>  
 	* generic/threadCmd.c: added some typecasts to satisfy Windows 
 	* generic/threadSvCmd.h: added some typecasts to satisfy Windows 
