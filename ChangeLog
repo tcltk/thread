@@ -1,3 +1,15 @@
+2004-08-14 Zoran Vasiljevic <zoran@archiware.com>
+
+	* generic/threadPoolCmd.c: fixed broken parsing of 
+	pool handles. Pool handles are now generated in the
+	same format as thread handles.
+
+	* generic/threadCmd.c: thread handles are now cased to
+	(void*) and sprint/sscanf calls are used to generate thread
+	handles. This concludes the effort of correcting broken
+	handles on 64-bit machines since the problem was actually
+	in Tcl itself, rather than here.
+
 2004-07-21 Zoran Vasiljevic <zoran@archiware.com>
 
 	* generic/tclThread.h: corrected namespace prefix for
