@@ -17,6 +17,10 @@
 
 	* win/vc/thread.dsp: Added new files from Zoran's patch.
 
+	* win/.cvsignore(deleted):
+	* win/vc/.cvsignore(added): moved file to help to keep a
+	cleaner build environment.
+
 2000-07-14 Zoran Vasiljevic <zoran@munich.com>
 
 	* generic/threadCmd.c: improved thread::exit behaviour
