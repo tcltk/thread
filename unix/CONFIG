@@ -18,7 +18,16 @@
 # Uncomment the following line if you like to compile the
 # Gdbm wrapper for persistent shared variables.
 # 
-# ../configure --enable-threads --enable-gdbm
+# ../configure --enable-threads --with-gdbm
+#
+# If your Gdbm library is not installed in one of the
+# default system locations (/usr/lib, /usr/local/lib ...)
+# please use following directive. Note that both library
+# file *and* includes should be located in "/my/gdbm". 
+# Of course, you have to replace the "/my/gdbm" below
+# with the exact location, as found in your system:
+# 
+# ../configure --enable-threads --with-gdbm=/my/gdbm
 #
 #
 # AOLserver 4.X; Uses public Tcl library.
