@@ -50,7 +50,6 @@ AC_DEFUN(NS_PATH_AOLSERVER, [
             if test x"$aollibs" != x ; then
                 LIBS="${LIBS} -L${AOL_DIR}/lib -lnsd -lnsthread"
             fi
-            SHLIB_LD="cc -bundle \${LDFLAGS}"
         fi
         AC_SUBST(SHLIB_LD)
         AC_DEFINE(NS_AOLSERVER)
