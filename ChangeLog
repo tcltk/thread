@@ -1,3 +1,8 @@
+2005-03-15 Zoran Vasiljevic <zv@archiware.com>
+
+	* pkgIndex.tcl.in: Applied patch for Bug #1163357.
+	Also, fixed the case when directory path contains blanks.
+
 2005-03-05 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvCmd.c: fixed potential access
