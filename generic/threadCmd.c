@@ -16,7 +16,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.41 2002/04/27 16:15:08 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.42 2002/05/25 21:39:05 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1977,11 +1977,11 @@ ThreadSend(interp, id, send, clbk, wait)
     if (threadId == Tcl_GetCurrentThread()) {
         if (wait) {
             Tcl_MutexUnlock(&threadMutex);
-            return (*send->execProc)(interp, send);
+            return (*send->execProc)(interp, (ClientData)send);
         } else {
             Tcl_MutexUnlock(&threadMutex);
             send->interp = interp;
-            Tcl_Preserve(send->interp);
+            Tcl_Preserve((ClientData)send->interp);
             Tcl_DoWhenIdle((Tcl_IdleProc*)ThreadIdleProc, (ClientData)send);
             return TCL_OK;
         }
@@ -2010,7 +2010,7 @@ ThreadSend(interp, id, send, clbk, wait)
      */
 
     if (eventPtr->clbkData) {
-        Tcl_Preserve(eventPtr->clbkData->interp);
+        Tcl_Preserve((ClientData)eventPtr->clbkData->interp);
     }
     if (!wait) {
         resultPtr              = NULL;
@@ -2320,21 +2320,21 @@ ThreadEventProc(evPtr, mask)
         Tcl_ResetResult(interp);
 
         if (sendPtr) {
-            Tcl_CreateThreadExitHandler(ThreadFreeProc, sendPtr);
+            Tcl_CreateThreadExitHandler(ThreadFreeProc, (ClientData)sendPtr);
             if (clbkPtr) {
-                Tcl_CreateThreadExitHandler(ThreadFreeProc, clbkPtr);
+                Tcl_CreateThreadExitHandler(ThreadFreeProc, (ClientData)clbkPtr);
             }   
-            code = (*sendPtr->execProc)(interp, sendPtr);
-            Tcl_DeleteThreadExitHandler(ThreadFreeProc, sendPtr);
+            code = (*sendPtr->execProc)(interp, (ClientData)sendPtr);
+            Tcl_DeleteThreadExitHandler(ThreadFreeProc, (ClientData)sendPtr);
             if (clbkPtr) {
-                Tcl_DeleteThreadExitHandler(ThreadFreeProc, clbkPtr);
+                Tcl_DeleteThreadExitHandler(ThreadFreeProc, (ClientData)clbkPtr);
             }
         } else {
             code = TCL_OK;
         }
     }
 
-    ThreadFreeProc(sendPtr);
+    ThreadFreeProc((ClientData)sendPtr);
 
     if (resultPtr) {
 
@@ -2584,12 +2584,12 @@ ThreadIdleProc(clientData)
     int ret;
     ThreadSendData *sendPtr = (ThreadSendData*)clientData;
 
-    ret = (*sendPtr->execProc)(sendPtr->interp, sendPtr);
+    ret = (*sendPtr->execProc)(sendPtr->interp, (ClientData)sendPtr);
     if (ret != TCL_OK) {
         ThreadErrorProc(sendPtr->interp);
     }
 
-    Tcl_Release(sendPtr->interp);
+    Tcl_Release((ClientData)sendPtr->interp);
 }
 
 /*
