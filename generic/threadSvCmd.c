@@ -9,7 +9,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.16 2002/07/02 15:46:56 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.17 2002/07/03 18:19:10 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -331,13 +331,11 @@ LocateContainer(arrayPtr, key, flags)
     Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&arrayPtr->vars, varName);
 
     if (hPtr == NULL) {
-        Tcl_Obj *newObj;
         if (!(flags & FLAGS_CREATEVAR)) {
             return NULL;
         }
-        newObj = Tcl_NewStringObj("", 0);
-        hPtr   = Tcl_CreateHashEntry(&arrayPtr->vars, varName, &new);
-        Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, newObj));
+        hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, varName, &new);
+        Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, Tcl_NewObj()));
     }
 
     return (Container*)Tcl_GetHashValue(hPtr);
@@ -713,9 +711,13 @@ Tcl_Obj *
 Sv_DuplicateObj(objPtr)
     register Tcl_Obj *objPtr;        /* The object to duplicate. */
 {
-    int duped = 0;
     register Tcl_Obj *dupPtr = Tcl_NewObj();
-    register RegType *regPtr;
+
+    /*
+     * Handle the internal rep
+     */
+
+    dupPtr->typePtr = NULL;
 
     if (objPtr->typePtr != NULL) {
         if (objPtr->typePtr->dupIntRepProc == NULL) {
@@ -732,6 +734,8 @@ Sv_DuplicateObj(objPtr)
                 */
               (*objPtr->typePtr->dupIntRepProc)(objPtr, dupPtr);
             } else {
+                register RegType *regPtr;
+                int duplicated = 0;
                /*
                 * Cover special registered types. Assume not
                 * very many of those, so this sequential walk
@@ -741,40 +745,45 @@ Sv_DuplicateObj(objPtr)
                      regPtr = regPtr->nextPtr) {
                     if (objPtr->typePtr == regPtr->typePtr) {
                         (*regPtr->dupIntRepProc)(objPtr, dupPtr);
-                        duped = 1;
+                        duplicated = 1;
                         break;
                     }
                 }
                 /*
-                 * As last resort, duplicate only
-                 * the object string representation.
+                 * If not able to duplicate, assure valid string
+                 * representation is available at least.
                  */
-                if (duped == 0) {
+                if (duplicated == 0) {
                     if (objPtr->typePtr->updateStringProc != NULL) {
                         (*objPtr->typePtr->updateStringProc)(objPtr);
-                    }
-                    dupPtr->typePtr = NULL;
-                    memset(&dupPtr->internalRep,0,sizeof(dupPtr->internalRep));
-                    if (objPtr->bytes == NULL) {
-                        objPtr->bytes  = tclEmptyStringRep;
-                        dupPtr->length = 0;
                     }
                 }
             }
         }
     }
-    if (objPtr->bytes == NULL) {
-        dupPtr->bytes = NULL;
+
+    /*
+     * Handle the string rep.
+     */
+
+    if (objPtr->bytes == NULL || objPtr->bytes == tclEmptyStringRep) {
+        dupPtr->bytes = objPtr->bytes;
         dupPtr->length = 0;
-    } else if (objPtr->bytes != tclEmptyStringRep) {
-        int len = objPtr->length;
-        dupPtr->bytes = (char*)Tcl_Alloc((unsigned)len+1);
-        if (len > 0) {
-            memcpy((void*)dupPtr->bytes,(void*)objPtr->bytes,(unsigned)len);
+    } else if (objPtr->bytes) {
+        /* A copy of TclInitStringRep macro */
+        dupPtr->bytes = (char*)Tcl_Alloc((unsigned)objPtr->length + 1);
+        if (objPtr->length > 0) {
+            memcpy((void*)dupPtr->bytes,(void*)objPtr->bytes,
+                   (unsigned)objPtr->length);
         }
-        dupPtr->bytes[len] = '\0';
-        dupPtr->length = len;
+        dupPtr->length = objPtr->length;
+        dupPtr->bytes[objPtr->length] = '\0';
     }
+
+    /*
+     * Turn void objects in empty string objects
+     */
+
     if (dupPtr->bytes == NULL && dupPtr->typePtr == NULL) {
         dupPtr->bytes  = tclEmptyStringRep;
         dupPtr->length = 0;
