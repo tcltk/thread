@@ -1,20 +1,38 @@
-
-#############################################################################t
 #
 # phttpd.tcl --
 #
-#    Simple Sample httpd/1.0 server in 250 lines of Tcl.
-#    Stephen Uhler / Brent Welch (c) 1996 Sun Microsystems.
+#   Simple Sample httpd/1.0 server in 250 lines of Tcl.
+#   Stephen Uhler / Brent Welch (c) 1996 Sun Microsystems.
 #
-#    Modified to use namespaces and direct url-to-procedure access (zv).
-#    Eh, due to this, and nicer indenting, it's now 150 lines longer :-)
+#   Modified to use namespaces and direct url-to-procedure access
+#   and thread pool package.
+#   Eh, due to this, and nicer indenting, it's now 150 lines longer :-)
 #
-#    See the file "license.terms" for information on usage and
-#    redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+#   Usage:
+#      phttpd::create port
+# 
+#      port         Tcp port where the server listens
 #
-# Rcsid: @(#)$Id: phttpd.tcl,v 1.1 2002/11/24 22:33:54 vasiljevic Exp $
+#   Example:
 #
-##############################################################################
+#      % cmdsrv::create 5000
+#      % vwait forever
+#
+#      Starts the server on the port 5000
+#
+#   See the file "license.terms" for information on usage and
+#   redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+#
+#   See the file "license.terms" for information on usage and
+#   redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+# -----------------------------------------------------------------------------
+# Rcsid: @(#)$Id: phttpd.tcl,v 1.2 2002/12/03 07:15:51 vasiljevic Exp $
+#
+
+#package requier Thread 2.5
+#package provide Phttpd 1.0
+
+load ../libthread2.5.so
 
 namespace eval phttpd {
 
@@ -25,10 +43,8 @@ namespace eval phttpd {
 
     array set Httpd {
         -name    phttpd
-        -vers    1.1
-        -root    ""
-        -block   0
-        -bufsize 32768
+        -vers    1.0
+        -root    "."
         -index   index.htm
     }
     array set HttpCodes {
@@ -54,16 +70,28 @@ namespace eval phttpd {
         <i>%5$s/%6$s Server at %7$s Port %8$s</i>
     }
 }
+
+#
+# phttpd::create --
+#
+#	Start the server by listening for connections on the desired port.
+#
+# Arguments:
+#   port
+#   args
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
-#---------------------------------------------------------------------------
+proc phttpd::create {port args} {
 
-proc phttpd::server {port args} {
+    variable Httpd
 
-    # Start the server by listening for connections on the desired port.
-
-    variable Httpd 
     set arglen [llength $args]
-
     if {$arglen} {
         if {$arglen % 2} {
             error "wrong \# arguments, should be: key1 val1 key2 val2..."
@@ -77,188 +105,304 @@ proc phttpd::server {port args} {
         }
     }
 
-    set Httpd(port) $port
-    set Httpd(host) [info hostname]
+    #
+    # Create thread pool with max 8 worker threads
+    # 
 
-    socket -server [namespace current]::Accept $port
-}
+    set Httpd(tpid)        \
+        [tpool::create     \
+             -maxworkers 8 \
+             -initscript {
+                 source ../phttpd/phttpd.tcl
+             }]
 
-#---------------------------------------------------------------------------
-
-proc phttpd::respond {s status contype data {length 0}} {
+    #
+    # Start the server on the given port. Note that we wrap
+    # the actual accept with a helper after/idle callback.
+    # This is a workaround for a well-known Tcl bug.
+    #
     
-    puts $s "HTTP/1.0 $status"
-    puts $s "Date: [Date]"
-    puts $s "Content-Type: $contype"
-
-    if {$length} {
-        puts $s "Content-Length: $length" 
-    } else {
-        puts $s "Content-Length: [string length $data]"
-    }
-
-    puts $s ""
-    puts $s $data 
+    socket -server [namespace current]::_Accept $port
 }
+
+#
+# phttpd::_Accept --
+#
+#	Helper procedure to solve Tcl shared-channel bug when responding
+#   to incoming connection and transfering the channel to other thread(s).
+#
+# Arguments:
+#   sock   incoming socket
+#   ipaddr IP address of the remote peer
+#   port   Tcp port used for this connection
+#
+# Side Effects:
+#	None.
+#
+# Results:
+#	None.
+#
 
-#---------------------------------------------------------------------------
-	
-proc phttpd::Accept {newsock ipaddr port} {
+proc phttpd::_Accept {sock ipaddr port} {
+    after idle [list [namespace current]::Accept $sock $ipaddr $port]
+}
+
+#
+# phttpd::Accept --
+#
+#	Accept a new connection from the client.
+#
+# Arguments:
+#   sock
+#   ipaddr
+#   port
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
-    # @c Accept a new connection from the client.
+proc phttpd::Accept {sock ipaddr port} {
 
     variable Httpd
-    upvar \#0 [namespace current]::Httpd$newsock data
 
-    fconfigure $newsock -blocking $Httpd(-block) \
-        -buffersize $Httpd(-bufsize) -translation {auto crlf}
+    #
+    # Setup the socket for sane operation
+    #
 
-    set data(ipaddr) $ipaddr
-    fileevent $newsock readable [list [namespace current]::Read $newsock]
+    fconfigure $sock -blocking 0 -translation {auto crlf}
+
+    #
+    # Detach the socket from current interpreter/tnread.
+    # One of the worker threads will attach it again.
+    #
+
+    thread::detach $sock
+
+    #
+    # Send the work ticket to threadpool.
+    # 
+
+    tpool::post -detached $Httpd(tpid) [list [namespace current]::Ticket $sock]
+}
+
+#
+# phttpd::Ticket --
+#
+#	Job ticket to run in the thread pool thread.
+#
+# Arguments:
+#   sock
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
+
+proc phttpd::Ticket {sock} {
+    
+    thread::attach $sock
+    fileevent $sock readable [list [namespace current]::Read $sock]
+    
+    #
+    # End of processing is signalized here.
+    # This will release the worker thread.
+    #
+    
+    vwait [namespace current]::done
 }
 
-#---------------------------------------------------------------------------
+
+#
+# phttpd::Read --
+#
+#	Read data from client and parse incoming http request.
+#
+# Arguments:
+#   sock
+#
+# Side Effects:
+#	None.
+#
+# Results:
+#	None.
+#
 
-proc phttpd::Read {s} {
-
-    # @c Read data from client
+proc phttpd::Read {sock} {
 
     variable Httpd
-    upvar \#0 [namespace current]::Httpd$s data
+    variable data
 
-    if {[catch {gets $s line} readCount] || [eof $s]} {
-        Log error "client closed connection prematurely: %s" $readCount
-        return [SockDone $s]
-    }
-    if {$readCount == -1} {
-        return ;# Insufficient data on non-blocking socket !
-    }
-    if {![info exists data(state)]} {
-        set pat {(POST|GET) ([^?]+)\??([^ ]*) HTTP/1\.[0-9]}
-        if {[regexp $pat $line x data(proto) data(url) data(query)]} {
-            return [set data(state) mime]
-        } else {
-            Log error "bad request line: %s" $line
-            Error $s 400
-            return [SockDone $s]
-        }
-    }
+    set data(sock) $sock
 
-    # string compare $readCount 0 maps -1 to -1, 0 to 0, and > 0 to 1
-
-    set state [string compare $readCount 0],$data(state),$data(proto)
-    switch -- $state {
-        "0,mime,GET" - "0,query,POST" {
-            Respond $s
+    while {1} {
+        if {[catch {gets $data(sock) line} readCount] || [eof $data(sock)]} {
+            return [Done]
         }
-        "0,mime,POST" {
-            set data(state) query
-            set data(query) ""
-        }
-        "1,mime,POST" - "1,mime,GET" {
-            if [regexp {([^:]+):[   ]*(.*)}  $line dummy key value] {
-                set data(mime,[string tolower $key]) $value
-            }
-        }
-        "1,query,POST" {
-            append data(query) $line
-            set clen $data(mime,content-length)
-            if {($clen - [string length $data(query)]) <= 0} {
-                Respond $s
-            }
-        }
-        default {
-            if [eof $s] {
-                Log error "unexpected eof; client closed connection"
-                return [SockDone $s]
+        if {![info exists data(state)]} {
+            set pat {(POST|GET) ([^?]+)\??([^ ]*) HTTP/1\.[0-9]}
+            if {[regexp $pat $line x data(proto) data(url) data(query)]} {
+                set data(state) mime
+                continue
             } else {
-                Log error "bad http protocol state: %s" $state
-                Error $s 400
-                return [SockDone $s]
+                Log error "bad request line: (%s)" $line
+                Error 400
+                return [Done]
+            }
+        }
+        
+        # string compare $readCount 0 maps -1 to -1, 0 to 0, and > 0 to 1
+        
+        set state [string compare $readCount 0],$data(state),$data(proto)
+        switch -- $state {
+            "0,mime,GET" - "0,query,POST" {
+                Respond
+                return [Done]
+            }
+            "0,mime,POST" {
+                set data(state) query
+                set data(query) ""
+            }
+            "1,mime,POST" - "1,mime,GET" {
+                if [regexp {([^:]+):[   ]*(.*)}  $line dummy key value] {
+                    set data(mime,[string tolower $key]) $value
+                }
+            }
+            "1,query,POST" {
+                append data(query) $line
+                set clen $data(mime,content-length)
+                if {($clen - [string length $data(query)]) <= 0} {
+                    Respond
+                    return [Done]
+                }
+            }
+            default {
+                if [eof $data(sock)] {
+                    Log error "unexpected eof; client closed connection"
+                    return [Done]
+                } else {
+                    Log error "bad http protocol state: %s" $state
+                    Error 400
+                    return [Done]
+                }
             }
         }
     }
 }
+
+#
+# phttpd::Done --
+#
+#	Close the connection socket
+#
+# Arguments:
+#   s
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
-#---------------------------------------------------------------------------
+proc phttpd::Done {} {
 
-proc phttpd::SockDone {s} {
+    variable done
+    variable data
 
-    # @c Close the connection socket and discard token
+    close $data(sock)
+    
+    if {[info exists data]} {
+        unset data
+    }
 
-    close $s
-    unset [namespace current]::Httpd$s
+    set done 1 ; # Releases the request thread (See Ticket procedure)
 }
+
+#
+# phttpd::Respond --
+#
+#	Respond to the query.
+#
+# Arguments:
+#   s
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
-#---------------------------------------------------------------------------
+proc phttpd::Respond {} {
 
-proc phttpd::Respond {s} {
+    variable data
 
-    # @c Respond to the query.
-
-    variable Httpd
-    upvar \#0 [namespace current]::Httpd$s data
-
-    if {[uplevel \#0 info proc $data(url)] == $data(url)} {
+    if {[info commands $data(url)] == $data(url)} {
 
         #
-        # Service URL-procedure first
+        # Service URL-procedure
         #
 
         if {[catch {
-            puts $s "HTTP/1.0 200 OK"
-            puts $s "Date: [Date]"
-            puts $s "Last-Modified: [Date]"
+            puts $data(sock) "HTTP/1.0 200 OK"
+            puts $data(sock) "Date: [Date]"
+            puts $data(sock) "Last-Modified: [Date]"
         } err]} {
             Log error "client closed connection prematurely: %s" $err
-            return [SockDone $s]
+            return
         }
-
-        #
-        # Setup links to the http state token and current 
-        # socket, so procedures can referr to them w/o
-        # passing all stuff over all procedure calls.
-        #
-
-        uplevel \#0 set dataptr [namespace current]::Httpd$s
-        uplevel \#0 set sock $s
-
-        if {[catch {uplevel \#0 $data(url)]} err]} {
+        if {[catch {$data(url) data} err]} {
             Log error "%s: %s" $data(url) $err
         }
 
     } else {
 
         #
-        # Service regular file path next.
+        # Service regular file path
         #
 
         set mypath [Url2File $data(url)]
         if {![catch {open $mypath} i]} {
             if {[catch {
-                puts $s "HTTP/1.0 200 OK"
-                puts $s "Date: [Date]"
-                puts $s "Last-Modified: [Date [file mtime $mypath]]"
-                puts $s "Content-Type: [ContentType $mypath]"
-                puts $s "Content-Length: [file size $mypath]"
-                puts $s ""
-                fconfigure $s -translation binary -blocking $Httpd(-block)
-                fconfigure $i -translation binary
-                fcopy $i $s
+                puts $data(sock) "HTTP/1.0 200 OK"
+                puts $data(sock) "Date: [Date]"
+                puts $data(sock) "Last-Modified: [Date [file mtime $mypath]]"
+                puts $data(sock) "Content-Type: [ContentType $mypath]"
+                puts $data(sock) "Content-Length: [file size $mypath]"
+                puts $data(sock) ""
+                fconfigure $data(sock) -translation binary -blocking 0
+                fconfigure $i          -translation binary
+                fcopy $i $data(sock)
                 close $i
             } err]} {
                 Log error "client closed connection prematurely: %s" $err
             }
         } else {
             Log error "%s: %s" $data(url) $i
-            Error $s 404
+            Error 404
         }
     }
-
-    SockDone $s
 }
-
-#---------------------------------------------------------------------------
+
+#
+# phttpd::ContentType --
+#
+#	Convert the file suffix into a mime type.
+#
+# Arguments:
+#   path
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
 proc phttpd::ContentType {path} {
 
@@ -271,18 +415,29 @@ proc phttpd::ContentType {path} {
     
     return $type
 }
+
+#
+# phttpd::Error --
+#
+#	Emit error page
+#
+# Arguments:
+#   s
+#   code
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
-#---------------------------------------------------------------------------
-
-proc phttpd::Error {s code} {
-
-    # @c Emit error page.
+proc phttpd::Error {code} {
 
     variable Httpd
     variable HttpCodes
     variable ErrorPage
-
-    upvar \#0 [namespace current]::Httpd$s data
+    variable data
 
     append data(url) ""
     set msg \
@@ -293,21 +448,34 @@ proc phttpd::Error {s code} {
              $data(url)        \
              $Httpd(-name)     \
              $Httpd(-vers)     \
-             $Httpd(host)      \
-             $Httpd(port)      \
+             [info hostname]   \
+             80                \
             ]
     if {[catch {
-        puts $s "HTTP/1.0 $code $HttpCodes($code)"
-        puts $s "Date: [Date]"
-        puts $s "Content-Length: [string length $msg]"
-        puts $s ""
-        puts $s $msg
+        puts $data(sock) "HTTP/1.0 $code $HttpCodes($code)"
+        puts $data(sock) "Date: [Date]"
+        puts $data(sock) "Content-Length: [string length $msg]"
+        puts $data(sock) ""
+        puts $data(sock) $msg
     } err]} {
         Log error "client closed connection prematurely: %s" $err
     }
 }
-
-#---------------------------------------------------------------------------
+
+#
+# phttpd::Date --
+#
+#	Generate a date string in HTTP format.
+#
+# Arguments:
+#   seconds
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
 proc phttpd::Date {{seconds 0}} {
 
@@ -318,24 +486,48 @@ proc phttpd::Date {{seconds 0}} {
     }
     clock format $seconds -format {%a, %d %b %Y %T %Z} -gmt 1
 }
-
-#---------------------------------------------------------------------------
+
+#
+# phttpd::Log --
+#
+#	Log an httpd transaction.
+#
+# Arguments:
+#   reason
+#   format
+#   args
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
 proc phttpd::Log {reason format args} {
-    
-    # @c Log an httpd transaction.
 
     set messg [eval format [list $format] $args]
     set stamp [clock format [clock seconds] -format "%d/%b/%Y:%H:%M:%S"]
 
-    puts stderr "\[$stamp\] $reason: $messg"
+    puts stderr "\[$stamp\]\[-thread[thread::id]-\] $reason: $messg"
 }
-
-#---------------------------------------------------------------------------
+
+#
+# phttpd::Url2File --
+#
+#	Convert a url into a pathname.
+#
+# Arguments:
+#   url
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
 proc phttpd::Url2File {url} {
-
-    # @c Convert a url into a pathname (this is probably not right)
 
     variable Httpd
 
@@ -366,12 +558,23 @@ proc phttpd::Url2File {url} {
         return $file
     }
 }
-
-#---------------------------------------------------------------------------
+
+#
+# phttpd::CgiMap --
+#
+#	Decode url-encoded strings.
+#
+# Arguments:
+#   data
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
 proc phttpd::CgiMap {data} {
-
-    # @c Decode url-encoded strings
 
     regsub -all {\+} $data { } data
     regsub -all {([][$\\])} $data {\\\1} data
@@ -379,12 +582,23 @@ proc phttpd::CgiMap {data} {
 
     return [subst $data]
 }
-
-#---------------------------------------------------------------------------
+
+#
+# phttpd::QueryMap --
+#
+#	Decode url-encoded query into key/value pairs.
+#
+# Arguments:
+#   query
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
 proc phttpd::QueryMap {query} {
-
-    # @c Decode url-encoded query into key/value pairs
     
     set res [list]
 
@@ -396,5 +610,58 @@ proc phttpd::QueryMap {query} {
     }
     return $res
 }
+
+#
+# monitor --
+#
+#	Procedure used to test the phttpd server. It responds on the
+#        http://<hostname>:<port>/monitor
+#
+# Arguments:
+#   array
+#
+# Side Effects:
+#	None..
+#
+# Results:
+#	None.
+#
 
-################################# End of file ################################
+proc /monitor {array} {
+
+    upvar $array data ; # Holds the socket to remote client
+
+    #
+    # Emit headers
+    #
+
+    puts $data(sock) "HTTP/1.0 200 OK"
+    puts $data(sock) "Date: [phttpd::Date]"
+    puts $data(sock) "Content-Type: text/html"
+    puts $data(sock) ""
+
+    #
+    # Emit body
+    #
+
+    puts $data(sock) [subst {
+        <html>
+        <body>
+    }]
+
+    after 1 ; # Simulate blocking call
+
+    puts $data(sock) [subst {
+        </body>
+        </html>
+    }]
+}
+
+# EOF $RCSfile: phttpd.tcl,v $
+# Emacs Setup Variables
+# Local Variables:
+# mode: Tcl
+# indent-tabs-mode: nil
+# tcl-basic-offset: 4
+# End:
+

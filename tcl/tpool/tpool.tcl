@@ -9,7 +9,7 @@
 #
 # See the file license.terms for usage and copying information.
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: tpool.tcl,v 1.1 2002/11/24 17:40:11 vasiljevic Exp $
+# RCS: @(#) $Id: tpool.tcl,v 1.2 2002/12/03 07:15:51 vasiljevic Exp $
 #
 
 package require Tcl    8.4
@@ -29,13 +29,12 @@ namespace eval tpool {
 #   Creates instance of a named thread pool.
 #
 # Arguments:
-#   name   Name of the thread pool
 #   args   Variable number of key/value arguments, as follows:
 #
 #          -minworkers  minimum # of worker threads (def = 0)
 #          -maxworkers  maximum # of worker threads (def = 4)
 #          -workeridle  # of sec worker is idle before exiting (def = 300)
-#          -workerinit. script used to initialize new worker thread
+#          -initscript  script used to initialize new worker thread
 #
 # Side Effects:
 #   Might create many new threads if "-minworkers" option is > 0.
@@ -44,14 +43,17 @@ namespace eval tpool {
 #   The id of the newly created thread pool.
 #
 
-proc tpool::create {name args} {
+proc tpool::create {args} {
     
     #
     # Check if the pool is already created
     #
 
-    set tpid [namespace current]::$name
-    tsv::eval $tpid {
+    set ns [namespace current]
+    set name [namespace tail $ns][tsv::incr $ns count]
+
+    set tpid ${ns}::$name
+    tsv::lock $tpid {
         if {[tsv::exists $tpid name]} {
             error "thread pool \"$name\" already exists"
         }
@@ -73,7 +75,7 @@ proc tpool::create {name args} {
         -minworkers  0
         -maxworkers  4
         -workeridle  300000
-        -workerinit  {source tpool.tcl}
+        -initscript  {source ../tpool/tpool.tcl}
     }
 
     #
@@ -85,19 +87,12 @@ proc tpool::create {name args} {
             -minworkers -
             -maxworkers {tsv::set $tpid $arg $val}
             -workeridle {tsv::set $tpid $arg [expr {$val*1000}]}
-            -workerinit {tsv::append $tpid $arg \n $val}
+            -initscript {tsv::append $tpid $arg \n $val}
             default {
                 error "unsupported pool option \"$arg\""
             }
         }
     }
-
-    #
-    # This command kicks the thread into the event loop.
-    # This must be the last command of the init script.
-    #
-
-    tsv::append $tpid -workerinit \n thread::wait
 
     #
     # Start initial (minimum) number of worker threads.
@@ -111,7 +106,7 @@ proc tpool::create {name args} {
 }
 
 #
-# tpool::send --
+# tpool::post --
 #
 #   Submits the new job to the thread pool. The caller might pass
 #   the job in two modes: synchronous and asynchronous.
@@ -122,12 +117,12 @@ proc tpool::create {name args} {
 #
 # Arguments:
 #   args   Variable # of arguments with the following syntax:
-#          tpool::send ?-async? tpid script
+#          tpool::send ?-detached? tpid script
 #
 #          where:
-#            -async  flag to turn the async operation (ignore result)
-#            tpid    the id of the thread pool 
-#            script  script to pass to the worker thread for execution
+#            -detached flag to turn the async operation (ignore result)
+#            tpid      the id of the thread pool 
+#            script    script to pass to the worker thread for execution
 #
 # Side Effects:
 #   Depends on the passed script.
@@ -139,7 +134,7 @@ proc tpool::create {name args} {
 #   and this function returns zero.
 #
 
-proc tpool::send {args} {
+proc tpool::post {args} {
 
     #
     # Parse the command arguments. This command syntax 
@@ -148,23 +143,21 @@ proc tpool::send {args} {
     
     set ns [namespace current]
     set usage "wrong \# of args: should be \"\
-               [info level 1] ?-async? tpid cmd\""
+               [info level 1] ?-detached? tpid cmd\""
 
-    switch [llength $args] {
-        2 {
-            set async 0
-            set tpid  [lindex $args 0]
-            set cmd   [lindex $args 1]
+    if {[llength $args] == 2} {
+        set detached 0
+        set tpid  [lindex $args 0]
+        set cmd   [lindex $args 1]
+    } elseif {[llength $args] == 3} {
+        if {[lindex $args 0] != "-detached"} {
+            error $usage
         }
-        3 {
-            if {[lindex $args 0] != "-async"} {
-                error $usage
-            }
-            set async 1
-            set tpid  [lindex $args 1]
-            set cmd   [lindex $args 2]            
-        }
-        default { error $usage }
+        set detached 1
+        set tpid  [lindex $args 1]
+        set cmd   [lindex $args 2]            
+    } else {
+        error $usage
     }
 
     #
@@ -173,26 +166,21 @@ proc tpool::send {args} {
     # of allowed worker threads imposed to us by the caller.
     #
 
-    set tid [tsv::lpop $tpid thrworkers]
-    if {$tid == "" || [catch {thread::preserve $tid}]} {
-        tsv::eval $tpid {
+    set tid ""
+
+    while {$tid == ""} {
+        tsv::lock $tpid {
             set tid [tsv::lpop $tpid thrworkers]
             if {$tid == "" || [catch {thread::preserve $tid}]} {
                 set tid ""
+                tsv::lpush $tpid thrwaiters [thread::id] end
                 if {[tsv::set $tpid numworkers]<[tsv::set $tpid -maxworkers]} {
                     Worker $tpid
-                    set tid [tsv::lpop $tpid thrworkers]
-                    thread::preserve $tid
-                } else {
-                    tsv::lpush $tpid thrwaiters [thread::id] end
                 }
             }
         }
         if {$tid == ""} {
-            variable waiter
             vwait ${ns}::waiter
-            set tid $waiter
-            thread::preserve $tid
         }
     }
 
@@ -200,7 +188,7 @@ proc tpool::send {args} {
     # Post the command to the worker thread
     #
 
-    if {$async} {
+    if {$detached} {
         set j 0
         thread::send -async $tid [list ${ns}::Run $tpid $j $cmd]
     } else {
@@ -217,6 +205,29 @@ proc tpool::send {args} {
 #   Waits for a job sent with "thread::send" to finish.
 #
 # Arguments:
+#   tpid    Name of the pool shared array.
+#   jobList List of job id's of the previously posted job.
+#   jobLeft List of jobs not collected
+#
+# Side Effects:
+#   Might eventually enter the event loop while waiting
+#   for the job result to arrive from the worker thread.
+#
+# Results:
+#   Result of the job. If the job resulted in error, it sets
+#   the global errorInfo and errorCode variables accordingly.
+#
+
+proc tpool::wait {tpid jobList {jobLeft ""}} {
+    error "not yet implemented"
+}
+
+#
+# tpool::get --
+#
+#   Waits for a job sent with "thread::send" to finish.
+#
+# Arguments:
 #   tpid   Name of the pool shared array.
 #   jobid  Id of the previously posted job.
 #
@@ -229,7 +240,7 @@ proc tpool::send {args} {
 #   the global errorInfo and errorCode variables accordingly.
 #
 
-proc tpool::wait {tpid jobid} {
+proc tpool::get {tpid jobid} {
     
     variable result
     variable jobsdone
@@ -286,10 +297,28 @@ proc tpool::wait {tpid jobid} {
 
 proc tpool::Worker {tpid} {
 
-    set tid [thread::create [tsv::set $tpid -workerinit]]
+    #
+    # Create new worker thread
+    #
+
+    set tid [thread::create]
+
+    thread::send $tid [tsv::set $tpid -initscript]
     thread::preserve $tid
+
     tsv::incr  $tpid numworkers
-    tsv::lpush $tpid thrworkers $tid end
+    tsv::lpush $tpid thrworkers $tid
+
+    #
+    # Signalize waiter threads if any
+    #
+
+    set waiter [tsv::lpop $tpid thrwaiters]
+    if {$waiter != ""} {
+        thread::send -async $waiter [subst {
+            set [namespace current]::waiter 1
+        }]
+    }
 }
 
 #
@@ -310,7 +339,7 @@ proc tpool::Worker {tpid} {
 
 proc tpool::Timer {tpid} {
 
-    tsv::eval $tpid {
+    tsv::lock $tpid {
         if {[tsv::set $tpid  numworkers] > [tsv::set $tpid -minworkers]} {
             
             #
@@ -321,9 +350,11 @@ proc tpool::Timer {tpid} {
             #
 
             set x [tsv::lsearch $tpid thrworkers [thread::id]]
-            tsv::lreplace $tpid thrworkers $x $x
-            tsv::incr $tpid numworkers -1
-            thread::release
+            if {$x >= 0} {
+                tsv::lreplace $tpid thrworkers $x $x
+                tsv::incr $tpid numworkers -1
+                thread::release
+            }
         }
     }
 }
@@ -370,20 +401,18 @@ proc tpool::Run {tpid jid cmd} {
 
     #
     # Check to see if any caller is waiting to be serviced.
-    # If yes, pass him our thread id and kick it.
-    # If no, just push us to the list of the idle workers.
+    # If yes, kick it out of the waiting state.
     #
     
     set ns [namespace current]
 
-    tsv::eval $tpid {
+    tsv::lock $tpid {
+        tsv::lpush $tpid thrworkers [thread::id]
         set waiter [tsv::lpop $tpid thrwaiters]
         if {$waiter != ""} {
             thread::send -async $waiter [subst {
-                set ${ns}::waiter [thread::id]
+                set ${ns}::waiter 1
             }]
-        } else {
-            tsv::lpush $tpid thrworkers [thread::id] end
         }
     }
 
