@@ -5,6 +5,5 @@
 #   ../configure --help 
 #
 
-#sh ../configure --enable-gcc --enable-threads --enable-symbols
-sh ../configure --enable-gcc --enable-threads --enable-symbols --with-tcl=/usr/homes/zv/dev/aolserver-3.4/tcl8.3.4/unix
+sh ../configure --enable-threads
 
