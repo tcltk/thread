@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.18 2005/01/03 09:00:06 vasiljevic Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.19 2005/04/09 18:20:40 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -39,7 +39,7 @@
 #ifdef NS_AOLSERVER
 # include <ns.h>
 # if (defined NS_MAJOR_VERSION) && (NS_MAJOR_VERSION >= 4)
-#  if 0
+#  if 1
 #   define THNS "Thread::"
 #   define TPNS "Tpool::"
 #  else
@@ -58,8 +58,10 @@
  * Exported from threadCmd.c file.
  */
 
-EXTERN int Thread_Init     _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN int Thread_SafeInit _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Thread_Init       _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Thread_SafeInit   _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Thread_Unload     _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Thread_SafeUnload _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Exported from threadSvCmd.c file.
