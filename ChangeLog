@@ -1,3 +1,10 @@
+2005-04-09 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/tclThread.h: 
+	* generic/threadCmd.c: added Thread_Unload and
+	Thread_SafeUnload to be able to load into the
+	8.5 shell. Both calls are still no-ops.
+
 2005-03-18  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* Makefile.in (AR): use @AR@
