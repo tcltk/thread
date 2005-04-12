@@ -1,3 +1,9 @@
+2005-04-12 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/tclThread.h:
+	* generic/threadCmd.c: reverted some changes by the
+	last checkin which slipped in by mistake
+
 2005-04-09 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/tclThread.h: 
