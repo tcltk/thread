@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.90 2005/04/09 18:20:41 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.91 2005/04/12 07:32:30 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -410,14 +410,14 @@ Thread_Init(interp)
      * Add shared variable commands
      */
     
-    // Sv_Init(interp);
+    Sv_Init(interp);
     
     /*
      * Add commands to access thread
      * synchronization primitives.
      */
     
-    // Sp_Init(interp);
+    Sp_Init(interp);
 
     /*
      * Add threadpool commands.
