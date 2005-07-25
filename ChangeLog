@@ -1,3 +1,8 @@
+2005-07-25 Zoran Vasiljevic <zv@archiware.com>
+
+	* pkgIndex.tcl.in: simplified by introducing a
+	helper procedure, thus avoiding too much quoting.
+
 2005-07-24  Mo DeJong  <mdejong@users.sourceforge.net>
 
 	* Makefile.in: Subst TCLSH_PROG as SYSTEM_TCLSH

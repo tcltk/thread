@@ -2,15 +2,17 @@
 # Tcl package index file, version 1.1
 #
 if {[package vsatisfies [package provide Tcl] 8.4]} {
-    package ifneeded Thread @PACKAGE_VERSION@ [subst {
-	load \[file join [list $dir] [list @PKG_LIB_FILE@]\] Thread
-	if {\[info exists ::env(TCL_THREAD_LIBRARY)\] &&
-	    \[file readable \$::env(TCL_THREAD_LIBRARY)/ttrace.tcl\]} {
-	    source \$::env(TCL_THREAD_LIBRARY)/ttrace.tcl
-	} elseif {\[file readable \[file join [list $dir] .. lib ttrace.tcl\]\]} {
-	    source \[file join [list $dir] .. lib ttrace.tcl\]
-	} elseif {\[file readable \[file join [list $dir] ttrace.tcl\]\]} {
-	    source \[file join [list $dir] ttrace.tcl\]
-	}
-    }]
+    package ifneeded Thread @PACKAGE_VERSION@ [list @PACKAGE_NAME@_load $dir]
+    proc @PACKAGE_NAME@_load {dir} {
+        load [file join $dir @PKG_LIB_FILE@]
+        if {[info exists ::env(TCL_THREAD_LIBRARY)] &&
+            [file readable $::env(TCL_THREAD_LIBRARY)/ttrace.tcl]} {
+            source $::env(TCL_THREAD_LIBRARY)/ttrace.tcl
+        } elseif {[file readable [file join $dir .. lib ttrace.tcl]]} {
+            source [file join $dir .. lib ttrace.tcl]
+        } elseif {[file readable [file join $dir ttrace.tcl]]} {
+            source [file join $dir ttrace.tcl]
+        }
+        rename @PACKAGE_NAME@_load {}
+    }
 }
