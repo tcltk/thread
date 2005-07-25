@@ -1,3 +1,11 @@
+2005-07-24  Mo DeJong  <mdejong@users.sourceforge.net>
+
+	* Makefile.in: Subst TCLSH_PROG as SYSTEM_TCLSH
+	and subst BUILD_TCLSH and BUILD_TCLSH_PROG.
+	* configure: Regen.
+	* configure.in: Invoke TEA_BUILD_TCLSH from
+	tcl.m4 to correctly determine BUILD_TCLSH.
+
 2005-04-12 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/tclThread.h:
