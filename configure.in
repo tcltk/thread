@@ -3,7 +3,7 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
 #
-# RCS: @(#) $Id: configure.in,v 1.22 2005/03/19 01:39:58 hobbs Exp $
+# RCS: @(#) $Id: configure.in,v 1.23 2005/07/25 07:20:00 mdejong Exp $
 
 #-----------------------------------------------------------------------
 # Sample configure.in for Tcl Extensions.  The only places you should
@@ -189,6 +189,8 @@ AC_DEFINE(USE_TCL_STUBS)
 TEA_MAKE_LIB
 
 #--------------------------------------------------------------------
+# Determine the name of the tclsh and wish executables in the
+# Tcl and Tk build directories and subst into the Makefile.
 # Find tclsh so that we can run pkg_mkIndex to generate the pkgIndex.tcl
 # file during the install process.  Don't run the TCLSH_PROG through
 # ${CYGPATH} because it's being used directly by make.
@@ -197,7 +199,9 @@ TEA_MAKE_LIB
 # Add WISH as well if this is a Tk extension.
 #--------------------------------------------------------------------
 
+TEA_BUILD_TCLSH
 TEA_PROG_TCLSH
+#TEA_BUILD_WISH
 #TEA_PROG_WISH
 
 #--------------------------------------------------------------------
