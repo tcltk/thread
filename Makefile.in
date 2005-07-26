@@ -12,7 +12,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: Makefile.in,v 1.24 2005/07/25 07:19:57 mdejong Exp $
+# RCS: @(#) $Id: Makefile.in,v 1.25 2005/07/26 19:23:35 mdejong Exp $
 
 #========================================================================
 # Add additional lines to handle any additional AC_SUBST cases that
@@ -131,15 +131,8 @@ TCLSH_ENV	= TCL_LIBRARY=`@CYGPATH@ $(TCL_SRC_DIR)/library` \
 		  PATH="$(EXTRA_PATH):$(PATH)" \
 		  TCLLIBPATH="$(top_builddir) $(top_builddir)/../lib"
 
-# SYSTEM_TCLSH is a version of Tcl that is already installed
-# on the system. It is used to regenerate a pkgIndex.tcl
-# if needed. Note that is never going to be the same as the
-# version of tclsh in the Tcl build dir.
-
-SYSTEM_TCLSH	= @TCLSH_PROG@
-
-BUILD_TCLSH_PROG	= @BUILD_TCLSH@
-BUILD_TCLSH	= $(TCLSH_ENV) $(BUILD_TCLSH_PROG)
+TCLSH_PROG	= @TCLSH_PROG@
+TCLSH		= $(TCLSH_ENV) $(TCLSH_PROG)
 
 SHARED_BUILD	= @SHARED_BUILD@
 
@@ -222,13 +215,13 @@ install-doc: doc
 	done
 
 test: binaries libraries
-	$(BUILD_TCLSH) `@CYGPATH@ $(srcdir)/tests/all.tcl` $(TESTFLAGS)
+	$(TCLSH) `@CYGPATH@ $(srcdir)/tests/all.tcl` $(TESTFLAGS)
 
 shell: binaries libraries
-	@$(BUILD_TCLSH) $(SCRIPT)
+	@$(TCLSH) $(SCRIPT)
 
 gdb:
-	$(TCLSH_ENV) gdb $(BUILD_TCLSH_PROG) $(SCRIPT)
+	$(TCLSH_ENV) gdb $(TCLSH_PROG) $(SCRIPT)
 
 depend:
 
@@ -271,22 +264,6 @@ VPATH = $(srcdir):$(srcdir)/generic:$(srcdir)/unix:$(srcdir)/win
 
 .c.@OBJEXT@:
 	$(COMPILE) -c `@CYGPATH@ $<` -o $@
-
-#========================================================================
-# Create the pkgIndex.tcl file.
-# It is usually easiest to let Tcl do this for you with pkg_mkIndex, but
-# you may find that you need to customize the package.  If so, either
-# modify the -hand version, or create a pkgIndex.tcl.in file and have
-# the configure script output the pkgIndex.tcl by editing configure.in.
-#========================================================================
-
-pkgIndex.tcl:
-	( echo pkg_mkIndex . $(PKG_LIB_FILE) \; exit; ) | $(SYSTEM_TCLSH)
-
-pkgIndex.tcl-hand:
-	(echo 'package ifneeded $(PACKAGE_NAME) $(PACKAGE_VERSION) \
-	    [list load [file join $$dir $(PKG_LIB_FILE)]]'\
-	) > pkgIndex.tcl
 
 #========================================================================
 # Distribution creation

@@ -1,3 +1,15 @@
+2005-07-26  Mo DeJong  <mdejong@users.sourceforge.net>
+
+	* Makefile.in: Remove SYSTEM_TCLSH and any
+	code that tries to run tclsh at build time
+	aside from running the test cases.
+	* configure: Regen.
+	* configure.in: Remove calls to TEA_BUILD_TCLSH
+	and TEA_BUILD_WISH since these were removed
+	from tcl.m4. This fixes up the build when
+	--with-tcl indicates either a build dir or
+	and install dir.
+
 2005-07-25 Zoran Vasiljevic <zv@archiware.com>
 
 	* pkgIndex.tcl.in: simplified by introducing a

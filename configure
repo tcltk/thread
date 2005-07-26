@@ -307,7 +307,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CYGPATH EXEEXT PKG_LIB_FILE PKG_STUB_LIB_FILE PKG_STUB_SOURCES PKG_STUB_OBJECTS PKG_TCL_SOURCES PKG_HEADERS PKG_INCLUDES PKG_LIBS PKG_CFLAGS TCL_VERSION TCL_BIN_DIR TCL_SRC_DIR TCL_LIB_FILE TCL_LIB_FLAG TCL_LIB_SPEC TCL_STUB_LIB_FILE TCL_STUB_LIB_FLAG TCL_STUB_LIB_SPEC TCL_LIBS TCL_DEFS TCL_EXTRA_CFLAGS TCL_LD_FLAGS TCL_SHLIB_LD_LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC OBJEXT CPP INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA SET_MAKE RANLIB ac_ct_RANLIB EGREP MATH_LIBS PKG_SOURCES PKG_OBJECTS CLEANFILES TCL_INCLUDES TCL_THREADS SHARED_BUILD AR TCLSH_PROG CELIB_DIR LIBOBJS DL_LIBS CFLAGS_DEBUG CFLAGS_OPTIMIZE CFLAGS_WARNING STLIB_LD SHLIB_LD SHLIB_CFLAGS SHLIB_LD_LIBS LDFLAGS_DEBUG LDFLAGS_OPTIMIZE LD_LIBRARY_PATH_VAR TCL_DBGX CFLAGS_DEFAULT LDFLAGS_DEFAULT MAKE_LIB MAKE_SHARED_LIB MAKE_STATIC_LIB MAKE_STUB_LIB RANLIB_STUB BUILD_TCLSH LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CYGPATH EXEEXT PKG_LIB_FILE PKG_STUB_LIB_FILE PKG_STUB_SOURCES PKG_STUB_OBJECTS PKG_TCL_SOURCES PKG_HEADERS PKG_INCLUDES PKG_LIBS PKG_CFLAGS TCL_VERSION TCL_BIN_DIR TCL_SRC_DIR TCL_LIB_FILE TCL_LIB_FLAG TCL_LIB_SPEC TCL_STUB_LIB_FILE TCL_STUB_LIB_FLAG TCL_STUB_LIB_SPEC TCL_LIBS TCL_DEFS TCL_EXTRA_CFLAGS TCL_LD_FLAGS TCL_SHLIB_LD_LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC OBJEXT CPP INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA SET_MAKE RANLIB ac_ct_RANLIB EGREP MATH_LIBS PKG_SOURCES PKG_OBJECTS CLEANFILES TCL_INCLUDES TCL_THREADS SHARED_BUILD AR TCLSH_PROG CELIB_DIR LIBOBJS DL_LIBS CFLAGS_DEBUG CFLAGS_OPTIMIZE CFLAGS_WARNING STLIB_LD SHLIB_LD SHLIB_CFLAGS SHLIB_LD_LIBS LDFLAGS_DEBUG LDFLAGS_OPTIMIZE LD_LIBRARY_PATH_VAR TCL_DBGX CFLAGS_DEFAULT LDFLAGS_DEFAULT MAKE_LIB MAKE_SHARED_LIB MAKE_STATIC_LIB MAKE_STUB_LIB RANLIB_STUB LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -6813,42 +6813,26 @@ _ACEOF
 #--------------------------------------------------------------------
 
 
-    # Allow the user to provide this setting in the env
-    if test "x${TCLSH_PROG}" = "x" ; then
-	echo "$as_me:$LINENO: checking for tclsh" >&5
+    echo "$as_me:$LINENO: checking for tclsh" >&5
 echo $ECHO_N "checking for tclsh... $ECHO_C" >&6
-
-	if test "${ac_cv_path_tclsh+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-	search_path=`echo ${PATH} | sed -e 's/:/ /g'`
-	for dir in $search_path ; do
-	    for j in `ls -r $dir/tclsh[8-9]*${EXEEXT} 2> /dev/null` \
-		    `ls -r $dir/tclsh*${EXEEXT} 2> /dev/null` ; do
-		if test x"$ac_cv_path_tclsh" = x ; then
-		    if test -f "$j" ; then
-			ac_cv_path_tclsh=$j
-			break
-		    fi
-		fi
-	    done
-	done
-
-fi
-
-
-	if test -f "$ac_cv_path_tclsh" ; then
-	    TCLSH_PROG="$ac_cv_path_tclsh"
-	    echo "$as_me:$LINENO: result: $TCLSH_PROG" >&5
-echo "${ECHO_T}$TCLSH_PROG" >&6
-	else
-	    # It is not an error if an installed version of Tcl can't be located.
-	    TCLSH_PROG=""
-	    echo "$as_me:$LINENO: result: No tclsh found on PATH" >&5
-echo "${ECHO_T}No tclsh found on PATH" >&6
-	fi
+    if test -f "$TCL_BIN_DIR/Makefile" ; then
+        # tclConfig.sh is in Tcl build directory
+        if test "$TEA_PLATFORM" = "windows"; then
+            TCLSH_PROG=${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}${EXEEXT}
+        else
+            TCLSH_PROG=${TCL_BIN_DIR}/tclsh
+        fi
+    else
+        # tclConfig.sh is in $INSTALL/lib directory
+        REAL_TCL_BIN_DIR=`cd ${TCL_BIN_DIR}/../bin/;pwd`
+        if test "$TEA_PLATFORM" = "windows"; then
+            TCLSH_PROG=${REAL_TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}${EXEEXT}
+        else
+            TCLSH_PROG=${REAL_TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}.${TCL_MINOR_VERSION}${TCL_DBGX}
+        fi
     fi
+    echo "$as_me:$LINENO: result: $TCLSH_PROG" >&5
+echo "${ECHO_T}$TCLSH_PROG" >&6
 
 
 
@@ -9769,68 +9753,36 @@ _ACEOF
 
 
 #--------------------------------------------------------------------
-# Determine the name of the tclsh and wish executables in the
-# Tcl and Tk build directories and subst into the Makefile.
-# Find tclsh so that we can run pkg_mkIndex to generate the pkgIndex.tcl
-# file during the install process.  Don't run the TCLSH_PROG through
-# ${CYGPATH} because it's being used directly by make.
-# Require that we use a tclsh shell version 8.2 or later since earlier
-# versions have bugs in the pkg_mkIndex routine.
-# Add WISH as well if this is a Tk extension.
+# Determine the name of the tclsh and/or wish executables in the
+# Tcl and Tk build directories or the location they were installed
+# into. These paths are used to support running test cases only,
+# the Makefile should not be making use of these paths to generate
+# a pkgIndex.tcl file or anything else at extension build time.
 #--------------------------------------------------------------------
 
 
-    echo "$as_me:$LINENO: checking for tclsh in Tcl build directory" >&5
-echo $ECHO_N "checking for tclsh in Tcl build directory... $ECHO_C" >&6
-    if test "$TEA_PLATFORM" = "windows"; then
-        BUILD_TCLSH=${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}${EXEEXT}
-    else
-        BUILD_TCLSH=${TCL_BIN_DIR}/tclsh
-    fi
-    echo "$as_me:$LINENO: result: $BUILD_TCLSH" >&5
-echo "${ECHO_T}$BUILD_TCLSH" >&6
-
-
-
-    # Allow the user to provide this setting in the env
-    if test "x${TCLSH_PROG}" = "x" ; then
-	echo "$as_me:$LINENO: checking for tclsh" >&5
+    echo "$as_me:$LINENO: checking for tclsh" >&5
 echo $ECHO_N "checking for tclsh... $ECHO_C" >&6
-
-	if test "${ac_cv_path_tclsh+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-	search_path=`echo ${PATH} | sed -e 's/:/ /g'`
-	for dir in $search_path ; do
-	    for j in `ls -r $dir/tclsh[8-9]*${EXEEXT} 2> /dev/null` \
-		    `ls -r $dir/tclsh*${EXEEXT} 2> /dev/null` ; do
-		if test x"$ac_cv_path_tclsh" = x ; then
-		    if test -f "$j" ; then
-			ac_cv_path_tclsh=$j
-			break
-		    fi
-		fi
-	    done
-	done
-
-fi
-
-
-	if test -f "$ac_cv_path_tclsh" ; then
-	    TCLSH_PROG="$ac_cv_path_tclsh"
-	    echo "$as_me:$LINENO: result: $TCLSH_PROG" >&5
-echo "${ECHO_T}$TCLSH_PROG" >&6
-	else
-	    # It is not an error if an installed version of Tcl can't be located.
-	    TCLSH_PROG=""
-	    echo "$as_me:$LINENO: result: No tclsh found on PATH" >&5
-echo "${ECHO_T}No tclsh found on PATH" >&6
-	fi
+    if test -f "$TCL_BIN_DIR/Makefile" ; then
+        # tclConfig.sh is in Tcl build directory
+        if test "$TEA_PLATFORM" = "windows"; then
+            TCLSH_PROG=${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}${EXEEXT}
+        else
+            TCLSH_PROG=${TCL_BIN_DIR}/tclsh
+        fi
+    else
+        # tclConfig.sh is in $INSTALL/lib directory
+        REAL_TCL_BIN_DIR=`cd ${TCL_BIN_DIR}/../bin/;pwd`
+        if test "$TEA_PLATFORM" = "windows"; then
+            TCLSH_PROG=${REAL_TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}${EXEEXT}
+        else
+            TCLSH_PROG=${REAL_TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}.${TCL_MINOR_VERSION}${TCL_DBGX}
+        fi
     fi
+    echo "$as_me:$LINENO: result: $TCLSH_PROG" >&5
+echo "${ECHO_T}$TCLSH_PROG" >&6
 
 
-#TEA_BUILD_WISH
 #TEA_PROG_WISH
 
 #--------------------------------------------------------------------
@@ -10544,7 +10496,6 @@ s,@MAKE_SHARED_LIB@,$MAKE_SHARED_LIB,;t t
 s,@MAKE_STATIC_LIB@,$MAKE_STATIC_LIB,;t t
 s,@MAKE_STUB_LIB@,$MAKE_STUB_LIB,;t t
 s,@RANLIB_STUB@,$RANLIB_STUB,;t t
-s,@BUILD_TCLSH@,$BUILD_TCLSH,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
 
