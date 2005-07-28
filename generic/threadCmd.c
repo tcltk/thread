@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.91 2005/04/12 07:32:30 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.92 2005/07/28 08:52:02 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -436,29 +436,6 @@ Thread_Init(interp)
 /*
  *----------------------------------------------------------------------
  *
- * Thread_Unload --
- *
- *  TODO (when I understand what this should be doing)
- *
- * Results:
- *  TCL_OK if the package was properly unloaded.
- *
- * Side effects:
- *  Removes package commands from the interp.
- *
- *----------------------------------------------------------------------
- */
-
-EXTERN int
-Thread_Unload(interp)
-    Tcl_Interp *interp; /* The current Tcl interpreter */
-{
-    return TCL_OK;
-}
-
-/*
- *----------------------------------------------------------------------
- *
  * Thread_SafeInit --
  *
  *  This function is called from within initialization of the safe
@@ -478,29 +455,6 @@ Thread_SafeInit(interp)
     Tcl_Interp *interp;
 {
     return Thread_Init(interp);
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * Thread_SafeUnload --
- *
- *  TODO (when I understand what this should be doing)
- *
- * Results:
- *  Standard Tcl result
- *
- * Side effects:
- *  Commands removed from the current interpreter,
- *
- *----------------------------------------------------------------------
- */
-
-EXTERN int
-Thread_SafeUnload(interp)
-    Tcl_Interp *interp;
-{
-    return TCL_OK;
 }
 
 /*
