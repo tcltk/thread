@@ -1,3 +1,25 @@
+2005-07-27 Zoran Vasiljevic <zv@archiware.com>
+
+	*** 2.6.2 TAGGED FOR RELEASE (thread-2-6-2) ***
+
+	* configure: regen
+	* unix/README: added some clarifications about usage
+	  of --with-gdbm switch
+	* README: 
+	* configure.in: bumped version to 2.6.2
+	* aclocal.m4: fixed for alternate gdbm lib location 
+	  as per patch request #1245204
+	* generic/tclThread.c: removed Thread_Unload and
+	  Thread_SafeUnload because we can't really be unloaded.
+	* html/thread.html: regen
+	* html/tpool.html: regen
+	* html/tsv.html: regen
+	* html/ttrace.html: regen
+	* man/thread.n: regen
+	* man/tpool.n: regen
+	* man/tsv.n: regen
+	* man/ttrace.n: regen
+
 2005-07-26  Mo DeJong  <mdejong@users.sourceforge.net>
 
 	* Makefile.in: Remove SYSTEM_TCLSH and any
