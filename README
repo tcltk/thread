@@ -2,7 +2,7 @@
 WHAT IS THIS ?
 ==============
 
-This is the 2.6.1 source distribution of the Tcl Thread extension. 
+This is the 2.6.2 source distribution of the Tcl Thread extension. 
 You can use this extension to gain script-level access to Tcl 
 threading capabilities.
 The extension can be used with Tcl cores starting from Tcl8.4 and later.
