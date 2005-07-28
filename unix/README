@@ -60,5 +60,10 @@ other supporting libraries. Currently, there is a simple implementation
 of shared variable persistency built atop of popular GNU Gdbm package.
 You can obtain the latest version of the Gdbm package from the GNU 
 website at: http://www.gnu.org/software/gdbm/gdbm.html
+To compile with GNU Gdbm support you must configure with --with-gdbm
+switch. This option, if used, will try to locate the Gdbm library on
+your system at couple of standard locations. You might override this
+behaviour by giving --with-gdbm=/some/dir. Note that both library file
+and the include file must then reside in this directory.
 
 -EOF-
