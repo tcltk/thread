@@ -66,8 +66,6 @@ AC_DEFUN(TCLTHREAD_WITH_GDBM, [
             GDBM_CFLAGS="-I\"$gincdir\""
             GDBM_LIBS="-L\"$glibdir\" -lgdbm"
         fi
-    else
-        AC_MSG_ERROR([none found])
     fi
     fi
 ])
