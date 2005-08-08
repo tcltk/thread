@@ -1,3 +1,9 @@
+2005-08-08 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadSvCmd.c: fixed traversing the list
+	  of registered object types in Sv_DuplicateObj()
+	  (thx to eric.melbardis@netkitsolutions.com)
+
 2005-07-27 Zoran Vasiljevic <zv@archiware.com>
 
 	*** 2.6.2 TAGGED FOR RELEASE (thread-2-6-2) ***

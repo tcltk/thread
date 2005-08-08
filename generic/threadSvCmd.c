@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.39 2005/03/05 14:46:14 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.40 2005/08/08 14:11:15 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1005,8 +1005,7 @@ Sv_DuplicateObj(objPtr)
                 * very many of those, so this sequential walk
                 * should be fast enough.
                 */
-                for (regPtr = regType; regPtr->nextPtr;
-                     regPtr = regPtr->nextPtr) {
+                for (regPtr = regType; regPtr; regPtr = regPtr->nextPtr) {
                     if (objPtr->typePtr == regPtr->typePtr) {
                         (*regPtr->dupIntRepProc)(objPtr, dupPtr);
                         Tcl_InvalidateStringRep(dupPtr);
