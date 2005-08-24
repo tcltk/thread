@@ -24,7 +24,7 @@
  * For any questions, contant Zoran Vasiljevic (zoran@archiware.com)
  *
  *-----------------------------------------------------------------------------
- * $Id: tclXkeylist.c,v 1.1 2003/09/03 11:22:24 vasiljevic Exp $
+ * $Id: tclXkeylist.c,v 1.2 2005/08/24 06:32:44 vasiljevic Exp $
  *-----------------------------------------------------------------------------
  */
 
@@ -67,7 +67,7 @@
 /*
  * Used to return argument messages by most commands.
  */
-char *tclXWrongArgs = "wrong # args: ";
+static char *tclXWrongArgs = "wrong # args: ";
  
 static Tcl_ObjType *listType;
 static Tcl_ObjType *stringType;
@@ -84,7 +84,7 @@ static Tcl_ObjType *stringType;
  *   True if NULL, FALSE if not.
  *-----------------------------------------------------------------------------
  */
-int
+static int
 TclX_IsNullObj (objPtr)
     Tcl_Obj *objPtr;
 {
@@ -117,7 +117,7 @@ TclX_IsNullObj (objPtr)
  *   o args - Strings to append, terminated by a NULL.
  *-----------------------------------------------------------------------------
  */
-void
+static void
 TclX_AppendObjResult TCL_VARARGS_DEF (Tcl_Interp *, arg1)
 {
     Tcl_Interp *interp;
@@ -156,7 +156,7 @@ TclX_AppendObjResult TCL_VARARGS_DEF (Tcl_Interp *, arg1)
  *   TCL_ERROR
  *-----------------------------------------------------------------------------
  */
-int
+static int
 TclX_WrongArgs (interp, commandNameObj, string)
     Tcl_Interp  *interp;
     Tcl_Obj     *commandNameObj;

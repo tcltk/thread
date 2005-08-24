@@ -1,3 +1,9 @@
+2005-08-24 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/tclXkeylist.c: made some calls static
+	  so they do not interfere for static linking with
+          certain extensions.
+ 
 2005-08-08 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvCmd.c: fixed traversing the list
