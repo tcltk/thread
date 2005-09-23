@@ -1,3 +1,11 @@
+2005-09-23 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadCmd.c: ThreadDetach() sets the both
+	  source and target thread ID's for the detached
+	  channel to zero, thus signalizing the cleanup code
+	  to leave the channel in the cleanup-list when the
+ 	  thread who detached it exits.
+
 2005-08-24 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/tclXkeylist.c: made some calls static
