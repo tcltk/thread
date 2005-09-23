@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.92 2005/07/28 08:52:02 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.93 2005/09/23 15:41:20 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -2292,13 +2292,19 @@ ThreadDetach(interp, chan)
     resultPtr->resultMsg  = (char*)NULL;
 
     /* 
-     * Maintain the cleanup list. By setting the dstThreadId to zero
-     * we signal the code in ThreadAttach that this is the detached
-     * channel. Therefore it should not be mistaken for some reguilar 
-     * TransferChannel operation underway.
+     * Maintain the cleanup list. By setting the dst/srcThreadId
+     * to zero we signal the code in ThreadAttach that this is the 
+     * detached channel. Therefore it should not be mistaken for 
+     * some regular TransferChannel operation underway. Also, this
+     * will prevent the code in ThreadExitProc to splice out this
+     * record from the list when the threads are exiting.
+     * A side effect of this is that we may have entries in this
+     * list which may never be removed (i.e. nobody attaches the
+     * channel later on). This will result in both Tcl channel and
+     * memory leak.
      */
 
-    resultPtr->srcThreadId = Tcl_GetCurrentThread();
+    resultPtr->srcThreadId = (Tcl_ThreadId)0;
     resultPtr->dstThreadId = (Tcl_ThreadId)0;
     resultPtr->eventPtr    = evPtr;
 
