@@ -11,7 +11,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: thread.test,v 1.20 2005/01/03 09:00:06 vasiljevic Exp $
+# RCS: @(#) $Id: thread.test,v 1.21 2005/10/15 06:24:29 vasiljevic Exp $
 
 package require tcltest; namespace import -force ::tcltest::*
 
@@ -20,7 +20,9 @@ package require tcltest; namespace import -force ::tcltest::*
 package require Tcl 8.4
 package require Thread 2.6
 
-set ::tcltest::testConstraints(notForWin) [expr {($::tcl_platform(platform) != "windows")}]
+tcltest::testConstraint chanTransfer               \
+    [expr {   $::tcl_platform(platform) == "unix"  \
+           || $::tcl_PatchLevel > "8.4.10"}]
 
 set dummy [::tcltest::makeFile dummyForTransfer dummyForTransfer]
 
@@ -447,7 +449,7 @@ test thread-16.2 {thread::errorproc - async reporting} {
     while executing
 "set x"}}
 
-test thread-17.1 {thread::transfer - channel lists} {notForWin} {
+test thread-17.1 {thread::transfer - channel lists} {chanTransfer} {
     ThreadReap
     set tid [thread::create]
     set file [open $dummy r]
@@ -460,7 +462,7 @@ test thread-17.1 {thread::transfer - channel lists} {notForWin} {
     set res
 } {1 0 1}
 
-test thread-17.2 {thread::transfer - target thread dying} {notForWin} {
+test thread-17.2 {thread::transfer - target thread dying} {chanTransfer} {
     ThreadReap
     set tid [thread::create]
     set file [open $dummy r]
@@ -471,7 +473,7 @@ test thread-17.2 {thread::transfer - target thread dying} {notForWin} {
     set msg
 } {transfer failed: target thread died}
 
-test thread-17.3 {thread::transfer - clearing of fileevents} {notForWin} {
+test thread-17.3 {thread::transfer - clearing of fileevents} {chanTransfer} {
     proc _HandleIt_ {} {
         global gotEvents tid file    
         if {$gotEvents == 0} {
@@ -492,7 +494,7 @@ test thread-17.3 {thread::transfer - clearing of fileevents} {notForWin} {
     set gotEvents
 } {1}
 
-test thread-17.4 {thread::transfer - file - readable?} {notForWin} {
+test thread-17.4 {thread::transfer - file - readable?} {chanTransfer} {
     ThreadReap
     set tid [thread::create]
     set file [open $dummy r]
@@ -504,7 +506,7 @@ test thread-17.4 {thread::transfer - file - readable?} {notForWin} {
     set res
 } [string length [::tcltest::viewFile dummyForTransfer]]
 
-test thread-17.5 {thread::transfer - file - closeable?} {notForWin} {
+test thread-17.5 {thread::transfer - file - closeable?} {chanTransfer} {
     set tid [thread::create]
     set file [open $dummy r]
     set res [regexp $file [file channels]]
@@ -514,7 +516,7 @@ test thread-17.5 {thread::transfer - file - closeable?} {notForWin} {
     set res
 } {}
 
-test thread-17.6 {thread::transfer - socket - readable?} {notForWin} {
+test thread-17.6 {thread::transfer - socket - readable?} {chanTransfer} {
     set tid [thread::create]
     set lsock ""
     proc accept {sock host port} {global lsock ; set lsock $sock}
@@ -538,7 +540,7 @@ test thread-17.6 {thread::transfer - socket - readable?} {notForWin} {
     set res
 } {hello}
 
-test thread-17.7 {thread::transfer - socket - closeable?} {notForWin} {
+test thread-17.7 {thread::transfer - socket - closeable?} {chanTransfer} {
     set tid [thread::create]
     set lsock ""
     proc accept {sock host port} {global lsock ; set lsock $sock}
@@ -565,7 +567,7 @@ test thread-17.7 {thread::transfer - socket - closeable?} {notForWin} {
 # channel, which uses the same type of code is something we can
 # do. Lucky us.
 
-test thread-17.8 {thread::transfer - pipe - readable?} {notForWin} {
+test thread-17.8 {thread::transfer - pipe - readable?} {chanTransfer} {
     set tid [thread::create]
 
     set s [makeFile {
@@ -592,7 +594,7 @@ test thread-17.8 {thread::transfer - pipe - readable?} {notForWin} {
 # operation. For 9 it is the original thread, for 10 the other
 # thread. 10 currently fails. It seems to be some signal stuff.
 
-test thread-17.9 {thread::transfer - pipe - closable?} {notForWin} {
+test thread-17.9 {thread::transfer - pipe - closable?} {chanTransfer} {
     set tid [thread::create]
 
     set s [makeFile {
@@ -617,7 +619,7 @@ test thread-17.9 {thread::transfer - pipe - closable?} {notForWin} {
     set res
 } {1 {} 0}
 
-test thread-17.10 {thread::transfer - pipe - closable?} {notForWin} {
+test thread-17.10 {thread::transfer - pipe - closable?} {chanTransfer} {
 
     set tid [thread::create]
 
@@ -699,7 +701,7 @@ test thread-17.11b {thread::transfer - pipe - readable event - with transfer} {
 
     thread::transfer $tid $pipe
 
-    thread::send           $tid [list set chan $pipe]
+    thread::send $tid [list set chan $pipe]
     set cond [thread::send $tid {
 	fconfigure $chan -blocking 0
 	fileevent  $chan readable {read $chan ; set cond ok}
