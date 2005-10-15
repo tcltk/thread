@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.93 2005/09/23 15:41:20 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.94 2005/10/15 06:23:36 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -323,6 +323,10 @@ ThreadGetId       _ANSI_ARGS_((Tcl_Interp *interp,
 static void
 ErrorNoSuchThread _ANSI_ARGS_((Tcl_Interp *interp,
                                Tcl_ThreadId thrId));
+static void
+ThreadCutChannel  _ANSI_ARGS_((Tcl_Interp *interp,
+                               Tcl_Channel channel));
+
 /*
  * Functions implementing Tcl commands
  */
@@ -1202,7 +1206,7 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     
-    return ThreadTransfer(interp, thrId, chan);
+    return ThreadTransfer(interp, thrId, Tcl_GetTopChannel(chan));
 }
 
 /*
@@ -1247,7 +1251,7 @@ ThreadDetachObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     
-    return ThreadDetach(interp, chan);
+    return ThreadDetach(interp, Tcl_GetTopChannel(chan));
 }
 
 /*
@@ -2124,14 +2128,11 @@ ThreadTransfer(interp, thrId, chan)
     }
 
     /*
-     * Cut channel out of interp and current thread.
+     * Cut the channel out of the interp/thread
      */
 
-    Tcl_ClearChannelHandlers(chan);
-    Tcl_RegisterChannel((Tcl_Interp *) NULL, chan);
-    Tcl_UnregisterChannel(interp, chan);
-    Tcl_CutChannel(chan);
-    
+    ThreadCutChannel(interp, chan);
+
     /*
      * Wrap it into an event.
      */
@@ -2261,14 +2262,11 @@ ThreadDetach(interp, chan)
     }
     
     /*
-     * Cut channel out of the interpreter
+     * Cut the channel out of the interp/thread
      */
 
-    Tcl_ClearChannelHandlers(chan);
-    Tcl_RegisterChannel((Tcl_Interp *) NULL, chan); /* prevent closing */
-    Tcl_UnregisterChannel(interp, chan);
-    Tcl_CutChannel(chan);
-    
+    ThreadCutChannel(interp, chan);
+
     /*
      * Wrap it into the list of transfered channels. We generate no
      * events associated with the detached channel, thus really not
@@ -3502,6 +3500,61 @@ ErrorNoSuchThread(interp, thrId)
     ThreadGetHandle(thrId, thrHandle);
     Tcl_AppendResult(interp, "thread \"", thrHandle, 
                      "\" does not exist", NULL);
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
+ *  ThreadCutChannel --
+ *
+ *  Dissociate a Tcl channel from the current thread/interp. 
+ *
+ * Results:
+ *  None.
+ *
+ * Side effects:
+ *  Events still pending in the thread event queue and ready to fire
+ *  are not processed.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static void
+ThreadCutChannel(interp, chan)
+    Tcl_Interp *interp;
+    Tcl_Channel chan;
+{
+    Tcl_ChannelType *chanTypePtr;
+    Tcl_DriverWatchProc *watchProc;
+
+    Tcl_ClearChannelHandlers(chan);
+
+    chanTypePtr = Tcl_GetChannelType(chan);
+    watchProc   = Tcl_ChannelWatchProc(chanTypePtr);
+
+    /*
+     * This effectively disables processing of pending
+     * events which are ready to fire for the given 
+     * channel. If we do not do this, events will hit
+     * the detached channel which is potentially being
+     * owned by some other thread. This will wreck havoc
+     * on our memory and eventually badly hurt us...
+     */
+
+    if (watchProc) {
+        (*watchProc)(Tcl_GetChannelInstanceData(chan), 0);
+    }
+
+    /*
+     * Artificially bump the channel reference count
+     * which protects us from channel being closed
+     * during the Tcl_UnregisterChannel().
+     */
+
+    Tcl_RegisterChannel((Tcl_Interp *) NULL, chan);
+    Tcl_UnregisterChannel(interp, chan);
+
+    Tcl_CutChannel(chan);
 }
 
 /* EOF $RCSfile: threadCmd.c,v $ */
