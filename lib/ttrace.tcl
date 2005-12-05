@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.7 2005/03/05 14:51:58 vasiljevic Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.8 2005/12/05 18:04:21 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -95,9 +95,9 @@ namespace eval ttrace {
     }
 
     proc eval {cmd args} {
-        enable
         set nmsp [::uplevel namespace current]
-        set code [catch {namespace eval $nmsp ::uplevel $cmd $args} result]
+        enable
+        set code [catch {namespace eval $nmsp ::uplevel [list $cmd $args]} result]
         disable
         if {[info commands ns_ictl] == ""} {
             if {$code == 0} {
