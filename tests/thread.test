@@ -11,7 +11,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: thread.test,v 1.21 2005/10/15 06:24:29 vasiljevic Exp $
+# RCS: @(#) $Id: thread.test,v 1.22 2006/01/28 15:11:32 vasiljevic Exp $
 
 package require tcltest; namespace import -force ::tcltest::*
 
@@ -25,6 +25,7 @@ tcltest::testConstraint chanTransfer               \
            || $::tcl_PatchLevel > "8.4.10"}]
 
 set dummy [::tcltest::makeFile dummyForTransfer dummyForTransfer]
+set tcltest::mainThread [thread::id]
 
 proc ThreadReap {} {
     while {[llength [thread::names]] > 1} {
@@ -44,8 +45,6 @@ test thread-2.0 {no global thread command} {
 test thread-2.84 {thread subcommands} {
     lsort [info commands thread::*]
 } {::thread::attach ::thread::broadcast ::thread::cond ::thread::configure ::thread::create ::thread::detach ::thread::errorproc ::thread::eval ::thread::exists ::thread::exit ::thread::id ::thread::join ::thread::mutex ::thread::names ::thread::preserve ::thread::release ::thread::rwmutex ::thread::send ::thread::transfer ::thread::unwind ::thread::wait}
-
-set tcltest::mainThread [thread::id]
 
 test thread-3.0 {thread::names initial thread list} {
     list [ThreadReap] [llength [thread::names]]
@@ -829,7 +828,7 @@ test thread-19.10 {thread::mutex - destroy locked exclusive mutex} {
     thread::mutex unlock $emutex
     thread::mutex destroy $emutex
     list $x $msg
-} {1 {mutex is already in use}}
+} {1 {mutex is in use}}
 
 test thread-19.11 {thread::mutex - destroy locked recursive mutex} {
     set rmutex [thread::mutex create -recursive]
@@ -838,7 +837,7 @@ test thread-19.11 {thread::mutex - destroy locked recursive mutex} {
     thread::mutex unlock $rmutex
     thread::mutex destroy $rmutex
     list $x $msg
-} {1 {mutex is already in use}}
+} {1 {mutex is in use}}
 
 test thread-19.12 {thread::mutex - lock exclusive between threads} {
     ThreadReap
@@ -914,7 +913,7 @@ test thread-20.6 {thread::mutex - destroy readlocked mutex} {
     thread::rwmutex unlock $rwmutex
     thread::rwmutex destroy $rwmutex
     list $x $msg
-} {1 {mutex is already in use}}
+} {1 {mutex is in use}}
 
 test thread-20.7 {thread::mutex - destroy writelocked mutex} {
     set rwmutex [thread::rwmutex create]
@@ -923,7 +922,7 @@ test thread-20.7 {thread::mutex - destroy writelocked mutex} {
     thread::rwmutex unlock $rwmutex
     thread::rwmutex destroy $rwmutex
     list $x $msg
-} {1 {mutex is already in use}}
+} {1 {mutex is in use}}
 
 test thread-20.8 {thread::rwmutex - readlock mutex} {
     ThreadReap
@@ -951,7 +950,7 @@ test thread-20.9 {thread::rwmutex - writelock mutex} {
     set rwmutex [thread::rwmutex create]
     thread::send -async $tid [subst {
         thread::rwmutex wlock $rwmutex
-        after 1000
+        after 2000
         thread::rwmutex unlock $rwmutex
     }]
     update
@@ -994,7 +993,16 @@ test thread-20.14 {thread::mutex - write-lock write-locked mutex} {
     list $x $msg
 } {1 {write-locking the same read-write mutex twice from the same thread}}
 
-test thread-20.15 {thread::mutex - unlock not locled mutex} {
+test thread-20.15 {thread::mutex - read-lock write-locked mutex} {
+    set rwmutex [thread::rwmutex create]
+    thread::rwmutex wlock $rwmutex
+    set x [catch {thread::rwmutex rlock $rwmutex} msg]  
+    thread::rwmutex unlock $rwmutex 
+    thread::rwmutex destroy $rwmutex
+    list $x $msg
+} {1 {read-locking already write-locked mutex from the same thread}}
+
+test thread-20.16 {thread::mutex - unlock not locked mutex} {
     set rwmutex [thread::rwmutex create]
     set x [catch {thread::rwmutex unlock $rwmutex} msg]
     thread::rwmutex destroy $rwmutex
@@ -1071,7 +1079,28 @@ test thread-21.11 {thread::cond - wait unlocked mutex} {
     list $x $msg
 } {1 {mutex not locked or wrong type}}
 
-test thread-21.12 {thread::cond - wait recursive mutex} {
+test thread-21.12 {thread::cond - wait locked mutex from wrong thread} {
+    ThreadReap
+    set tid [thread::create]
+    set emutex [thread::mutex create]
+    set cond [thread::cond create]
+    thread::mutex lock $emutex
+    thread::send -async $tid [subst -nocommands {
+        set code [catch {thread::cond wait $cond $emutex 1000} result]
+    }]
+    update
+    after 20
+    thread::cond notify $cond
+    set c [thread::send $tid "set code"]
+    set r [thread::send $tid "set result"]
+    ThreadReap
+    thread::cond destroy $cond
+    thread::mutex unlock $emutex
+    thread::mutex destroy $emutex
+    list $c $r
+} {1 {mutex not locked or wrong type}}
+
+test thread-21.13 {thread::cond - wait recursive mutex} {
     set cond [thread::cond create]
     set rmutex [thread::mutex create -recursive]
     set x [catch {thread::cond wait $cond $rmutex} msg]
@@ -1080,7 +1109,7 @@ test thread-21.12 {thread::cond - wait recursive mutex} {
     list $x $msg
 } {1 {mutex not locked or wrong type}}
 
-test thread-21.13 {thread::cond - wait readwrite mutex} {
+test thread-21.14 {thread::cond - wait readwrite mutex} {
     set cond [thread::cond create]
     set rwmutex [thread::rwmutex create]
     set x [catch {thread::cond wait $cond $rwmutex} msg]
@@ -1089,7 +1118,7 @@ test thread-21.13 {thread::cond - wait readwrite mutex} {
     list $x $msg
 } {1 {mutex not locked or wrong type}}
 
-test thread-21.14 {thread::cond - regular timed wait} {
+test thread-21.15 {thread::cond - regular timed wait} {
     ThreadReap
     set tid [thread::create]
     set emutex [thread::mutex create]
@@ -1112,5 +1141,25 @@ test thread-21.14 {thread::cond - regular timed wait} {
     list $c [expr {($time2 - $time1) < 2}]
 } {1 1}
 
+test thread-21.16 {thread::cond - delete waited variable} {
+    ThreadReap
+    set tid [thread::create]
+    set emutex [thread::mutex create]
+    set cond [thread::cond create]
+    thread::send -async $tid [subst {
+        thread::mutex lock $emutex
+        thread::cond wait $cond $emutex 500
+        thread::mutex unlock $emutex
+    }]
+    update
+    after 10
+    set c1 [catch {thread::cond destroy $cond} r1]
+    thread::cond notify $cond
+    after 1000
+    set c2 [catch {thread::cond destroy $cond} r2]
+    ThreadReap
+    thread::mutex destroy $emutex
+    list $c1 $c2 $r1 $r2
+} {1 0 {condition variable is in use} {}}
 
 ::tcltest::cleanupTests

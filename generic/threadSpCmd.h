@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSpCmd.h,v 1.2 2004/07/21 20:58:36 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSpCmd.h,v 1.3 2006/01/28 15:11:32 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -36,8 +36,8 @@ typedef struct SpBucket {
  */
 
 typedef struct Sp_AnyMutex_ {
-    int lockcount;              /* If !=0 mutex is in use */
-    int numlocks;               /* Number of time the mutex got locked */
+    int lockcount;              /* If !=0 mutex is locked */
+    int numlocks;               /* Number of times the mutex got locked */
     Tcl_Mutex lock;             /* Regular mutex */
     Tcl_ThreadId owner;         /* Current lock owner thread (-1 = any) */
 } Sp_AnyMutex;
@@ -48,9 +48,11 @@ typedef struct Sp_AnyMutex_ {
 
 typedef struct Sp_ExclusiveMutex_ {
     int lockcount;              /* Flag: 1-locked, 0-not locked */
-    int numlocks;               /* Number of time the mutex got locked */
+    int numlocks;               /* Number of times the mutex got locked */
     Tcl_Mutex lock;             /* Regular mutex */
     Tcl_ThreadId owner;         /* Current lock owner thread */
+    /* --- */
+    Tcl_Mutex mutex;            /* Mutex being locked */
 } Sp_ExclusiveMutex_;
 
 typedef Sp_ExclusiveMutex_* Sp_ExclusiveMutex;
@@ -64,7 +66,7 @@ typedef struct Sp_RecursiveMutex_ {
     int numlocks;               /* Number of time the mutex got locked */
     Tcl_Mutex lock;             /* Regular mutex */
     Tcl_ThreadId owner;         /* Current lock owner thread */
-
+    /* --- */
     Tcl_Condition cond;         /* Wait to be allowed to lock the mutex */
 } Sp_RecursiveMutex_;
 
@@ -79,7 +81,7 @@ typedef struct Sp_ReadWriteMutex_ {
     int numlocks;               /* Number of time the mutex got locked */
     Tcl_Mutex lock;             /* Regular mutex */
     Tcl_ThreadId owner;         /* Current lock owner thread */
-
+    /* --- */
     unsigned int numrd;	        /* # of readers waiting for lock */
     unsigned int numwr;         /* # of writers waiting for lock */
     Tcl_Condition rcond;        /* Reader lockers wait here */
@@ -88,35 +90,33 @@ typedef struct Sp_ReadWriteMutex_ {
 
 typedef Sp_ReadWriteMutex_* Sp_ReadWriteMutex;
 
-/*
- * API for any mutex.
- */
-
-void Sp_MutexGetLock(Sp_AnyMutex *mutexPtr, Tcl_Mutex **lockPtr);
 
 /*
  * API for exclusive mutexes.
  */
 
-void Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *mutexPtr);
-void Sp_ExclusiveMutexUnlock(Sp_ExclusiveMutex *mutexPtr);
+int  Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *mutexPtr);
+int  Sp_ExclusiveMutexIsLocked(Sp_ExclusiveMutex *mutexPtr);
+int  Sp_ExclusiveMutexUnlock(Sp_ExclusiveMutex *mutexPtr);
 void Sp_ExclusiveMutexFinalize(Sp_ExclusiveMutex *mutexPtr);
 
 /*
  * API for recursive mutexes.
  */
 
-void Sp_RecursiveMutexLock(Sp_RecursiveMutex *mutexPtr);
-void Sp_RecursiveMutexUnlock(Sp_RecursiveMutex *mutexPtr);
+int  Sp_RecursiveMutexLock(Sp_RecursiveMutex *mutexPtr);
+int  Sp_RecursiveMutexIsLocked(Sp_RecursiveMutex *mutexPtr);
+int  Sp_RecursiveMutexUnlock(Sp_RecursiveMutex *mutexPtr);
 void Sp_RecursiveMutexFinalize(Sp_RecursiveMutex *mutexPtr);
 
 /*
  * API for reader/writer mutexes.
  */
 
-void Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *mutexPtr);
-void Sp_ReadWriteMutexWLock(Sp_ReadWriteMutex *mutexPtr);
-void Sp_ReadWriteMutexUnlock(Sp_ReadWriteMutex *mutexPtr);
+int  Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *mutexPtr);
+int  Sp_ReadWriteMutexWLock(Sp_ReadWriteMutex *mutexPtr);
+int  Sp_ReadWriteMutexIsLocked(Sp_ReadWriteMutex *mutexPtr);
+int  Sp_ReadWriteMutexUnlock(Sp_ReadWriteMutex *mutexPtr);
 void Sp_ReadWriteMutexFinalize(Sp_ReadWriteMutex *mutexPtr);
 
 #endif /* _SP_H_ */

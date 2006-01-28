@@ -1,4 +1,10 @@
-2005-10-15 Zoran Vasiljevic <zv@archiware.com>
+2006-01-28 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadSpCmd.c: Revamped handling because of the deep 
+	* generic/threadSpCmd.h: race condition which resulted in
+	* tests/thread.test:     deadlocks when using exclusive mutexes.
+
+200i-10-15 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: channel transfer code cleans
 	  ready-to-fire events from the thread event queue
