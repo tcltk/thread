@@ -4,6 +4,8 @@
 	constraints (mutex being locked by the caller thread) when
 	waiting on the condition variable. Also, fixed exclusive
 	mutex ownership and usage counting.
+	* configure.in: uses TEA 3.5 
+	* tclconfig: updated to TEA3.5
 
 2006-01-28 Zoran Vasiljevic <zv@archiware.com>
 
