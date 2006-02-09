@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.23 2006/01/28 15:11:32 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.24 2006/02/09 09:57:59 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1208,13 +1208,21 @@ SpCondvWait(SpCondv *condvPtr, SpMutex *mutexPtr, int msec)
     }
 
     /*
-     * It is safe to operate on condvPtr->mutex because caller
-     * is holding the mutexPtr locked before we enter the
-     * Tcl_ConditionWait and after we return out of it.
+     * It is safe to operate on mutex struct because caller
+     * is holding the emPtr->mutex locked before we enter
+     * the Tcl_ConditionWait and after we return out of it.
      */
 
     condvPtr->mutex = mutexPtr;
+
+    emPtr->owner = (Tcl_ThreadId)0;
+    emPtr->lockcount = 0;
+
     Tcl_ConditionWait(&condvPtr->cond, &emPtr->mutex, wt);
+
+    emPtr->owner = threadId;
+    emPtr->lockcount = 1;
+
     condvPtr->mutex = NULL;
 
     return 1;
@@ -1322,10 +1330,20 @@ Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *muxPtr)
         Tcl_MutexUnlock(&emPtr->lock);
         return 0; /* Already locked by the same thread */
     }
-    emPtr->owner = thisThread;
-    emPtr->lockcount++;
     Tcl_MutexUnlock(&emPtr->lock);
+
+    /*
+     * Many threads can come to this point.
+     * Only one will succeed locking the 
+     * mutex. Others will block...
+     */
+
     Tcl_MutexLock(&emPtr->mutex);
+
+    Tcl_MutexLock(&emPtr->lock);
+    emPtr->owner = thisThread;
+    emPtr->lockcount = 1;
+    Tcl_MutexUnlock(&emPtr->lock);
 
     return 1;
 }
@@ -1380,15 +1398,21 @@ Sp_ExclusiveMutexUnlock(Sp_ExclusiveMutex *muxPtr)
     }
 
     emPtr = *(Sp_ExclusiveMutex_**)muxPtr;
+
     Tcl_MutexLock(&emPtr->lock);
     if (emPtr->lockcount == 0) {
         Tcl_MutexUnlock(&emPtr->lock);
         return 0; /* Not locked */
     }
-
     emPtr->owner = (Tcl_ThreadId)0;
-    emPtr->lockcount--;
+    emPtr->lockcount = 0;
     Tcl_MutexUnlock(&emPtr->lock);
+
+    /*
+     * Only one thread should be able
+     * to come to this point and unlock...
+     */
+
     Tcl_MutexUnlock(&emPtr->mutex);
 
     return 1;
