@@ -1,3 +1,10 @@
+2006-02-09 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadSpCmd.c: fixed race condition when testing
+	constraints (mutex being locked by the caller thread) when
+	waiting on the condition variable. Also, fixed exclusive
+	mutex ownership and usage counting.
+
 2006-01-28 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSpCmd.c: Revamped handling because of the deep 
