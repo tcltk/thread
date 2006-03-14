@@ -1,3 +1,8 @@
+2006-03-14 Zoran Vasiljevic <zv@archiware.com>
+
+	* configure.in: Moved to 2.6.3 release
+	* configure: regen
+
 2006-02-09 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSpCmd.c: fixed race condition when testing
