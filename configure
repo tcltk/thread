@@ -6386,7 +6386,7 @@ echo "$as_me: error: could not find tcl source file '${srcdir}/$i'" >&2;}
 
 if test "${TEA_PLATFORM}" = "windows" ; then
     cat >>confdefs.h <<\_ACEOF
-#define BUILD_sample 1
+#define BUILD_thread 1
 _ACEOF
 
     CLEANFILES="*.lib *.dll *.exp *.ilk *.pdb vc*.pch"
