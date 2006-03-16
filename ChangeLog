@@ -1,3 +1,17 @@
+2006-03-16 Zoran Vasiljevic <zv@archiware.com>
+
+	*** 2.6.3 TAGGED FOR RELEASE (thread-2-6-3) ***
+
+	* README: Bumped to 2.6.3
+
+2006-03-15 Zoran Vasiljevic <zv@archiware.com>
+
+
+	* configure.in: Changed BUILD_sample to
+	BUILD_thread for Windows compile under MinGW.
+
+	+ configure: regen
+
 2006-03-14 Zoran Vasiljevic <zv@archiware.com>
 
 	* configure.in: Moved to 2.6.3 release
