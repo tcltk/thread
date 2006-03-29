@@ -1,3 +1,8 @@
+2006-03-28  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* generic/threadPoolCmd.c (AppExitHandler): fix teardown to
+	destruct pool list correctly. [Bug 1427570]
+
 2006-03-16 Zoran Vasiljevic <zv@archiware.com>
 
 	*** 2.6.3 TAGGED FOR RELEASE (thread-2-6-3) ***

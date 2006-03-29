@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.30 2005/01/11 15:58:40 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.31 2006/03/29 05:25:42 hobbs Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -267,6 +267,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     tpoolPtr->idleTime    = idle;
     tpoolPtr->initScript  = cmd;
     tpoolPtr->exitScript  = exs;
+    tpoolPtr->nextPtr  = NULL;
     Tcl_InitHashTable(&tpoolPtr->jobsDone, TCL_ONE_WORD_KEYS);
 
     /*
@@ -1482,6 +1483,10 @@ TpoolRelease(tpoolPtr)
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
 
+    printf("TID %p TPOOL RELEASE %p ", Tcl_GetCurrentThread(),
+            tpoolPtr); fflush(stdout);
+    printf(" (ref %d) LIST %p NEXT %p\n",
+            tpoolPtr->refCount, tpoolList, tpoolPtr->nextPtr); fflush(stdout);
     if (--tpoolPtr->refCount > 0) { 
         return tpoolPtr->refCount;
     }
@@ -1556,8 +1561,11 @@ TpoolRelease(tpoolPtr)
     }
     Tcl_MutexFinalize(&tpoolPtr->mutex);
     Tcl_ConditionFinalize(&tpoolPtr->cond);
-    Tcl_Free((char*)tpoolPtr);
     
+    printf("    RELEASED %p (ref %d) LIST %p NEXT %p\n",
+            tpoolPtr, tpoolPtr->refCount, tpoolList, tpoolPtr->nextPtr); fflush(stdout);
+    Tcl_Free((char*)tpoolPtr);
+
     return 0;
 }
 
@@ -1670,7 +1678,10 @@ AppExitHandler(clientData)
     ThreadPool *tpoolPtr;
 
     Tcl_MutexLock(&listMutex);
-    for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
+    /*
+     * Restart with head of list each time until empty. [Bug 1427570]
+     */
+    for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolList) {
         TpoolRelease(tpoolPtr);
     }
     Tcl_MutexUnlock(&listMutex);
