@@ -1,3 +1,7 @@
+2006-04-05  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* win/vc/pkg.vc (PACKAGE_VERSION): correct to 2.6.3 for MSVC make.
+
 2006-03-28  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* generic/threadPoolCmd.c (AppExitHandler): fix teardown to
