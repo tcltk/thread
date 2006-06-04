@@ -4,6 +4,8 @@
 	shared array and/or element and initializes it to zero if the
 	array and/or the element were not found.
 
+	* generic/tclThread.h: Removed some unusded debugging defs
+
 2006-04-05  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* win/vc/pkg.vc (PACKAGE_VERSION): correct to 2.6.3 for MSVC make.
