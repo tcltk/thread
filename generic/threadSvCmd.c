@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.41 2006/06/04 10:16:39 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.42 2006/08/06 10:01:13 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -878,7 +878,7 @@ SvAllocateContainers(bucketPtr)
     Bucket *bucketPtr;
 {
     Container tmp[2];
-    size_t objSizePlusPadding = ((int)(&(tmp[1]))-(int)(&(tmp[0])));
+    size_t objSizePlusPadding = (size_t)(((char*)(tmp+1))-(char*)tmp);
     size_t bytesToAlloc = (OBJS_TO_ALLOC_EACH_TIME * objSizePlusPadding);
     char *basePtr;
     register Container *prevPtr = NULL, *objPtr = NULL;
