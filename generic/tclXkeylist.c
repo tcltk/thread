@@ -24,7 +24,7 @@
  * For any questions, contant Zoran Vasiljevic (zoran@archiware.com)
  *
  *-----------------------------------------------------------------------------
- * $Id: tclXkeylist.c,v 1.2 2005/08/24 06:32:44 vasiljevic Exp $
+ * $Id: tclXkeylist.c,v 1.3 2006/08/06 10:03:31 vasiljevic Exp $
  *-----------------------------------------------------------------------------
  */
 
@@ -1336,8 +1336,9 @@ Tcl_KeyldelObjCmd (clientData, interp, objc, objv)
             Tcl_DecrRefCount (keylPtr);
             return TCL_ERROR;
         }
-        if (keylVarPtr != keylPtr)
+        if (keylVarPtr != keylPtr) {
             Tcl_DecrRefCount (keylPtr);
+        }
     }
     keylPtr = keylVarPtr;
 
