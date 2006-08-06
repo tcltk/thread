@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.94 2005/10/15 06:23:36 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.95 2006/08/06 10:08:57 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -997,12 +997,13 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
      * to be sent asynchronously to each known thread.
      */
 
-    job.interp   = NULL; /* Signal to use thread's main interp */
-    job.execProc = ThreadSendEval;
-    job.freeProc = (ThreadSendFree*)Tcl_Free;
+    job.interp     = NULL; /* Signal to use thread's main interp */
+    job.execProc   = ThreadSendEval;
+    job.freeProc   = (ThreadSendFree*)Tcl_Free;
+    job.clientData = NULL;
 
     /*
-     * Now, circle this list and send each of them the script.
+     * Now, circle this list and send each thread the script.
      * This is sent asynchronously, since we do not care what
      * are they going to do with it.
      */
