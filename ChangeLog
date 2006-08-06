@@ -1,3 +1,15 @@
+2006-08-06 Zoran Vasiljevic <zv@archiware.com>
+
+	*** 2.6.4 TAGGED FOR RELEASE (thread-2-6-4) ***
+
+	* generic/tclXkeylist.c: Silenced various 
+	* generic/threadCmd.c    compiler warnings.
+	* generic/threadSvCmd.c: 
+
+	* README: Removed version information.
+	* configure.in: Bumped to 2.6.4 version.
+	* confiigure: Regenerated.
+
 2006-06-04 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvCmd.c: SvIncrObjCmd() now implicitly creates
