@@ -63,7 +63,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: ttrace.n,v 1.7 2005/07/28 08:51:05 vasiljevic Exp $
+'\" RCS: @(#) $Id: ttrace.n,v 1.8 2006/10/05 10:22:59 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -288,11 +288,47 @@ package require \fBThread  ?2.6?\fR
 .SH "DESCRIPTION"
 This package creates a framework for on-demand replication of the
 interpreter state accross threads in an multithreading application.
-It relies on the mechanics of the Tcl \fBunknown\fR command mechanism.
+It relies on the mechanics of Tcl command tracing and the Tcl
+\fBunknown\fR command and mechanism.
 .PP
 The package requires Tcl threading extension but can be alternatively
 used stand-alone within the AOLserver, a scalable webserver from
 America Online.
+.PP
+In a nutshell, a short sample illustrating the usage of the ttrace
+with the Tcl threading extension:
+.nf
+
+    % package require Thread
+    2.6.4
+
+    % set t1 [thread::create {ttrace::update; thread::wait}]
+    tid0x1802800
+
+    % ttrace::eval {proc test args {return test-[thread::id]}}
+    % thread::send $t1 test
+    test-tid0x1802800
+
+    % set t2 [thread::create {ttrace::update; thread::wait}]
+    tid0x1804000
+
+    % thread::send $t2 test
+    test-tid0x1804000
+
+    % set p1 [tpool::create -initcmd ttrace::update]
+    tpool0x2a1f08
+
+    % set jobid [tpool::post $p1 test]
+    1
+
+    % tpool::get $p1 $jobid
+    test-tid0x1805a00
+.fi
+.PP
+As seen from above, the \fBttrace::eval\fR and \fBttrace::update\fR
+commands are used to create a thread-wide definition of a simple
+Tcl procedure and replicate that definition to all, already existing
+or later created, threads or pool workers.
 .SH "USER COMMANDS"
 This section describes user-level commands. Those commands can be
 used by script writers to control the execution of the tracing
