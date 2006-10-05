@@ -36,20 +36,12 @@ with the Tcl threading extension:
     % thread::send $t2 test
     test-tid0x1804000
 
-    % set p1 [tpool::create -initcmd ttrace::update]
-    tpool0x2a1f08
-
-    % set jobid [tpool::post $p1 test]
-    1
-
-    % tpool::get $p1 $jobid
-    test-tid0x1805a00
 }]
 [para]
 As seen from above, the [cmd ttrace::eval] and [cmd ttrace::update]
 commands are used to create a thread-wide definition of a simple 
 Tcl procedure and replicate that definition to all, already existing
-or later created, threads or pool workers.
+or later created, threads.
 
 [section {USER COMMANDS}]
 This section describes user-level commands. Those commands can be
