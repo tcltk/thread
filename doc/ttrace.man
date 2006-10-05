@@ -8,11 +8,48 @@
 [description]
 This package creates a framework for on-demand replication of the
 interpreter state accross threads in an multithreading application.
-It relies on the mechanics of the Tcl [cmd unknown] command mechanism.
+It relies on the mechanics of Tcl command tracing and the Tcl 
+[cmd unknown] command and mechanism.
 [para]
 The package requires Tcl threading extension but can be alternatively
 used stand-alone within the AOLserver, a scalable webserver from 
 America Online.
+[para]
+In a nutshell, a short sample illustrating the usage of the ttrace
+with the Tcl threading extension:
+
+[example {
+
+    % package require Thread
+    2.6.4
+
+    % set t1 [thread::create {ttrace::update; thread::wait}]
+    tid0x1802800
+
+    % ttrace::eval {proc test args {return test-[thread::id]}}
+    % thread::send $t1 test
+    test-tid0x1802800
+
+    % set t2 [thread::create {ttrace::update; thread::wait}]
+    tid0x1804000
+
+    % thread::send $t2 test
+    test-tid0x1804000
+
+    % set p1 [tpool::create -initcmd ttrace::update]
+    tpool0x2a1f08
+
+    % set jobid [tpool::post $p1 test]
+    1
+
+    % tpool::get $p1 $jobid
+    test-tid0x1805a00
+}]
+[para]
+As seen from above, the [cmd ttrace::eval] and [cmd ttrace::update]
+commands are used to create a thread-wide definition of a simple 
+Tcl procedure and replicate that definition to all, already existing
+or later created, threads or pool workers.
 
 [section {USER COMMANDS}]
 This section describes user-level commands. Those commands can be
@@ -74,7 +111,7 @@ is automatically invoked by other higher-level commands like
 A word upfront: the package already includes callbacks for tracing 
 following Tcl commands: [cmd proc], [cmd namespace], [cmd variable],
 [cmd load], and [cmd rename]. Additionaly, a set of callbacks for 
-tracing resources (object, clasess) for the XOTcl v1.1.0+, an 
+tracing resources (object, clasess) for the XOTcl v1.3.8+, an 
 OO-extension to Tcl, is also provided.
 This gives a solid base for solving most of the real-life needs and
 serves as an example for people wanting to customize the package 
