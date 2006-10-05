@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.8 2005/12/05 18:04:21 vasiljevic Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.9 2006/10/05 10:24:22 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -71,6 +71,7 @@ namespace eval ttrace {
     variable disables  ""     ; # List of trace-disable callbacks
     variable preloads  ""     ; # List of procedure names to preload
     variable enabled   0      ; # True if trace is enabled
+    variable config           ; # Array with config options
 
     variable epoch     -1     ; # The initialization epoch
     variable cleancnt   0     ; # Counter of registered cleaners
@@ -85,36 +86,33 @@ namespace eval ttrace {
     # Exported commands
     namespace export unknown
 
-    # Initially, allow creation of epochs
-    set config(-doepochs) 1
-
     # Initialize ttrace shared state
     if {[${store}array exists ttrace] == 0} {
         ${store}set ttrace lastepoch $epoch
         ${store}set ttrace epochlist ""
     }
 
+    # Initially, allow creation of epochs
+    set config(-doepochs) 1
+
     proc eval {cmd args} {
         set nmsp [::uplevel namespace current]
         enable
-        set code [catch {namespace eval $nmsp ::uplevel [list $cmd $args]} result]
+        set code [catch {namespace eval $nmsp [concat $cmd $args]} result]
         disable
         if {[info commands ns_ictl] == ""} {
             if {$code == 0} {
-                variable tvers
-                if {$tvers >= "2.6"} {
-                    thread::broadcast {package require Ttrace; ttrace::update}
-                }
+                thread::broadcast ttrace::update
             }
         } else {
             if {$code == 0} {
                 ns_ictl save [getscript]
-            } else {
-                ns_markfordelete
             }
         }
         return -code $code \
             -errorinfo $::errorInfo -errorcode $::errorCode $result
+
+        return -code $code $result
     }
 
     proc config {args} {
@@ -137,7 +135,7 @@ namespace eval ttrace {
         variable enables
         variable enabled
         incr enabled 1
-        if {$enabled > 0} {
+        if {$enabled > 1} {
             return
         }
         if {$config(-doepochs) != 0} {
@@ -435,6 +433,10 @@ namespace eval ttrace {
                 lappend pargs [list $arg $def]
             }
         }
+        set nsp [namespace qual $cmd]
+        if {$nsp == ""} {
+            set nsp "::"
+        }
         append res "::namespace eval $nsp {" \n
         append res "::proc [namespace tail $cmd] [list $pargs] [list $pbody]" \n
         append res "}" \n
@@ -458,7 +460,7 @@ namespace eval ttrace {
         foreach cmd [info procs ${nsp}::*] {
             append res [_serializeproc $cmd] \n
         }
-        append res } \n
+        append res "}" \n
         foreach nn [namespace children $nsp] {
             _serializensp $nn res
         }
@@ -486,7 +488,7 @@ eval {
     # the following key/value pair in the "load" store:
     #
     #  --- key ----              --- value ---
-    #  <path_of_loaded_image>   <name_of_the_init_proc>
+    #  <path_of_loaded_image>    <name_of_the_init_proc>
     #
     # We normally need only the name_of_the_init_proc for
     # being able to load the package in other interpreters,
@@ -842,7 +844,7 @@ eval {
 
     #
     # For XOTcl, the entire item introspection/tracing
-    # is delegated to XOTcl itself (it shines here!).
+    # is delegated to XOTcl itself.
     # The xotcl store is filled with this:
     #
     #  --- key ----               --- value ---
@@ -881,17 +883,19 @@ eval {
         ::xotcl::_creator destroy
     }
 
-    set resolver [ttrace::addresolver resolveclasses {name} {
-        set cns  [uplevel namespace current]
-        set name [namespace tail $classname]
-        if {$cns == "::"} {
-            set cns ""
-        }
-        set ncmd ${cns}::$name
-        set gcmd ::$name
-        set script [ttrace::getentry xotcl $ncmd]
+    set resolver [ttrace::addresolver resolveclasses {classname} {
+        set cns [uplevel namespace current]
+        set script [ttrace::getentry xotcl $classname]
         if {$script == ""} {
-            set script [ttrace::getentry xotcl $gcmd]
+            set name [namespace tail $classname]
+            if {$cns == "::"} {
+                set script [ttrace::getentry xotcl ::$name]
+            } else {
+                set script [ttrace::getentry xotcl ${cns}::$name]
+                if {$script == ""} {
+                    set script [ttrace::getentry xotcl ::$name]
+                }
+            }
             if {$script == ""} {
                 return 0
             }
