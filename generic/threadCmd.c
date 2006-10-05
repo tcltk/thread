@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.96 2006/10/05 10:22:28 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.97 2006/10/05 10:32:36 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1005,7 +1005,8 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
     /*
      * Now, circle this list and send each thread the script.
      * This is sent asynchronously, since we do not care what
-     * are they going to do with it.
+     * are they going to do with it. Also, the event is queued
+     * to the head of the event queue (as out-of-band message).
      */
 
     for (ii = 0; ii < nthreads; ii++) {
@@ -1015,7 +1016,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
         sendPtr  = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
         *sendPtr = job;
         sendPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+len), script);
-        ThreadSend(interp, thrIdArray[ii], sendPtr, NULL, 0);
+        ThreadSend(interp, thrIdArray[ii], sendPtr, NULL, THREAD_SEND_HEAD);
     }
 
     Tcl_Free((char*)thrIdArray);
