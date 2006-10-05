@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.97 2006/10/05 10:32:36 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.98 2006/10/05 11:52:53 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1629,10 +1629,13 @@ NewThread(clientData)
 #endif
 
 #if !defined(NS_AOLSERVER) || (defined(NS_MAJOR_VERSION) && NS_MAJOR_VERSION >= 4)
+# if !defined(NS_AOLSERVER)
     if (Tcl_PkgRequire(interp, "Thread", PACKAGE_VERSION, 1) == NULL) {
-        /* This should not happen really */
         result = Thread_Init(interp);
     }
+# else
+    result = Thread_Init(interp);
+# endif
 #endif
 
     tsdPtr->interp = interp;
