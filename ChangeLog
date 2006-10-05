@@ -1,3 +1,16 @@
+2006-10-05 Zoran Vasiljevic <zv@archiware.com>
+
+	* thread/threadPool.c:
+	* thread/threadCmd.c: Call Tcl_PkgRequire() in the 
+	NewThread() to properly initialize the extension
+	in any new thread.
+
+	* doc/ttrace.man: Add small example of ttrace usage.
+
+	* lib/ttrace.tcl: Fixed [ttrace:eval] to not to call
+	[package require Ttrace] in the broadcast script as
+	this is now done implicitly for all new threads.
+	
 2006-08-06 Zoran Vasiljevic <zv@archiware.com>
 
 	*** 2.6.4 TAGGED FOR RELEASE (thread-2-6-4) ***
