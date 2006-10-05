@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.95 2006/08/06 10:08:57 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.96 2006/10/05 10:22:28 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1611,7 +1611,11 @@ NewThread(clientData)
     char *evalScript;
 
     /*
-     * Initialize the interpreter.
+     * Initialize the interpreter. The bad thing here is that we
+     * assume that initialization of the Tcl interp will be 
+     * error free, which it may not. In the future we must recover
+     * from this and exit gracefully (this is not that easy as
+     * it seems on the first glace...)
      */
 
 #ifdef NS_AOLSERVER
@@ -1624,7 +1628,10 @@ NewThread(clientData)
 #endif
 
 #if !defined(NS_AOLSERVER) || (defined(NS_MAJOR_VERSION) && NS_MAJOR_VERSION >= 4)
-    result = Thread_Init(interp);
+    if (Tcl_PkgRequire(interp, "Thread", PACKAGE_VERSION, 1) == NULL) {
+        /* This should not happen really */
+        result = Thread_Init(interp);
+    }
 #endif
 
     tsdPtr->interp = interp;
