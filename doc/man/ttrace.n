@@ -63,7 +63,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: ttrace.n,v 1.8 2006/10/05 10:22:59 vasiljevic Exp $
+'\" RCS: @(#) $Id: ttrace.n,v 1.9 2006/10/05 10:38:33 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -315,20 +315,12 @@ with the Tcl threading extension:
     % thread::send $t2 test
     test-tid0x1804000
 
-    % set p1 [tpool::create -initcmd ttrace::update]
-    tpool0x2a1f08
-
-    % set jobid [tpool::post $p1 test]
-    1
-
-    % tpool::get $p1 $jobid
-    test-tid0x1805a00
 .fi
 .PP
 As seen from above, the \fBttrace::eval\fR and \fBttrace::update\fR
 commands are used to create a thread-wide definition of a simple
 Tcl procedure and replicate that definition to all, already existing
-or later created, threads or pool workers.
+or later created, threads.
 .SH "USER COMMANDS"
 This section describes user-level commands. Those commands can be
 used by script writers to control the execution of the tracing
@@ -378,7 +370,7 @@ is automatically invoked by other higher-level commands like
 A word upfront: the package already includes callbacks for tracing
 following Tcl commands: \fBproc\fR, \fBnamespace\fR, \fBvariable\fR,
 \fBload\fR, and \fBrename\fR. Additionaly, a set of callbacks for
-tracing resources (object, clasess) for the XOTcl v1.1.0+, an
+tracing resources (object, clasess) for the XOTcl v1.3.8+, an
 OO-extension to Tcl, is also provided.
 This gives a solid base for solving most of the real-life needs and
 serves as an example for people wanting to customize the package

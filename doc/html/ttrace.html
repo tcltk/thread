@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: ttrace.html,v 1.8 2006/10/05 10:22:59 vasiljevic Exp $ ttrace.n
+<! -- CVS: $Id: ttrace.html,v 1.9 2006/10/05 10:38:33 vasiljevic Exp $ ttrace.n
    -->
 
 <body>
@@ -81,20 +81,12 @@ with the Tcl threading extension:
     % thread::send $t2 test
     test-tid0x1804000
 
-    % set p1 [tpool::create -initcmd ttrace::update]
-    tpool0x2a1f08
-
-    % set jobid [tpool::post $p1 test]
-    1
-
-    % tpool::get $p1 $jobid
-    test-tid0x1805a00
 </pre></td></tr></table></p>
 <p>
 As seen from above, the <b class='cmd'>ttrace::eval</b> and <b class='cmd'>ttrace::update</b>
 commands are used to create a thread-wide definition of a simple 
 Tcl procedure and replicate that definition to all, already existing
-or later created, threads or pool workers.
+or later created, threads.
 
 <h2><a name="user_commands">USER COMMANDS</a></h2>
 <p>
@@ -169,7 +161,7 @@ is automatically invoked by other higher-level commands like
 A word upfront: the package already includes callbacks for tracing 
 following Tcl commands: <b class='cmd'>proc</b>, <b class='cmd'>namespace</b>, <b class='cmd'>variable</b>,
 <b class='cmd'>load</b>, and <b class='cmd'>rename</b>. Additionaly, a set of callbacks for 
-tracing resources (object, clasess) for the XOTcl v1.1.0+, an 
+tracing resources (object, clasess) for the XOTcl v1.3.8+, an 
 OO-extension to Tcl, is also provided.
 This gives a solid base for solving most of the real-life needs and
 serves as an example for people wanting to customize the package 
