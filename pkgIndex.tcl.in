@@ -17,6 +17,9 @@ if {[package vsatisfies [package provide Tcl] 8.4]} {
         } elseif {[file readable [file join $dir ttrace.tcl]]} {
             source [file join $dir ttrace.tcl]
         }
+        if {[info commands ttrace::update] ne ""} {
+            ttrace::update
+        }
         rename lib_source {}
     }
 }
