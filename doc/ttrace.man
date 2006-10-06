@@ -23,14 +23,14 @@ with the Tcl threading extension:
     % package require Ttrace
     2.6.4
 
-    % set t1 [thread::create {package req Ttrace; thread::wait}]
+    % set t1 [thread::create {package require Ttrace; thread::wait}]
     tid0x1802800
 
     % ttrace::eval {proc test args {return test-[thread::id]}}
     % thread::send $t1 test
     test-tid0x1802800
 
-    % set t2 [thread::create {package req Ttrace; thread::wait}]
+    % set t2 [thread::create {package require Ttrace; thread::wait}]
     tid0x1804000
 
     % thread::send $t2 test
