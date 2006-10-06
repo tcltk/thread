@@ -63,7 +63,7 @@
 '\" .UL arg1 arg2
 '\"	Print arg1 underlined, then print arg2 normally.
 '\"
-'\" RCS: @(#) $Id: ttrace.n,v 1.10 2006/10/06 14:39:43 vasiljevic Exp $
+'\" RCS: @(#) $Id: ttrace.n,v 1.11 2006/10/06 14:57:03 vasiljevic Exp $
 '\"
 '\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
@@ -302,14 +302,14 @@ with the Tcl threading extension:
     % package require Ttrace
     2.6.4
 
-    % set t1 [thread::create {package req Ttrace; thread::wait}]
+    % set t1 [thread::create {package require Ttrace; thread::wait}]
     tid0x1802800
 
     % ttrace::eval {proc test args {return test-[thread::id]}}
     % thread::send $t1 test
     test-tid0x1802800
 
-    % set t2 [thread::create {package req Ttrace; thread::wait}]
+    % set t2 [thread::create {package require Ttrace; thread::wait}]
     tid0x1804000
 
     % thread::send $t2 test
