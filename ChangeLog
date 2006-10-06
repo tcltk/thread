@@ -1,7 +1,43 @@
 2006-10-05 Zoran Vasiljevic <zv@archiware.com>
 
-	* thread/threadPool.c:
-	* thread/threadCmd.c: Call Tcl_PkgRequire() in the 
+	* generic/threadPool.c:
+	* generic/threadCmd.c: Removed Tcl_PkgRequire 
+	from the new thread initialization and just 
+	initialize the C-aspect of the extension by 
+	calling Therad_Init. This basically discards 
+	the last checkin, which was in a sense bad
+	as it made thread creation very expensive
+	operation.
+
+	* pkgIndex.tcl.in: Added separate handling for
+	Ttrace loading. Now, users needing Ttrace caps
+	must "package require Ttrace" which in turn
+	automatically calls "package require Thread".
+	Also, each new thread created by [thread::create]
+	must be initialized for Ttrace by calling the
+	[package require Ttrace] in every new thread.
+	On the other hand, the "package require Thread"
+	is only necessary to first-load the package in
+	the startup thread. It is not necessary to call
+	this explicitly in every thread created by the
+	[thread::create] command as the C-code will
+	do that automatically as the first thing in the
+	new thread.
+
+	* doc/ttrace.man: Updated example usage to reflect
+	above changes.
+	
+	* lib/ttrace.tcl: Spliced version numbering of the
+	Ttrace package to the version of the Thread package
+	because of the weirdness of the Tcl package loading
+	mechanism. Also, the broadcast script used within
+	the ttrace::eval now explicitly loads Ttrace package
+	in every broadcasted thread.
+
+2006-10-05 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadPool.c:
+	* generic/threadCmd.c: Call Tcl_PkgRequire() in the 
 	NewThread() to properly initialize the extension
 	in any new thread.
 
