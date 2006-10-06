@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.98 2006/10/05 11:52:53 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.99 2006/10/06 13:24:56 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -228,6 +228,9 @@ NewThread         _ANSI_ARGS_((ClientData clientData));
 static ThreadSpecificData* 
 ThreadExistsInner _ANSI_ARGS_((Tcl_ThreadId id));
 
+static int 
+ThreadInit        _ANSI_ARGS_((Tcl_Interp *interp));
+
 static int  
 ThreadCreate      _ANSI_ARGS_((Tcl_Interp *interp,
                                CONST char *script,
@@ -349,25 +352,8 @@ static Tcl_ObjCmdProc ThreadTransferObjCmd;
 static Tcl_ObjCmdProc ThreadDetachObjCmd;
 static Tcl_ObjCmdProc ThreadAttachObjCmd;
 
-
-/*
- *----------------------------------------------------------------------
- *
- * Thread_Init --
- *
- *  Initialize the thread commands.
- *
- * Results:
- *  TCL_OK if the package was properly initialized.
- *
- * Side effects:
- *  Adds package commands to the current interp.
- *
- *----------------------------------------------------------------------
- */
-
-EXTERN int
-Thread_Init(interp)
+static int
+ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
     Tcl_Obj *boolObjPtr;
@@ -428,11 +414,36 @@ Thread_Init(interp)
      */
     
     Tpool_Init(interp);
-    
-    /*
-     * Set the package version based 
-     * on the core features available.
-     */
+
+    return TCL_OK;
+}
+
+
+/*
+ *----------------------------------------------------------------------
+ *
+ * Thread_Init --
+ *
+ *  Initialize the thread commands.
+ *
+ * Results:
+ *  TCL_OK if the package was properly initialized.
+ *
+ * Side effects:
+ *  Adds package commands to the current interp.
+ *
+ *----------------------------------------------------------------------
+ */
+
+EXTERN int
+Thread_Init(interp)
+    Tcl_Interp *interp; /* The current Tcl interpreter */
+{
+    int status = ThreadInit(interp);
+
+    if (status != TCL_OK) {
+        return status;
+    }
 
     return Tcl_PkgProvide(interp, "Thread", PACKAGE_VERSION);
 }
@@ -1616,7 +1627,7 @@ NewThread(clientData)
      * assume that initialization of the Tcl interp will be 
      * error free, which it may not. In the future we must recover
      * from this and exit gracefully (this is not that easy as
-     * it seems on the first glace...)
+     * it seems on the first glance...)
      */
 
 #ifdef NS_AOLSERVER
@@ -1631,7 +1642,15 @@ NewThread(clientData)
 #if !defined(NS_AOLSERVER) || (defined(NS_MAJOR_VERSION) && NS_MAJOR_VERSION >= 4)
 # if !defined(NS_AOLSERVER)
     if (Tcl_PkgRequire(interp, "Thread", PACKAGE_VERSION, 1) == NULL) {
-        result = Thread_Init(interp);
+        /*
+         * Watch: only built-in commands are activated and the package
+         * is not "provided" in the interpreter, as not all components
+         * have been loaded (Tcl-only libs for example). This will allow
+         * subsequent modification of the auto_path and call of the
+         * "package require Thread" by the caller to properly/fully
+         * initialize the thread from Tcl.
+         */
+        result = ThreadInit(interp);
     }
 # else
     result = Thread_Init(interp);
