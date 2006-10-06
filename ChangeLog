@@ -1,4 +1,4 @@
-2006-10-05 Zoran Vasiljevic <zv@archiware.com>
+2006-10-06 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPool.c:
 	* generic/threadCmd.c: Removed Tcl_PkgRequire 
@@ -15,14 +15,13 @@
 	automatically calls "package require Thread".
 	Also, each new thread created by [thread::create]
 	must be initialized for Ttrace by calling the
-	[package require Ttrace] in every new thread.
+	[package require Ttrace].
 	On the other hand, the "package require Thread"
 	is only necessary to first-load the package in
 	the startup thread. It is not necessary to call
 	this explicitly in every thread created by the
 	[thread::create] command as the C-code will
-	do that automatically as the first thing in the
-	new thread.
+	do that automatically as the first thing.
 
 	* doc/ttrace.man: Updated example usage to reflect
 	above changes.
