@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.33 2006/10/05 10:22:28 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.34 2006/10/06 17:13:20 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -990,12 +990,8 @@ TpoolWorker(clientData)
     interp = Tcl_CreateInterp();
     if (Tcl_Init(interp) != TCL_OK) {
         rPtr->retcode = 1;
-    } else if (Tcl_PkgRequire(interp, "Thread", PACKAGE_VERSION, 1) == NULL) {
-        if (Thread_Init(interp) == TCL_OK) {
-            rPtr->retcode = 0;
-        } else {
-            rPtr->retcode = 1;
-        }
+    } else if (Thread_Init(interp) != TCL_OK) {
+        rPtr->retcode = 1;
     } else {
         rPtr->retcode = 0;
     }
