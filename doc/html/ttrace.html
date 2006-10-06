@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: ttrace.html,v 1.9 2006/10/05 10:38:33 vasiljevic Exp $ ttrace.n
+<! -- CVS: $Id: ttrace.html,v 1.10 2006/10/06 14:39:43 vasiljevic Exp $ ttrace.n
    -->
 
 <body>
@@ -65,17 +65,17 @@ with the Tcl threading extension:
 
 <p><table><tr><td bgcolor=black>&nbsp;</td><td><pre class='sample'>
 
-    % package require Thread
+    % package require Ttrace
     2.6.4
 
-    % set t1 [thread::create {ttrace::update; thread::wait}]
+    % set t1 [thread::create {package req Ttrace; thread::wait}]
     tid0x1802800
 
     % ttrace::eval {proc test args {return test-[thread::id]}}
     % thread::send $t1 test
     test-tid0x1802800
 
-    % set t2 [thread::create {ttrace::update; thread::wait}]
+    % set t2 [thread::create {package req Ttrace; thread::wait}]
     tid0x1804000
 
     % thread::send $t2 test
