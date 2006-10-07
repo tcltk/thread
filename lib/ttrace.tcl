@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.11 2006/10/06 14:37:14 vasiljevic Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.12 2006/10/07 08:47:38 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -62,7 +62,7 @@ namespace eval ttrace {
     }
 
     # Keep in sync with the Thread package
-    package provide Ttrace 2.6.4
+    package provide Ttrace 2.6.5
 
     # Package variables
     variable resolvers ""     ; # List of registered resolvers

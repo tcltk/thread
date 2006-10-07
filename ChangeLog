@@ -1,3 +1,23 @@
+2006-10-07 Zoran Vasiljevic <zv@archiware.com>
+
+	*** 2.6.5 TAGGED FOR RELEASE (thread-2-6-5) ***
+
+	Main changes since the last release:
+	------------------------------------
+
+	Set versioning of (embedded) Ttrace package to
+	the same revision level as the main Thread package.
+
+	The Ttrace must now explicitly be loaded in every
+	new thread created by [thread::create] command.
+	
+	The [package require Ttrace] automatically loads 
+	Thread package as well.
+
+	NOTE: be sure to configure/make/make install
+	because the pkgIndex.tcl loader file is modified.
+
+
 2006-10-06 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPool.c:
