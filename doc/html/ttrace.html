@@ -5,7 +5,7 @@
 </head>
 <! -- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id: ttrace.html,v 1.11 2006/10/06 14:57:03 vasiljevic Exp $ ttrace.n
+<! -- CVS: $Id: ttrace.html,v 1.12 2006/10/07 09:19:39 vasiljevic Exp $ ttrace.n
    -->
 
 <body>
@@ -66,7 +66,7 @@ with the Tcl threading extension:
 <p><table><tr><td bgcolor=black>&nbsp;</td><td><pre class='sample'>
 
     % package require Ttrace
-    2.6.4
+    2.6.5
 
     % set t1 [thread::create {package require Ttrace; thread::wait}]
     tid0x1802800
@@ -148,7 +148,7 @@ the most recent trace epoch.
 <dt><a name="6"><b class='cmd'>ttrace::getscript</b> </a><dd>
 
 
-Returns a synthesized Tcl script which may be sourced in any interpreter.
+Returns a synthetized Tcl script which may be sourced in any interpreter.
 This script sets the stage for the Tcl <b class='cmd'>unknown</b> command so it can
 load traced resources from the in-memory database. Normally, this command
 is automatically invoked by other higher-level commands like
