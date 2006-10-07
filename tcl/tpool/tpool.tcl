@@ -2,18 +2,20 @@
 # tpool.tcl --
 #
 # Tcl implementation of a threadpool paradigm in pure Tcl using
-# the Tcl threading extension 2.5 (or higer). 
+# the Tcl threading extension 2.5 (or higher). 
 #
 # This file is for example purposes only. The efficient C-level
 # threadpool implementation is already a part of the threading
 # extension starting with 2.5 version. Both implementations have
-# the same Tcl API so both can be used interchageably. Goal of 
+# the same Tcl API so both can be used interchangeably. Goal of 
 # this implementation is to serve as an example of using the Tcl
 # extension to implement some very common threading paradigms.
 #
 # Beware: with time, as improvements are made to the C-level
-# implementation, this Tcl one might lag behind or even never
-# reach the level of its C companion. 
+# implementation, this Tcl one might lag behind.
+# Please consider this code as a working example only.
+# 
+# 
 #
 # Copyright (c) 2002 by Zoran Vasiljevic.
 #
@@ -21,7 +23,7 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: tpool.tcl,v 1.7 2003/09/03 11:28:39 vasiljevic Exp $
+# RCS: @(#) $Id: tpool.tcl,v 1.8 2006/10/07 09:05:17 vasiljevic Exp $
 #
 
 package require Thread 2.5
@@ -202,15 +204,15 @@ proc tpool::post {args} {
 
     if {[llength $args] == 2} {
         set detached 0
-        set tpid  [lindex $args 0]
-        set cmd   [lindex $args 1]
+        set tpid [lindex $args 0]
+        set cmd  [lindex $args 1]
     } elseif {[llength $args] == 3} {
         if {[lindex $args 0] != "-detached"} {
             error $usage
         }
         set detached 1
-        set tpid  [lindex $args 1]
-        set cmd   [lindex $args 2]            
+        set tpid [lindex $args 1]
+        set cmd  [lindex $args 2]            
     } else {
         error $usage
     }
@@ -468,7 +470,7 @@ proc tpool::Timer {tpid} {
             #
             # We have more workers than needed, so kill this one.
             # We first splice ourselves from the list of active
-            # aorkers, adjust the number of workers and release 
+            # workers, adjust the number of workers and release 
             # this thread, which may exit eventually.
             #
 
