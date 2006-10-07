@@ -91,7 +91,7 @@ the most recent trace epoch.
 
 [call [cmd ttrace::getscript]]
 
-Returns a synthesized Tcl script which may be sourced in any interpreter.
+Returns a synthetized Tcl script which may be sourced in any interpreter.
 This script sets the stage for the Tcl [cmd unknown] command so it can
 load traced resources from the in-memory database. Normally, this command
 is automatically invoked by other higher-level commands like
