@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.100 2006/10/06 14:31:48 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.101 2006/12/23 14:20:48 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1571,7 +1571,14 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
         Tcl_ConditionWait(&ctrl.condWait, &threadMutex, NULL);
     }
     if (preserve) {
-        (ThreadExistsInner(thrId))->refCount++;
+        ThreadSpecificData *tsdPtr = ThreadExistsInner(thrId);
+        if (tsdPtr == (ThreadSpecificData*)NULL) {
+            Tcl_MutexUnlock(&threadMutex);
+            Tcl_ConditionFinalize(&ctrl.condWait);
+            ErrorNoSuchThread(interp, thrId);
+            return TCL_ERROR;
+        }
+        tsdPtr->refCount++;
     }
 
     Tcl_MutexUnlock(&threadMutex);
