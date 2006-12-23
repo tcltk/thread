@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.42 2006/08/06 10:01:13 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.43 2006/12/23 14:20:09 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -2159,13 +2159,6 @@ Sv_Init (interp)
     intObjTypePtr       = Tcl_GetObjType("int");
     stringObjTypePtr    = Tcl_GetObjType("string");
 
-#ifdef HAVE_GDBM
-    /*
-     * Register persistent store handlers
-     */
-    Sv_RegisterGdbmStore();
-#endif
-
     /*
      * Plug-in registered commands in current interpreter
      */
@@ -2200,6 +2193,13 @@ Sv_Init (interp)
                 Sv_tclEmptyStringRep = dummy->bytes;
                 Tcl_DecrRefCount(dummy);
             }
+
+#ifdef HAVE_GDBM
+            /*
+             * Register persistent store handlers
+             */
+            Sv_RegisterGdbmStore();
+#endif
         }
         Tcl_MutexUnlock(&bucketsMutex);
     }
