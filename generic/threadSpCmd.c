@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.24 2006/02/09 09:57:59 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.25 2006/12/23 14:18:45 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1664,7 +1664,7 @@ Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *muxPtr)
         Tcl_MutexUnlock(&rwPtr->lock);
         return 0; /* We already hold the write lock */
     }
-    while (rwPtr->lockcount < 0 || rwPtr->numwr > 0) {
+    while (rwPtr->lockcount < 0) {
         rwPtr->numrd++;
         Tcl_ConditionWait(&rwPtr->rcond, &rwPtr->lock, NULL);
         rwPtr->numrd--;
