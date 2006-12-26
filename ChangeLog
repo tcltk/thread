@@ -1,3 +1,10 @@
+2006-12-26 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadCmd.c: Fixed race condition for
+	creating preserved threads.
+
+	* generic/threadSv.c: Removed memory leak.
+
 2006-10-07 Zoran Vasiljevic <zv@archiware.com>
 
 	*** 2.6.5 TAGGED FOR RELEASE (thread-2-6-5) ***
