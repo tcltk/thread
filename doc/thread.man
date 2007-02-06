@@ -272,7 +272,7 @@ This enters the event loop so a thread can receive messages from
 the [cmd thread::send] command. This command should only be used
 within the script passed to the [cmd thread::create]. It should
 be the very last command in the script. If this is not the case,
-the exiting thread will continue executing the script lines pass
+the exiting thread will continue executing the script lines past
 the [cmd thread::wait] which is usually not what you want and/or
 expect.
 
