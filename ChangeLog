@@ -1,3 +1,8 @@
+2007-05-26 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadPoolCmd.c: Fixed [tpool::post -nowait] to start
+	  one new worker thread only if there are none started. 
+
 2007-05-03  Pat Thoyts  <patthoyts@users.sourceforge.net>
 
 	* win/vc/rules.vc:     Updated the nmake build system to match
