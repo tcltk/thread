@@ -1,7 +1,10 @@
 2007-06-30 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSvKeylistCmd.c: Fixed off-by-1 error in argument
-	parsing for SvKeylkeysObjCmd(). See Tcl Bug 1575342.
+	parsing for SvKeylkeysObjCmd(). See Tcl Bug #1575342.
+
+	* generic/threadPoolCmd.c: Fixed Tcl Bug #1512225 (tpool::wait and
+	tpool::cancel setting wrong values to passed variables)
 
 2007-05-26 Zoran Vasiljevic <zv@archiware.com>
 
