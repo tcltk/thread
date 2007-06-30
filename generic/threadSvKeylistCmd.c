@@ -11,7 +11,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvKeylistCmd.c,v 1.1 2003/09/03 11:23:55 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvKeylistCmd.c,v 1.2 2007/06/30 14:31:36 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -333,7 +333,7 @@ SvKeylkeysObjCmd(arg, interp, objc, objv)
          goto cmd_err;
     }
     if ((objc - off) == 1) {
-        key = Tcl_GetString(objv[off+1]);
+        key = Tcl_GetString(objv[off]);
     }
 
     ret = TclX_KeyedListGetKeys(interp, svObj->tclObj, key, &listObj);
