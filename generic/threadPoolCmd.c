@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.35 2007/05/26 15:44:07 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.36 2007/06/30 15:27:09 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -514,10 +514,18 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
                 return TCL_ERROR;
             }
             hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (char*)jobId);
-            if (hPtr == NULL) {
-                continue; /* Bogus job id; ignore */
+            if (hPtr) {
+                rPtr = (TpoolResult*)Tcl_GetHashValue(hPtr);
+            } else {
+                for (rPtr = tpoolPtr->workHead; rPtr; rPtr = rPtr->nextPtr) {
+                    if (rPtr->jobId == jobId) {
+                        break;
+                    }
+                }
+                if (rPtr == NULL) {
+                    continue; /* Bogus job id; ignore */
+                }
             }
-            rPtr = (TpoolResult*)Tcl_GetHashValue(hPtr);
             if (rPtr->detached) {
                 continue; /* A detached job */
             }
@@ -635,9 +643,10 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
                 Tcl_Free((char*)rPtr);
                 Tcl_ListObjAppendElement(interp, doneList, wObjv[ii]);
                 break;
-            } else if (listVar) {
-                Tcl_ListObjAppendElement(interp, waitList, wObjv[ii]);
             }
+        }
+        if (rPtr == NULL && listVar) {
+            Tcl_ListObjAppendElement(interp, waitList, wObjv[ii]);
         }
     }
     Tcl_MutexUnlock(&tpoolPtr->mutex);
@@ -1084,17 +1093,18 @@ TpoolWorker(clientData)
                 continue; /* Leave this woker alive */
             }
         }
+        if (!rPtr->detached) {
+            int new;
+            Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone, 
+                                                 (char*)rPtr->jobId, &new), 
+                             (ClientData)rPtr);
+        }
         Tcl_MutexUnlock(&tpoolPtr->mutex);
         TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
         Tcl_Free(rPtr->script);
         Tcl_MutexLock(&tpoolPtr->mutex);
         if (rPtr->detached) {
             Tcl_Free((char*)rPtr);
-        } else {
-            int new;
-            Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone, 
-                                                 (char*)rPtr->jobId, &new), 
-                             (ClientData)rPtr);
         }
     }
 
