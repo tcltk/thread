@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.36 2007/06/30 15:27:09 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.37 2007/09/15 12:28:06 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -470,7 +470,8 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *CONST objv[];   /* Argument objects. */
 {
-    int ii, done, wObjc, jobId;
+    int ii, done, wObjc;
+    unsigned int jobId;
     char *tpoolName, *listVar = NULL;
     Tcl_Obj *waitList, *doneList, **wObjv;
     ThreadPool *tpoolPtr;
@@ -509,7 +510,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
     while (1) {
         waitList = Tcl_NewListObj(0, NULL);
         for (ii = 0; ii < wObjc; ii++) {
-            if (Tcl_GetIntFromObj(interp, wObjv[ii], &jobId) != TCL_OK) {
+            if (Tcl_GetIntFromObj(interp, wObjv[ii], (int *)&jobId) != TCL_OK) {
                 Tcl_MutexUnlock(&tpoolPtr->mutex);
                 return TCL_ERROR;
             }
