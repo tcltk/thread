@@ -1,3 +1,8 @@
+2008-05-18 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadPoolCmd.c: Corrected potential race condition
+	in TpoolWorker().
+
 2007-06-30 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: Fixed signedness compiler warning
