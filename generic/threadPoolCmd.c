@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.37 2007/09/15 12:28:06 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.38 2008/05/18 17:46:13 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1094,17 +1094,16 @@ TpoolWorker(clientData)
                 continue; /* Leave this woker alive */
             }
         }
+        Tcl_MutexUnlock(&tpoolPtr->mutex);
+        TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
+        Tcl_Free(rPtr->script);
+        Tcl_MutexLock(&tpoolPtr->mutex);
         if (!rPtr->detached) {
             int new;
             Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone, 
                                                  (char*)rPtr->jobId, &new), 
                              (ClientData)rPtr);
-        }
-        Tcl_MutexUnlock(&tpoolPtr->mutex);
-        TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
-        Tcl_Free(rPtr->script);
-        Tcl_MutexLock(&tpoolPtr->mutex);
-        if (rPtr->detached) {
+        } else {
             Tcl_Free((char*)rPtr);
         }
     }
