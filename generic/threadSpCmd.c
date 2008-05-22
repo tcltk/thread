@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.25 2006/12/23 14:18:45 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.26 2008/05/22 16:19:41 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -123,6 +123,8 @@ static int       SpCondvFinalize   (SpCondv *);
 static void      AddAnyItem        (int, char *, int, SpItem *);
 static SpItem*   GetAnyItem        (int, char *, int);
 static void      PutAnyItem        (SpItem *);
+static SpItem *  RemoveAnyItem     (int, char*, int);
+
 static int       RemoveMutex       (char *, int);
 static int       RemoveCondv       (char *, int);
 
@@ -622,8 +624,8 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
             return TCL_ERROR;
         }
         if (objc == 5) {
-            PutCondv(condvPtr);
             if (Tcl_GetIntFromObj(interp, objv[4], &timeMsec) != TCL_OK) {
+                PutCondv(condvPtr);
                 return TCL_ERROR;
             }
         }
@@ -848,7 +850,7 @@ GetBucket(int type, char *name, int len)
  *      Item pointer or NULL
  *
  * Side effects:
- *      None.
+ *      Increment the item's ref count preventing it's deletion.
  *
  *----------------------------------------------------------------------
  */
@@ -864,6 +866,7 @@ GetAnyItem(int type, char *name, int len)
     hashEntryPtr = Tcl_FindHashEntry(&bucketPtr->handles, name);
     if (hashEntryPtr != (Tcl_HashEntry*)NULL) {
         itemPtr = (SpItem*)Tcl_GetHashValue(hashEntryPtr);
+        itemPtr->refcnt++;
     }
     Tcl_MutexUnlock(&bucketPtr->lock);
 
@@ -875,13 +878,14 @@ GetAnyItem(int type, char *name, int len)
  *
  * PutAnyItem --
  *
- *      Returns the item back.
+ *      Current thread detaches from the item.
  *
  * Results:
  *      None.
  *
  * Side effects:
- *      None.
+ *      Decrement item's ref count allowing for it's deletion
+ *      and signalize any threads waiting to delete the item.
  *
  *----------------------------------------------------------------------
  */
@@ -891,6 +895,7 @@ PutAnyItem(SpItem *itemPtr)
 {
     Tcl_MutexLock(&itemPtr->bucket->lock);
     itemPtr->refcnt--;
+    Tcl_ConditionNotify(&itemPtr->bucket->cond);
     Tcl_MutexUnlock(&itemPtr->bucket->lock);
 }
 
@@ -932,13 +937,52 @@ AddAnyItem(int type, char *handle, int len, SpItem *itemPtr)
 /*
  *----------------------------------------------------------------------
  *
+ * RemoveAnyItem --
+ *
+ *      Removes the item from it's bucket.
+ *
+ * Results:
+ *      Item's pointer or NULL if none found.
+ *
+ * Side effects:
+ *      None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static SpItem *
+RemoveAnyItem(int type, char *name, int len)
+{
+    SpItem *itemPtr = NULL;
+    SpBucket *bucketPtr = GetBucket(type, name, len);
+    Tcl_HashEntry *hashEntryPtr = NULL;
+
+    Tcl_MutexLock(&bucketPtr->lock);
+    hashEntryPtr = Tcl_FindHashEntry(&bucketPtr->handles, name);
+    if (hashEntryPtr == (Tcl_HashEntry*)NULL) {
+        Tcl_MutexUnlock(&bucketPtr->lock);
+        return NULL;
+    }
+    itemPtr = (SpItem*)Tcl_GetHashValue(hashEntryPtr);
+    while (itemPtr->refcnt > 0) {
+        Tcl_ConditionWait(&bucketPtr->cond, &bucketPtr->lock, NULL);
+    }
+    Tcl_DeleteHashEntry(hashEntryPtr);
+    Tcl_MutexUnlock(&bucketPtr->lock);
+
+    return itemPtr;
+}
+
+/*
+ *----------------------------------------------------------------------
+ *
  * RemoveMutex --
  *
- *      Finalizes the mutex and removes it from it's bucket.
+ *      Removes the mutex from it's bucket and finalizes it.
  *
  * Results:
  *      1 - mutex is finalized and removed
- *      0 - mutex is not removed (still in use)
+ *      0 - mutex is not finalized
  +     -1 - mutex is not found
  *
  * Side effects:
@@ -950,24 +994,16 @@ AddAnyItem(int type, char *handle, int len, SpItem *itemPtr)
 static int
 RemoveMutex(char *name, int len)
 {
-    SpMutex *mutexPtr = NULL;
-    SpBucket *bucketPtr = GetBucket(SP_MUTEX, name, len);
-    Tcl_HashEntry *hashEntryPtr = NULL;
+    SpMutex *mutexPtr = (SpMutex*)RemoveAnyItem(SP_MUTEX, name, len);
 
-    Tcl_MutexLock(&bucketPtr->lock);
-    hashEntryPtr = Tcl_FindHashEntry(&bucketPtr->handles, name);
-    if (hashEntryPtr == (Tcl_HashEntry*)NULL) {
-        Tcl_MutexUnlock(&bucketPtr->lock);
-        return -1; /* Mutex not found */
+    if (mutexPtr == NULL) {
+        return -1;
     }
-    mutexPtr = (SpMutex*)Tcl_GetHashValue(hashEntryPtr);
-    if (mutexPtr->refcnt > 0 || SpMutexFinalize(mutexPtr) == 0) {
-        Tcl_MutexUnlock(&bucketPtr->lock);
-        return 0; /* Could not finalize, in use? */
+    if (!SpMutexFinalize(mutexPtr)) {
+        return 0;
     }
+
     Tcl_Free((char*)mutexPtr);
-    Tcl_DeleteHashEntry(hashEntryPtr);
-    Tcl_MutexUnlock(&bucketPtr->lock);
 
     return 1;
 }
@@ -977,11 +1013,11 @@ RemoveMutex(char *name, int len)
  *
  * RemoveCondv --
  *
- *      Finalizes the condition variable and removes it from it's bucket.
+ *      Removes the cond variable from it's bucket and finalizes it.
  *
  * Results:
  *      1 - variable is finalized and removed
- *      0 - variable is not removed (still in use)
+ *      0 - variable is not finalized
  +     -1 - variable is not found
  *
  * Side effects:
@@ -993,24 +1029,16 @@ RemoveMutex(char *name, int len)
 static int
 RemoveCondv(char *name, int len)
 {
-    SpCondv *condvPtr = NULL;
-    SpBucket *bucketPtr = GetBucket(SP_CONDV, name, len);
-    Tcl_HashEntry *hashEntryPtr = NULL;
+    SpCondv *condvPtr = (SpCondv*)RemoveAnyItem(SP_CONDV, name, len);
 
-    Tcl_MutexLock(&bucketPtr->lock);
-    hashEntryPtr = Tcl_FindHashEntry(&bucketPtr->handles, name);
-    if (hashEntryPtr == (Tcl_HashEntry*)NULL) {
-        Tcl_MutexUnlock(&bucketPtr->lock);
-        return -1; /* Variable not found */
+    if (condvPtr == NULL) {
+        return -1;
     }
-    condvPtr = (SpCondv*)Tcl_GetHashValue(hashEntryPtr);
-    if (condvPtr->refcnt > 0 || SpCondvFinalize(condvPtr) == 0) {
-        Tcl_MutexUnlock(&bucketPtr->lock);
-        return 0; /* Could not finalize, in use? */
+    if (!SpCondvFinalize(condvPtr)) {
+        return 0;
     }
+
     Tcl_Free((char*)condvPtr);
-    Tcl_DeleteHashEntry(hashEntryPtr);
-    Tcl_MutexUnlock(&bucketPtr->lock);
 
     return 1;
 }

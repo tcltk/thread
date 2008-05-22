@@ -1,3 +1,17 @@
+2008-05-22 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadSpCmd.h: Added one cond variable per
+	sync bucket to wait for item deletion.
+
+	* generic/threadSpCmd.c: Threads that want to delete
+	any sync primitive now wait properly until the last
+	thread that references the primitive detaches.
+
+	Fixed (broken) reference counting of items.
+
+	Fixed wrong release of an condition variable that is
+	about to be time-waited.
+
 2008-05-18 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: Corrected potential race condition

@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSpCmd.h,v 1.3 2006/01/28 15:11:32 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSpCmd.h,v 1.4 2008/05/22 16:19:40 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -24,6 +24,7 @@
 
 typedef struct SpBucket {
     Tcl_Mutex lock;            /* For locking the bucket */
+    Tcl_Condition cond;        /* For waiting on threads to release items */
     Tcl_ThreadId lockt;        /* Thread holding the lock */
     Tcl_HashTable handles;     /* Hash table of given-out handles in bucket */
     struct Container *freeCt;  /* List of free Tcl-object containers */
