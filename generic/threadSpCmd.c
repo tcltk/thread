@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.26 2008/05/22 16:19:41 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.27 2008/05/22 16:31:13 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -964,10 +964,10 @@ RemoveAnyItem(int type, char *name, int len)
         return NULL;
     }
     itemPtr = (SpItem*)Tcl_GetHashValue(hashEntryPtr);
+    Tcl_DeleteHashEntry(hashEntryPtr);
     while (itemPtr->refcnt > 0) {
         Tcl_ConditionWait(&bucketPtr->cond, &bucketPtr->lock, NULL);
     }
-    Tcl_DeleteHashEntry(hashEntryPtr);
     Tcl_MutexUnlock(&bucketPtr->lock);
 
     return itemPtr;
