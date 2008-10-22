@@ -1,3 +1,10 @@
+2009-10-22 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadPool.c: fixed race condition when
+	creating minworkers worker thread upfront.
+	Failure to create one results in partial pool teardown.
+	Fix for Bug # 2005794.
+
 2008-05-22 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadSpCmd.h: Added one cond variable per
