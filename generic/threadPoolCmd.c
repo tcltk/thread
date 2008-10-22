@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.38 2008/05/18 17:46:13 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.39 2008/10/22 08:19:14 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -269,20 +269,27 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     tpoolPtr->exitScript  = exs;
     Tcl_InitHashTable(&tpoolPtr->jobsDone, TCL_ONE_WORD_KEYS);
 
-    /*
-     * Start the required number of worker threads.
-     */
-
-    for (ii = 0; ii < tpoolPtr->minWorkers; ii++) {
-        if (CreateWorker(interp, tpoolPtr) != TCL_OK) {
-            Tcl_Free((char*)tpoolPtr);
-            return TCL_ERROR;
-        }
-    }
-
     Tcl_MutexLock(&listMutex);
     SpliceIn(tpoolPtr, tpoolList);
     Tcl_MutexUnlock(&listMutex);
+
+    /*
+     * Start the required number of worker threads.
+     * On failure to start any of them, tear-down
+     * partially initialized pool.
+     */
+
+    Tcl_MutexLock(&tpoolPtr->mutex);
+    for (ii = 0; ii < tpoolPtr->minWorkers; ii++) {
+        if (CreateWorker(interp, tpoolPtr) != TCL_OK) {
+            Tcl_MutexUnlock(&tpoolPtr->mutex);
+            Tcl_MutexLock(&listMutex);
+            TpoolRelease(tpoolPtr);
+            Tcl_MutexUnlock(&listMutex);
+            return TCL_ERROR;
+        }
+    }
+    Tcl_MutexUnlock(&tpoolPtr->mutex);
 
     sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
     Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, -1));
@@ -908,7 +915,7 @@ TpoolNamesObjCmd(dummy, interp, objc, objv)
  * CreateWorker --
  *
  *  Creates new worker thread for the given pool. Assumes the caller
- *  hods the pool mutex.
+ *  holds the pool mutex.
  *
  * Results:
  *  None.
