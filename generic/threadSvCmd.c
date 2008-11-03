@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.43 2006/12/23 14:20:09 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.44 2008/11/03 23:46:06 hobbs Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1160,7 +1160,7 @@ SvObjObjCmd(dummy, interp, objc, objv)
     sprintf(buf, "::%p", (int*)svObj);
     Tcl_CreateObjCommand(interp, buf, SvObjDispatchObjCmd, (int*)svObj, NULL);
     Tcl_ResetResult(interp);
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), buf, -1);
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, -1));
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 }
