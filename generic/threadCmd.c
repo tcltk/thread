@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.101 2006/12/23 14:20:48 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.102 2008/11/03 23:42:52 hobbs Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -371,7 +371,7 @@ ThreadInit(interp)
             || boolVar == 0) {
         msg = "Tcl core wasn't compiled for threading.";
         Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
-        return TCL_ERROR;        
+        return TCL_ERROR;
     }
 
     /*
@@ -2576,7 +2576,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
     }
 
     code = resultPtr->code;
-    Tcl_SetStringObj(Tcl_GetObjResult(interp), resultPtr->result, -1);
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(resultPtr->result, -1));
 
     /*
      * Cleanup
@@ -3548,7 +3548,7 @@ ThreadCutChannel(interp, chan)
     Tcl_Interp *interp;
     Tcl_Channel chan;
 {
-    Tcl_ChannelType *chanTypePtr;
+    const Tcl_ChannelType *chanTypePtr;
     Tcl_DriverWatchProc *watchProc;
 
     Tcl_ClearChannelHandlers(chan);
