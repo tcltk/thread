@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.27 2008/05/22 16:31:13 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.28 2008/12/03 20:55:35 hobbs Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -44,6 +44,15 @@
 
 #define SP_MUTEX   1  /* Any kind of mutex */
 #define SP_CONDV   2  /* The condition variable sync type */
+
+/*
+ * Handle hiding of errorLine in 8.6
+ */
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 6)
+#define ERRORLINE(interp) ((interp)->errorLine)
+#else
+#define ERRORLINE(interp) (Tcl_GetErrorLine(interp))
+#endif
 
 /* 
  * Structure representing one sync primitive (mutex, condition variable). 
@@ -759,8 +768,8 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
     Tcl_DecrRefCount(scriptObj);
 
     if (ret == TCL_ERROR) {
-        char msg[32 + TCL_INTEGER_SPACE];   
-        sprintf(msg, "\n    (\"eval\" body line %d)", interp->errorLine);
+        char msg[32 + TCL_INTEGER_SPACE];
+        sprintf(msg, "\n    (\"eval\" body line %d)", ERRORLINE(interp));
         Tcl_AddObjErrorInfo(interp, msg, -1);
     }
 
