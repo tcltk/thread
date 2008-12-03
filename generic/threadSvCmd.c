@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.44 2008/11/03 23:46:06 hobbs Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.45 2008/12/03 20:55:35 hobbs Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -39,6 +39,15 @@
  */
 
 #define OBJS_TO_ALLOC_EACH_TIME 100
+
+/*
+ * Handle hiding of errorLine in 8.6
+ */
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 6)
+#define ERRORLINE(interp) ((interp)->errorLine)
+#else
+#define ERRORLINE(interp) (Tcl_GetErrorLine(interp))
+#endif
 
 /*
  * Reference to Tcl object types used in object-copy code.
@@ -2051,8 +2060,8 @@ SvLockObjCmd(dummy, interp, objc, objv)
     ret = Tcl_EvalObjEx(interp, scriptObj, TCL_EVAL_DIRECT);
 
     if (ret == TCL_ERROR) {
-        char msg[32 + TCL_INTEGER_SPACE];   
-        sprintf(msg, "\n    (\"eval\" body line %d)", interp->errorLine);
+        char msg[32 + TCL_INTEGER_SPACE];
+        sprintf(msg, "\n    (\"eval\" body line %d)", ERRORLINE(interp));
         Tcl_AddObjErrorInfo(interp, msg, -1);
     }
 

@@ -1,3 +1,8 @@
+2008-12-03  Jeff Hobbs  <jeffh@ActiveState.com>
+
+	* generic/threadSvCmd.c: Handle TIP#336 addition of API to access
+	* generic/threadSpCmd.c: interp->errorLine
+
 2008-11-03  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* generic/threadSvCmd.c (SvObjObjCmd): safely set interp result obj
