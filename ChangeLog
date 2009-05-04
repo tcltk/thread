@@ -1,3 +1,8 @@
+2009-05-03  Alexandre Ferrieux <ferrieux@sourceforge.net>
+	* generic/threadSpCmd.c: Reorder things in RemoveMutex and
+	RemoveCondv [Bugs 2511424,2511408]; fix a Put* leak in an error
+	path of rwmutexes [Bug 2511420].
+	
 2008-12-03  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* generic/threadSvCmd.c: Handle TIP#336 addition of API to access

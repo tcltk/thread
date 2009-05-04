@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.28 2008/12/03 20:55:35 hobbs Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.29 2009/05/04 00:14:50 ferrieux Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -469,6 +469,7 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
     switch ((enum options)opt) {
     case w_RLOCK:
         if (!Sp_ReadWriteMutexRLock(rwPtr)) {
+            PutMutex(mutexPtr);
             Tcl_AppendResult(interp, "read-locking already write-locked mutex ",
                              "from the same thread", NULL);
             return TCL_ERROR;
@@ -1003,15 +1004,16 @@ RemoveAnyItem(int type, char *name, int len)
 static int
 RemoveMutex(char *name, int len)
 {
-    SpMutex *mutexPtr = (SpMutex*)RemoveAnyItem(SP_MUTEX, name, len);
-
+    SpMutex *mutexPtr = GetMutex(name, len);
     if (mutexPtr == NULL) {
         return -1;
     }
     if (!SpMutexFinalize(mutexPtr)) {
+        PutMutex(mutexPtr);
         return 0;
     }
-
+    PutMutex(mutexPtr);
+    RemoveAnyItem(SP_MUTEX, name, len);
     Tcl_Free((char*)mutexPtr);
 
     return 1;
@@ -1038,15 +1040,16 @@ RemoveMutex(char *name, int len)
 static int
 RemoveCondv(char *name, int len)
 {
-    SpCondv *condvPtr = (SpCondv*)RemoveAnyItem(SP_CONDV, name, len);
-
+    SpCondv *condvPtr = GetCondv(name, len);
     if (condvPtr == NULL) {
         return -1;
     }
     if (!SpCondvFinalize(condvPtr)) {
+        PutCondv(condvPtr);
         return 0;
     }
-
+    PutCondv(condvPtr);
+    RemoveAnyItem(SP_CONDV, name, len);
     Tcl_Free((char*)condvPtr);
 
     return 1;
