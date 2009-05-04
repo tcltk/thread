@@ -1,8 +1,14 @@
+2009-05-04  Pat Thoyts  <patthoyts@users.sourceforge.net>
+
+	* win/vc/makefile.vc: Updated the MSVC build to work with MSCV 8
+	* win/vc/rules.vc:    and 9 on both intel and amd64 targets.
+	* win/vc/nmakehlp.c:
+
 2009-05-03  Alexandre Ferrieux <ferrieux@sourceforge.net>
 	* generic/threadSpCmd.c: Reorder things in RemoveMutex and
 	RemoveCondv [Bugs 2511424,2511408]; fix a Put* leak in an error
 	path of rwmutexes [Bug 2511420].
-	
+
 2008-12-03  Jeff Hobbs  <jeffh@ActiveState.com>
 
 	* generic/threadSvCmd.c: Handle TIP#336 addition of API to access
