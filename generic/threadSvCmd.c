@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.46 2009/07/15 23:03:57 ferrieux Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.47 2009/07/15 23:28:34 ferrieux Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -124,9 +124,12 @@ static int FlushArray(Array*);
 static int DeleteArray(Array*);
 
 static void SvAllocateContainers(Bucket*);
-static void SvFinalizeContainers(Bucket*);
 static void SvRegisterStdCommands(void);
+
+#ifdef SV_FINALIZE
+static void SvFinalizeContainers(Bucket*);
 static void SvFinalize(ClientData);
+#endif /* SV_FINALIZE */
 
 static PsStore* GetPsStore(char *handle);
 
@@ -907,6 +910,7 @@ SvAllocateContainers(bucketPtr)
     bucketPtr->freeCt = prevPtr;
 }
 
+#ifdef SV_FINALIZE
 /*
  *-----------------------------------------------------------------------------
  *
@@ -939,6 +943,7 @@ SvFinalizeContainers(bucketPtr)
         }
     }
 }
+#endif /* SV_FINALIZE */
 
 /*
  *-----------------------------------------------------------------------------
@@ -2223,11 +2228,12 @@ int Sv_SafeInit (interp)
 }
 
 
-#if 0
-
+#ifdef SV_FINALIZE
 /* 
  * Left for reference, but unused since multithreaded finalization is
- * unsolvable in the general case.
+ * unsolvable in the general case. Brave souls can revive this by
+ * installing a late exit handler on Thread's behalf, bringing the
+ * function back onto the Tcl_Finalize (but not Tcl_Exit) path.
  */
 
 /*
@@ -2318,7 +2324,7 @@ SvFinalize (clientData)
 
     Tcl_MutexUnlock(&svMutex);
 }
-#endif /* 0 */
+#endif /* SV_FINALIZE */
 
 /* EOF $RCSfile: threadSvCmd.c,v $ */
 
