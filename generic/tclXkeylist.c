@@ -24,7 +24,7 @@
  * For any questions, contant Zoran Vasiljevic (zoran@archiware.com)
  *
  *-----------------------------------------------------------------------------
- * $Id: tclXkeylist.c,v 1.3 2006/08/06 10:03:31 vasiljevic Exp $
+ * $Id: tclXkeylist.c,v 1.4 2009/07/15 23:03:57 ferrieux Exp $
  *-----------------------------------------------------------------------------
  */
 
@@ -69,8 +69,8 @@
  */
 static char *tclXWrongArgs = "wrong # args: ";
  
-static Tcl_ObjType *listType;
-static Tcl_ObjType *stringType;
+static const Tcl_ObjType *listType;
+static const Tcl_ObjType *stringType;
 
 /*-----------------------------------------------------------------------------
  * TclX_IsNullObj --

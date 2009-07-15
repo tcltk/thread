@@ -1,3 +1,9 @@
+2009-07-16   Alexandre Ferrieux <ferrieux@sourceforge.net>
+	
+	* generic/tclXkeylist.c: Constify Tcl_ObjGetType return values to
+	* generic/threadSvCmd.c: get rid of const warnings; #if 0 of
+	* generic/threadSvCmd.h: SvFinalize which is unused.
+	
 2009-05-04  Pat Thoyts  <patthoyts@users.sourceforge.net>
 
 	* win/vc/makefile.vc: Updated the MSVC build to work with MSCV 8

@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.45 2008/12/03 20:55:35 hobbs Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.46 2009/07/15 23:03:57 ferrieux Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -54,11 +54,11 @@
  * Those are referenced read-only, thus no mutex protection.
  */
 
-static Tcl_ObjType* booleanObjTypePtr;
-static Tcl_ObjType* byteArrayObjTypePtr;
-static Tcl_ObjType* doubleObjTypePtr;
-static Tcl_ObjType* intObjTypePtr;
-static Tcl_ObjType* stringObjTypePtr;
+static const Tcl_ObjType* booleanObjTypePtr;
+static const Tcl_ObjType* byteArrayObjTypePtr;
+static const Tcl_ObjType* doubleObjTypePtr;
+static const Tcl_ObjType* intObjTypePtr;
+static const Tcl_ObjType* stringObjTypePtr;
 
 /*
  * In order to be fully stub enabled, a small
@@ -218,7 +218,7 @@ Sv_RegisterCommand(cmdName, objProc, delProc, clientData)
 
 void
 Sv_RegisterObjType(typePtr, dupProc)
-    Tcl_ObjType *typePtr;               /* Type of object to register */
+    const Tcl_ObjType *typePtr;               /* Type of object to register */
     Tcl_DupInternalRepProc *dupProc;    /* Custom object duplicator */
 {
     RegType *newType = (RegType*)Tcl_Alloc(sizeof(RegType));
@@ -2223,6 +2223,13 @@ int Sv_SafeInit (interp)
 }
 
 
+#if 0
+
+/* 
+ * Left for reference, but unused since multithreaded finalization is
+ * unsolvable in the general case.
+ */
+
 /*
  *-----------------------------------------------------------------------------
  *
@@ -2311,6 +2318,7 @@ SvFinalize (clientData)
 
     Tcl_MutexUnlock(&svMutex);
 }
+#endif /* 0 */
 
 /* EOF $RCSfile: threadSvCmd.c,v $ */
 
