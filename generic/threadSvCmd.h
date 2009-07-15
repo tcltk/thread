@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.14 2005/01/03 09:00:06 vasiljevic Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.15 2009/07/15 23:03:57 ferrieux Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -188,7 +188,7 @@ typedef struct SvCmdInfo {
  */
 
 typedef struct RegType {
-    Tcl_ObjType *typePtr;       /* Type of the registered object */
+    const Tcl_ObjType *typePtr;       /* Type of the registered object */
     Tcl_DupInternalRepProc *dupIntRepProc; /* Special deep-copy duper */
     struct RegType *nextPtr;    /* Next in chain of registered types */
 } RegType;
@@ -201,7 +201,7 @@ void
 Sv_RegisterCommand(char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*,ClientData);
 
 void 
-Sv_RegisterObjType(Tcl_ObjType*, Tcl_DupInternalRepProc*);
+Sv_RegisterObjType(const Tcl_ObjType*, Tcl_DupInternalRepProc*);
 
 void 
 Sv_RegisterPsStore(PsStore*);
