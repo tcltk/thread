@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.15 2009/07/15 23:03:57 ferrieux Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.16 2009/07/22 11:25:34 nijtmans Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -198,7 +198,7 @@ typedef struct RegType {
  */
 
 void 
-Sv_RegisterCommand(char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*,ClientData);
+Sv_RegisterCommand(const char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*,ClientData);
 
 void 
 Sv_RegisterObjType(const Tcl_ObjType*, Tcl_DupInternalRepProc*);
@@ -207,7 +207,7 @@ void
 Sv_RegisterPsStore(PsStore*);
 
 int
-Sv_GetContainer(Tcl_Interp*,int,Tcl_Obj*CONST objv[],Container**,int*,int);
+Sv_GetContainer(Tcl_Interp*,int,Tcl_Obj*const objv[],Container**,int*,int);
 
 int
 Sv_PutContainer(Tcl_Interp*, Container*, int);

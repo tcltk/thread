@@ -1,3 +1,17 @@
+2009-07-22   Jan Nijtmans <nijtmans@users.sourceforge.net>
+	
+	* generic/tclThread.h:   Remove unnecessary ';'s
+	* generic/tclXkeylist.c: Constify remaining of thread extension,
+	* generic/tclXkeylist.h: bringing it at the same level as Tcl 8.6
+	* generic/threadCmd.c
+	* generic/threadPoolCmd.c
+	* generic/threadSpCmd.c
+	* generic/threadSvCmd.c
+	* generic/threadSvCmd.h
+	* generic/threadSvKeylistCmd.c
+	* generic/threadSvKeylistCmd.h
+	* generic/threadSvListCmd.c
+	
 2009-07-16   Alexandre Ferrieux <ferrieux@sourceforge.net>
 	
 	* generic/tclXkeylist.c: Constify Tcl_ObjGetType return values to

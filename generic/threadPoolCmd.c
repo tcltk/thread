@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.39 2008/10/22 08:19:14 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.40 2009/07/22 11:25:34 nijtmans Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -97,7 +97,7 @@ static Tcl_Mutex startMutex;
  * Used to represent the empty result.
  */
 
-static char *threadEmptyResult = "";
+static char *threadEmptyResult = (char *)"";
 
 /*
  * Functions implementing Tcl commands
@@ -147,10 +147,10 @@ static void
 SetResult      _ANSI_ARGS_((Tcl_Interp *interp, TpoolResult *rPtr));
 
 static ThreadPool* 
-GetTpool       _ANSI_ARGS_((char *tpoolName));
+GetTpool       _ANSI_ARGS_((const char *tpoolName));
 
 static ThreadPool* 
-GetTpoolUnl    _ANSI_ARGS_((char *tpoolName));
+GetTpoolUnl    _ANSI_ARGS_((const char *tpoolName));
 
 static void
 ThrExitHandler _ANSI_ARGS_((ClientData clientData));
@@ -190,7 +190,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
-    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+    Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ii, minw, maxw, idle, len;
     char buf[16], *exs = NULL, *cmd = NULL;
@@ -231,10 +231,10 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
                 return TCL_ERROR;
             }
         } else if (OPT_CMP(opt, "-initcmd")) {
-            char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
+            const char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
             cmd  = strcpy(Tcl_Alloc(len+1), val);
         } else if (OPT_CMP(opt, "-exitcmd")) {
-            char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
+            const char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
             exs  = strcpy(Tcl_Alloc(len+1), val);
         } else {
             goto usage;
@@ -326,11 +326,11 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
-    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+    Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     unsigned int jobId = 0;
     int ii, detached = 0, nowait = 0, len;
-    char *tpoolName, *script;
+    const char *tpoolName, *script;
     TpoolResult *rPtr;
     ThreadPool *tpoolPtr;
 
@@ -475,7 +475,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
-    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+    Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ii, done, wObjc;
     unsigned int jobId;
@@ -595,7 +595,7 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
-    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+    Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ii, wObjc, jobId;
     char *tpoolName, *listVar = NULL;
@@ -689,7 +689,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
-    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+    Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ret, jobId;
     char *tpoolName, *resVar = NULL;
@@ -782,7 +782,7 @@ TpoolReserveObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
-    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+    Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ret;
     char *tpoolName;
@@ -837,7 +837,7 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
-    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+    Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ret;
     char *tpoolName;
@@ -892,7 +892,7 @@ TpoolNamesObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
     int         objc;           /* Number of arguments. */
-    Tcl_Obj    *CONST objv[];   /* Argument objects. */
+    Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     ThreadPool *tpoolPtr;
     Tcl_Obj *listObj = Tcl_NewListObj(0, NULL);
@@ -1307,7 +1307,7 @@ PopWaiter(tpoolPtr)
  */
 static ThreadPool* 
 GetTpool(tpoolName) 
-    char *tpoolName;
+    const char *tpoolName;
 {
     ThreadPool *tpoolPtr; 
 
@@ -1338,7 +1338,7 @@ GetTpool(tpoolName)
 
 static ThreadPool* 
 GetTpoolUnl (tpoolName) 
-    char *tpoolName;
+    const char *tpoolName;
 {
     ThreadPool *tpool;
     ThreadPool *tpoolPtr = NULL;

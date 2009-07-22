@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.29 2009/05/04 00:14:50 ferrieux Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.30 2009/07/22 11:25:34 nijtmans Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -129,16 +129,16 @@ static int       SpCondvWait       (SpCondv *, SpMutex *, int);
 static void      SpCondvNotify     (SpCondv *);
 static int       SpCondvFinalize   (SpCondv *);
 
-static void      AddAnyItem        (int, char *, int, SpItem *);
-static SpItem*   GetAnyItem        (int, char *, int);
+static void      AddAnyItem        (int, const char *, int, SpItem *);
+static SpItem*   GetAnyItem        (int, const char *, int);
 static void      PutAnyItem        (SpItem *);
-static SpItem *  RemoveAnyItem     (int, char*, int);
+static SpItem *  RemoveAnyItem     (int, const char*, int);
 
-static int       RemoveMutex       (char *, int);
-static int       RemoveCondv       (char *, int);
+static int       RemoveMutex       (const char *, int);
+static int       RemoveCondv       (const char *, int);
 
 static Tcl_Obj*  GetName           (int, void *);
-static SpBucket* GetBucket         (int, char *, int);
+static SpBucket* GetBucket         (int, const char *, int);
 
 static int       AnyMutexIsLocked  (Sp_AnyMutex *mPtr, Tcl_ThreadId);
 
@@ -190,13 +190,14 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
-    Tcl_Obj *CONST objv[];              /* Argument objects. */
+    Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int opt, ret, nameLen;
-    char *mutexName, type;
+    const char *mutexName;
+    char type;
     SpMutex *mutexPtr;
 
-    static CONST84 char *cmdOpts[] = {
+    static const char *cmdOpts[] = {
         "create", "destroy", "lock", "unlock", NULL
     };
     enum options {
@@ -227,7 +228,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
 
     if (opt == (int)m_CREATE) {
         Tcl_Obj *nameObj;
-        char *arg;
+        const char *arg;
         
         /*
          * Parse out which type of mutex to create
@@ -362,14 +363,14 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
-    Tcl_Obj *CONST objv[];              /* Argument objects. */
+    Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int opt, ret, nameLen;
-    char *mutexName;
+    const char *mutexName;
     SpMutex *mutexPtr;
     Sp_ReadWriteMutex *rwPtr;
 
-    static CONST84 char *cmdOpts[] = {
+    static const char *cmdOpts[] = {
         "create", "destroy", "rlock", "wlock", "unlock", NULL
     };
     enum options {
@@ -522,14 +523,14 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
-    Tcl_Obj *CONST objv[];              /* Argument objects. */
+    Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int opt, ret, nameLen, timeMsec = 0;
-    char *condvName, *mutexName;
+    const char *condvName, *mutexName;
     SpMutex *mutexPtr;
     SpCondv *condvPtr;
 
-    static CONST84 char *cmdOpts[] = {
+    static const char *cmdOpts[] = {
         "create", "destroy", "notify", "wait", NULL
     };
     enum options {
@@ -688,10 +689,10 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
-    Tcl_Obj *CONST objv[];              /* Argument objects. */
+    Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, optx, internal, nameLen;
-    char *mutexName;
+    const char *mutexName;
     Tcl_Obj *scriptObj;
     SpMutex *mutexPtr = NULL;
     static Sp_RecursiveMutex evalMutex;
@@ -839,7 +840,7 @@ GetName(int type, void *addrPtr)
  */
 
 static SpBucket*
-GetBucket(int type, char *name, int len)
+GetBucket(int type, const char *name, int len)
 {
     switch (type) {
     case SP_MUTEX: return &muxBuckets[GetHash(name, len)];
@@ -866,7 +867,7 @@ GetBucket(int type, char *name, int len)
  */
 
 static SpItem*
-GetAnyItem(int type, char *name, int len)
+GetAnyItem(int type, const char *name, int len)
 {
     SpItem *itemPtr = NULL;
     SpBucket *bucketPtr = GetBucket(type, name, len);
@@ -926,7 +927,7 @@ PutAnyItem(SpItem *itemPtr)
  */
 
 static void
-AddAnyItem(int type, char *handle, int len, SpItem *itemPtr)
+AddAnyItem(int type, const char *handle, int len, SpItem *itemPtr)
 {
     int new;
     SpBucket *bucketPtr = GetBucket(type, handle, len);
@@ -961,7 +962,7 @@ AddAnyItem(int type, char *handle, int len, SpItem *itemPtr)
  */
 
 static SpItem *
-RemoveAnyItem(int type, char *name, int len)
+RemoveAnyItem(int type, const char *name, int len)
 {
     SpItem *itemPtr = NULL;
     SpBucket *bucketPtr = GetBucket(type, name, len);
@@ -1002,7 +1003,7 @@ RemoveAnyItem(int type, char *name, int len)
  */
 
 static int
-RemoveMutex(char *name, int len)
+RemoveMutex(const char *name, int len)
 {
     SpMutex *mutexPtr = GetMutex(name, len);
     if (mutexPtr == NULL) {
@@ -1038,7 +1039,7 @@ RemoveMutex(char *name, int len)
  */
 
 static int
-RemoveCondv(char *name, int len)
+RemoveCondv(const char *name, int len)
 {
     SpCondv *condvPtr = GetCondv(name, len);
     if (condvPtr == NULL) {
