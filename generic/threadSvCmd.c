@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.48 2009/07/22 11:25:34 nijtmans Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.49 2009/07/31 05:48:02 nijtmans Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -238,13 +238,8 @@ Sv_RegisterObjType(typePtr, dupProc)
      */
 
     Tcl_MutexLock(&svMutex);
-    if (regType == NULL) {
-        regType = newType;
-        regType->nextPtr = NULL;
-    } else {
-        newType->nextPtr = regType;
-        regType = newType;
-    }
+    newType->nextPtr = regType;
+    regType = newType;
     Tcl_MutexUnlock(&svMutex);
 }
 
