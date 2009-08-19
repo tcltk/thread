@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.41 2009/08/19 14:58:31 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.42 2009/08/19 15:25:28 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -202,7 +202,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ii, minw, maxw, idle, len;
-    char buf[16], *exs = NULL, *cmd = NULL;
+    char buf[64], *exs = NULL, *cmd = NULL;
     ThreadPool *tpoolPtr;
 
     /* 
