@@ -179,6 +179,24 @@ after the [cmd tpool::release] command returns zero. The [arg tpool]
 handle goes out of scope and should not be used any more. Any following
 reference to the same threadpool handle will result in Tcl error.
 
+[call [cmd tpool::suspend] [arg tpool]]
+
+Suspends processing work on this queue. All pool workers are paused
+but additional work can be added to the pool. Note that adding the
+additional work will not increase the number of workers dynamically
+as the pool processing is suspended. Number of workers is maintained
+to the count that was found prior suspending worker activity.
+If you need to assure certain number of worker threads, use the 
+[option minworkers] option of the [cmd tpool::create] command.
+
+[call [cmd tpool::resume] [arg tpool]]
+
+Resume processing work on this queue. All paused (suspended) 
+workers are free to get work from the pool. Note that resuming pool
+operation will just let already created workers to proceed. 
+It will not create additional worker threads to handle the work 
+posted to the pool's work queue.
+
 [list_end]
 
 
