@@ -3,6 +3,7 @@
 	* generic/threadPoolCmd.c: Implemented [tpool::suspend]
 	* doc/tpool.man:           and [tpool::resume] commands
 	                           as per RFE #2835615.
+	                           Also fixed Bug #2833864.
  
 2009-07-22   Jan Nijtmans <nijtmans@users.sourceforge.net>
 	
