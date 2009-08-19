@@ -1,3 +1,9 @@
+2009-08-19 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadPoolCmd.c: Implemented [tpool::suspend]
+	* doc/tpool.man:           and [tpool::resume] commands
+	                           as per RFE #2835615.
+ 
 2009-07-22   Jan Nijtmans <nijtmans@users.sourceforge.net>
 	
 	* generic/tclThread.h:   Remove unnecessary ';'s
