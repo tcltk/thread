@@ -1,3 +1,9 @@
+2010-03-19   Jan Nijtmans <nijtmans@users.sourceforge.net>
+	
+    * generic/threadSpCmd.c    Silence gcc warning: dereferencing type-punned
+    * .cvsignore               pointer will break strict-aliasing rules
+    * configure                Regenerated using latest TEA
+
 2009-08-19 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: Implemented [tpool::suspend]
