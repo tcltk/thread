@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.30 2009/07/22 11:25:34 nijtmans Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.31 2010/03/18 23:15:44 nijtmans Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1235,7 +1235,8 @@ SpMutexFinalize(SpMutex *mutexPtr)
 static int
 SpCondvWait(SpCondv *condvPtr, SpMutex *mutexPtr, int msec)
 {
-    Sp_ExclusiveMutex_ *emPtr = *(Sp_ExclusiveMutex_**)&mutexPtr->lock;
+	Sp_AnyMutex **lock = &mutexPtr->lock;
+    Sp_ExclusiveMutex_ *emPtr = *(Sp_ExclusiveMutex_**)lock;
     Tcl_Time waitTime, *wt = NULL;
     Tcl_ThreadId threadId = Tcl_GetCurrentThread();
 

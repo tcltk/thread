@@ -3,3 +3,4 @@ Makefile
 pkgIndex.tcl
 *.dll
 *.so
+autom4te.cache
