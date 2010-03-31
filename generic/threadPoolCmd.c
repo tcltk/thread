@@ -8,7 +8,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadPoolCmd.c,v 1.42 2009/08/19 15:25:28 vasiljevic Exp $
+ * RCS: @(#) $Id: threadPoolCmd.c,v 1.43 2010/03/31 08:50:24 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1894,16 +1894,16 @@ Tpool_Init (interp)
 {
     static int initialized;
 
-    TCL_CMD(interp, TPNS"create",   TpoolCreateObjCmd);
-    TCL_CMD(interp, TPNS"names",    TpoolNamesObjCmd);
-    TCL_CMD(interp, TPNS"post",     TpoolPostObjCmd);
-    TCL_CMD(interp, TPNS"wait",     TpoolWaitObjCmd);
-    TCL_CMD(interp, TPNS"cancel",   TpoolCancelObjCmd);
-    TCL_CMD(interp, TPNS"get",      TpoolGetObjCmd);
-    TCL_CMD(interp, TPNS"preserve", TpoolReserveObjCmd);
-    TCL_CMD(interp, TPNS"release",  TpoolReleaseObjCmd);
-    TCL_CMD(interp, TPNS"suspend",  TpoolSuspendObjCmd);
-    TCL_CMD(interp, TPNS"resume",   TpoolResumeObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"create",   TpoolCreateObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"names",    TpoolNamesObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"post",     TpoolPostObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"wait",     TpoolWaitObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"cancel",   TpoolCancelObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"get",      TpoolGetObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"preserve", TpoolReserveObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"release",  TpoolReleaseObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"suspend",  TpoolSuspendObjCmd);
+    TCL_CMD(interp, TPOOL_CMD_PREFIX"resume",   TpoolResumeObjCmd);
 
     if (initialized == 0) {
         Tcl_MutexLock(&listMutex);

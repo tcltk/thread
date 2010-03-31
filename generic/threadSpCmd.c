@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.31 2010/03/18 23:15:44 nijtmans Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.32 2010/03/31 08:50:24 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -369,6 +369,7 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
     const char *mutexName;
     SpMutex *mutexPtr;
     Sp_ReadWriteMutex *rwPtr;
+    Sp_AnyMutex **lockPtr;
 
     static const char *cmdOpts[] = {
         "create", "destroy", "rlock", "wlock", "unlock", NULL
@@ -465,7 +466,8 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    rwPtr = (Sp_ReadWriteMutex*)&mutexPtr->lock;
+    lockPtr = &mutexPtr->lock;
+    rwPtr = (Sp_ReadWriteMutex*) lockPtr;
     
     switch ((enum options)opt) {
     case w_RLOCK:
@@ -1096,10 +1098,10 @@ Sp_Init (interp)
         Tcl_MutexUnlock(&initMutex);
     }
 
-    TCL_CMD(interp, THNS"::mutex",   ThreadMutexObjCmd);
-    TCL_CMD(interp, THNS"::rwmutex", ThreadRWMutexObjCmd);
-    TCL_CMD(interp, THNS"::cond",    ThreadCondObjCmd);
-    TCL_CMD(interp, THNS"::eval",    ThreadEvalObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"::mutex",   ThreadMutexObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"::rwmutex", ThreadRWMutexObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"::cond",    ThreadCondObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"::eval",    ThreadEvalObjCmd);
 
     return TCL_OK;
 }
@@ -1124,12 +1126,14 @@ Sp_Init (interp)
 static int 
 SpMutexLock(SpMutex *mutexPtr)
 {
+    Sp_AnyMutex **lockPtr = &mutexPtr->lock;
+
     switch (mutexPtr->type) {
     case EMUTEXID:
-        return Sp_ExclusiveMutexLock((Sp_ExclusiveMutex*)&mutexPtr->lock);
+        return Sp_ExclusiveMutexLock((Sp_ExclusiveMutex*)lockPtr);
         break;
     case RMUTEXID: 
-        return Sp_RecursiveMutexLock((Sp_RecursiveMutex*)&mutexPtr->lock);
+        return Sp_RecursiveMutexLock((Sp_RecursiveMutex*)lockPtr);
         break;
     }
 
@@ -1156,12 +1160,14 @@ SpMutexLock(SpMutex *mutexPtr)
 static int
 SpMutexUnlock(SpMutex *mutexPtr)
 {
+    Sp_AnyMutex **lockPtr = &mutexPtr->lock;
+
     switch (mutexPtr->type) {
     case EMUTEXID:
-        return Sp_ExclusiveMutexUnlock((Sp_ExclusiveMutex*)&mutexPtr->lock);
+        return Sp_ExclusiveMutexUnlock((Sp_ExclusiveMutex*)lockPtr);
         break;
     case RMUTEXID:
-        return Sp_RecursiveMutexUnlock((Sp_RecursiveMutex*)&mutexPtr->lock);
+        return Sp_RecursiveMutexUnlock((Sp_RecursiveMutex*)lockPtr);
         break;
     }
 
@@ -1189,6 +1195,8 @@ SpMutexUnlock(SpMutex *mutexPtr)
 static int
 SpMutexFinalize(SpMutex *mutexPtr)
 {
+    Sp_AnyMutex **lockPtr = &mutexPtr->lock;
+
     if (AnyMutexIsLocked((Sp_AnyMutex*)mutexPtr->lock, (Tcl_ThreadId)0)) {
         return 0;
     }
@@ -1200,13 +1208,13 @@ SpMutexFinalize(SpMutex *mutexPtr)
 
     switch (mutexPtr->type) {
     case EMUTEXID:
-        Sp_ExclusiveMutexFinalize((Sp_ExclusiveMutex*)&mutexPtr->lock);
+        Sp_ExclusiveMutexFinalize((Sp_ExclusiveMutex*)lockPtr);
         break;
     case RMUTEXID:
-        Sp_RecursiveMutexFinalize((Sp_RecursiveMutex*)&mutexPtr->lock);
+        Sp_RecursiveMutexFinalize((Sp_RecursiveMutex*)lockPtr);
         break;
     case WMUTEXID:
-        Sp_ReadWriteMutexFinalize((Sp_ReadWriteMutex*)&mutexPtr->lock);
+        Sp_ReadWriteMutexFinalize((Sp_ReadWriteMutex*)lockPtr);
         break;
     default:
         break;

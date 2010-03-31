@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.103 2009/07/22 11:25:34 nijtmans Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.104 2010/03/31 08:50:24 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -378,23 +378,23 @@ ThreadInit(interp)
      * We seem to have a Tcl core compiled with threads enabled.
      */
 
-    TCL_CMD(interp, THNS"create",    ThreadCreateObjCmd);
-    TCL_CMD(interp, THNS"send",      ThreadSendObjCmd);
-    TCL_CMD(interp, THNS"broadcast", ThreadBroadcastObjCmd);
-    TCL_CMD(interp, THNS"exit",      ThreadExitObjCmd);
-    TCL_CMD(interp, THNS"unwind",    ThreadUnwindObjCmd);
-    TCL_CMD(interp, THNS"id",        ThreadIdObjCmd);
-    TCL_CMD(interp, THNS"names",     ThreadNamesObjCmd);
-    TCL_CMD(interp, THNS"exists",    ThreadExistsObjCmd);
-    TCL_CMD(interp, THNS"wait",      ThreadWaitObjCmd);
-    TCL_CMD(interp, THNS"configure", ThreadConfigureObjCmd);
-    TCL_CMD(interp, THNS"errorproc", ThreadErrorProcObjCmd);
-    TCL_CMD(interp, THNS"preserve",  ThreadReserveObjCmd);
-    TCL_CMD(interp, THNS"release",   ThreadReleaseObjCmd);
-    TCL_CMD(interp, THNS"join",      ThreadJoinObjCmd);
-    TCL_CMD(interp, THNS"transfer",  ThreadTransferObjCmd);
-    TCL_CMD(interp, THNS"detach",    ThreadDetachObjCmd);
-    TCL_CMD(interp, THNS"attach",    ThreadAttachObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"send",      ThreadSendObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"broadcast", ThreadBroadcastObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"exit",      ThreadExitObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"unwind",    ThreadUnwindObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"id",        ThreadIdObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"names",     ThreadNamesObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"exists",    ThreadExistsObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"wait",      ThreadWaitObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"configure", ThreadConfigureObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"errorproc", ThreadErrorProcObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"preserve",  ThreadReserveObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"release",   ThreadReleaseObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"join",      ThreadJoinObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"transfer",  ThreadTransferObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"detach",    ThreadDetachObjCmd);
+    TCL_CMD(interp, THREAD_CMD_PREFIX"attach",    ThreadAttachObjCmd);
 
     /*
      * Add shared variable commands
@@ -537,7 +537,7 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
      * Syntax: thread::create ?-joinable? ?-preserved? ?script?
      */
 
-    script = THNS"wait";
+    script = THREAD_CMD_PREFIX"wait";
 
     for (argc = 1; argc < objc; argc++) {
         arg = Tcl_GetStringFromObj(objv[argc], NULL);

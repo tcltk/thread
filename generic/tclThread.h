@@ -10,7 +10,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: tclThread.h,v 1.22 2009/07/22 11:25:34 nijtmans Exp $
+ * RCS: @(#) $Id: tclThread.h,v 1.23 2010/03/31 08:50:24 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -47,8 +47,8 @@
  * Look into the threadSvCmd.h for more info.
  */
 
-#define THNS "thread::"
-#define TPNS "tpool::"
+#define THREAD_CMD_PREFIX "thread::"
+#define TPOOL_CMD_PREFIX  "tpool::"
 
 /*
  * Exported from threadCmd.c file.
