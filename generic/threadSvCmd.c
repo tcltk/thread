@@ -11,7 +11,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSvCmd.c,v 1.49 2009/07/31 05:48:02 nijtmans Exp $
+ * RCS: @(#) $Id: threadSvCmd.c,v 1.50 2010/03/31 08:50:24 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -159,7 +159,7 @@ Sv_RegisterCommand(cmdName, objProc, delProc, clientData)
     Tcl_CmdDeleteProc *delProc;         /* Command delete procedure */
     ClientData clientData;              /* Private data ptr to pass to cmd */
 {
-    int len = strlen(cmdName) + strlen(N);
+    int len = strlen(cmdName) + strlen(TSV_CMD_PREFIX);
     SvCmdInfo *newCmd = (SvCmdInfo*)Tcl_Alloc(sizeof(SvCmdInfo) + len + 1);
 
     /*
@@ -178,9 +178,9 @@ Sv_RegisterCommand(cmdName, objProc, delProc, clientData)
      * command names.
      */
 
-    strcpy(newCmd->cmdName, N);
+    strcpy(newCmd->cmdName, TSV_CMD_PREFIX);
     strcat(newCmd->cmdName, cmdName);
-    newCmd->name = newCmd->cmdName + strlen(N);
+    newCmd->name = newCmd->cmdName + strlen(TSV_CMD_PREFIX);
 
     /*
      * Plug-in in shared list of commands.

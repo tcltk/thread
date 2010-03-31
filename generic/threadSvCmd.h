@@ -7,7 +7,7 @@
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.16 2009/07/22 11:25:34 nijtmans Exp $
+ * Rcsid: @(#)$Id: threadSvCmd.h,v 1.17 2010/03/31 08:50:24 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
@@ -39,15 +39,15 @@
 
 #ifdef NS_AOLSERVER
 # ifdef NSV_COMPAT
-#  define N "nsv_"  /* Compatiblity prefix for AOLserver */
+#  define TSV_CMD_PREFIX "nsv_"  /* Compatiblity prefix for AOLserver */
 # else
-#  define N "sv_"   /* Regular command prefix for AOLserver */
+#  define TSV_CMD_PREFIX "sv_"   /* Regular command prefix for AOLserver */
 # endif
 #else
 # ifdef OLD_COMPAT
-#  define N  "thread::sv_" /* Old command prefix for Tcl */
+#  define TSV_CMD_PREFIX "thread::sv_" /* Old command prefix for Tcl */
 # else
-#  define N  "tsv::" /* Regular command prefix for Tcl */
+#  define TSV_CMD_PREFIX "tsv::" /* Regular command prefix for Tcl */
 # endif
 #endif
 
