@@ -1,8 +1,22 @@
+2010-03-30 Zoran Vasiljevic <zv@archiware.com>
+
+	*** 2.6.6 TAGGED FOR RELEASE (thread-2-6-6) ***
+
+	* configure               Redo for TEA 3.7
+	* configure.in
+
+	* generic/tclThread.h     Cosmetic changes for the inclusion
+	* generic/threadCmd.c     in standard Tcl distribution.
+	* generic/threadPoolCmd.c
+	* generic/threadSpCmd.c
+	* generic/threadSvCmd.c
+	* generic/threadSvCmd.h
+
 2010-03-19   Jan Nijtmans <nijtmans@users.sourceforge.net>
 	
-    * generic/threadSpCmd.c    Silence gcc warning: dereferencing type-punned
-    * .cvsignore               pointer will break strict-aliasing rules
-    * configure                Regenerated using latest TEA
+        * generic/threadSpCmd.c    Silence gcc warning: dereferencing type-punned
+        * .cvsignore               pointer will break strict-aliasing rules
+        * configure                Regenerated using latest TEA
 
 2009-08-19 Zoran Vasiljevic <zv@archiware.com>
 
