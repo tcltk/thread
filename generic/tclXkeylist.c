@@ -24,7 +24,7 @@
  * For any questions, contant Zoran Vasiljevic (zoran@archiware.com)
  *
  *-----------------------------------------------------------------------------
- * $Id: tclXkeylist.c,v 1.5 2009/07/22 11:25:34 nijtmans Exp $
+ * $Id: tclXkeylist.c,v 1.6 2010/04/01 22:17:42 vasiljevic Exp $
  *-----------------------------------------------------------------------------
  */
 
@@ -1435,6 +1435,7 @@ TclX_KeyedListInit (interp)
     listType = Tcl_GetObjType("list");
     stringType = Tcl_GetObjType("string");
 
+    if (0) {
     Tcl_CreateObjCommand (interp, 
                           "keylget",
                           Tcl_KeylgetObjCmd,
@@ -1458,7 +1459,7 @@ TclX_KeyedListInit (interp)
                           Tcl_KeylkeysObjCmd,
                           (ClientData) NULL,
                           (Tcl_CmdDeleteProc*) NULL);
-
+    }
 }
 
 
