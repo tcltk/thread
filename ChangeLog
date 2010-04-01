@@ -1,3 +1,7 @@
+2010-04-01 Zoran Vasiljevic <zv@archiware.com>
+
+        * tclXkeylist.c: Removed declaration of global keyl* commands
+
 2010-03-30 Zoran Vasiljevic <zv@archiware.com>
 
 	*** 2.6.6 TAGGED FOR RELEASE (thread-2-6-6) ***
