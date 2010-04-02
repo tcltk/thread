@@ -1,6 +1,13 @@
+2010-04-02 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadCmd.c: serialize Tcl_CreateInterp()
+	as it is thread-unsafe (indirectly modifies global
+	variables w/o protecting locks).
+
 2010-04-01 Zoran Vasiljevic <zv@archiware.com>
 
-        * tclXkeylist.c: Removed declaration of global keyl* commands
+        * generic/tclXkeylist.c: Removed declaration of
+	global TclX keylist commands.
 
 2010-03-30 Zoran Vasiljevic <zv@archiware.com>
 
