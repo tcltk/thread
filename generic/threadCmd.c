@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.105 2010/04/02 16:05:09 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.106 2010/04/02 16:49:58 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1642,19 +1642,7 @@ NewThread(clientData)
     Ns_ThreadSetName("-tclthread-");
     interp = (Tcl_Interp*)Ns_TclAllocateInterp(md ? md->server : NULL);
 #else
-
-    /*
-     * Tcl_CreateInterp() is thread-unsafe as it mingles in a very obscure
-     * way with the globally-declared tclStubsPtr (indirectly, over calling
-     * the Tcl_InitStubs()).  As I was really not able to understand the
-     * (higher-mathematics of) how-this-is-all-supposed-to-work I decided to
-     * make my life easier and serialize this unsafe call.
-     */
-
-    Tcl_MutexLock(&threadMutex);
     interp = Tcl_CreateInterp();
-    Tcl_MutexUnlock(&threadMutex);
-
     result = Tcl_Init(interp);
 #endif
 
