@@ -1,3 +1,9 @@
+2010-05-26  Andreas Kupries  <andreask@activestate.com>
+
+	* generic/threadSpCmd.c (ThreadMutexObjCmd, ThreadRWMutexObjCmd):
+	[Bug 3007426]: Dropped trailing commas in enum definitions which
+	choked the strictly C89 AIX compiler.
+
 2010-04-01 Zoran Vasiljevic <zv@archiware.com>
 
         * generic/tclXkeylist.c: Removed declaration of

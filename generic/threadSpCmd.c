@@ -26,7 +26,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.32 2010/03/31 08:50:24 vasiljevic Exp $
+ * RCS: @(#) $Id: threadSpCmd.c,v 1.33 2010/05/26 20:10:10 andreas_kupries Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -201,7 +201,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
         "create", "destroy", "lock", "unlock", NULL
     };
     enum options {
-        m_CREATE, m_DESTROY, m_LOCK, m_UNLOCK,
+        m_CREATE, m_DESTROY, m_LOCK, m_UNLOCK
     };
     
     /* 
@@ -375,7 +375,7 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
         "create", "destroy", "rlock", "wlock", "unlock", NULL
     };
     enum options {
-        w_CREATE, w_DESTROY, w_RLOCK, w_WLOCK, w_UNLOCK,
+        w_CREATE, w_DESTROY, w_RLOCK, w_WLOCK, w_UNLOCK
     };
     
     /* 
