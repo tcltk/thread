@@ -1,3 +1,7 @@
+2010-05-27  Andreas Kupries  <andreask@activestate.com>
+
+	* lib/ttrace.tcl: Resynchronized version number with Thread.
+
 2010-05-26  Andreas Kupries  <andreask@activestate.com>
 
 	* generic/threadSpCmd.c (ThreadMutexObjCmd, ThreadRWMutexObjCmd):
