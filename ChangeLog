@@ -1,3 +1,11 @@
+2010-05-31  Andreas Kupries  <andreask@activestate.com>
+
+	* pkgIndex.tcl.in: Fixed procedure collisions for Thread package
+	by inlining the load command into the ifneeded script, as is
+	standard for most binary packages. Tweaked the procedure for
+	Ttrace a bit, as the result of [info commands] is a list, and
+	using ::apply when possible. A named procedure is only a fallback.
+
 2010-05-27  Andreas Kupries  <andreask@activestate.com>
 
 	* lib/ttrace.tcl: Resynchronized version number with Thread.
