@@ -6,7 +6,7 @@
 # See the file "license.terms" for information on usage and redistribution of
 # this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.14 2010/07/25 22:19:09 dkf Exp $
+# Rcsid: @(#)$Id: ttrace.tcl,v 1.15 2010/08/12 16:34:58 andreas_kupries Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:
@@ -439,7 +439,7 @@ namespace eval ttrace {
         if {$nsp == ""} {
             set nsp "::"
         }
-        append res [list ::namespace eval $nsp] "{" \n
+        append res [list ::namespace eval $nsp] " {" \n
         append res [list ::proc [namespace tail $cmd] $pargs $pbody] \n
         append res "}" \n
     }
@@ -449,7 +449,7 @@ namespace eval ttrace {
         if {$nsp == ""} {
             set nsp [namespace current]
         }
-        append res [list ::namespace eval $nsp] "{" \n
+        append res [list ::namespace eval $nsp] " {" \n
         foreach var [info vars ${nsp}::*] {
             set vname [namespace tail $var]
             if {[array exists $var] == 0} {
