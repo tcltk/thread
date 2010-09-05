@@ -1,9 +1,7 @@
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin tpool n 2.6]
 [moddesc {Tcl Threading}]
-[titledesc {
-    Part of the Tcl threading extension implementing pools of worker threads.
-}]
+[titledesc {Part of the Tcl threading extension implementing pools of worker threads.}]
 [require Tcl 8.4]
 [require Thread [opt 2.6]]
 

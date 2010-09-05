@@ -1,9 +1,15 @@
+2010-09-05  Donal K. Fellows  <dkf@users.sf.net>
+
+	* doc/tpool.man, doc/tsv.man: Remove spaces in titledesc declaration;
+	doctools currently does not like it at all when generating correct
+	nroff output.
+
 2010-08-12  Andreas Kupries  <andreask@activestate.com>
 
-	* lib/ttrace.tcl (_serializensp, _serializeproc): Fixed typos
-	  which smashed namespace name and opening brace of a script
-	  together, leading to a syntax error for 'namespace eval' and
-	  preventing the use of package Ttrace.
+	* lib/ttrace.tcl (_serializensp, _serializeproc): Fixed typos which
+	smashed namespace name and opening brace of a script together, leading
+	to a syntax error for 'namespace eval' and preventing the use of
+	package Ttrace.
 
 2010-07-25  Donal K. Fellows  <dkf@users.sf.net>
 
