@@ -1,10 +1,7 @@
 [comment {-*- tcl -*- doctools manpage}]
 [manpage_begin tsv n 2.6]
 [moddesc {Tcl Threading}]
-[titledesc {
-    Part of the Tcl threading extension allowing script level
-    manipulation of data shared between threads.
-}]
+[titledesc {Part of the Tcl threading extension allowing script level manipulation of data shared between threads.}]
 [require Tcl 8.4]
 [require Thread [opt 2.6]]
 
