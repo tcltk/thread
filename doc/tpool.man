@@ -26,9 +26,9 @@ The command returns the ID of the newly created threadpool.
 [nl]
 Following options are supported:
 
-[list_begin definitions]
+[list_begin opt_def]
 
-[lst_item {-minworkers number}]
+[opt_def -minworkers [arg number]]
 Minimum number of worker threads needed for this threadpool instance.
 During threadpool creation, the implementation will create somany
 worker threads upfront and will keep at least number of them alive
@@ -38,7 +38,7 @@ threadpool will have no worker threads initialy. All worker threads
 will be started on demand by callers running [cmd tpool::post] command
 and posting jobs to the job queue.
 
-[lst_item {-maxworkers number}]
+[opt_def -maxworkers [arg number]]
 Maximum number of worker threads allowed for this threadpool instance.
 If a new job is pending and there are no idle worker threads available,
 the implementation will try to create new worker thread. If the number
@@ -52,8 +52,7 @@ Default value of this parameter is 4 (four), which means that the
 threadpool instance will allow maximum of 4 worker threads running jobs
 or being idle waiting for new jobs to get posted to the job queue.
 
-
-[lst_item {-idletime seconds}]
+[opt_def -idletime [arg seconds]]
 Time in seconds an idle worker thread waits for the job to get posted
 to the job queue. If no job arrives during this interval and the time
 expires, the worker thread will check the number of currently available
@@ -71,8 +70,7 @@ taken into account.
 Default value for this option is unspecified, hence, the Tcl interpreter
 of the worker thread will contain just the initial set of Tcl commands.
 
-[lst_item {-initcmd script}]
-
+[opt_def -initcmd [arg script]]
 Sets a Tcl script used to initialize new worker thread. This is usually
 used to load packages and commands in the worker, set default variables,
 create namespaces, and such. If the passed script runs into a Tcl error, 
@@ -81,8 +79,7 @@ the worker will not be created and the initiating command (either the
 Default value for this option is unspecified, hence, the Tcl interpreter of 
 the worker thread will contain just the initial set of Tcl commands.
 
-[lst_item {-exitcmd script}]
-
+[opt_def -exitcmd [arg script]]
 Sets a Tcl script run when the idle worker thread exits. This is normaly
 used to cleanup the state of the worker thread, release reserved resources,
 cleanup memory and such.
