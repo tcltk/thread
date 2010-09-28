@@ -1,3 +1,16 @@
+2010-09-28 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadCmd.c: Initialize tsdPtr->interp to NULL immediately after
+	releasing the interp on thread-exit that should hopefully resolve the 
+	Tcl Bug #3026061
+
+	* generic/threadCmd.c: Removed safe-init so safe-interps should not be 
+	able to run thread commands directly.
+
+	* lib/ttrace.tcl: Changed version to 2.6.7 to be in sync with main pkg.
+
+	* configure.in: Bumped version to 2.6.7 and autoconf'ed.
+
 2010-09-05  Donal K. Fellows  <dkf@users.sf.net>
 
 	* doc/tpool.man, doc/tsv.man: Remove spaces in titledesc declaration;

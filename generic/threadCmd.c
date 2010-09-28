@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.106 2010/04/02 16:49:58 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.107 2010/09/28 20:21:22 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -446,30 +446,6 @@ Thread_Init(interp)
     }
 
     return Tcl_PkgProvide(interp, "Thread", PACKAGE_VERSION);
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * Thread_SafeInit --
- *
- *  This function is called from within initialization of the safe
- *  Tcl interpreter.
- *
- * Results:
- *  Standard Tcl result
- *
- * Side effects:
- *  Commands added to the current interpreter,
- *
- *----------------------------------------------------------------------
- */
-
-EXTERN int
-Thread_SafeInit(interp)
-    Tcl_Interp *interp;
-{
-    return Thread_Init(interp);
 }
 
 /*
@@ -1711,6 +1687,8 @@ NewThread(clientData)
     Tcl_DeleteInterp(tsdPtr->interp);
 #endif
     Tcl_Release((ClientData)tsdPtr->interp);
+
+    //tsdPtr->interp = NULL;
 
     /*
      * Tcl_ExitThread calls Tcl_FinalizeThread() indirectly which calls
