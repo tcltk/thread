@@ -60,7 +60,7 @@ For AOLserver, only newly created threads actually receive the
 epoch change. For the Tcl threading extension, all threads created by
 the extension are automatically updated. If the command execution 
 resulted in Tcl error, no state propagation takes place.
-[nl]
+[para]
 This is the most important user-level command of the package as
 it wraps most of the commands described below. This greatly
 simplifies things, because user need to learn just this (one)
