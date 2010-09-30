@@ -23,10 +23,10 @@ timer (or any other supported) events.
 This command creates new threadpool. It accepts several options as
 key-value pairs. Options are used to tune some threadpool parameters.
 The command returns the ID of the newly created threadpool.
-[nl]
+[para]
 Following options are supported:
 
-[list_begin opt_def]
+[list_begin options]
 
 [opt_def -minworkers [arg number]]
 Minimum number of worker threads needed for this threadpool instance.
@@ -61,7 +61,7 @@ worker threads and if the number is higher than the number set by the
 If an [option exitscript] has been defined, the exiting worker thread 
 will first run the script and then exit. Errors from the exit script, 
 if any, are ignored.
-[nl]
+[para]
 The idle worker thread is not servicing the event loop. If you, however,
 put the worker thread into the event loop, by evaluating the
 [cmd vwait] or other related Tcl commands, the worker thread 
@@ -88,7 +88,7 @@ on the worker thread exit.
 
 [list_end]
 
-[nl] 
+[para] 
 
 [call [cmd tpool::names]]
 
@@ -109,14 +109,14 @@ service events while waiting for one of the worker threads to become idle.
 If the optional [opt -nowait] argument is given, the command will not wait
 for one idle worker. It will just place the job in the pool's job queue
 and return immediately.
-[nl]
+[para]
 The command returns the ID of the posted job. This ID is used for subsequent
 [cmd tpool::wait], [cmd tpool::get] and [cmd tpool::cancel] commands to wait
 for and retrieve result of the posted script, or cancel the posted job
 respectively. If the optional [opt -detached] argument is specified, the 
 command will post a detached job. A detached job can not be cancelled or 
 waited upon and is not identified by the job ID.
-[nl]
+[para]
 If the threadpool [arg tpool] is not found in the list of active
 thread pools, the command will throw error. The error will also be triggered
 if the newly created worker thread fails to initialize.
@@ -127,7 +127,7 @@ This command waits for one or many jobs, whose job IDs are given in the
 [arg joblist] to get processed by the worker thread(s). If none of the
 specified jobs are ready, the command will enter the event loop, service
 events and wait for the first job to get ready.
-[nl]
+[para]
 The command returns the list of completed job IDs. If the optional variable
 [opt varname] is given, it will be set to the list of jobs in the 
 [arg joblist] which are still pending. If the threadpool [arg tpool] 

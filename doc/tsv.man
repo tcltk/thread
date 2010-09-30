@@ -280,7 +280,7 @@ in the shared variable [arg varname].
 If the optional [arg retvar] is not specified, then the value will be 
 returned as the result of the command. In this case, if key is not found 
 in the list, an error will result.
-[nl]
+[para]
 If [arg retvar] is specified and [arg key] is in the list, then the value 
 is returned in the variable [arg retvar] and the command returns 1 if the
 key was present within the list. If [arg key] isn't in the list, the 

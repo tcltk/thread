@@ -34,7 +34,7 @@ all other package commands. The handle of the thread goes out of scope
 automatically when thread is marked for exit
 (see the [cmd thread::release] command below).
 
-[nl]
+[para]
 
 If the optional [option script] argument contains the [cmd thread::wait]
 command the thread will enter into the event loop. If such command is not
@@ -43,7 +43,7 @@ the end and exit. In that case, the handle may be safely ignored since it
 refers to a thread which does not exists any more at the time when the 
 command returns.
 
-[nl]
+[para]
 
 Using flag [option -joinable] it is possible to create a joinable
 thread, i.e. one upon whose exit can be waited upon by using 
@@ -52,7 +52,7 @@ Note that failure to join a thread created with [option -joinable] flag
 results in resource and memory leaks. 
 
 
-[nl]
+[para]
 
 Threads created by the [cmd thread::create] cannot be destroyed 
 forcefully. Consequently, there is no corresponding thread destroy
@@ -64,7 +64,7 @@ the [option script] argument, following the [cmd thread::wait]
 command. If this was the last command in the script, as usualy the
 case, the thread will exit.
 
-[nl]
+[para]
 
 It is possible to create a situation in which it may be impossible
 to terminate the thread, for example by putting some endless loop 
@@ -89,7 +89,7 @@ to execute commands following. It will enter [cmd vwait] command and
 wait endlessly for events. There is no way one can terminate such thread,
 so you wouldn't want to do this!
 
-[nl]
+[para]
 
 Each newly created has its internal reference counter set to 0 (zero), 
 i.e. it is unreserved. This counter gets incremented by a call to 
@@ -111,7 +111,7 @@ Command returns the value of the reference counter after the increment.
 If called with the optional thread [option id], the command preserves
 the given thread. Otherwise the current thread is preserved.
 
-[nl]
+[para]
 
 With reference counting, one can implement controlled access to a 
 shared Tcl thread. By incrementing the reference counter, the 
@@ -133,7 +133,7 @@ The handle of the thread goes out of scope and should not be used any
 more. Any following reference to the same thread handle will result 
 in Tcl error.
 
-[nl]
+[para]
 
 Optional flag [option -wait] instructs the caller thread to wait for 
 the target thread to exit, if the effect of the command would result 
@@ -174,7 +174,7 @@ Use of this command is deprecated in favour of more advanced thread
 reservation system implemented with [cmd thread::preserve] and 
 [cmd thread::release] commands. Support for [cmd thread::unwind] 
 command will dissapear in some future major release of the extension.
-[nl]
+[para]
 This command stops a prior [cmd thread::wait] command. Execution of
 the script passed to newly created thread will continue from the 
 [cmd thread::wait] command. If [cmd thread::wait] was the last command
@@ -189,7 +189,7 @@ Use of this command is deprecated in favour of more advanced thread
 reservation system implemented with [cmd thread::preserve] and 
 [cmd thread::release] commands. Support for [cmd thread::exit] 
 command will dissapear in some future major release of the extension.
-[nl]
+[para]
 This command forces a thread stuck in the [cmd thread::wait]
 command to unconditionaly exit. The execution of [cmd thread::exit]
 command is guaranteed to leave the program memory in the unconsistent
@@ -224,7 +224,7 @@ created without a startup script. Threads can enter the event loop
 explicitly by calling [cmd thread::wait] or any other relevant Tcl/Tk
 command, like [cmd update], [cmd vwait], etc. 
 
-[nl]
+[para]
 
 Optional [option varname] specifies name of the variable to store
 the result of the [arg script]. Without the [option -async] flag,
@@ -249,7 +249,7 @@ The caller entered the event loop twice to get both results. Note,
 however, that the order of the received results may vary, depending on 
 the current system load, type of work done, etc, etc.
 
-[nl]
+[para]
 
 Many threads can simultaneously send scripts to the target thread for 
 execution. All of them are entered into the event queue of the target 
@@ -309,7 +309,7 @@ ID [arg id] in the similar way as the standard Tcl command
 [cmd fconfigure] configures some Tcl channel options. Options currently
 supported are: [option -eventmark] and [option -unwindonerror].
 
-[nl]
+[para]
 
 The [option -eventmark] option, when set, limits the number of 
 asynchronously posted scripts to the thread event loop. 
@@ -319,7 +319,7 @@ configured with [option -eventmark]. Default value for the
 [option -eventmark] is 0 (zero) which effectively disables the checking,
 i.e. allows for unlimited number of posted scripts.
 
-[nl]
+[para]
 
 The [option -unwindonerror] option, when set, causes the 
 target thread to unwind if the result of the script processing 
@@ -345,7 +345,7 @@ not be shared among multiple interpreters running in the
 sending thread. This automatically excludes the special channels
 for standard input, output and error.
 
-[nl]
+[para]
 
 Due to the internal Tcl core implementation and the restriction on 
 transferring shared channels, one has to take extra measures when
@@ -393,12 +393,12 @@ only once by one thread, while recursive mutexes can be locked many
 times by the same thread. For recursive mutexes, number of lock and 
 unlock operations must match, otherwise, the mutex will never be 
 released, which would lead to various deadlock situations.
-[nl]
+[para]
 Care has to be taken when using mutexes in an multithreading program.
 Improper use of mutexes may lead to various deadlock situations, 
 especially when using exclusive mutexes.
 
-[nl]
+[para]
 
 The [cmd thread::mutex] command supports following subcommands and options:
 
@@ -433,7 +433,7 @@ Attempt to unlock the already unlocked mutex will throw Tcl error.
 
 [list_end]
 
-[nl]
+[para]
 
 [call [cmd thread::rwmutex]]
 
@@ -442,7 +442,7 @@ mutexes allow you to serialize access to a shared resource more optimally.
 In situations where a shared resource gets mostly read and seldom modified, 
 you might gain some performace by using reader/writer mutexes instead of 
 exclusive or recursive mutexes. 
-[nl]
+[para]
 For reading the resource, thread should obtain a read lock on the resource.
 Read lock is non-exclusive, meaning that more than one thread can
 obtain a read lock to the same resource, without waiting on other readers.
@@ -452,7 +452,7 @@ read-lock while the resource is been modified by the writer thread.
 Only after the write lock has been released, the resource may be read-locked
 again. 
 
-[nl]
+[para]
 
 The [cmd thread::rwmutex] command supports following subcommands and options:
 
@@ -487,7 +487,7 @@ Attempt to unlock already unlocked [arg mutex] will throw Tcl error.
 
 [list_end]
 
-[nl]
+[para]
 
 [call [cmd thread::cond]]
 
@@ -499,7 +499,7 @@ used in the conjuction with an exclusive mutex. If you attempt
 to use other type of mutex in conjuction with the condition 
 variable, a Tcl error will be thrown.
 
-[nl]
+[para]
 
 The command supports following subcommands and options:
 
@@ -532,13 +532,13 @@ Before returning to the calling thread, the command re-acquires the
 [arg mutex] again. Unlocking the [arg mutex] and waiting on the 
 condition variable [arg cond] is done atomically.
 
-[nl]
+[para]
 
 The [option ms] command option, if given, must be an integer specifying
 time interval in milliseconds the command waits to be signalled. 
 Otherwise the command waits on condition notify forever.
 
-[nl]
+[para]
 
 In multithreading programs, there are many situations where a thread has
 to wait for some event to happen until it is allowed to proceed.
