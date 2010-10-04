@@ -1,3 +1,9 @@
+2010-10-04 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/configure      Regenrated for TEA 3.9. Bumped version string
+	* generic/configiue.in   in all relevant files to 2.6.7  and autoconf'ed.
+	* win/vc/pkg.vc
+
 2010-09-28 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: Initialize tsdPtr->interp to NULL immediately after

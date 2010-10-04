@@ -1778,15 +1778,15 @@ echo "$as_me: error:
 The PACKAGE_NAME variable must be defined by your TEA configure.in" >&2;}
    { (exit 1); exit 1; }; }
     fi
-    if test x"3.7" = x ; then
+    if test x"3.9" = x ; then
 	{ { echo "$as_me:$LINENO: error:
 TEA version not specified." >&5
 echo "$as_me: error:
 TEA version not specified." >&2;}
    { (exit 1); exit 1; }; }
-    elif test "3.7" != "${TEA_VERSION}" ; then
-	{ echo "$as_me:$LINENO: result: warning: requested TEA version \"3.7\", have \"${TEA_VERSION}\"" >&5
-echo "${ECHO_T}warning: requested TEA version \"3.7\", have \"${TEA_VERSION}\"" >&6; }
+    elif test "3.9" != "${TEA_VERSION}" ; then
+	{ echo "$as_me:$LINENO: result: warning: requested TEA version \"3.9\", have \"${TEA_VERSION}\"" >&5
+echo "${ECHO_T}warning: requested TEA version \"3.9\", have \"${TEA_VERSION}\"" >&6; }
     else
 	{ echo "$as_me:$LINENO: result: ok (TEA ${TEA_VERSION})" >&5
 echo "${ECHO_T}ok (TEA ${TEA_VERSION})" >&6; }
@@ -6882,11 +6882,6 @@ echo "$as_me: error: could not find tcl source file '${srcdir}/$i'" >&2;}
 #--------------------------------------------------------------------
 
 if test "${TEA_PLATFORM}" = "windows" ; then
-    cat >>confdefs.h <<\_ACEOF
-#define BUILD_thread 1
-_ACEOF
-
-    CLEANFILES="*.lib *.dll *.exp *.ilk *.pdb vc*.pch"
 
     vars="win/threadWin.c"
     for i in $vars; do
@@ -6970,7 +6965,6 @@ echo "$as_me: error: could not find source file '$i'" >&2;}
 
 
 fi
-
 
 #--------------------------------------------------------------------
 # __CHANGE__
