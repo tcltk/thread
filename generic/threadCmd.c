@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.107 2010/09/28 20:21:22 vasiljevic Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.108 2010/11/09 16:38:10 andreas_kupries Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1688,7 +1688,7 @@ NewThread(clientData)
 #endif
     Tcl_Release((ClientData)tsdPtr->interp);
 
-    //tsdPtr->interp = NULL;
+    /*tsdPtr->interp = NULL;*/
 
     /*
      * Tcl_ExitThread calls Tcl_FinalizeThread() indirectly which calls
