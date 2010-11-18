@@ -28,8 +28,8 @@ o. Microsoft MSVC++ build:
 --------------------------
 
 You should use the makefile.vc file for the MSVC++ located
-in the vc/ directory. Please consult the vc/README.txt and
-vc/makefile.vc files for more details.
+in the vc/ directory. Please consult the README.vc.txt and
+makefile.vc files for more details.
 Alternatively, you can use the MSVC++ IDE and open the 
 thread_win.dsw workspace file.
 

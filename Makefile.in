@@ -12,7 +12,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# RCS: @(#) $Id: Makefile.in,v 1.26 2007/08/07 06:59:05 das Exp $
+# RCS: @(#) $Id: Makefile.in,v 1.27 2010/11/18 21:14:48 dgp Exp $
 
 #========================================================================
 # Add additional lines to handle any additional AC_SUBST cases that
@@ -301,11 +301,11 @@ dist: dist-clean
 	cp $(srcdir)/win/README.txt $(srcdir)/win/CONFIG $(srcdir)/win/thread.rc \
 		$(srcdir)/win/threadWin.c $(DIST_DIR)/win/
 
-	mkdir $(DIST_DIR)/win/vc
-	cp $(srcdir)/win/vc/README.txt  $(srcdir)/win/vc/makefile.vc \
+	cp $(srcdir)/win/vc/makefile.vc \
 		$(srcdir)/win/vc/nmakehlp.c $(srcdir)/win/vc/pkg.vc \
 		$(srcdir)/win/vc/rules.vc   $(srcdir)/win/vc/thread_win.dsw \
-		$(srcdir)/win/vc/thread_win.dsp $(DIST_DIR)/win/vc/
+		$(srcdir)/win/vc/thread_win.dsp $(DIST_DIR)/win/
+	cp $(srcdir)/win/vc/README.txt $(DIST_DIR)/win/README.vc.txt
 
 	mkdir $(DIST_DIR)/tcl
 	cp $(srcdir)/tcl/README $(DIST_DIR)/tcl/

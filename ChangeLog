@@ -1,3 +1,12 @@
+2010-11-18  Don Porter  <dgp@users.sourceforge.net>
+
+	* Makefile.in:		Revised the `make dist` target so that the
+	* win/README.txt:	files under thread/win/vc in CVS are copied to
+	* win/vc/makefile.vc:	thread/win in the release, where tcl/pkgs/
+	* win/vc/thread_win.dsp:	expects to find them.
+
+	* configure:	autoconf-2.59
+
 2010-10-04 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/configure      Regenrated for TEA 3.9. Bumped version string
