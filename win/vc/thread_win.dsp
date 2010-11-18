@@ -81,68 +81,70 @@ CFG=thread - Win32 Debug
 
 !ENDIF 
 
+ROOT=..
+
 # Begin Group "generic"
 
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\generic\aolstub.cpp
+SOURCE=$(ROOT)\generic\aolstub.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\psGdbm.c
+SOURCE=$(ROOT)\generic\psGdbm.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\psGdbm.h
+SOURCE=$(ROOT)\generic\psGdbm.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\tclThread.h
+SOURCE=$(ROOT)\generic\tclThread.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\tclXkeylist.c
+SOURCE=$(ROOT)\generic\tclXkeylist.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\tclXkeylist.h
+SOURCE=$(ROOT)\generic\tclXkeylist.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\threadCmd.c
+SOURCE=$(ROOT)\generic\threadCmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\threadPoolCmd.c
+SOURCE=$(ROOT)\generic\threadPoolCmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\threadSpCmd.c
+SOURCE=$(ROOT)\generic\threadSpCmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\threadSvCmd.c
+SOURCE=$(ROOT)\generic\threadSvCmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\threadSvCmd.h
+SOURCE=$(ROOT)\generic\threadSvCmd.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\threadSvKeylistCmd.c
+SOURCE=$(ROOT)\generic\threadSvKeylistCmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\threadSvKeylistCmd.h
+SOURCE=$(ROOT)\generic\threadSvKeylistCmd.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\threadSvListCmd.c
+SOURCE=$(ROOT)\generic\threadSvListCmd.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\generic\threadSvListCmd.h
+SOURCE=$(ROOT)\generic\threadSvListCmd.h
 # End Source File
 # End Group
 # Begin Group "doc"
@@ -153,19 +155,19 @@ SOURCE=..\..\generic\threadSvListCmd.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\doc\html\thread.html
+SOURCE=$(ROOT)\doc\html\thread.html
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\html\tpool.html
+SOURCE=$(ROOT)\doc\html\tpool.html
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\html\tsv.html
+SOURCE=$(ROOT)\doc\html\tsv.html
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\html\ttrace.html
+SOURCE=$(ROOT)\doc\html\ttrace.html
 # End Source File
 # End Group
 # Begin Group "man"
@@ -173,44 +175,44 @@ SOURCE=..\..\doc\html\ttrace.html
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\doc\man\thread.n
+SOURCE=$(ROOT)\doc\man\thread.n
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\man\tpool.n
+SOURCE=$(ROOT)\doc\man\tpool.n
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\man\tsv.n
+SOURCE=$(ROOT)\doc\man\tsv.n
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\man\ttrace.n
+SOURCE=$(ROOT)\doc\man\ttrace.n
 # End Source File
 # End Group
 # Begin Source File
 
-SOURCE=..\..\doc\format.tcl
+SOURCE=$(ROOT)\doc\format.tcl
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\man.macros
+SOURCE=$(ROOT)\doc\man.macros
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\thread.man
+SOURCE=$(ROOT)\doc\thread.man
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\tpool.man
+SOURCE=$(ROOT)\doc\tpool.man
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\tsv.man
+SOURCE=$(ROOT)\doc\tsv.man
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\doc\ttrace.man
+SOURCE=$(ROOT)\doc\ttrace.man
 # End Source File
 # End Group
 # Begin Group "win"
@@ -233,7 +235,7 @@ SOURCE=.\pkg.vc
 # End Source File
 # Begin Source File
 
-SOURCE=.\README.txt
+SOURCE=.\README.vc.txt
 # End Source File
 # Begin Source File
 
@@ -242,28 +244,28 @@ SOURCE=.\rules.vc
 # End Group
 # Begin Source File
 
-SOURCE=..\README.txt
+SOURCE=$(ROOT)\win\README.txt
 # End Source File
 # Begin Source File
 
-SOURCE=..\thread.rc
+SOURCE=$(ROOT)\win\thread.rc
 # End Source File
 # Begin Source File
 
-SOURCE=..\threadWin.c
+SOURCE=$(ROOT)\win\threadWin.c
 # End Source File
 # End Group
 # Begin Source File
 
-SOURCE=..\..\ChangeLog
+SOURCE=$(ROOT)\ChangeLog
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\license.terms
+SOURCE=$(ROOT)\license.terms
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\README
+SOURCE=$(ROOT)\README
 # End Source File
 # End Target
 # End Project
