@@ -1,3 +1,7 @@
+2010-12-08 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadCmd.c: Fixed Bug #3129844
+
 2010-11-18  Don Porter  <dgp@users.sourceforge.net>
 
 	* Makefile.in:		Revised the `make dist` target so that the
