@@ -17,7 +17,7 @@
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  *
- * RCS: @(#) $Id: threadCmd.c,v 1.108 2010/11/09 16:38:10 andreas_kupries Exp $
+ * RCS: @(#) $Id: threadCmd.c,v 1.109 2010/12/08 22:38:48 vasiljevic Exp $
  * ----------------------------------------------------------------------------
  */
 
@@ -1929,6 +1929,7 @@ ThreadList(interp, thrIdArray)
     }
     
     if (count == 0) {
+        Tcl_MutexUnlock(&threadMutex);
         return 0;
     }
 
