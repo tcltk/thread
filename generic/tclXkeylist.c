@@ -22,9 +22,6 @@
  * the thread shared variables implementation.
  *
  * For any questions, contant Zoran Vasiljevic (zoran@archiware.com)
- *
- *-----------------------------------------------------------------------------
- * $Id: tclXkeylist.c,v 1.6 2010/04/01 22:17:42 vasiljevic Exp $
  *-----------------------------------------------------------------------------
  */
 

@@ -10,8 +10,6 @@
  *
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * Rcsid: @(#)$Id: threadSvKeylistCmd.c,v 1.3 2009/07/22 11:25:34 nijtmans Exp $
  * ---------------------------------------------------------------------------
  */
 

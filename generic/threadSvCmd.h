@@ -6,8 +6,6 @@
  *
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * Rcsid: @(#)$Id: threadSvCmd.h,v 1.17 2010/03/31 08:50:24 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 

@@ -12,9 +12,6 @@
  * software for any purpose.  It is provided "as is" without express or
  * implied warranty.
  *-----------------------------------------------------------------------------
- *
- * Rcsid: @(#)$Id: tclXkeylist.h,v 1.2 2009/07/22 11:25:34 nijtmans Exp $
- *-----------------------------------------------------------------------------
  */
 
 #ifndef _KEYLIST_H_

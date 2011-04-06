@@ -21,10 +21,7 @@
 #
 # See the file "license.terms" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-#
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: tpool.tcl,v 1.8 2006/10/07 09:05:17 vasiljevic Exp $
-#
 
 package require Thread 2.5
 set thisScript [info script]
