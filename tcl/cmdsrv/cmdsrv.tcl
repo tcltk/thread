@@ -25,10 +25,7 @@
 #
 # See the file "license.terms" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-#
 # -----------------------------------------------------------------------------
-# RCS: @(#) $Id: cmdsrv.tcl,v 1.6 2004/12/22 15:31:05 vasiljevic Exp $
-#
 
 package require Tcl    8.4
 package require Thread 2.5

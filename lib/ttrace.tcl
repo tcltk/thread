@@ -5,8 +5,6 @@
 # 
 # See the file "license.terms" for information on usage and redistribution of
 # this file, and for a DISCLAIMER OF ALL WARRANTIES.
-#
-# Rcsid: @(#)$Id: ttrace.tcl,v 1.16 2010/09/28 20:21:22 vasiljevic Exp $
 # ----------------------------------------------------------------------------
 #
 # User level commands:

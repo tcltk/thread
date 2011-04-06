@@ -6,8 +6,6 @@
 #
 # Copyright (c) 1998-1999 by Scriptics Corporation.
 # All rights reserved.
-# 
-# RCS: @(#) $Id: all.tcl,v 1.5 2004/12/18 13:26:03 vasiljevic Exp $
 
 package require tcltest
 namespace import -force ::tcltest::*

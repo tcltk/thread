@@ -1,7 +1,0 @@
-config.status
-Makefile
-pkgIndex.tcl
-*.dll
-*.so
-autom4te.cache
-*.dylib

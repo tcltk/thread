@@ -31,10 +31,7 @@
 #
 # See the file "license.terms" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-#
 # -----------------------------------------------------------------------------
-# Rcsid: @(#)$Id: uhttpd.tcl,v 1.3 2002/12/13 20:55:08 vasiljevic Exp $
-#
 
 namespace eval uhttpd {
 

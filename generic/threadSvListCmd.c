@@ -6,8 +6,6 @@
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * RCS: @(#) $Id: threadSvListCmd.c,v 1.11 2009/07/22 11:25:34 nijtmans Exp $
  * ----------------------------------------------------------------------------
  */
 

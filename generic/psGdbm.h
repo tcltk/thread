@@ -3,8 +3,6 @@
  *
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * Rcsid: @(#)$Id: psGdbm.h,v 1.1 2003/09/03 11:24:53 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 

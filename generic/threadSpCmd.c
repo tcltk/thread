@@ -25,8 +25,6 @@
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * RCS: @(#) $Id: threadSpCmd.c,v 1.33 2010/05/26 20:10:10 andreas_kupries Exp $
  * ----------------------------------------------------------------------------
  */
 

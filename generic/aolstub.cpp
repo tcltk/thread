@@ -7,8 +7,6 @@
  *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * Rcsid: @(#)$Id: aolstub.cpp,v 1.4 2003/03/17 09:01:23 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 

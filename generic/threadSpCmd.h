@@ -6,8 +6,6 @@
  *
  * See the file "license.txt" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
- *
- * Rcsid: @(#)$Id: threadSpCmd.h,v 1.4 2008/05/22 16:19:40 vasiljevic Exp $
  * ---------------------------------------------------------------------------
  */
 
