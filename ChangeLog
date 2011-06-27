@@ -1,3 +1,10 @@
+2011-06-27  Don Porter  <dgp@users.sourceforge.net>
+
+	* configure.in:	Copied revisions from the "sampleextension" package
+	* Makefile.in:	to keep compatible with the latest INSTALL changes
+	in TEA 3.9.  
+	* configure:	autoconf-2.59
+
 2010-12-08 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: Fixed Bug #3129844
