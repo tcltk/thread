@@ -124,6 +124,7 @@ static int DeleteArray(Array*);
 static void SvAllocateContainers(Bucket*);
 static void SvRegisterStdCommands(void);
 
+#define SV_FINALIZE
 #ifdef SV_FINALIZE
 static void SvFinalizeContainers(Bucket*);
 static void SvFinalize(ClientData);
@@ -2183,6 +2184,8 @@ Sv_Init (interp)
         Tcl_MutexLock(&bucketsMutex);
         if (buckets == NULL) {
             buckets = (Bucket *)Tcl_Alloc(sizeof(Bucket) * NUMBUCKETS);
+	    Tcl_CreateExitHandler(SvFinalize, NULL);
+
             for (i = 0; i < NUMBUCKETS; ++i) {
                 bucketPtr = &buckets[i];
                 memset(bucketPtr, 0, sizeof(Bucket));
