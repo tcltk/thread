@@ -621,9 +621,11 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
     if (objc > 1) {
         if (OPT_CMP(Tcl_GetString(objv[1]), "-wait")) {
             wait = 1;
-            if (ThreadGetId(interp, objv[2], &thrId) != TCL_OK) {
-                return TCL_ERROR;
-            }
+	    if (objc > 2) {
+        	if (ThreadGetId(interp, objv[2], &thrId) != TCL_OK) {
+		    return TCL_ERROR;
+        	}
+	    }
         } else if (ThreadGetId(interp, objv[1], &thrId) != TCL_OK) {
             return TCL_ERROR;
         }
