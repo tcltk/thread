@@ -284,6 +284,9 @@ ThreadIdleProc    _ANSI_ARGS_((ClientData clientData));
 static void 
 ThreadExitProc    _ANSI_ARGS_((ClientData clientData));
 
+static void 
+ThreadFreeError   _ANSI_ARGS_((ClientData clientData));
+
 static void
 ListRemove        _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 
@@ -1087,21 +1090,38 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
             Tcl_SetResult(interp, errorProcString, TCL_VOLATILE);
         }
     } else {
-        errorThreadId = Tcl_GetCurrentThread();
         if (errorProcString) {
             Tcl_Free(errorProcString);
         }
         proc = Tcl_GetStringFromObj(objv[1], &len);
         if (len == 0) {
+	    errorThreadId = NULL;
             errorProcString = NULL;
         } else {
+	    errorThreadId = Tcl_GetCurrentThread();
             errorProcString = Tcl_Alloc(1+strlen(proc));
             strcpy(errorProcString, proc);
+	    Tcl_DeleteThreadExitHandler(ThreadFreeError, NULL);
+	    Tcl_CreateThreadExitHandler(ThreadFreeError, NULL);
         }
     }
     Tcl_MutexUnlock(&threadMutex);
 
     return TCL_OK;
+}
+
+static void
+ThreadFreeError(clientData)
+    ClientData clientData;
+{
+    Tcl_MutexLock(&threadMutex);
+    if (errorThreadId != Tcl_GetCurrentThread()) {
+	return;
+    }
+    Tcl_Free(errorProcString);
+    errorThreadId = NULL;
+    errorProcString = NULL;
+    Tcl_MutexUnlock(&threadMutex);
 }
 
 /*
