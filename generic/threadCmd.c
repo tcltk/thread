@@ -1116,6 +1116,7 @@ ThreadFreeError(clientData)
 {
     Tcl_MutexLock(&threadMutex);
     if (errorThreadId != Tcl_GetCurrentThread()) {
+	Tcl_MutexUnlock(&threadMutex);
 	return;
     }
     Tcl_Free(errorProcString);
