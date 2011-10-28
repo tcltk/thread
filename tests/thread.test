@@ -41,7 +41,9 @@ test thread-2.0 {no global thread command} {
 } {}
 
 test thread-2.84 {thread subcommands} {
-    lsort [info commands thread::*]
+    set cmds [info commands thread::*]
+    set idx [lsearch -exact $cmds ::thread::cancel]
+    lsort [lreplace $cmds $idx $idx]
 } {::thread::attach ::thread::broadcast ::thread::cond ::thread::configure ::thread::create ::thread::detach ::thread::errorproc ::thread::eval ::thread::exists ::thread::exit ::thread::id ::thread::join ::thread::mutex ::thread::names ::thread::preserve ::thread::release ::thread::rwmutex ::thread::send ::thread::transfer ::thread::unwind ::thread::wait}
 
 test thread-3.0 {thread::names initial thread list} {
