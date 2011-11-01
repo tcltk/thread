@@ -25,6 +25,16 @@
 # include "aolstub.cpp"
 #endif
 
+/*
+ * Check if this is Tcl 8.6 or higher.  In that case, we will have the TIP
+ * #285 APIs (i.e. asynchronous script cancellation) available.
+ */
+
+#if (TCL_MAJOR_VERSION > 8) || \
+    ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 6))
+# define TCL_TIP285
+#endif
+
 /* 
  * Access to the list of threads and to the thread send results
  * (defined below) is guarded by this mutex. 
@@ -331,6 +341,14 @@ static void
 ThreadCutChannel  _ANSI_ARGS_((Tcl_Interp *interp,
                                Tcl_Channel channel));
 
+#ifdef TCL_TIP285
+static int 
+ThreadCancel      _ANSI_ARGS_((Tcl_Interp *interp,
+                               Tcl_ThreadId thrId,
+                               const char *result,
+                               int flags));
+#endif
+
 /*
  * Functions implementing Tcl commands
  */
@@ -352,6 +370,10 @@ static Tcl_ObjCmdProc ThreadJoinObjCmd;
 static Tcl_ObjCmdProc ThreadTransferObjCmd;
 static Tcl_ObjCmdProc ThreadDetachObjCmd;
 static Tcl_ObjCmdProc ThreadAttachObjCmd;
+
+#ifdef TCL_TIP285
+static Tcl_ObjCmdProc ThreadCancelObjCmd;
+#endif
 
 static int
 ThreadInit(interp)
@@ -396,6 +418,25 @@ ThreadInit(interp)
     TCL_CMD(interp, THREAD_CMD_PREFIX"transfer",  ThreadTransferObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"detach",    ThreadDetachObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"attach",    ThreadAttachObjCmd);
+
+#ifdef TCL_TIP285
+    {
+        /*
+         * This package may have been compiled against Tcl 8.6 or higher;
+         * however, what if it is being loaded by Tcl 8.5 or lower?  Perform
+         * a version check now to stop using from trying to use the TIP #285
+         * functionality if it is not present.
+         */
+
+        int major, minor;
+
+        Tcl_GetVersion(&major, &minor, NULL, NULL);
+
+        if (major > 8 || (major == 8 && minor >= 6)) {
+            TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
+        }
+    }
+#endif
 
     /*
      * Add shared variable commands
@@ -1420,6 +1461,64 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
     return TCL_OK;
 }
 
+#ifdef TCL_TIP285
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadCancelObjCmd --
+ *
+ *  This procedure is invoked to process the "thread::cancel" Tcl
+ *  command. See the user documentation for details on what it does.
+ *
+ * Results:
+ *  A standard Tcl result.
+ *
+ * Side effects:
+ *  See the user documentation.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+ThreadCancelObjCmd(dummy, interp, objc, objv)
+    ClientData  dummy;          /* Not used. */
+    Tcl_Interp *interp;         /* Current interpreter. */
+    int         objc;           /* Number of arguments. */
+    Tcl_Obj    *const objv[];   /* Argument objects. */
+{
+    Tcl_ThreadId thrId;
+    int ii, flags;
+    const char *result;
+
+    if ((objc < 2) || (objc > 4)) {
+        Tcl_WrongNumArgs(interp, 1, objv, "?-unwind? id ?result?");
+        return TCL_ERROR;
+    }
+
+    flags = 0;
+    ii = 1;
+    if ((objc == 3) || (objc == 4)) {
+        if (OPT_CMP(Tcl_GetString(objv[ii]), "-unwind")) {
+            flags |= TCL_CANCEL_UNWIND;
+            ii++;
+        }
+    }
+
+    if (ThreadGetId(interp, objv[ii], &thrId) != TCL_OK) {
+        return TCL_ERROR;
+    }
+
+    ii++;
+    if (ii < objc) {
+        result = Tcl_GetString(objv[ii]);
+    } else {
+        result = NULL;
+    }
+
+    return ThreadCancel(interp, thrId, result, flags);
+}
+#endif
+
 /*
  *----------------------------------------------------------------------
  *
@@ -2035,6 +2134,49 @@ ThreadExistsInner(thrId)
 
     return NULL;
 }
+
+#ifdef TCL_TIP285
+/*
+ *----------------------------------------------------------------------
+ *
+ * ThreadCancel --
+ *
+ *    Cancels a script in another thread.
+ *
+ * Results:
+ *    A standard Tcl result.
+ *
+ * Side effects:
+ *    None.
+ *
+ *----------------------------------------------------------------------
+ */
+
+static int
+ThreadCancel(interp, thrId, result, flags)
+    Tcl_Interp  *interp;        /* The current interpreter. */
+    Tcl_ThreadId thrId;         /* Thread ID of other interpreter. */
+    const char *result;         /* The error message or NULL for default. */
+    int flags;                  /* Flags for Tcl_CancelEval. */
+{
+    ThreadSpecificData *tsdPtr = NULL; /* ... of the target thread */
+
+    Tcl_MutexLock(&threadMutex);
+
+    tsdPtr = ThreadExistsInner(thrId);
+
+    if (tsdPtr == (ThreadSpecificData*)NULL) {
+        Tcl_MutexUnlock(&threadMutex);
+        ErrorNoSuchThread(interp, thrId);
+        return TCL_ERROR;
+    }
+
+    Tcl_MutexUnlock(&threadMutex);
+
+    return Tcl_CancelEval(tsdPtr->interp, Tcl_NewStringObj(result, -1), 0,
+            flags);
+}
+#endif
 
 /*
  *----------------------------------------------------------------------

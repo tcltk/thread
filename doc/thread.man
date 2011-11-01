@@ -168,6 +168,22 @@ is called like this:
     myerrorproc thread_id errorInfo
 }]
 
+[call [cmd thread::cancel] [opt -unwind] [arg id] [opt result]]
+
+This command requires Tcl version 8.6 or higher.
+
+[para]
+
+Cancels the script being evaluated in the thread given by the [arg id]
+parameter. Without the [option -unwind] switch the evaluation stack for
+the interpreter is unwound until an enclosing catch command is found or
+there are no further invocations of the interpreter left on the call
+stack. With the [option -unwind] switch the evaluation stack for the
+interpreter is unwound without regard to any intervening catch command
+until there are no further invocations of the interpreter left on the
+call stack. If [arg result] is present, it will be used as the error
+message string; otherwise, a default error message string will be used.
+
 [call [cmd thread::unwind]]
 
 Use of this command is deprecated in favour of more advanced thread
