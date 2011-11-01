@@ -284,6 +284,9 @@ ThreadIdleProc    _ANSI_ARGS_((ClientData clientData));
 static void 
 ThreadExitProc    _ANSI_ARGS_((ClientData clientData));
 
+static void 
+ThreadFreeError   _ANSI_ARGS_((ClientData clientData));
+
 static void
 ListRemove        _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
 
@@ -621,9 +624,11 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
     if (objc > 1) {
         if (OPT_CMP(Tcl_GetString(objv[1]), "-wait")) {
             wait = 1;
-            if (ThreadGetId(interp, objv[2], &thrId) != TCL_OK) {
-                return TCL_ERROR;
-            }
+	    if (objc > 2) {
+        	if (ThreadGetId(interp, objv[2], &thrId) != TCL_OK) {
+		    return TCL_ERROR;
+        	}
+	    }
         } else if (ThreadGetId(interp, objv[1], &thrId) != TCL_OK) {
             return TCL_ERROR;
         }
@@ -1085,21 +1090,39 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
             Tcl_SetResult(interp, errorProcString, TCL_VOLATILE);
         }
     } else {
-        errorThreadId = Tcl_GetCurrentThread();
         if (errorProcString) {
             Tcl_Free(errorProcString);
         }
         proc = Tcl_GetStringFromObj(objv[1], &len);
         if (len == 0) {
+	    errorThreadId = NULL;
             errorProcString = NULL;
         } else {
+	    errorThreadId = Tcl_GetCurrentThread();
             errorProcString = Tcl_Alloc(1+strlen(proc));
             strcpy(errorProcString, proc);
+	    Tcl_DeleteThreadExitHandler(ThreadFreeError, NULL);
+	    Tcl_CreateThreadExitHandler(ThreadFreeError, NULL);
         }
     }
     Tcl_MutexUnlock(&threadMutex);
 
     return TCL_OK;
+}
+
+static void
+ThreadFreeError(clientData)
+    ClientData clientData;
+{
+    Tcl_MutexLock(&threadMutex);
+    if (errorThreadId != Tcl_GetCurrentThread()) {
+	Tcl_MutexUnlock(&threadMutex);
+	return;
+    }
+    Tcl_Free(errorProcString);
+    errorThreadId = NULL;
+    errorProcString = NULL;
+    Tcl_MutexUnlock(&threadMutex);
 }
 
 /*
@@ -2447,7 +2470,9 @@ ThreadSend(interp, thrId, send, clbk, flags)
     if (thrId == Tcl_GetCurrentThread()) {
         Tcl_MutexUnlock(&threadMutex);
         if ((flags & THREAD_SEND_WAIT)) {
-            return (*send->execProc)(interp, (ClientData)send);
+	    int code = (*send->execProc)(interp, (ClientData)send);
+	    ThreadFreeProc((ClientData)send);
+	    return code;
         } else {
             send->interp = interp;
             Tcl_Preserve((ClientData)send->interp);
@@ -3131,6 +3156,7 @@ ThreadIdleProc(clientData)
         ThreadErrorProc(sendPtr->interp);
     }
 
+    ThreadFreeProc(clientData);
     Tcl_Release((ClientData)sendPtr->interp);
 }
 
