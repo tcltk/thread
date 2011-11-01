@@ -41,7 +41,7 @@ puts stdout "Tests began at [eval $timeCmd]"
 # Require the accurate version for the tests so we don't pick up
 # older Thread packages by accident
 package require Tcl 8.4
-package require Thread 2.6
+package require Thread 2.7
 set ::tcltest::mainThread [thread::id]
 
 puts stdout "Thread [package provide Thread]"
