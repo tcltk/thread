@@ -1073,6 +1073,13 @@ RemoveCondv(const char *name, int len)
  *----------------------------------------------------------------------
  */
 
+static void
+SpFinalize(
+    ClientData clientData)
+{
+    Tcl_Free((char *)clientData);
+}
+
 int
 Sp_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
@@ -1084,6 +1091,8 @@ Sp_Init (interp)
         if (!initOnce) {
             int ii, buflen = sizeof(SpBucket) * (NUMSPBUCKETS);
             char *buf  = Tcl_Alloc(2 * buflen);
+
+	    Tcl_CreateExitHandler(SpFinalize, buf);
             muxBuckets = (SpBucket*)(buf);
             varBuckets = (SpBucket*)(buf + buflen);
             for (ii = 0; ii < 2 * (NUMSPBUCKETS); ii++) {
