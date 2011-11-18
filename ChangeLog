@@ -1,5 +1,12 @@
 2011-11-17  Joe Mistachkin  <joe@mistachkin.com>
 
+	* generic/threadCmd.c: Refactor ThreadEventProc to make sure all paths
+	out of the function call Tcl_Release on the necessary Tcl interpreters.
+	Also, call ThreadErrorProc consistently whenever the return code is not
+	TCL_OK (i.e. do not check for it to be equal to TCL_ERROR).
+
+2011-11-17  Joe Mistachkin  <joe@mistachkin.com>
+
 	* generic/threadCmd.c: The [thread::wait] command should use the
 	TCL_CANCEL_UNWIND flag when calling Tcl_Canceled because it manages its
 	own event processing loop.  Also, if the event processing loop is
