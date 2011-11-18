@@ -1,3 +1,26 @@
+2011-11-17  Joe Mistachkin  <joe@mistachkin.com>
+
+	* generic/threadCmd.c: For [thread::cancel], avoid creating a new
+	Tcl_Obj when the default script cancellation result is desired.
+
+	* doc/thread.man: Update all remaining versions to 2.7b1.
+	* doc/tpool.man:
+	* doc/tsv.man:
+	* doc/ttrace.man:
+	* lib/ttrace.tcl:
+	* win/vc/pkg.vc:
+	* win/vc/thread_win.dsp:
+
+	* win/vc/makefile.vc: Stop using -debug:full as it causes an error
+	with the MSVC10 compiler.
+
+2011-09-12  Joe Mistachkin  <joe@mistachkin.com>
+
+	* generic/threadCmd.c: Add support for TIP #285 (asynchronous script
+	cancellation) via a new [thread::cancel] command (available only for
+	Tcl 8.6).
+	* win/vc/makefile.vc: Correct path to root of source checkout.
+
 2011-08-01  Don Porter  <dgp@users.sourceforge.net>
 
 	* win/vc/rules.vc: Extend support to MSVC10.  Thanks to Twylite.
@@ -6,7 +29,7 @@
 
 	* configure.in:	Copied revisions from the "sampleextension" package
 	* Makefile.in:	to keep compatible with the latest INSTALL changes
-	in TEA 3.9.  
+	in TEA 3.9.
 	* configure:	autoconf-2.59
 
 2010-12-08 Zoran Vasiljevic <zv@archiware.com>
@@ -31,10 +54,10 @@
 2010-09-28 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: Initialize tsdPtr->interp to NULL immediately after
-	releasing the interp on thread-exit that should hopefully resolve the 
+	releasing the interp on thread-exit that should hopefully resolve the
 	Tcl Bug #3026061
 
-	* generic/threadCmd.c: Removed safe-init so safe-interps should not be 
+	* generic/threadCmd.c: Removed safe-init so safe-interps should not be
 	able to run thread commands directly.
 
 	* lib/ttrace.tcl: Changed version to 2.6.7 to be in sync with main pkg.

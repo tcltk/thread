@@ -1,9 +1,9 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin ttrace n 2.6]
+[manpage_begin ttrace n 2.7]
 [moddesc {Tcl Threading}]
 [titledesc {Trace-based interpreter initialization}]
 [require Tcl 8.4]
-[require Thread [opt 2.6]]
+[require Thread [opt 2.7]]
 
 [description]
 This package creates a framework for on-demand replication of the

@@ -269,7 +269,7 @@ TCL_CFLAGS	= -DPACKAGE_NAME="\"$(PROJECT)\"" \
 #---------------------------------------------------------------------
 
 !if $(DEBUG)
-ldebug	= -debug:full -debugtype:cv
+ldebug	= -debug -debugtype:cv
 !if $(MSVCRT)
 ldebug = $(ldebug) -nodefaultlib:msvcrt
 !endif
