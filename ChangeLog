@@ -1,5 +1,13 @@
 2011-11-17  Joe Mistachkin  <joe@mistachkin.com>
 
+	* generic/threadCmd.c: The [thread::wait] command should use the
+	TCL_CANCEL_UNWIND flag when calling Tcl_Canceled because it manages its
+	own event processing loop.  Also, if the event processing loop is
+	terminated due to a script in progress being canceled or exceeding a
+	runtime limit, the registered error script should be evaluated, if any.
+
+2011-11-17  Joe Mistachkin  <joe@mistachkin.com>
+
 	* generic/threadCmd.c: The [thread::wait] command must cooperate with
 	the interpreter resource limiting (TIP #143) and asynchronous script
 	cancellation (TIP #285) functionality, when available.

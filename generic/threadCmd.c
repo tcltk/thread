@@ -2840,7 +2840,18 @@ ThreadWait()
 
 #ifdef TCL_TIP285
         if (haveInterpCancel) {
-            if (Tcl_Canceled(tsdPtr->interp, TCL_LEAVE_ERR_MSG) == TCL_ERROR) {
+            /*
+             * If the script has been unwound, bail out immediately. This does
+             * not follow the recommended guidelines for how extensions should
+             * handle the script cancellation functionality because this is
+             * not a "normal" extension. Most extensions do not have a command
+             * that simply enters an infinite Tcl event loop. Normal extensions
+             * should not specify the TCL_CANCEL_UNWIND when calling the
+             * Tcl_Canceled function to check if the command has been canceled.
+             */
+
+            if (Tcl_Canceled(tsdPtr->interp,
+                    TCL_LEAVE_ERR_MSG | TCL_CANCEL_UNWIND) == TCL_ERROR) {
                 code = TCL_ERROR;
                 break;
             }
@@ -2866,6 +2877,19 @@ ThreadWait()
         canrun = (tsdPtr->flags & THREAD_FLAGS_STOPPED) == 0;
         Tcl_MutexUnlock(&threadMutex);
     }
+
+#if defined(TCL_TIP143) || defined(TCL_TIP285)
+    /*
+     * If the event processing loop above was terminated due to a
+     * script in progress being canceled or exceeding its limits,
+     * call the registered error processing script now, if there
+     * is one.
+     */
+
+    if (code != TCL_OK) {
+        ThreadErrorProc(tsdPtr->interp);
+    }
+#endif
 
     /*
      * Remove from the list of active threads, so nobody can post 
