@@ -1,5 +1,11 @@
 2011-11-17  Joe Mistachkin  <joe@mistachkin.com>
 
+	* generic/threadCmd.c: The [thread::wait] command must cooperate with
+	the interpreter resource limiting (TIP #143) and asynchronous script
+	cancellation (TIP #285) functionality, when available.
+
+2011-11-17  Joe Mistachkin  <joe@mistachkin.com>
+
 	* generic/threadCmd.c: For [thread::cancel], avoid creating a new
 	Tcl_Obj when the default script cancellation result is desired.
 
