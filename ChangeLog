@@ -1,3 +1,9 @@
+2011-11-20  Joe Mistachkin  <joe@mistachkin.com>
+
+	* generic/threadCmd.c: Correct check for current thread in the
+	ThreadReserve function [Bug 3411244].  Correct the order for releasing
+	the interpreter and freeing memory, see check-in [6067508840].
+
 2011-11-17  Joe Mistachkin  <joe@mistachkin.com>
 
 	* generic/threadCmd.c: Refactor ThreadEventProc to make sure all paths

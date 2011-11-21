@@ -2965,7 +2965,7 @@ ThreadReserve(interp, thrId, operation, wait)
         
         tsdPtr->flags |= THREAD_FLAGS_STOPPED;
         
-        if (thrId /* Not current! */) {
+        if (thrId && thrId != Tcl_GetCurrentThread() /* Not current! */) {
             ThreadEventResult *resultPtr = NULL;
 
             /*
@@ -3432,8 +3432,8 @@ ThreadIdleProc(clientData)
         ThreadErrorProc(sendPtr->interp);
     }
 
-    ThreadFreeProc(clientData);
     Tcl_Release((ClientData)sendPtr->interp);
+    ThreadFreeProc(clientData);
 }
 
 /*
