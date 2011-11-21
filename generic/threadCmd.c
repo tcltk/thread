@@ -2965,7 +2965,7 @@ ThreadReserve(interp, thrId, operation, wait)
         
         tsdPtr->flags |= THREAD_FLAGS_STOPPED;
         
-        if (thrId /* Not current! */) {
+        if (thrId && thrId != Tcl_GetCurrentThread() /* Not current! */) {
             ThreadEventResult *resultPtr = NULL;
 
             /*
@@ -3068,10 +3068,12 @@ ThreadEventProc(evPtr, mask)
     interp = (sendPtr && sendPtr->interp) ? sendPtr->interp : tsdPtr->interp;
 
     if (interp != NULL) {
+        Tcl_Preserve((ClientData)interp);
+
         if (clbkPtr && clbkPtr->threadId == thrId) {
+            Tcl_Release((ClientData)interp);
             /* Watch: this thread evaluates it's own callback. */
             interp = clbkPtr->interp;
-        } else {
             Tcl_Preserve((ClientData)interp);
         }
 
@@ -3107,6 +3109,15 @@ ThreadEventProc(evPtr, mask)
         Tcl_ConditionNotify(&resultPtr->done);
         Tcl_MutexUnlock(&threadMutex);
 
+        /*
+         * We still need to release the reference to the Tcl
+         * interpreter added by ThreadSend whenever the callback
+         * data is not NULL.
+         */
+
+        if (clbkPtr) {
+            Tcl_Release((ClientData)clbkPtr->interp);
+        }
     } else if (clbkPtr && clbkPtr->threadId != thrId) {
 
         ThreadSendData *tmpPtr = (ThreadSendData*)clbkPtr;
@@ -3116,19 +3127,39 @@ ThreadEventProc(evPtr, mask)
          * Do not wait for the result.
          */
 
-        if (code == TCL_ERROR) {
+        if (code != TCL_OK) {
             ThreadErrorProc(interp);
         }
 
         ThreadSetResult(interp, code, &clbkPtr->result);
         ThreadSend(interp, clbkPtr->threadId, tmpPtr, NULL, 0);
 
-    } else if (code == TCL_ERROR) {
+    } else if (code != TCL_OK) {
         /*
          * Only pass errors onto the registered error handler 
          * when we don't have a result target for this event.
          */
         ThreadErrorProc(interp);
+
+        /*
+         * We still need to release the reference to the Tcl
+         * interpreter added by ThreadSend whenever the callback
+         * data is not NULL.
+         */
+
+        if (clbkPtr) {
+            Tcl_Release((ClientData)clbkPtr->interp);
+        }
+    } else {
+        /*
+         * We still need to release the reference to the Tcl
+         * interpreter added by ThreadSend whenever the callback
+         * data is not NULL.
+         */
+
+        if (clbkPtr) {
+            Tcl_Release((ClientData)clbkPtr->interp);
+        }
     }
 
     if (interp != NULL) {
@@ -3401,8 +3432,8 @@ ThreadIdleProc(clientData)
         ThreadErrorProc(sendPtr->interp);
     }
 
-    ThreadFreeProc(clientData);
     Tcl_Release((ClientData)sendPtr->interp);
+    ThreadFreeProc(clientData);
 }
 
 /*
