@@ -53,27 +53,24 @@
  */
 
 EXTERN int Thread_Init       _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN int Thread_SafeInit   _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN int Thread_Unload     _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN int Thread_SafeUnload _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Exported from threadSvCmd.c file.
  */
 
-EXTERN int Sv_Init _ANSI_ARGS_((Tcl_Interp *interp));
+MODULE_SCOPE int Sv_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Exported from threadSpCmd.c file.
  */
 
-EXTERN int Sp_Init _ANSI_ARGS_((Tcl_Interp *interp));
+MODULE_SCOPE int Sp_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Exported from threadPoolCmd.c file.
  */
 
-EXTERN int Tpool_Init _ANSI_ARGS_((Tcl_Interp *interp));
+MODULE_SCOPE int Tpool_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Macros for splicing in/out of linked lists

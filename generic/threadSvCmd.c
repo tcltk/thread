@@ -64,7 +64,7 @@ static const Tcl_ObjType* stringObjTypePtr;
  * global symbol defined by Tcl. See Sv_Init.
  */
 
-char *Sv_tclEmptyStringRep = NULL;
+static char *Sv_tclEmptyStringRep = NULL;
 
 /*
  * Global variables used within this file.
@@ -2216,13 +2216,6 @@ Sv_Init (interp)
 
     return TCL_OK;
 }
-
-int Sv_SafeInit (interp)
-    Tcl_Interp *interp;
-{
-    return (Sv_Init(interp));
-}
-
 
 #ifdef SV_FINALIZE
 /* 
