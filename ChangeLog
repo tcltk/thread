@@ -1,3 +1,13 @@
+2011-11-24   Jan Nijtmans <nijtmans@users.sourceforge.net>
+
+	* generic/tclThread.h:    Only export Thread_Init(), nothing more.
+	* generic/tclXkeylist.h
+	* generic/threadSpCmd.h
+	* generic/threadSvCmd.h
+	* generic/threadSvCmd.c
+	* generic/threadSvKeylistCmd.h
+	* generic/threadSvListCmd.h
+
 2011-11-20  Joe Mistachkin  <joe@mistachkin.com>
 
 	* generic/threadCmd.c: Correct check for current thread in the

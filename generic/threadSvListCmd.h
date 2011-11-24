@@ -9,7 +9,7 @@
 #ifndef _SV_LIST_H_
 #define _SV_LIST_H_
 
-void Sv_RegisterListCommands();
+MODULE_SCOPE void Sv_RegisterListCommands();
 
 #endif /* _SV_LIST_H_ */
 

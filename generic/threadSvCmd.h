@@ -195,19 +195,19 @@ typedef struct RegType {
  * Limited API functions
  */
 
-void 
+MODULE_SCOPE void
 Sv_RegisterCommand(const char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*,ClientData);
 
-void 
+MODULE_SCOPE void
 Sv_RegisterObjType(const Tcl_ObjType*, Tcl_DupInternalRepProc*);
 
-void 
+MODULE_SCOPE void
 Sv_RegisterPsStore(PsStore*);
 
-int
+MODULE_SCOPE int
 Sv_GetContainer(Tcl_Interp*,int,Tcl_Obj*const objv[],Container**,int*,int);
 
-int
+MODULE_SCOPE int
 Sv_PutContainer(Tcl_Interp*, Container*, int);
 
 /*
@@ -215,7 +215,7 @@ Sv_PutContainer(Tcl_Interp*, Container*, int);
  * copying objects when loaded to and retrieved from shared array.
  */
 
-Tcl_Obj* Sv_DuplicateObj(Tcl_Obj*);
+MODULE_SCOPE Tcl_Obj* Sv_DuplicateObj(Tcl_Obj*);
 
 #endif /* _SV_H_ */
 

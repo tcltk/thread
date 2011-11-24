@@ -94,29 +94,29 @@ typedef Sp_ReadWriteMutex_* Sp_ReadWriteMutex;
  * API for exclusive mutexes.
  */
 
-int  Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *mutexPtr);
-int  Sp_ExclusiveMutexIsLocked(Sp_ExclusiveMutex *mutexPtr);
-int  Sp_ExclusiveMutexUnlock(Sp_ExclusiveMutex *mutexPtr);
-void Sp_ExclusiveMutexFinalize(Sp_ExclusiveMutex *mutexPtr);
+MODULE_SCOPE int  Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *mutexPtr);
+MODULE_SCOPE int  Sp_ExclusiveMutexIsLocked(Sp_ExclusiveMutex *mutexPtr);
+MODULE_SCOPE int  Sp_ExclusiveMutexUnlock(Sp_ExclusiveMutex *mutexPtr);
+MODULE_SCOPE void Sp_ExclusiveMutexFinalize(Sp_ExclusiveMutex *mutexPtr);
 
 /*
  * API for recursive mutexes.
  */
 
-int  Sp_RecursiveMutexLock(Sp_RecursiveMutex *mutexPtr);
-int  Sp_RecursiveMutexIsLocked(Sp_RecursiveMutex *mutexPtr);
-int  Sp_RecursiveMutexUnlock(Sp_RecursiveMutex *mutexPtr);
-void Sp_RecursiveMutexFinalize(Sp_RecursiveMutex *mutexPtr);
+MODULE_SCOPE int  Sp_RecursiveMutexLock(Sp_RecursiveMutex *mutexPtr);
+MODULE_SCOPE int  Sp_RecursiveMutexIsLocked(Sp_RecursiveMutex *mutexPtr);
+MODULE_SCOPE int  Sp_RecursiveMutexUnlock(Sp_RecursiveMutex *mutexPtr);
+MODULE_SCOPE void Sp_RecursiveMutexFinalize(Sp_RecursiveMutex *mutexPtr);
 
 /*
  * API for reader/writer mutexes.
  */
 
-int  Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *mutexPtr);
-int  Sp_ReadWriteMutexWLock(Sp_ReadWriteMutex *mutexPtr);
-int  Sp_ReadWriteMutexIsLocked(Sp_ReadWriteMutex *mutexPtr);
-int  Sp_ReadWriteMutexUnlock(Sp_ReadWriteMutex *mutexPtr);
-void Sp_ReadWriteMutexFinalize(Sp_ReadWriteMutex *mutexPtr);
+MODULE_SCOPE int  Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *mutexPtr);
+MODULE_SCOPE int  Sp_ReadWriteMutexWLock(Sp_ReadWriteMutex *mutexPtr);
+MODULE_SCOPE int  Sp_ReadWriteMutexIsLocked(Sp_ReadWriteMutex *mutexPtr);
+MODULE_SCOPE int  Sp_ReadWriteMutexUnlock(Sp_ReadWriteMutex *mutexPtr);
+MODULE_SCOPE void Sp_ReadWriteMutexFinalize(Sp_ReadWriteMutex *mutexPtr);
 
 #endif /* _SP_H_ */
 
