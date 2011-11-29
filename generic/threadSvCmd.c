@@ -13,6 +13,7 @@
  * ----------------------------------------------------------------------------
  */
 
+#include "tclThread.h"
 #include "threadSvCmd.h"
 
 #include "threadSvListCmd.h"    /* Shared variants of list commands */

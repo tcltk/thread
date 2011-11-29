@@ -10,6 +10,7 @@
  */
 
 #include "threadSvCmd.h"
+#include "threadSvListCmd.h"
 
 /*
  * Implementation of list commands for shared variables.
