@@ -58,7 +58,7 @@ EXTERN int Thread_Init       _ANSI_ARGS_((Tcl_Interp *interp));
  * Exported from threadSvCmd.c file.
  */
 
-MODULE_SCOPE int Sv_Init _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Sv_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Exported from threadSpCmd.c file.

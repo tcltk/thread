@@ -9,7 +9,7 @@
 #ifndef _KEYLISTCMDS_H_
 #define _KEYLISTCMDS_H_
 
-MODULE_SCOPE void Sv_RegisterKeylistCommands(void);
+EXTERN void Sv_RegisterKeylistCommands(void);
 MODULE_SCOPE void TclX_KeyedListInit(Tcl_Interp *interp);
 
 #endif /* _KEYLISTCMDS_H_ */
