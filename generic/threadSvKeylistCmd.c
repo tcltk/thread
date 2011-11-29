@@ -14,6 +14,7 @@
  */
 
 #include "threadSvCmd.h"
+#include "threadSvKeylistCmd.h"
 #include "tclXkeylist.h"
 
 /*
