@@ -459,17 +459,23 @@ ThreadInit(interp)
         Tcl_GetVersion(&major, &minor, NULL, NULL);
 
         Tcl_MutexLock(&threadMutex);
+#ifdef TCL_TIP143
         if (major > 8 || (major == 8 && minor >= 5)) {
             threadHaveInterpLimit = 1;
         }
+#endif
+#ifdef TCL_TIP285
         if (major > 8 || (major == 8 && minor >= 6)) {
             threadHaveInterpCancel = 1;
         }
+#endif
         Tcl_MutexUnlock(&threadMutex);
 
+#ifdef TCL_TIP285
         if (major > 8 || (major == 8 && minor >= 6)) {
             TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
         }
+#endif
     }
 #endif
 
