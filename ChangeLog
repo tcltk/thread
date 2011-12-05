@@ -1,3 +1,7 @@
+2011-12-05  Joe Mistachkin  <joe@mistachkin.com>
+
+	* generic/threadCmd.c: Fix #define issue when compiling for Tcl 8.5.
+
 2011-11-24   Jan Nijtmans <nijtmans@users.sourceforge.net>
 
 	* generic/tclThread.h:    Only export Thread_Init(), nothing more.
