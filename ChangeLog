@@ -1,3 +1,7 @@
+2012-04-19  Don Porter  <dgp@users.sourceforge.net>
+
+	* generic/threadCmd.c:	[Bug 3411242] Crash in thread::release.
+
 2011-08-01  Don Porter  <dgp@users.sourceforge.net>
 
 	* win/vc/rules.vc: Extend support to MSVC10.  Thanks to Twylite.
