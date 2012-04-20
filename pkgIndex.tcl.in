@@ -1,7 +1,7 @@
 # -*- tcl -*-
 # Tcl package index file, version 1.1
 #
-if {[package vsatisfies [package provide Tcl] 8.5]} {
+if {[package vsatisfies [package provide Tcl] 8.5] && [::tcl::pkgconfig get threaded]} {
 
     package ifneeded Thread @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@]]
 
