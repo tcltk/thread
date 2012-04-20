@@ -26,16 +26,6 @@
 #endif
 
 /*
- * Check if this is Tcl 8.5 or higher.  In that case, we will have the TIP
- * #143 APIs (i.e. interpreter resource limiting) available.
- */
-
-#if (TCL_MAJOR_VERSION > 8) || \
-    ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 5))
-# define TCL_TIP143
-#endif
-
-/*
  * Check if this is Tcl 8.6 or higher.  In that case, we will have the TIP
  * #285 APIs (i.e. asynchronous script cancellation) available.
  */
@@ -105,14 +95,6 @@ static struct ThreadSpecificData *threadList = NULL;
  */
 
 static char *threadEmptyResult = (char *)"";
-
-/*
- * This will be set to non-zero if TIP #143 functionality is available.
- */
-
-#ifdef TCL_TIP143
-static int threadHaveInterpLimit = 0;
-#endif
 
 /*
  * This will be set to non-zero if TIP #285 functionality is available.
@@ -405,27 +387,9 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
-    Tcl_Obj *boolObjPtr;
-    const char *msg;
-    int boolVar;
-
-    if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
+    if (Tcl_InitStubs(interp, "8.5", 0) == NULL) {
         return TCL_ERROR;
     }
-
-    boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", 0);
-
-    if (boolObjPtr == NULL
-            || Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_OK
-            || boolVar == 0) {
-        msg = "Tcl core wasn't compiled for threading.";
-        Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
-        return TCL_ERROR;
-    }
-
-    /*
-     * We seem to have a Tcl core compiled with threads enabled.
-     */
 
     TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"send",      ThreadSendObjCmd);
@@ -445,13 +409,13 @@ ThreadInit(interp)
     TCL_CMD(interp, THREAD_CMD_PREFIX"detach",    ThreadDetachObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"attach",    ThreadAttachObjCmd);
 
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
+#if defined(TCL_TIP285)
     {
         /*
-         * This package may have been compiled against Tcl 8.5 or higher;
-         * however, what if it is being loaded by Tcl 8.4 or lower?  Perform
-         * a version check now to stop using from trying to use the TIP #143
-         * or TIP #285 functionality if they are not present.
+         * This package may have been compiled against Tcl 8.6 or higher;
+         * however, what if it is being loaded by Tcl 8.5?  Perform
+         * a version check now to stop using from trying to use the
+         * TIP #285 functionality if it is not present.
          */
 
         int major, minor;
@@ -459,11 +423,6 @@ ThreadInit(interp)
         Tcl_GetVersion(&major, &minor, NULL, NULL);
 
         Tcl_MutexLock(&threadMutex);
-#ifdef TCL_TIP143
-        if (major > 8 || (major == 8 && minor >= 5)) {
-            threadHaveInterpLimit = 1;
-        }
-#endif
 #ifdef TCL_TIP285
         if (major > 8 || (major == 8 && minor >= 6)) {
             threadHaveInterpCancel = 1;
@@ -2799,20 +2758,12 @@ ThreadWait()
 {
     int code = TCL_OK;
     int canrun = 1;
-    int haveInterpLimit;
     int haveInterpCancel;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
-    Tcl_MutexLock(&threadMutex);
-#endif
-#ifdef TCL_TIP143
-    haveInterpLimit = threadHaveInterpLimit;
-#endif
 #ifdef TCL_TIP285
+    Tcl_MutexLock(&threadMutex);
     haveInterpCancel = threadHaveInterpCancel;
-#endif
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
     Tcl_MutexUnlock(&threadMutex);
 #endif
 
@@ -2863,16 +2814,12 @@ ThreadWait()
             }
         }
 #endif
-#ifdef TCL_TIP143
-        if (haveInterpLimit) {
-            if (Tcl_LimitExceeded(tsdPtr->interp)) {
-                Tcl_ResetResult(tsdPtr->interp);
-                Tcl_AppendResult(tsdPtr->interp, "limit exceeded", NULL);
-                code = TCL_ERROR;
-                break;
-            }
+        if (Tcl_LimitExceeded(tsdPtr->interp)) {
+            Tcl_ResetResult(tsdPtr->interp);
+            Tcl_AppendResult(tsdPtr->interp, "limit exceeded", NULL);
+            code = TCL_ERROR;
+            break;
         }
-#endif
 
         /*
          * Test stop condition under mutex since
@@ -2884,7 +2831,6 @@ ThreadWait()
         Tcl_MutexUnlock(&threadMutex);
     }
 
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
     /*
      * If the event processing loop above was terminated due to a
      * script in progress being canceled or exceeding its limits,
@@ -2895,7 +2841,6 @@ ThreadWait()
     if (code != TCL_OK) {
         ThreadErrorProc(tsdPtr->interp);
     }
-#endif
 
     /*
      * Remove from the list of active threads, so nobody can post 
