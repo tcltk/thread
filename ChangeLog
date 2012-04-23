@@ -1,3 +1,14 @@
+2012-04-23  Don Porter  <dgp@users.sourceforge.net>
+
+	* generic/threadCmd.c: Refactor ThreadEventProc to make sure all paths
+	out of the function call Tcl_Release on the necessary Tcl interpreters.
+	Also, call ThreadErrorProc consistently whenever the return code is not
+	TCL_OK (i.e. do not check for it to be equal to TCL_ERROR).
+
+	* generic/threadCmd.c: Correct check for current thread in the
+	ThreadReserve function [Bug 3411244].  Correct the order for releasing
+	the interpreter and freeing memory, see check-in [6067508840].
+
 2012-04-19  Don Porter  <dgp@users.sourceforge.net>
 
 	* generic/threadCmd.c:	[Bug 3411242] Crash in thread::release.
