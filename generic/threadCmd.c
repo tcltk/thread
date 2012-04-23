@@ -387,8 +387,19 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
+    int tclIsThreaded = 0;;
+
     if (Tcl_InitStubs(interp, "8.5", 0) == NULL) {
         return TCL_ERROR;
+    }
+
+    if (Tcl_Eval(interp, "::tcl::pkgconfig get threaded") != TCL_OK 
+	    || Tcl_GetBooleanFromObj(interp,
+	    Tcl_GetObjResult(interp), &tclIsThreaded) != TCL_OK
+	    || !tclIsThreaded) {
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(
+		"Tcl core wasn't compiled for threading.", -1));
+	return TCL_ERROR;
     }
 
     TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
