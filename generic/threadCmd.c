@@ -2769,10 +2769,10 @@ ThreadWait()
 {
     int code = TCL_OK;
     int canrun = 1;
-    int haveInterpCancel;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
 #ifdef TCL_TIP285
+    int haveInterpCancel;
     Tcl_MutexLock(&threadMutex);
     haveInterpCancel = threadHaveInterpCancel;
     Tcl_MutexUnlock(&threadMutex);
