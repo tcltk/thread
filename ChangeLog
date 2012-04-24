@@ -1,3 +1,7 @@
+2012-04-24  Don Porter  <dgp@users.sourceforge.net>
+
+	* generic/threadCmd.c: [Bug 1603234] Stop leak in [thread::transfer].
+
 2012-04-23  Don Porter  <dgp@users.sourceforge.net>
 
 	* generic/threadCmd.c: Refactor ThreadEventProc to make sure all paths
