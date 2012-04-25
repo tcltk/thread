@@ -1,3 +1,7 @@
+2012-04-24  Don Porter  <dgp@users.sourceforge.net>
+
+	* generic/threadCmd.c: [Bug 1603234] Stop leak in [thread::transfer].
+
 2011-12-05  Joe Mistachkin  <joe@mistachkin.com>
 
 	* generic/threadCmd.c: Fix #define issue when compiling for Tcl 8.5.

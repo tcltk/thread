@@ -2392,6 +2392,7 @@ ThreadTransfer(interp, thrId, chan)
         } else {
             Tcl_AppendResult(interp, "for reasons unknown", NULL);
         }
+	Tcl_Free((char *)resultPtr);
 
         return TCL_ERROR;
     }
@@ -2399,6 +2400,7 @@ ThreadTransfer(interp, thrId, chan)
     if (resultPtr->resultMsg) {
         Tcl_Free(resultPtr->resultMsg);
     }
+    Tcl_Free((char *)resultPtr);
 
     return TCL_OK;
 }
