@@ -103,8 +103,9 @@ typedef struct _SpCondv {
 
 static int        initOnce;    /* Flag for initializing tables below */
 static Tcl_Mutex  initMutex;   /* Controls initialization of primitives */
-static SpBucket*  muxBuckets;  /* Maps mutex names/handles */
-static SpBucket*  varBuckets;  /* Maps condition variable names/handles */
+static SpBucket  muxBuckets[NUMSPBUCKETS];  /* Maps mutex names/handles */
+static SpBucket  varBuckets[NUMSPBUCKETS];  /* Maps condition variable
+					     * names/handles */
 
 /*
  * Functions implementing Tcl commands
@@ -1073,13 +1074,6 @@ RemoveCondv(const char *name, int len)
  *----------------------------------------------------------------------
  */
 
-static void
-SpFinalize(
-    ClientData clientData)
-{
-    Tcl_Free((char *)clientData);
-}
-
 int
 Sp_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
@@ -1089,14 +1083,14 @@ Sp_Init (interp)
     if (!initOnce) {
         Tcl_MutexLock(&initMutex);
         if (!initOnce) {
-            int ii, buflen = sizeof(SpBucket) * (NUMSPBUCKETS);
-            char *buf  = Tcl_Alloc(2 * buflen);
-
-	    Tcl_CreateExitHandler(SpFinalize, buf);
-            muxBuckets = (SpBucket*)(buf);
-            varBuckets = (SpBucket*)(buf + buflen);
-            for (ii = 0; ii < 2 * (NUMSPBUCKETS); ii++) {
+            int ii;
+            for (ii = 0; ii < NUMSPBUCKETS; ii++) {
                 bucketPtr = &muxBuckets[ii];
+                memset(bucketPtr, 0, sizeof(SpBucket));
+                Tcl_InitHashTable(&bucketPtr->handles, TCL_STRING_KEYS);
+            }
+            for (ii = 0; ii < NUMSPBUCKETS; ii++) {
+                bucketPtr = &varBuckets[ii];
                 memset(bucketPtr, 0, sizeof(SpBucket));
                 Tcl_InitHashTable(&bucketPtr->handles, TCL_STRING_KEYS);
             }

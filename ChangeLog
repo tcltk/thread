@@ -1,3 +1,11 @@
+2012-04-26  Don Porter  <dgp@users.sourceforge.net>
+
+	* generic/threadSpCmd.c:	Eliminate some tricky finalization
+	problems by converting the SpBucket arrays from dynamic storage to
+	static storage so they no longer need to be finalized.  Since they
+	have fixed size of NUMSPBUCKETS, I don't see any strong reason not
+	to do this.
+
 2012-04-24  Don Porter  <dgp@users.sourceforge.net>
 
 	* generic/threadCmd.c: [Bug 1603234] Stop leak in [thread::transfer].
