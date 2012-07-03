@@ -1,3 +1,8 @@
+2012-07-03 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadPoolCmd.c: [Bugs 3534440, 3534581] fixed.
+	Also, promoted jobId to be Tcl_WideInt (was uint).
+
 2012-04-26  Don Porter  <dgp@users.sourceforge.net>
 
 	* generic/threadSpCmd.c:	Eliminate some tricky finalization
