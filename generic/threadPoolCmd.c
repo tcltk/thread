@@ -27,7 +27,7 @@ typedef struct TpoolWaiter {
  */
 
 typedef struct ThreadPool {
-    unsigned int jobId;             /* Job counter */
+    Tcl_WideInt jobId;              /* Job counter */
     int idleTime;                   /* Time in secs a worker thread idles */
     int tearDown;                   /* Set to 1 to tear down the pool */
     int suspend;                    /* Set to 1 to suspend pool processing */
@@ -60,7 +60,7 @@ typedef struct ThreadPool {
 
 typedef struct TpoolResult {
     int detached;                   /* Result is to be ignored */
-    unsigned int jobId;             /* The job id of the current job */
+    Tcl_WideInt jobId;              /* The job id of the current job */
     char *script;                   /* Script to evaluate in worker thread */
     int scriptLen;                  /* Length of the script */    
     int retcode;                    /* Tcl return code of the current job */
@@ -335,7 +335,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    unsigned int jobId = 0;
+    Tcl_WideInt jobId = 0;
     int ii, detached = 0, nowait = 0, len;
     const char *tpoolName, *script;
     TpoolResult *rPtr;
@@ -383,25 +383,30 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
      */
 
     Tcl_MutexLock(&tpoolPtr->mutex);
-    if (nowait && tpoolPtr->numWorkers == 0) {
+    if (nowait) {
+        if (tpoolPtr->numWorkers == 0) {
 
-        /*
-         * Do not wait for an idle thread but assure
-         * there is at least one worker started.
-         */
+            /*
+             * Assure there is at least one worker running.
+             */
 
-        PushWaiter(tpoolPtr);
-        if (CreateWorker(interp, tpoolPtr) != TCL_OK) {
+            PushWaiter(tpoolPtr);
+            if (CreateWorker(interp, tpoolPtr) != TCL_OK) {
+                Tcl_MutexUnlock(&tpoolPtr->mutex);
+                return TCL_ERROR;
+            }
+
+            /*
+             * Wait for worker to start while servicing the event loop
+             */
+
             Tcl_MutexUnlock(&tpoolPtr->mutex);
-            return TCL_ERROR;
+            tsdPtr->stop = -1;
+            while(tsdPtr->stop == -1) {
+                Tcl_DoOneEvent(TCL_ALL_EVENTS);
+            }
+            Tcl_MutexLock(&tpoolPtr->mutex);
         }
-        /* Wait for worker to start and service the event loop */
-        Tcl_MutexUnlock(&tpoolPtr->mutex);
-        tsdPtr->stop = -1;
-        while(tsdPtr->stop == -1) {
-            Tcl_DoOneEvent(TCL_ALL_EVENTS);
-        }
-        Tcl_MutexLock(&tpoolPtr->mutex);
     } else {
 
         /*
@@ -413,13 +418,21 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
         while (tpoolPtr->idleWorkers == 0) {
             PushWaiter(tpoolPtr);
             if (tpoolPtr->numWorkers < tpoolPtr->maxWorkers) {
-                /* No more free workers; start new one */
+
+                /*
+                 * No more free workers; start new one
+                 */
+
                 if (CreateWorker(interp, tpoolPtr) != TCL_OK) {
                     Tcl_MutexUnlock(&tpoolPtr->mutex);
                     return TCL_ERROR;
                 }
             }
-            /* Wait for any idle worker and service the event loop */
+
+            /*
+             * Wait for worker to start while servicing the event loop
+             */
+
             Tcl_MutexUnlock(&tpoolPtr->mutex);
             tsdPtr->stop = -1;
             while(tsdPtr->stop == -1) {
@@ -451,7 +464,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     Tcl_MutexUnlock(&tpoolPtr->mutex);
 
     if (detached == 0) {
-        Tcl_SetObjResult(interp, Tcl_NewIntObj(jobId));
+        Tcl_SetObjResult(interp, Tcl_NewWideIntObj(jobId));
     }
     
     return TCL_OK;
@@ -485,7 +498,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ii, done, wObjc;
-    unsigned int jobId;
+    Tcl_WideInt jobId;
     char *tpoolName, *listVar = NULL;
     Tcl_Obj *waitList, *doneList, **wObjv;
     ThreadPool *tpoolPtr;
@@ -524,28 +537,22 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
     while (1) {
         waitList = Tcl_NewListObj(0, NULL);
         for (ii = 0; ii < wObjc; ii++) {
-            if (Tcl_GetIntFromObj(interp, wObjv[ii], (int *)&jobId) != TCL_OK) {
+            if (Tcl_GetWideIntFromObj(interp, wObjv[ii], &jobId) != TCL_OK) {
                 Tcl_MutexUnlock(&tpoolPtr->mutex);
                 return TCL_ERROR;
             }
-            hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (char*)jobId);
+            hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (void*)jobId);
             if (hPtr) {
                 rPtr = (TpoolResult*)Tcl_GetHashValue(hPtr);
             } else {
-                for (rPtr = tpoolPtr->workHead; rPtr; rPtr = rPtr->nextPtr) {
-                    if (rPtr->jobId == jobId) {
-                        break;
-                    }
-                }
-                if (rPtr == NULL) {
-                    continue; /* Bogus job id; ignore */
-                }
+                rPtr = NULL;
             }
-            if (rPtr->detached) {
-                continue; /* A detached job */
-            }
-            if (rPtr->result) {
-                done++; /* Job has been processed */
+            if (rPtr == NULL) {
+                if (listVar) {
+                    Tcl_ListObjAppendElement(interp, waitList, wObjv[ii]);
+                }
+            } else if (!rPtr->detached && rPtr->result) {
+                done++;
                 Tcl_ListObjAppendElement(interp, doneList, wObjv[ii]);
             } else if (listVar) {
                 Tcl_ListObjAppendElement(interp, waitList, wObjv[ii]);
@@ -604,7 +611,8 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int ii, wObjc, jobId;
+    int ii, wObjc;
+    Tcl_WideInt jobId;
     char *tpoolName, *listVar = NULL;
     Tcl_Obj *doneList, *waitList, **wObjv;
     ThreadPool *tpoolPtr;
@@ -638,11 +646,11 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
 
     Tcl_MutexLock(&tpoolPtr->mutex);
     for (ii = 0; ii < wObjc; ii++) {
-        if (Tcl_GetIntFromObj(interp, wObjv[ii], &jobId) != TCL_OK) {
+        if (Tcl_GetWideIntFromObj(interp, wObjv[ii], &jobId) != TCL_OK) {
             return TCL_ERROR;
         }
         for (rPtr = tpoolPtr->workHead; rPtr; rPtr = rPtr->nextPtr) {
-            if (rPtr->jobId == (unsigned int)jobId) {
+            if (rPtr->jobId == jobId) {
                 if (rPtr->prevPtr != NULL) {
                     rPtr->prevPtr->nextPtr = rPtr->nextPtr;
                 } else {
@@ -698,7 +706,8 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int ret, jobId;
+    int ret;
+    Tcl_WideInt jobId;
     char *tpoolName, *resVar = NULL;
     ThreadPool *tpoolPtr;
     TpoolResult *rPtr;
@@ -712,7 +721,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
         Tcl_WrongNumArgs(interp, 1, objv, "tpoolId jobId ?result?");
         return TCL_ERROR;
     }
-    if (Tcl_GetIntFromObj(interp, objv[2], &jobId) != TCL_OK) {
+    if (Tcl_GetWideIntFromObj(interp, objv[2], &jobId) != TCL_OK) {
         return TCL_ERROR;
     }
     if (objc == 4) {
@@ -738,7 +747,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
      */
 
     Tcl_MutexLock(&tpoolPtr->mutex);
-    hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (char*)jobId);
+    hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (void*)jobId);
     if (hPtr == NULL) {
         Tcl_MutexUnlock(&tpoolPtr->mutex);
         Tcl_AppendResult(interp, "no such job", NULL);
@@ -1219,7 +1228,7 @@ TpoolWorker(clientData)
         if (!rPtr->detached) {
             int new;
             Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone, 
-                                                 (char*)rPtr->jobId, &new), 
+                                                 (void*)rPtr->jobId, &new), 
                              (ClientData)rPtr);
         } else {
             Tcl_Free((char*)rPtr);
