@@ -2745,9 +2745,6 @@ ThreadSend(interp, thrId, send, clbk, flags)
         Tcl_Free(resultPtr->result);
     }
     Tcl_Free((char*)resultPtr);
-    if (clbk) {
-        ThreadFreeProc((ClientData)clbk);
-    }
 
     return code;
 }
