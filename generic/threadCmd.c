@@ -2286,7 +2286,7 @@ ThreadTransfer(interp, thrId, chan)
     }
 
     /*
-     * Short circut transfers to ourself.  Nothing to do.
+     * Short circuit transfers to ourself.  Nothing to do.
      */
 
     if (thrId == Tcl_GetCurrentThread()) {
@@ -2619,7 +2619,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
     }
 
     /*
-     * Short circut sends to ourself.
+     * Short circuit sends to ourself.
      */
 
     if (thrId == Tcl_GetCurrentThread()) {
@@ -2745,6 +2745,9 @@ ThreadSend(interp, thrId, send, clbk, flags)
         Tcl_Free(resultPtr->result);
     }
     Tcl_Free((char*)resultPtr);
+    if (clbk) {
+        ThreadFreeProc((ClientData)clbk);
+    }
 
     return code;
 }
@@ -3010,7 +3013,7 @@ ThreadEventProc(evPtr, mask)
 {
     ThreadSpecificData* tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    Tcl_Interp         *interp   = NULL;
+    Tcl_Interp           *interp = NULL;
     Tcl_ThreadId           thrId = Tcl_GetCurrentThread();
     ThreadEvent        *eventPtr = (ThreadEvent*)evPtr;
     ThreadSendData      *sendPtr = eventPtr->sendData;
@@ -3048,7 +3051,7 @@ ThreadEventProc(evPtr, mask)
             if (clbkPtr) {
                 Tcl_CreateThreadExitHandler(ThreadFreeProc,
                                             (ClientData)clbkPtr);
-            }   
+            }
             code = (*sendPtr->execProc)(interp, (ClientData)sendPtr);
             Tcl_DeleteThreadExitHandler(ThreadFreeProc, (ClientData)sendPtr);
             if (clbkPtr) {
@@ -3060,7 +3063,10 @@ ThreadEventProc(evPtr, mask)
         }
     }
 
-    ThreadFreeProc((ClientData)sendPtr);
+    if (sendPtr) {
+        ThreadFreeProc((ClientData)sendPtr);
+        eventPtr->sendData = NULL;
+    }
 
     if (resultPtr) {
 
@@ -3528,13 +3534,15 @@ ThreadDeleteEvent(eventPtr, clientData)
         ThreadEvent *evPtr = (ThreadEvent*)eventPtr;
         if (evPtr->sendData) {
             ThreadFreeProc((ClientData)evPtr->sendData);
+            evPtr->sendData = NULL;
         }
         if (evPtr->clbkData) {
             ThreadFreeProc((ClientData)evPtr->clbkData);
+            evPtr->clbkData = NULL;
         }
         return 1;
     }
-    if ((eventPtr->proc == TransferEventProc)) {
+    if (eventPtr->proc == TransferEventProc) {
         /* 
          * A channel is in flight toward the thread just exiting.
          * Pass it back to the originator, if possible.

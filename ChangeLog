@@ -1,3 +1,8 @@
+2012-07-05 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadCmd.c: Fixed leaking callback data in ThreadSend()
+	plus some minor cosmetic changes (tx to Gustaf Neumann).
+
 2012-07-03 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: [Bugs 3534440, 3534581] fixed.
