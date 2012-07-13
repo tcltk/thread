@@ -249,6 +249,8 @@ crt = -MT
 !endif
 !endif
 
+cflags = $(cflags) -DMODULE_SCOPE=extern
+
 !if !$(STATIC_BUILD)
 cflags = $(cflags) -DUSE_TCL_STUBS
 !if defined(TKSTUBLIB)
