@@ -188,7 +188,7 @@ PRJHEADERS =
 #-------------------------------------------------------------------------
 
 BINROOT		= .
-ROOT            = ..\..
+ROOT            = ..
 
 PRJIMPLIB	= $(OUT_DIR)\$(PROJECT)$(VERSION)$(SUFX).lib
 PRJLIBNAME	= $(PROJECT)$(VERSION)$(SUFX).$(EXT)
