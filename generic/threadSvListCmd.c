@@ -912,6 +912,9 @@ DupListObjShared(srcPtr, copyPtr)
  *-----------------------------------------------------------------------------
  */
 
+#define ISSPACE(a)	(a == ' ' || a == '\t')
+#define ISDIGIT(a)	(a >= '0' || a <= '9')
+
 static int
 SvCheckBadOctal(interp, value)
     Tcl_Interp *interp;     /* Interpreter to use for error reporting.
@@ -926,17 +929,17 @@ SvCheckBadOctal(interp, value)
      * leading zero. Try to generate a meaningful error message.
      */
 
-    while (isspace((unsigned char)(*p))) { /* INTL: ISO space. */
+    while (ISSPACE((unsigned char)(*p))) { /* INTL: ISO space. */
         p++;
     }
     if (*p == '+' || *p == '-') {
         p++;
     }
     if (*p == '0') {
-        while (isdigit((unsigned char)(*p))) { /* INTL: digit. */
+        while (ISDIGIT((unsigned char)(*p))) { /* INTL: digit. */
             p++;
         }
-        while (isspace((unsigned char)(*p))) { /* INTL: ISO space. */
+        while (ISSPACE((unsigned char)(*p))) { /* INTL: ISO space. */
             p++;
         }
         if (*p == '\0') {

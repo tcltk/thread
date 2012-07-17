@@ -16,7 +16,9 @@
  */
 
 #include "../generic/tclThread.h"
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
 #include <process.h>
 
 #if 0
