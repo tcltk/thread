@@ -28,7 +28,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "tclThread.h"
+#include "tclThreadInt.h"
 #include "threadSpCmd.h"
 
 /*

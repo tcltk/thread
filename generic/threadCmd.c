@@ -19,7 +19,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "tclThread.h"
+#include "tclThreadInt.h"
 
 #ifdef NS_AOLSERVER
 # include "aolstub.cpp"

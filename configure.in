@@ -103,7 +103,7 @@ TEA_ADD_SOURCES([generic/threadCmd.c          \
                  generic/tclXkeylist.c        \
 ])
 
-TEA_ADD_HEADERS([])
+TEA_ADD_HEADERS([generic/tclThread.h])
 TEA_ADD_INCLUDES([${AOL_INCLUDES}])
 TEA_ADD_LIBS([${GDBM_LIBS} ${AOL_LIBS}])
 TEA_ADD_CFLAGS([${GDBM_CFLAGS}])

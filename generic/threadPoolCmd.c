@@ -10,7 +10,7 @@
  * ----------------------------------------------------------------------------
  */
 
-#include "tclThread.h"
+#include "tclThreadInt.h"
 
 /*
  * Structure to maintain idle poster threads
@@ -541,7 +541,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
                 Tcl_MutexUnlock(&tpoolPtr->mutex);
                 return TCL_ERROR;
             }
-            hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (void*)jobId);
+            hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (size_t)jobId);
             if (hPtr) {
                 rPtr = (TpoolResult*)Tcl_GetHashValue(hPtr);
             } else {
@@ -747,7 +747,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
      */
 
     Tcl_MutexLock(&tpoolPtr->mutex);
-    hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (void*)jobId);
+    hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (size_t)jobId);
     if (hPtr == NULL) {
         Tcl_MutexUnlock(&tpoolPtr->mutex);
         Tcl_AppendResult(interp, "no such job", NULL);
@@ -1228,7 +1228,7 @@ TpoolWorker(clientData)
         if (!rPtr->detached) {
             int new;
             Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone, 
-                                                 (void*)rPtr->jobId, &new), 
+                                                 (size_t)rPtr->jobId, &new),
                              (ClientData)rPtr);
         } else {
             Tcl_Free((char*)rPtr);

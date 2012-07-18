@@ -429,11 +429,11 @@ $<
 
 #{$(WINDIR)}.c{$(TMP_DIR)}.obj ::
 $(GENERICDIR)\psGdbm.c: $(GENERICDIR)\psGdbm.h
-$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\tclThread.h
-$(GENERICDIR)\threadSvCmd.c : $(GENERICDIR)\tclThread.h
-$(GENERICDIR)\threadPoolCmd.c : $(GENERICDIR)\tclThread.h
-$(GENERICDIR)\threadSvListCmd.c : $(GENERICDIR)\tclThread.h
-$(GENERICDIR)\threadSvKeylistCmd.c : $(GENERICDIR)\tclThread.h
+$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\tclThreadInt.h
+$(GENERICDIR)\threadSvCmd.c : $(GENERICDIR)\tclThreadInt.h
+$(GENERICDIR)\threadPoolCmd.c : $(GENERICDIR)\tclThreadInt.h
+$(GENERICDIR)\threadSvListCmd.c : $(GENERICDIR)\tclThreadInt.h
+$(GENERICDIR)\threadSvKeylistCmd.c : $(GENERICDIR)\tclThreadInt.h
 
 .PHONY: $(OUT_DIR)\pkgIndex.tcl
 
