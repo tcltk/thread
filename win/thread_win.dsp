@@ -104,6 +104,10 @@ SOURCE=$(ROOT)\generic\tclThread.h
 # End Source File
 # Begin Source File
 
+SOURCE=$(ROOT)\generic\tclThreadInt.h
+# End Source File
+# Begin Source File
+
 SOURCE=$(ROOT)\generic\tclXkeylist.c
 # End Source File
 # Begin Source File
