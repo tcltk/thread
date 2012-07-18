@@ -7073,7 +7073,7 @@ echo "$as_me: error: could not find source file '$i'" >&2;}
 
 
 
-    vars=""
+    vars="generic/tclThread.h"
     for i in $vars; do
 	# check for existence, be strict because it is installed
 	if test ! -f "${srcdir}/$i" ; then
