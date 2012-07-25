@@ -70,7 +70,7 @@ TEA_PREFIX
 TEA_SETUP_COMPILER
 
 #--------------------------------------------------------------------
-# Check if building with optional Gdbm package. This will declare 
+# Check if building with optional Gdbm package. This will declare
 # GDBM_CFLAGS and GDBM_LIBS variables.
 #--------------------------------------------------------------------
 
