@@ -62,7 +62,7 @@ typedef struct TpoolResult {
     int detached;                   /* Result is to be ignored */
     Tcl_WideInt jobId;              /* The job id of the current job */
     char *script;                   /* Script to evaluate in worker thread */
-    int scriptLen;                  /* Length of the script */    
+    int scriptLen;                  /* Length of the script */
     int retcode;                    /* Tcl return code of the current job */
     char *result;                   /* Tcl result of the current job */
     char *errorCode;                /* On error: content of the errorCode */
@@ -118,61 +118,61 @@ static Tcl_ObjCmdProc TpoolNamesObjCmd;
  */
 
 static int
-CreateWorker   _ANSI_ARGS_((Tcl_Interp *interp, ThreadPool *tpoolPtr));
+CreateWorker(Tcl_Interp *interp, ThreadPool *tpoolPtr);
 
 static Tcl_ThreadCreateType
-TpoolWorker    _ANSI_ARGS_((ClientData clientData));
+TpoolWorker(ClientData clientData);
 
 static int
-RunStopEvent   _ANSI_ARGS_((Tcl_Event *evPtr, int mask));
+RunStopEvent(Tcl_Event *evPtr, int mask);
 
 static void
-PushWork       _ANSI_ARGS_((TpoolResult *rPtr, ThreadPool *tpoolPtr));
+PushWork(TpoolResult *rPtr, ThreadPool *tpoolPtr);
 
 static TpoolResult*
-PopWork        _ANSI_ARGS_((ThreadPool *tpoolPtr));
+PopWork(ThreadPool *tpoolPtr);
 
 static void
-PushWaiter     _ANSI_ARGS_((ThreadPool *tpoolPtr));
+PushWaiter(ThreadPool *tpoolPtr);
 
 static TpoolWaiter*
-PopWaiter      _ANSI_ARGS_((ThreadPool *tpoolPtr));
+PopWaiter(ThreadPool *tpoolPtr);
 
 static void
-SignalWaiter   _ANSI_ARGS_((ThreadPool *tpoolPtr));
+SignalWaiter(ThreadPool *tpoolPtr);
 
 static int
-TpoolEval      _ANSI_ARGS_((Tcl_Interp *interp, char *script, int scriptLen,
-                            TpoolResult *rPtr));
+TpoolEval(Tcl_Interp *interp, char *script, int scriptLen,
+                            TpoolResult *rPtr);
 static void
-SetResult      _ANSI_ARGS_((Tcl_Interp *interp, TpoolResult *rPtr));
+SetResult(Tcl_Interp *interp, TpoolResult *rPtr);
 
-static ThreadPool* 
-GetTpool       _ANSI_ARGS_((const char *tpoolName));
+static ThreadPool*
+GetTpool(const char *tpoolName);
 
-static ThreadPool* 
-GetTpoolUnl    _ANSI_ARGS_((const char *tpoolName));
-
-static void
-ThrExitHandler _ANSI_ARGS_((ClientData clientData));
+static ThreadPool*
+GetTpoolUnl(const char *tpoolName);
 
 static void
-AppExitHandler _ANSI_ARGS_((ClientData clientData));
+ThrExitHandler(ClientData clientData);
+
+static void
+AppExitHandler(ClientData clientData);
 
 static int
-TpoolReserve   _ANSI_ARGS_((ThreadPool *tpoolPtr));
+TpoolReserve(ThreadPool *tpoolPtr);
 
 static int
-TpoolRelease   _ANSI_ARGS_((ThreadPool *tpoolPtr));
+TpoolRelease(ThreadPool *tpoolPtr);
 
 static void
-TpoolSuspend   _ANSI_ARGS_((ThreadPool *tpoolPtr));
+TpoolSuspend(ThreadPool *tpoolPtr);
 
 static void
-TpoolResume   _ANSI_ARGS_((ThreadPool *tpoolPtr));
+TpoolResume(ThreadPool *tpoolPtr);
 
 static void
-InitWaiter     _ANSI_ARGS_((void));
+InitWaiter(void);
 
 
 /*
@@ -180,7 +180,7 @@ InitWaiter     _ANSI_ARGS_((void));
  *
  * TpoolCreateObjCmd --
  *
- *  This procedure is invoked to process the "tpool::create" Tcl 
+ *  This procedure is invoked to process the "tpool::create" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -203,7 +203,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     char buf[64], *exs = NULL, *cmd = NULL;
     ThreadPool *tpoolPtr;
 
-    /* 
+    /*
      * Syntax:  tpool::create ?-minworkers count?
      *                        ?-maxworkers count?
      *                        ?-initcmd script?
@@ -316,7 +316,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
  *
  * TpoolPostObjCmd --
  *
- *  This procedure is invoked to process the "tpool::post" Tcl 
+ *  This procedure is invoked to process the "tpool::post" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -343,7 +343,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
 
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    /* 
+    /*
      * Syntax: tpool::post ?-detached? ?-nowait? tpoolId script
      */
 
@@ -367,15 +367,15 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     script    = Tcl_GetStringFromObj(objv[ii+1], &len);
     tpoolPtr  = GetTpool(tpoolName);
     if (tpoolPtr == NULL) {
-        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName, 
+        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
                          "\"", NULL);
         return TCL_ERROR;
     }
-    
+
     /*
      * Initialize per-thread private data for this caller
      */
-    
+
     InitWaiter();
 
     /*
@@ -466,7 +466,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
     if (detached == 0) {
         Tcl_SetObjResult(interp, Tcl_NewWideIntObj(jobId));
     }
-    
+
     return TCL_OK;
 
   usage:
@@ -479,7 +479,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
  *
  * TpoolWaitObjCmd --
  *
- *  This procedure is invoked to process the "tpool::wait" Tcl 
+ *  This procedure is invoked to process the "tpool::wait" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -507,7 +507,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
 
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    /* 
+    /*
      * Syntax: tpool::wait tpoolId jobIdList ?listVar?
      */
 
@@ -567,7 +567,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
          * of the next job and try again.
          */
 
-        Tcl_DecrRefCount(waitList); 
+        Tcl_DecrRefCount(waitList);
         PushWaiter(tpoolPtr);
 
         Tcl_MutexUnlock(&tpoolPtr->mutex);
@@ -593,7 +593,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
  *
  * TpoolCancelObjCmd --
  *
- *  This procedure is invoked to process the "tpool::cancel" Tcl 
+ *  This procedure is invoked to process the "tpool::cancel" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -618,7 +618,7 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
     ThreadPool *tpoolPtr;
     TpoolResult *rPtr;
 
-    /* 
+    /*
      * Syntax: tpool::wait tpoolId jobIdList ?listVar?
      */
 
@@ -639,7 +639,7 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
                          "\"", NULL);
         return TCL_ERROR;
     }
- 
+
     InitWaiter();
     doneList = Tcl_NewListObj(0, NULL);
     waitList = Tcl_NewListObj(0, NULL);
@@ -688,7 +688,7 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
  *
  * TpoolGetObjCmd --
  *
- *  This procedure is invoked to process the "tpool::get" Tcl 
+ *  This procedure is invoked to process the "tpool::get" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -713,7 +713,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
     TpoolResult *rPtr;
     Tcl_HashEntry *hPtr;
 
-    /* 
+    /*
      * Syntax: tpool::get tpoolId jobId ?result?
      */
 
@@ -735,7 +735,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
     tpoolName = Tcl_GetString(objv[1]);
     tpoolPtr  = GetTpool(tpoolName);
     if (tpoolPtr == NULL) {
-        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName, 
+        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
                          "\"", NULL);
         return TCL_ERROR;
     }
@@ -770,7 +770,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
     if (resVar) {
         Tcl_SetVar2Ex(interp, resVar, NULL, Tcl_GetObjResult(interp), 0);
         Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
-        ret = TCL_OK; 
+        ret = TCL_OK;
     }
 
     return ret;
@@ -781,7 +781,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
  *
  * TpoolReserveObjCmd --
  *
- *  This procedure is invoked to process the "tpool::preserve" Tcl 
+ *  This procedure is invoked to process the "tpool::preserve" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -819,16 +819,16 @@ TpoolReserveObjCmd(dummy, interp, objc, objv)
     tpoolPtr  = GetTpoolUnl(tpoolName);
     if (tpoolPtr == NULL) {
         Tcl_MutexUnlock(&listMutex);
-        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName, 
+        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
                          "\"", NULL);
         return TCL_ERROR;
     }
 
-    ret = TpoolReserve(tpoolPtr); 
+    ret = TpoolReserve(tpoolPtr);
     Tcl_MutexUnlock(&listMutex);
     Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
 
-    return TCL_OK; 
+    return TCL_OK;
 }
 
 /*
@@ -836,7 +836,7 @@ TpoolReserveObjCmd(dummy, interp, objc, objv)
  *
  * TpoolReleaseObjCmd --
  *
- *  This procedure is invoked to process the "tpool::release" Tcl 
+ *  This procedure is invoked to process the "tpool::release" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -879,11 +879,11 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    ret = TpoolRelease(tpoolPtr); 
+    ret = TpoolRelease(tpoolPtr);
     Tcl_MutexUnlock(&listMutex);
     Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
 
-    return TCL_OK; 
+    return TCL_OK;
 }
 
 /*
@@ -891,7 +891,7 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
  *
  * TpoolSuspendObjCmd --
  *
- *  This procedure is invoked to process the "tpool::suspend" Tcl 
+ *  This procedure is invoked to process the "tpool::suspend" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -926,14 +926,14 @@ TpoolSuspendObjCmd(dummy, interp, objc, objv)
     tpoolPtr  = GetTpool(tpoolName);
 
     if (tpoolPtr == NULL) {
-        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName, 
+        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
                          "\"", NULL);
         return TCL_ERROR;
     }
 
-    TpoolSuspend(tpoolPtr); 
+    TpoolSuspend(tpoolPtr);
 
-    return TCL_OK; 
+    return TCL_OK;
 }
 
 /*
@@ -941,7 +941,7 @@ TpoolSuspendObjCmd(dummy, interp, objc, objv)
  *
  * TpoolResumeObjCmd --
  *
- *  This procedure is invoked to process the "tpool::resume" Tcl 
+ *  This procedure is invoked to process the "tpool::resume" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -976,14 +976,14 @@ TpoolResumeObjCmd(dummy, interp, objc, objv)
     tpoolPtr  = GetTpool(tpoolName);
 
     if (tpoolPtr == NULL) {
-        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName, 
+        Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
                          "\"", NULL);
         return TCL_ERROR;
     }
 
-    TpoolResume(tpoolPtr); 
+    TpoolResume(tpoolPtr);
 
-    return TCL_OK; 
+    return TCL_OK;
 }
 
 /*
@@ -991,7 +991,7 @@ TpoolResumeObjCmd(dummy, interp, objc, objv)
  *
  * TpoolNamesObjCmd --
  *
- *  This procedure is invoked to process the "tpool::names" Tcl 
+ *  This procedure is invoked to process the "tpool::names" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -1012,7 +1012,7 @@ TpoolNamesObjCmd(dummy, interp, objc, objv)
 {
     ThreadPool *tpoolPtr;
     Tcl_Obj *listObj = Tcl_NewListObj(0, NULL);
-    
+
     Tcl_MutexLock(&listMutex);
     for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
         char buf[32];
@@ -1060,7 +1060,7 @@ CreateWorker(interp, tpoolPtr)
     result.tpoolPtr = tpoolPtr;
 
     /*
-     * Create new worker thread here. Wait for the thread to start 
+     * Create new worker thread here. Wait for the thread to start
      * because it's using the ThreadResult arg which is on our stack.
      */
 
@@ -1080,7 +1080,7 @@ CreateWorker(interp, tpoolPtr)
      * Set error-related information if the thread
      * failed to initialize correctly.
      */
-    
+
     if (result.retcode == 1) {
         result.retcode = TCL_ERROR;
         SetResult(interp, &result);
@@ -1109,7 +1109,7 @@ CreateWorker(interp, tpoolPtr)
 static Tcl_ThreadCreateType
 TpoolWorker(clientData)
     ClientData clientData;
-{    
+{
     TpoolResult          *rPtr = (TpoolResult*)clientData;
     ThreadPool       *tpoolPtr = rPtr->tpoolPtr;
 
@@ -1137,7 +1137,7 @@ TpoolWorker(clientData)
         rPtr->retcode = 0;
     }
 #endif
-    
+
     if (rPtr->retcode == 1) {
         errMsg = (char*)Tcl_GetStringResult(interp);
         rPtr->result = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
@@ -1178,7 +1178,7 @@ TpoolWorker(clientData)
      * Tell caller we've started
      */
 
-    tpoolPtr->numWorkers++; 
+    tpoolPtr->numWorkers++;
     Tcl_ConditionNotify(&tpoolPtr->cond);
     Tcl_MutexUnlock(&startMutex);
 
@@ -1227,7 +1227,7 @@ TpoolWorker(clientData)
         Tcl_Free(rPtr->script);
         if (!rPtr->detached) {
             int new;
-            Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone, 
+            Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone,
                                                  (void *)(size_t)rPtr->jobId, &new),
                              (ClientData)rPtr);
         } else {
@@ -1271,13 +1271,13 @@ TpoolWorker(clientData)
  *  1 (always)
  *
  * Side effects:
- *  None. 
+ *  None.
  *
  *----------------------------------------------------------------------
  */
 static int
 RunStopEvent(eventPtr, mask)
-    Tcl_Event *eventPtr; 
+    Tcl_Event *eventPtr;
     int mask;
 {
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
@@ -1332,7 +1332,7 @@ PushWork(rPtr, tpoolPtr)
 static TpoolResult *
 PopWork(tpoolPtr)
     ThreadPool *tpoolPtr;
-{   
+{
     TpoolResult *rPtr = tpoolPtr->workTail;
 
     if (rPtr == NULL) {
@@ -1373,7 +1373,7 @@ PushWaiter(tpoolPtr)
     if (tpoolPtr->waitTail == NULL) {
         tpoolPtr->waitTail = tsdPtr->waitPtr;
     }
-} 
+}
 
 /*
  *----------------------------------------------------------------------
@@ -1412,24 +1412,24 @@ PopWaiter(tpoolPtr)
 /*
  *----------------------------------------------------------------------
  *
- * GetTpool 
+ * GetTpool
  *
  *  Parses the Tcl threadpool handle and locates the
- *  corresponding threadpool maintenance structure. 
+ *  corresponding threadpool maintenance structure.
  *
  * Results:
- *  Pointer to the threadpool struct or NULL if none found, 
+ *  Pointer to the threadpool struct or NULL if none found,
  *
  * Side effects:
  *  None.
  *
  *----------------------------------------------------------------------
  */
-static ThreadPool* 
-GetTpool(tpoolName) 
+static ThreadPool*
+GetTpool(tpoolName)
     const char *tpoolName;
 {
-    ThreadPool *tpoolPtr; 
+    ThreadPool *tpoolPtr;
 
     Tcl_MutexLock(&listMutex);
     tpoolPtr = GetTpoolUnl(tpoolName);
@@ -1441,14 +1441,14 @@ GetTpool(tpoolName)
 /*
  *----------------------------------------------------------------------
  *
- * GetTpoolUnl 
+ * GetTpoolUnl
  *
  *  Parses the threadpool handle and locates the
- *  corresponding threadpool maintenance structure. 
+ *  corresponding threadpool maintenance structure.
  *  Assumes caller holds the listMutex,
  *
  * Results:
- *  Pointer to the threadpool struct or NULL if none found, 
+ *  Pointer to the threadpool struct or NULL if none found,
  *
  * Side effects:
  *  None.
@@ -1456,8 +1456,8 @@ GetTpool(tpoolName)
  *----------------------------------------------------------------------
  */
 
-static ThreadPool* 
-GetTpoolUnl (tpoolName) 
+static ThreadPool*
+GetTpoolUnl (tpoolName)
     const char *tpoolName;
 {
     ThreadPool *tpool;
@@ -1478,12 +1478,12 @@ GetTpoolUnl (tpoolName)
 /*
  *----------------------------------------------------------------------
  *
- * TpoolEval 
+ * TpoolEval
  *
- *  Evaluates the script and fills in the result structure. 
+ *  Evaluates the script and fills in the result structure.
  *
  * Results:
- *  Standard Tcl result, 
+ *  Standard Tcl result,
  *
  * Side effects:
  *  Many, depending on the script.
@@ -1499,7 +1499,7 @@ TpoolEval(interp, script, scriptLen, rPtr)
 {
     int ret, reslen;
     char *result, *errorCode, *errorInfo;
-    
+
     ret = Tcl_EvalEx(interp, script, scriptLen, TCL_EVAL_GLOBAL);
     if (rPtr == NULL || rPtr->detached) {
         return ret;
@@ -1517,10 +1517,10 @@ TpoolEval(interp, script, scriptLen, rPtr)
             strcpy(rPtr->errorInfo, errorInfo);
         }
     }
-    
+
     result = (char*)Tcl_GetStringResult(interp);
     reslen = strlen(result);
-    
+
     if (reslen == 0) {
         rPtr->result = threadEmptyResult;
     } else {
@@ -1538,7 +1538,7 @@ TpoolEval(interp, script, scriptLen, rPtr)
  *  Sets the result in current interpreter.
  *
  * Results:
- *  Standard Tcl result, 
+ *  Standard Tcl result,
  *
  * Side effects:
  *  None.
@@ -1586,7 +1586,7 @@ SetResult(interp, rPtr)
  *
  * TpoolReserve --
  *
- *  Does the pool preserve and/or release. Assumes caller holds 
+ *  Does the pool preserve and/or release. Assumes caller holds
  *  the listMutex.
  *
  * Results:
@@ -1609,7 +1609,7 @@ TpoolReserve(tpoolPtr)
  *
  * TpoolRelease --
  *
- *  Does the pool preserve and/or release. Assumes caller holds 
+ *  Does the pool preserve and/or release. Assumes caller holds
  *  the listMutex.
  *
  * Results:
@@ -1629,21 +1629,21 @@ TpoolRelease(tpoolPtr)
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
 
-    if (--tpoolPtr->refCount > 0) { 
+    if (--tpoolPtr->refCount > 0) {
         return tpoolPtr->refCount;
     }
 
     /*
      * Pool is going away; remove from the list of pools,
-     */ 
-    
+     */
+
     SpliceOut(tpoolPtr, tpoolList);
     InitWaiter();
-    
+
     /*
      * Signal and wait for all workers to die.
      */
-    
+
     tpoolPtr->tearDown = 1;
     Tcl_MutexLock(&tpoolPtr->mutex);
     while (tpoolPtr->numWorkers > 0) {
@@ -1657,11 +1657,11 @@ TpoolRelease(tpoolPtr)
         Tcl_MutexLock(&tpoolPtr->mutex);
     }
     Tcl_MutexUnlock(&tpoolPtr->mutex);
-    
+
     /*
      * Tear down the pool structure
      */
-    
+
     if (tpoolPtr->initScript) {
         Tcl_Free(tpoolPtr->initScript);
     }
@@ -1714,14 +1714,14 @@ TpoolRelease(tpoolPtr)
  * TpoolSuspend --
  *
  *  Marks the pool as suspended. This prevents pool workers to drain
- *  the pool work queue. 
+ *  the pool work queue.
  *
  * Results:
  *  Value of the suspend flag (1 always).
  *
  * Side effects:
  *  During the suspended state, pool worker threads wlll not timeout
- *  even if the worker inactivity timer has been configured. 
+ *  even if the worker inactivity timer has been configured.
  *
  *----------------------------------------------------------------------
  */
@@ -1740,7 +1740,7 @@ TpoolSuspend(tpoolPtr)
  * TpoolResume --
  *
  *  Clears the pool suspended state. This allows pool workers to drain
- *  the pool work queue again. 
+ *  the pool work queue again.
  *
  * Results:
  *  None.
@@ -1850,12 +1850,12 @@ ThrExitHandler(clientData)
 /*
  *----------------------------------------------------------------------
  *
- * AppExitHandler 
+ * AppExitHandler
  *
  *  Deletes all threadpools on application exit.
  *
  * Results:
- *  None. 
+ *  None.
  *
  * Side effects:
  *  None.
@@ -1895,7 +1895,7 @@ AppExitHandler(clientData)
  *----------------------------------------------------------------------
  */
 
-int 
+int
 Tpool_Init (interp)
     Tcl_Interp *interp;                 /* Interp where to create cmds */
 {
