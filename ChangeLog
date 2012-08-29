@@ -1,3 +1,8 @@
+2012-08-29  Jan Nijtmans  <nijtmans@users.sf.net>
+
+	* generic/*.c:  Remove all (deprecated) usages of
+	_ANSI_ARGS_ and TCL_PARSE_PART1
+
 2012-07-17  Jan Nijtmans  <nijtmans@users.sf.net>
 
 	* win/makefile.vc: [Bug 3544932]: Visual studio compiler check fails

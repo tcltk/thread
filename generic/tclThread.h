@@ -6,7 +6,7 @@
  *
  * Copyright (c) 2002 ActiveState Corporation.
  * Copyright (c) 2002 by Zoran Vasiljevic.
- * 
+ *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  * ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@
  * Exported from threadCmd.c file.
  */
 
-EXTERN int Thread_Init       _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Thread_Init(Tcl_Interp *interp);
 
 #undef  TCL_STORAGE_CLASS
 #define TCL_STORAGE_CLASS DLLIMPORT
