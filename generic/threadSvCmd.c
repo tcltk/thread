@@ -42,10 +42,10 @@
 /*
  * Handle hiding of errorLine in 8.6
  */
-#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 6)
+#if 1 /* See Tcl bug #3562640 */
 #define ERRORLINE(interp) ((interp)->errorLine)
 #else
-#define ERRORLINE(interp) (Tcl_GetErrorLine(interp))
+#define ERRORLINE(interp) Tcl_GetErrorLine(interp)
 #endif
 
 /*
@@ -2061,6 +2061,8 @@ SvLockObjCmd(dummy, interp, objc, objv)
 
     if (ret == TCL_ERROR) {
         char msg[32 + TCL_INTEGER_SPACE];
+        /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
+         * See Tcl bug #3562640 */
         sprintf(msg, "\n    (\"eval\" body line %d)", ERRORLINE(interp));
         Tcl_AddObjErrorInfo(interp, msg, -1);
     }
