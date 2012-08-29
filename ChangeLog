@@ -2,6 +2,10 @@
 
 	* generic/*.c:  Remove all (deprecated) usages of
 	_ANSI_ARGS_ and TCL_PARSE_PART1
+	* generic/threadSpCmd.c: Fix [Tcl Bug #3562640]: problem loading Thread
+	* generic/threadSvCmd.c: in 8.5, when compiled for 8.6.
+	* win/makefile.vc
+	* Makefile.in
 
 2012-07-17  Jan Nijtmans  <nijtmans@users.sf.net>
 
