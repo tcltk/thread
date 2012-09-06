@@ -39,13 +39,12 @@
 #define OBJS_TO_ALLOC_EACH_TIME 100
 
 /*
- * Handle hiding of errorLine in 8.6
+ * Handle binary compatibility regarding
+ * Tcl_GetErrorLine, between 8.5 and 8.6
+ * See Tcl bug #3562640.
  */
-#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 6)
-#define ERRORLINE(interp) ((interp)->errorLine)
-#else
-#define ERRORLINE(interp) (Tcl_GetErrorLine(interp))
-#endif
+#undef Tcl_GetErrorLine
+#define Tcl_GetErrorLine(interp) ((interp)->errorLine)
 
 /*
  * Reference to Tcl object types used in object-copy code.
@@ -2059,7 +2058,7 @@ SvLockObjCmd(dummy, interp, objc, objv)
 
     if (ret == TCL_ERROR) {
         char msg[32 + TCL_INTEGER_SPACE];
-        sprintf(msg, "\n    (\"eval\" body line %d)", ERRORLINE(interp));
+        sprintf(msg, "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
         Tcl_AddObjErrorInfo(interp, msg, -1);
     }
 
