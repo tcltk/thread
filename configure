@@ -2715,7 +2715,7 @@ echo "$as_me: error: ${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.6+
 Found config for Tcl ${TCL_VERSION}" >&2;}
    { (exit 1); exit 1; }; }
 fi
-if test "${TCL_MINOR_VERSION}" -lt 5 ; then
+if test "${TCL_MINOR_VERSION}" -lt 6 ; then
     { { echo "$as_me:$LINENO: error: ${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.6+
 Found config for Tcl ${TCL_VERSION}" >&5
 echo "$as_me: error: ${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.6+
