@@ -26,16 +26,6 @@
 #endif
 
 /*
- * Check if this is Tcl 8.6 or higher.  In that case, we will have the TIP
- * #285 APIs (i.e. asynchronous script cancellation) available.
- */
-
-#if (TCL_MAJOR_VERSION > 8) || \
-    ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 6))
-# define TCL_TIP285
-#endif
-
-/*
  * Access to the list of threads and to the thread send results
  * (defined below) is guarded by this mutex.
  */
@@ -95,14 +85,6 @@ static struct ThreadSpecificData *threadList = NULL;
  */
 
 static char *threadEmptyResult = (char *)"";
-
-/*
- * This will be set to non-zero if TIP #285 functionality is available.
- */
-
-#ifdef TCL_TIP285
-static int threadHaveInterpCancel = 0;
-#endif
 
 /*
  * An instance of the following structure contains all information that is
@@ -349,13 +331,11 @@ static void
 ThreadCutChannel(Tcl_Interp *interp,
                                Tcl_Channel channel);
 
-#ifdef TCL_TIP285
 static int
 ThreadCancel(Tcl_Interp *interp,
                                Tcl_ThreadId thrId,
                                const char *result,
                                int flags);
-#endif
 
 /*
  * Functions implementing Tcl commands
@@ -378,10 +358,7 @@ static Tcl_ObjCmdProc ThreadJoinObjCmd;
 static Tcl_ObjCmdProc ThreadTransferObjCmd;
 static Tcl_ObjCmdProc ThreadDetachObjCmd;
 static Tcl_ObjCmdProc ThreadAttachObjCmd;
-
-#ifdef TCL_TIP285
 static Tcl_ObjCmdProc ThreadCancelObjCmd;
-#endif
 
 static int
 ThreadInit(interp)
@@ -389,7 +366,7 @@ ThreadInit(interp)
 {
     int tclIsThreaded = 0;;
 
-    if (Tcl_InitStubs(interp, "8.5", 0) == NULL) {
+    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
         return TCL_ERROR;
     }
 
@@ -419,35 +396,7 @@ ThreadInit(interp)
     TCL_CMD(interp, THREAD_CMD_PREFIX"transfer",  ThreadTransferObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"detach",    ThreadDetachObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"attach",    ThreadAttachObjCmd);
-
-#if defined(TCL_TIP285)
-    {
-        /*
-         * This package may have been compiled against Tcl 8.6 or higher;
-         * however, what if it is being loaded by Tcl 8.5?  Perform
-         * a version check now to stop using from trying to use the
-         * TIP #285 functionality if it is not present.
-         */
-
-        int major, minor;
-
-        Tcl_GetVersion(&major, &minor, NULL, NULL);
-
-        Tcl_MutexLock(&threadMutex);
-#ifdef TCL_TIP285
-        if (major > 8 || (major == 8 && minor >= 6)) {
-            threadHaveInterpCancel = 1;
-        }
-#endif
-        Tcl_MutexUnlock(&threadMutex);
-
-#ifdef TCL_TIP285
-        if (major > 8 || (major == 8 && minor >= 6)) {
-            TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
-        }
-#endif
-    }
-#endif
+    TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
 
     /*
      * Add shared variable commands
@@ -1472,7 +1421,6 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
     return TCL_OK;
 }
 
-#ifdef TCL_TIP285
 /*
  *----------------------------------------------------------------------
  *
@@ -1528,7 +1476,6 @@ ThreadCancelObjCmd(dummy, interp, objc, objv)
 
     return ThreadCancel(interp, thrId, result, flags);
 }
-#endif
 
 /*
  *----------------------------------------------------------------------
@@ -2146,7 +2093,6 @@ ThreadExistsInner(thrId)
     return NULL;
 }
 
-#ifdef TCL_TIP285
 /*
  *----------------------------------------------------------------------
  *
@@ -2187,7 +2133,6 @@ ThreadCancel(interp, thrId, result, flags)
     return Tcl_CancelEval(tsdPtr->interp,
             (result != NULL) ? Tcl_NewStringObj(result, -1) : NULL, 0, flags);
 }
-#endif
 
 /*
  *----------------------------------------------------------------------
@@ -2773,13 +2718,6 @@ ThreadWait()
     int canrun = 1;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-#ifdef TCL_TIP285
-    int haveInterpCancel;
-    Tcl_MutexLock(&threadMutex);
-    haveInterpCancel = threadHaveInterpCancel;
-    Tcl_MutexUnlock(&threadMutex);
-#endif
-
     /*
      * Process events until signaled to stop.
      */
@@ -2808,25 +2746,22 @@ ThreadWait()
 
         Tcl_DoOneEvent(TCL_ALL_EVENTS);
 
-#ifdef TCL_TIP285
-        if (haveInterpCancel) {
-            /*
-             * If the script has been unwound, bail out immediately. This does
-             * not follow the recommended guidelines for how extensions should
-             * handle the script cancellation functionality because this is
-             * not a "normal" extension. Most extensions do not have a command
-             * that simply enters an infinite Tcl event loop. Normal extensions
-             * should not specify the TCL_CANCEL_UNWIND when calling the
-             * Tcl_Canceled function to check if the command has been canceled.
-             */
+        /*
+         * If the script has been unwound, bail out immediately. This does
+         * not follow the recommended guidelines for how extensions should
+         * handle the script cancellation functionality because this is
+         * not a "normal" extension. Most extensions do not have a command
+         * that simply enters an infinite Tcl event loop. Normal extensions
+         * should not specify the TCL_CANCEL_UNWIND when calling the
+         * Tcl_Canceled function to check if the command has been canceled.
+         */
 
-            if (Tcl_Canceled(tsdPtr->interp,
-                    TCL_LEAVE_ERR_MSG | TCL_CANCEL_UNWIND) == TCL_ERROR) {
-                code = TCL_ERROR;
-                break;
-            }
+        if (Tcl_Canceled(tsdPtr->interp,
+                TCL_LEAVE_ERR_MSG | TCL_CANCEL_UNWIND) == TCL_ERROR) {
+            code = TCL_ERROR;
+            break;
         }
-#endif
+
         if (Tcl_LimitExceeded(tsdPtr->interp)) {
             Tcl_ResetResult(tsdPtr->interp);
             Tcl_AppendResult(tsdPtr->interp, "limit exceeded", NULL);
