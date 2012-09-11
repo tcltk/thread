@@ -1,3 +1,9 @@
+2012-09-11   Jan Nijtmans <nijtmans@users.sourceforge.net>
+
+	* generic/threadCmd.c: Fixed leaking callback data in ThreadSend()
+	plus some minor cosmetic changes (tx to Gustaf Neumann).
+	(Backported from trunk [d0f7d0adb2])
+
 2012-04-24  Don Porter  <dgp@users.sourceforge.net>
 
 	* generic/threadCmd.c: [Bug 1603234] Stop leak in [thread::transfer].

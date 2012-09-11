@@ -2863,7 +2863,10 @@ ThreadEventProc(evPtr, mask)
         }
     }
 
-    ThreadFreeProc((ClientData)sendPtr);
+    if (sendPtr) {
+        ThreadFreeProc((ClientData)sendPtr);
+        eventPtr->sendData = NULL;
+    }
 
     if (resultPtr) {
 
@@ -3331,9 +3334,11 @@ ThreadDeleteEvent(eventPtr, clientData)
         ThreadEvent *evPtr = (ThreadEvent*)eventPtr;
         if (evPtr->sendData) {
             ThreadFreeProc((ClientData)evPtr->sendData);
+            evPtr->sendData = NULL;
         }
         if (evPtr->clbkData) {
             ThreadFreeProc((ClientData)evPtr->clbkData);
+            evPtr->clbkData = NULL;
         }
         return 1;
     }
