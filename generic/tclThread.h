@@ -6,7 +6,7 @@
  *
  * Copyright (c) 2002 ActiveState Corporation.
  * Copyright (c) 2002 by Zoran Vasiljevic.
- * 
+ *
  * See the file "license.terms" for information on usage and redistribution
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  * ---------------------------------------------------------------------------
@@ -52,28 +52,28 @@
  * Exported from threadCmd.c file.
  */
 
-EXTERN int Thread_Init       _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN int Thread_SafeInit   _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN int Thread_Unload     _ANSI_ARGS_((Tcl_Interp *interp));
-EXTERN int Thread_SafeUnload _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Thread_Init(Tcl_Interp *interp);
+EXTERN int Thread_SafeInit(Tcl_Interp *interp);
+EXTERN int Thread_Unload(Tcl_Interp *interp);
+EXTERN int Thread_SafeUnload(Tcl_Interp *interp);
 
 /*
  * Exported from threadSvCmd.c file.
  */
 
-EXTERN int Sv_Init _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Sv_Init(Tcl_Interp *interp);
 
 /*
  * Exported from threadSpCmd.c file.
  */
 
-EXTERN int Sp_Init _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Sp_Init(Tcl_Interp *interp);
 
 /*
  * Exported from threadPoolCmd.c file.
  */
 
-EXTERN int Tpool_Init _ANSI_ARGS_((Tcl_Interp *interp));
+EXTERN int Tpool_Init(Tcl_Interp *interp);
 
 /*
  * Macros for splicing in/out of linked lists
@@ -95,7 +95,7 @@ EXTERN int Tpool_Init _ANSI_ARGS_((Tcl_Interp *interp));
 
 /*
  * Utility macros
- */ 
+ */
 
 #define TCL_CMD(a,b,c) \
   if (Tcl_CreateObjCommand((a),(b),(c),(ClientData)NULL, NULL) == NULL) \
