@@ -679,7 +679,7 @@ ThreadUnwindObjCmd(dummy, interp, objc, objv)
  *
  *  This procedure is invoked to process the "thread::exit" Tcl
  *  command.  This causes an unconditional close of the thread
- *  and is GUARENTEED to cause memory leaks.  Use this with caution.
+ *  and is GUARANTEED to cause memory leaks.  Use this with caution.
  *
  * Results:
  *  Doesn't actually return.
@@ -3732,13 +3732,11 @@ ThreadCutChannel(interp, chan)
     Tcl_Interp *interp;
     Tcl_Channel chan;
 {
-    const Tcl_ChannelType *chanTypePtr;
     Tcl_DriverWatchProc *watchProc;
 
     Tcl_ClearChannelHandlers(chan);
 
-    chanTypePtr = Tcl_GetChannelType(chan);
-    watchProc   = Tcl_ChannelWatchProc(chanTypePtr);
+    watchProc   = Tcl_ChannelWatchProc(Tcl_GetChannelType(chan));
 
     /*
      * This effectively disables processing of pending
