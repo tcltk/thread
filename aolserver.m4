@@ -2,11 +2,11 @@
 #------------------------------------------------------------------------
 # NS_PATH_AOLSERVER
 #
-#   Allows the building with support for AOLserver 
+#   Allows the building with support for AOLserver
 #
 # Arguments:
 #   none
-#   
+#
 # Results:
 #
 #   Adds the following arguments to configure:
@@ -18,14 +18,14 @@
 #       AOL_LIBS
 #
 #   Sets the following vars:
-#       NS_AOLSERVER 
+#       NS_AOLSERVER
 #
 #   Updates following vars:
 #------------------------------------------------------------------------
 
 AC_DEFUN(NS_PATH_AOLSERVER, [
     AC_MSG_CHECKING([for AOLserver configuration])
-    AC_ARG_WITH(aol, 
+    AC_ARG_WITH(aolserver,
     [  --with-aolserver        directory with AOLserver distribution],\
     with_aolserver=${withval})
 

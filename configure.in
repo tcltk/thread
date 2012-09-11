@@ -36,6 +36,15 @@ AC_CONFIG_AUX_DIR(tclconfig)
 TEA_PATH_TCLCONFIG
 TEA_LOAD_TCLCONFIG
 
+if test "${TCL_MAJOR_VERSION}" -ne 8 ; then
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+Found config for Tcl ${TCL_VERSION}])
+fi
+if test "${TCL_MINOR_VERSION}" -lt 4 ; then
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+Found config for Tcl ${TCL_VERSION}])
+fi
+
 #--------------------------------------------------------------------
 # Load the tkConfig.sh file if necessary (Tk extension)
 #--------------------------------------------------------------------
@@ -60,7 +69,7 @@ TEA_PREFIX
 TEA_SETUP_COMPILER
 
 #--------------------------------------------------------------------
-# Check if building with optional Gdbm package. This will declare 
+# Check if building with optional Gdbm package. This will declare
 # GDBM_CFLAGS and GDBM_LIBS variables.
 #--------------------------------------------------------------------
 
@@ -93,7 +102,7 @@ TEA_ADD_SOURCES([generic/threadCmd.c          \
                  generic/tclXkeylist.c        \
 ])
 
-TEA_ADD_HEADERS([])
+TEA_ADD_HEADERS([generic/tclThread.h])
 TEA_ADD_INCLUDES([${AOL_INCLUDES}])
 TEA_ADD_LIBS([${GDBM_LIBS} ${AOL_LIBS}])
 TEA_ADD_CFLAGS([${GDBM_CFLAGS}])

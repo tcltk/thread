@@ -1,27 +1,21 @@
-# makefile.vc --                                               -*- Makefile -*-
+#------------------------------------------------------------- -*- makefile -*-
+# makefile.vc --
 #
-# Microsoft Visual C++ makefile for use with nmake.exe v1.62+ (VC++ 5.0+)
-#
-# This makefile is based upon the Tcl 8.4 Makefile.vc and modified to 
-# make it suitable as a general package makefile. Look for the word EDIT
-# which marks sections that may need modification. As a minumum you will
-# need to change the PROJECT, DOTVERSION and DLLOBJS variables to values
-# relevant to your package.
+#	Microsoft Visual C++ makefile for use with nmake.exe v1.62+ (VC++ 5.0+)
 #
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-# 
+#
 # Copyright (c) 1995-1996 Sun Microsystems, Inc.
 # Copyright (c) 1998-2000 Ajuba Solutions.
-# Copyright (c) 2001 ActiveState Corporation.
-# Copyright (c) 2001-2002 David Gravereaux.
-# Copyright (c) 2003-2006 Pat Thoyts
-#-------------------------------------------------------------------------
+# Copyright (c) 2001-2005 ActiveState Corporation.
+# Copyright (c) 2001-2004 David Gravereaux.
+# Copyright (c) 2003-2008 Pat Thoyts.
+#------------------------------------------------------------------------------
 
-# Check to see we are configured to build with MSVC (MSDEVDIR or MSVCDIR)
-# or with the MS Platform SDK (MSSDK). Visual Studio .NET 2003 and 2005 define
-# VCINSTALLDIR instead. The MSVC Toolkit release defines yet another.
-!if !defined(MSDEVDIR) && !defined(MSVCDIR) && !defined(MSSDK) && !defined(VCINSTALLDIR) && !defined(VCToolkitInstallDir)
+# Check to see we are configured to build with MSVC (MSDEVDIR, MSVCDIR or
+# VCINSTALLDIR) or with the MS Platform SDK (MSSDK or WindowsSDKDir)
+!if !defined(MSDEVDIR) && !defined(MSVCDIR) && !defined(VCINSTALLDIR) && !defined(MSSDK) && !defined(WINDOWSSDKDIR)
 MSG = ^
 You need to run vcvars32.bat from Developer Studio or setenv.bat from the^
 Platform SDK first to setup the environment.  Jump to this line to read^
@@ -32,19 +26,20 @@ the build instructions.
 #------------------------------------------------------------------------------
 # HOW TO USE this makefile:
 #
-# 1)  It is now necessary to have %MSVCDir% set in the environment.  This is
-#     used  as a check to see if vcvars32.bat had been run prior to running
-#     nmake or during the installation of Microsoft Visual C++, MSVCDir had
-#     been set globally and the PATH adjusted.  Either way is valid.
+# 1)  It is now necessary to have MSVCDir, MSDevDir or MSSDK set in the
+#     environment.  This is used as a check to see if vcvars32.bat had been
+#     run prior to running nmake or during the installation of Microsoft
+#     Visual C++, MSVCDir had been set globally and the PATH adjusted.
+#     Either way is valid.
 #
 #     You'll need to run vcvars32.bat contained in the MsDev's vc(98)/bin
-#     directory to setup the proper environment, if needed, for your current
-#     setup.  This is a needed bootstrap requirement and allows the swapping of
-#     different environments to be easier.
+#     directory to setup the proper environment, if needed, for your
+#     current setup.  This is a needed bootstrap requirement and allows the
+#     swapping of different environments to be easier.
 #
 # 2)  To use the Platform SDK (not expressly needed), run setenv.bat after
-#     vcvars32.bat according to the instructions for it.  This can also turn on
-#     the 64-bit compiler, if your SDK has it.
+#     vcvars32.bat according to the instructions for it.  This can also
+#     turn on the 64-bit compiler, if your SDK has it.
 #
 # 3)  Targets are:
 #	all       -- Builds everything.
@@ -59,25 +54,27 @@ the build instructions.
 #		Sets where to install Tcl from the built binaries.
 #		C:\Progra~1\Tcl is assumed when not specified.
 #
-#	OPTS=static,msvcrt,staticpkg,threads,symbols,profile,loimpact,none
+#	OPTS=static,msvcrt,staticpkg,nothreads,symbols,profile,loimpact,none
 #		Sets special options for the core.  The default is for none.
 #		Any combination of the above may be used (comma separated).
 #		'none' will over-ride everything to nothing.
 #
 #		static  =  Builds a static library of the core instead of a
 #			   dll.  The shell will be static (and large), as well.
-#		msvcrt  =  Effects the static option only to switch it from
+#		msvcrt  =  Affects the static option only to switch it from
 #			   using libcmt(d) as the C runtime [by default] to
 #			   msvcrt(d). This is useful for static embedding
 #			   support.
-#		staticpkg = Effects the static option only to switch
+#		staticpkg = Affects the static option only to switch
 #			   tclshXX.exe to have the dde and reg extension linked
 #			   inside it.
-#		nothreads = Turns off multithreading support (not recommended)
-#		thrdalloc = Use the thread allocator (shared global free pool).
-#		symbols =  Adds symbols for step debugging.
-#		profile =  Adds profiling hooks.  Map file is assumed.
-#		loimpact =  Adds a flag for how NT treats the heap to keep memory
+#		nothreads = Turns off multithreading support (not supported).
+#		thrdalloc = Use the thread allocator (shared global free pool)
+#			   This is the default on threaded builds.
+#		symbols  = Debug build. Links to the debug C runtime, disables
+#			   optimizations and creates pdb symbols files.
+#		profile  = Adds profiling hooks.  Map file is assumed.
+#		loimpact = Adds a flag for how NT treats the heap to keep memory
 #			   in use, low.  This is said to impact alloc performance.
 #
 #	STATS=memdbg,compdbg,none
@@ -89,7 +86,7 @@ the build instructions.
 #		memdbg   = Enables the debugging memory allocator.
 #		compdbg  = Enables byte compilation logging.
 #
-#	MACHINE=(IX86|IA64|ALPHA|AMD64)
+#	MACHINE=(IX86|IA64|AMD64|ALPHA)
 #		Set the machine type used for the compiler, linker, and
 #		resource compiler.  This hook is needed to tell the tools
 #		when alternate platforms are requested.  IX86 is the default
@@ -99,7 +96,7 @@ the build instructions.
 #	TMP_DIR=<path>
 #	OUT_DIR=<path>
 #		Hooks to allow the intermediate and output directories to be
-#		changed.  $(OUT_DIR) is assumed to be 
+#		changed.  $(OUT_DIR) is assumed to be
 #		$(BINROOT)\(Release|Debug) based on if symbols are requested.
 #		$(TMP_DIR) will de $(OUT_DIR)\<buildtype> by default.
 #
@@ -130,7 +127,6 @@ the build instructions.
 #
 #------------------------------------------------------------------------------
 #==============================================================================
-###############################################################################
 #------------------------------------------------------------------------------
 
 !if !exist("makefile.vc")
@@ -188,7 +184,7 @@ PRJHEADERS =
 #-------------------------------------------------------------------------
 
 BINROOT		= .
-ROOT            = ..\..
+ROOT            = ..
 
 PRJIMPLIB	= $(OUT_DIR)\$(PROJECT)$(VERSION)$(SUFX).lib
 PRJLIBNAME	= $(PROJECT)$(VERSION)$(SUFX).$(EXT)
@@ -232,7 +228,7 @@ cdebug	= -Zi -W3 $(DEBUGFLAGS)
 !endif
 
 ### Declarations common to all compiler options
-cwarn = $(WARNINGS) -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE
+cwarn = $(WARNINGS) -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE -D USE_INTERP_ERRORLINE
 cflags = -nologo -c $(COMPILERFLAGS) $(cwarn) -Fp$(TMP_DIR)^\
 
 !if $(MSVCRT)
@@ -248,6 +244,8 @@ crt = -MTd
 crt = -MT
 !endif
 !endif
+
+cflags = $(cflags) -DMODULE_SCOPE=extern
 
 !if !$(STATIC_BUILD)
 cflags = $(cflags) -DUSE_TCL_STUBS
@@ -309,7 +307,7 @@ baselibs  = $(baselibs) $(TKSTUBLIB)
 # Avoid 'unresolved external symbol __security_cookie' errors.
 # c.f. http://support.microsoft.com/?id=894573
 !if "$(MACHINE)" == "IA64" || "$(MACHINE)" == "AMD64"
-!if $(VCVERSION) >= 1400 && $(VCVERSION) < 1500
+!if $(VCVERSION) > 1399 && $(VCVERSION) < 1500
 baselibs   = $(baselibs) bufferoverflowU.lib
 !endif
 !endif
@@ -431,11 +429,11 @@ $<
 
 #{$(WINDIR)}.c{$(TMP_DIR)}.obj ::
 $(GENERICDIR)\psGdbm.c: $(GENERICDIR)\psGdbm.h
-$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\tclThread.h
-$(GENERICDIR)\threadSvCmd.c : $(GENERICDIR)\tclThread.h
-$(GENERICDIR)\threadPoolCmd.c : $(GENERICDIR)\tclThread.h
-$(GENERICDIR)\threadSvListCmd.c : $(GENERICDIR)\tclThread.h
-$(GENERICDIR)\threadSvKeylistCmd.c : $(GENERICDIR)\tclThread.h
+$(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\tclThreadInt.h
+$(GENERICDIR)\threadSvCmd.c : $(GENERICDIR)\tclThreadInt.h
+$(GENERICDIR)\threadPoolCmd.c : $(GENERICDIR)\tclThreadInt.h
+$(GENERICDIR)\threadSvListCmd.c : $(GENERICDIR)\tclThreadInt.h
+$(GENERICDIR)\threadSvKeylistCmd.c : $(GENERICDIR)\tclThreadInt.h
 
 .PHONY: $(OUT_DIR)\pkgIndex.tcl
 

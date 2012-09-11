@@ -154,7 +154,7 @@ CLEANFILES	= @CLEANFILES@
 CPPFLAGS	= @CPPFLAGS@
 LIBS		= @PKG_LIBS@ @LIBS@
 AR		= @AR@
-CFLAGS		= @CFLAGS@
+CFLAGS		= @CFLAGS@ -DUSE_INTERP_ERRORLINE
 COMPILE		= $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 #========================================================================
@@ -300,13 +300,10 @@ dist: dist-clean
 
 	mkdir $(DIST_DIR)/win
 	cp $(srcdir)/win/README.txt $(srcdir)/win/CONFIG $(srcdir)/win/thread.rc \
-		$(srcdir)/win/threadWin.c $(DIST_DIR)/win/
-
-	cp $(srcdir)/win/vc/makefile.vc \
-		$(srcdir)/win/vc/nmakehlp.c $(srcdir)/win/vc/pkg.vc \
-		$(srcdir)/win/vc/rules.vc   $(srcdir)/win/vc/thread_win.dsw \
-		$(srcdir)/win/vc/thread_win.dsp $(DIST_DIR)/win/
-	cp $(srcdir)/win/vc/README.txt $(DIST_DIR)/win/README.vc.txt
+		$(srcdir)/win/threadWin.c $(srcdir)/win/makefile.vc \
+		$(srcdir)/win/nmakehlp.c $(srcdir)/win/pkg.vc \
+		$(srcdir)/win/rules.vc   $(srcdir)/win/thread_win.dsw \
+		$(srcdir)/win/thread_win.dsp $(DIST_DIR)/win/
 
 	mkdir $(DIST_DIR)/tcl
 	cp $(srcdir)/tcl/README $(DIST_DIR)/tcl/
