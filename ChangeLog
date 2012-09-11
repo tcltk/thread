@@ -1,3 +1,9 @@
+2012-09-11  Jan Nijtmans  <nijtmans@users.sf.net>
+
+	* Makefile.in:       Use "::tcltest::loadTestedCommands" to make
+	* tests/all.tcl:     sure that the right Thread version is tested,
+	* tests/thread.test: without requiring explicit version numbers
+
 2012-08-29  Jan Nijtmans  <nijtmans@users.sf.net>
 
 	* generic/*.c:  Remove all (deprecated) usages of
