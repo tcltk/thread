@@ -1,4 +1,4 @@
-/* 
+/*
  * threadCmd.c --
  *
  * This file implements the Tcl thread commands that allow script
@@ -25,9 +25,9 @@
 # include "aolstub.cpp"
 #endif
 
-/* 
+/*
  * Access to the list of threads and to the thread send results
- * (defined below) is guarded by this mutex. 
+ * (defined below) is guarded by this mutex.
  */
 
 TCL_DECLARE_MUTEX(threadMutex)
@@ -38,7 +38,7 @@ TCL_DECLARE_MUTEX(threadMutex)
  * multiple interpreters. The interpreter identified by this structure is
  * the main interpreter for the thread. The main interpreter is the one that
  * will process any messages received by a thread. Any interpreter can send
- * messages but only the main interpreter can receive them, unless you're 
+ * messages but only the main interpreter can receive them, unless you're
  * not doing asynchronous script backfiring. In such cases the caller might
  * signal the thread to which interpreter the result should be delivered.
  */
@@ -46,7 +46,7 @@ TCL_DECLARE_MUTEX(threadMutex)
 typedef struct ThreadSpecificData {
     Tcl_ThreadId threadId;                /* The real ID of this thread */
     Tcl_Interp *interp;                   /* Main interp for this thread */
-    Tcl_Condition doOneEvent;             /* Signalled just before running 
+    Tcl_Condition doOneEvent;             /* Signalled just before running
                                              an event from the event loop */
     int flags;                            /* One of the ThreadFlags below */
     int refCount;                         /* Used for thread reservation */
@@ -94,7 +94,7 @@ static char *threadEmptyResult = (char *)"";
 
 typedef struct ThreadCtrl {
     char *script;                         /* Script to execute */
-    int flags;                            /* Initial value of the "flags" 
+    int flags;                            /* Initial value of the "flags"
                                            * field in ThreadSpecificData */
     Tcl_Condition condWait;               /* Condition variable used to
                                            * sync parent and child threads */
@@ -138,8 +138,8 @@ typedef struct ThreadEvent {
                                            * NULL if we don't care about it */
 } ThreadEvent;
 
-typedef int  (ThreadSendProc) _ANSI_ARGS_((Tcl_Interp*, ClientData));
-typedef void (ThreadSendFree) _ANSI_ARGS_((ClientData));
+typedef int  (ThreadSendProc) (Tcl_Interp*, ClientData);
+typedef void (ThreadSendFree) (ClientData);
 
 static ThreadSendProc ThreadSendEval;     /* Does a regular Tcl_Eval */
 static ThreadSendProc ThreadClbkSetVar;   /* Sets the named variable */
@@ -203,7 +203,7 @@ static Tcl_ThreadId errorThreadId; /* Id of thread to post error message */
 static char *errorProcString;      /* Tcl script to run when reporting error */
 
 /*
- * Definition of flags for ThreadSend. 
+ * Definition of flags for ThreadSend.
  */
 
 #define THREAD_SEND_WAIT 1<<1
@@ -220,116 +220,116 @@ static char *errorProcString;      /* Tcl script to run when reporting error */
 
 static Tcl_EventDeleteProc ThreadDeleteEvent;
 
-static Tcl_ThreadCreateType 
-NewThread         _ANSI_ARGS_((ClientData clientData));
+static Tcl_ThreadCreateType
+NewThread(ClientData clientData);
 
-static ThreadSpecificData* 
-ThreadExistsInner _ANSI_ARGS_((Tcl_ThreadId id));
+static ThreadSpecificData*
+ThreadExistsInner(Tcl_ThreadId id);
 
-static int 
-ThreadInit        _ANSI_ARGS_((Tcl_Interp *interp));
+static int
+ThreadInit(Tcl_Interp *interp);
 
-static int  
-ThreadCreate      _ANSI_ARGS_((Tcl_Interp *interp,
+static int
+ThreadCreate(Tcl_Interp *interp,
                                const char *script,
                                int stacksize,
                                int flags,
-                               int preserve));
-static int  
-ThreadSend        _ANSI_ARGS_((Tcl_Interp *interp, 
-                               Tcl_ThreadId id, 
+                               int preserve);
+static int
+ThreadSend(Tcl_Interp *interp,
+                               Tcl_ThreadId id,
                                ThreadSendData *sendPtr,
                                ThreadClbkData *clbkPtr,
-                               int flags));
-static void 
-ThreadSetResult   _ANSI_ARGS_((Tcl_Interp *interp,
+                               int flags);
+static void
+ThreadSetResult(Tcl_Interp *interp,
                                int code,
-                               ThreadEventResult *resultPtr));
-static int  
-ThreadGetOption   _ANSI_ARGS_((Tcl_Interp *interp,
-                               Tcl_ThreadId id,
-                               char *option, 
-                               Tcl_DString *ds));
-static int  
-ThreadSetOption   _ANSI_ARGS_((Tcl_Interp *interp,
+                               ThreadEventResult *resultPtr);
+static int
+ThreadGetOption(Tcl_Interp *interp,
                                Tcl_ThreadId id,
                                char *option,
-                               char *value));
-static int  
-ThreadReserve     _ANSI_ARGS_((Tcl_Interp *interp, 
-                               Tcl_ThreadId id, 
-                               int operation,
-                               int wait));
-static int  
-ThreadEventProc   _ANSI_ARGS_((Tcl_Event *evPtr, 
-                               int mask));
-static int  
-ThreadWait        _ANSI_ARGS_((void));
-
-static int  
-ThreadExists      _ANSI_ARGS_((Tcl_ThreadId id));
-
-static int  
-ThreadList        _ANSI_ARGS_((Tcl_Interp *interp,
-                               Tcl_ThreadId **thrIdArray));
-static void 
-ThreadErrorProc   _ANSI_ARGS_((Tcl_Interp *interp));
-
-static void 
-ThreadFreeProc    _ANSI_ARGS_((ClientData clientData));
-
-static void 
-ThreadIdleProc    _ANSI_ARGS_((ClientData clientData));
-
-static void 
-ThreadExitProc    _ANSI_ARGS_((ClientData clientData));
-
-static void 
-ThreadFreeError   _ANSI_ARGS_((ClientData clientData));
-
-static void
-ListRemove        _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
-
-static void 
-ListRemoveInner   _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
-
-static void 
-ListUpdate        _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
-
-static void 
-ListUpdateInner   _ANSI_ARGS_((ThreadSpecificData *tsdPtr));
-
-static int 
-ThreadJoin        _ANSI_ARGS_((Tcl_Interp *interp,
-                               Tcl_ThreadId id));
-static int 
-ThreadTransfer    _ANSI_ARGS_((Tcl_Interp *interp, 
+                               Tcl_DString *ds);
+static int
+ThreadSetOption(Tcl_Interp *interp,
                                Tcl_ThreadId id,
-                               Tcl_Channel chan));
-static int 
-ThreadDetach      _ANSI_ARGS_((Tcl_Interp *interp,
-                               Tcl_Channel chan));
-static int 
-ThreadAttach      _ANSI_ARGS_((Tcl_Interp *interp,
-                               char *chanName));
-static int 
-TransferEventProc _ANSI_ARGS_((Tcl_Event *evPtr, 
-                               int mask));
-
-static void
-ThreadGetHandle   _ANSI_ARGS_((Tcl_ThreadId,
-                               char *handlePtr));
+                               char *option,
+                               char *value);
+static int
+ThreadReserve(Tcl_Interp *interp,
+                               Tcl_ThreadId id,
+                               int operation,
+                               int wait);
+static int
+ThreadEventProc(Tcl_Event *evPtr,
+                               int mask);
+static int
+ThreadWait(void);
 
 static int
-ThreadGetId       _ANSI_ARGS_((Tcl_Interp *interp,
+ThreadExists(Tcl_ThreadId id);
+
+static int
+ThreadList(Tcl_Interp *interp,
+                               Tcl_ThreadId **thrIdArray);
+static void
+ThreadErrorProc(Tcl_Interp *interp);
+
+static void
+ThreadFreeProc(ClientData clientData);
+
+static void
+ThreadIdleProc(ClientData clientData);
+
+static void
+ThreadExitProc(ClientData clientData);
+
+static void
+ThreadFreeError(ClientData clientData);
+
+static void
+ListRemove(ThreadSpecificData *tsdPtr);
+
+static void
+ListRemoveInner(ThreadSpecificData *tsdPtr);
+
+static void
+ListUpdate(ThreadSpecificData *tsdPtr);
+
+static void
+ListUpdateInner(ThreadSpecificData *tsdPtr);
+
+static int
+ThreadJoin(Tcl_Interp *interp,
+                               Tcl_ThreadId id);
+static int
+ThreadTransfer(Tcl_Interp *interp,
+                               Tcl_ThreadId id,
+                               Tcl_Channel chan);
+static int
+ThreadDetach(Tcl_Interp *interp,
+                               Tcl_Channel chan);
+static int
+ThreadAttach(Tcl_Interp *interp,
+                               char *chanName);
+static int
+TransferEventProc(Tcl_Event *evPtr,
+                               int mask);
+
+static void
+ThreadGetHandle(Tcl_ThreadId,
+                               char *handlePtr);
+
+static int
+ThreadGetId(Tcl_Interp *interp,
                                Tcl_Obj *handleObj,
-                               Tcl_ThreadId *thrIdPtr));
+                               Tcl_ThreadId *thrIdPtr);
 static void
-ErrorNoSuchThread _ANSI_ARGS_((Tcl_Interp *interp,
-                               Tcl_ThreadId thrId));
+ErrorNoSuchThread(Tcl_Interp *interp,
+                               Tcl_ThreadId thrId);
 static void
-ThreadCutChannel  _ANSI_ARGS_((Tcl_Interp *interp,
-                               Tcl_Channel channel));
+ThreadCutChannel(Tcl_Interp *interp,
+                               Tcl_Channel channel);
 
 /*
  * Functions implementing Tcl commands
@@ -400,20 +400,20 @@ ThreadInit(interp)
     /*
      * Add shared variable commands
      */
-    
+
     Sv_Init(interp);
-    
+
     /*
      * Add commands to access thread
      * synchronization primitives.
      */
-    
+
     Sp_Init(interp);
 
     /*
      * Add threadpool commands.
      */
-    
+
     Tpool_Init(interp);
 
     return TCL_OK;
@@ -510,7 +510,7 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
 
     Init(interp);
 
-    /* 
+    /*
      * Syntax: thread::create ?-joinable? ?-preserved? ?script?
      */
 
@@ -551,7 +551,7 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
  *
  *  This procedure is invoked to process the "thread::preserve" and
  *  "thread::release" Tcl commands, depending on the flag passed by
- *  the ClientData argument. See the user documentation for details 
+ *  the ClientData argument. See the user documentation for details
  *  on what those command do.
  *
  * Results:
@@ -592,7 +592,7 @@ ThreadReserveObjCmd(dummy, interp, objc, objv)
  *
  * ThreadReleaseObjCmd --
  *
- *  This procedure is invoked to process the "thread::release" Tcl 
+ *  This procedure is invoked to process the "thread::release" Tcl
  *  command. See the user documentation for details on what this
  *  command does.
  *
@@ -619,7 +619,7 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
 
     if (objc > 3) {
         Tcl_WrongNumArgs(interp, 1, objv, "?-wait? ?threadId?");
-        return TCL_ERROR; 
+        return TCL_ERROR;
     }
     if (objc > 1) {
         if (OPT_CMP(Tcl_GetString(objv[1]), "-wait")) {
@@ -642,7 +642,7 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
  *
  * ThreadUnwindObjCmd --
  *
- *  This procedure is invoked to process the "thread::unwind" Tcl 
+ *  This procedure is invoked to process the "thread::unwind" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -676,9 +676,9 @@ ThreadUnwindObjCmd(dummy, interp, objc, objv)
  *
  * ThreadExitObjCmd --
  *
- *  This procedure is invoked to process the "thread::exit" Tcl 
+ *  This procedure is invoked to process the "thread::exit" Tcl
  *  command.  This causes an unconditional close of the thread
- *  and is GUARENTEED to cause memory leaks.  Use this with caution.
+ *  and is GUARANTEED to cause memory leaks.  Use this with caution.
  *
  * Results:
  *  Doesn't actually return.
@@ -749,9 +749,9 @@ ThreadIdObjCmd(dummy, interp, objc, objv)
  *
  * ThreadNamesObjCmd --
  *
- *  This procedure is invoked to process the "thread::names" Tcl 
- *  command. This returns a list of all known thread IDs.  
- *  These are only threads created via this module (e.g., not 
+ *  This procedure is invoked to process the "thread::names" Tcl
+ *  command. This returns a list of all known thread IDs.
+ *  These are only threads created via this module (e.g., not
  *  driver threads or the notifier).
  *
  * Results:
@@ -811,7 +811,7 @@ ThreadNamesObjCmd(dummy, interp, objc, objv)
  *
  * ThreadSendObjCmd --
  *
- *  This procedure is invoked to process the "thread::send" Tcl 
+ *  This procedure is invoked to process the "thread::send" Tcl
  *  command. This sends a script to another thread for execution.
  *
  * Results:
@@ -887,7 +887,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
          * posted back to us when the target thread finishes processing.
          * We should do a vwait on the "var" to get notified.
          */
-        
+
         clbkPtr = (ThreadClbkData*)Tcl_Alloc(sizeof(ThreadClbkData));
         clbkPtr->execProc   = ThreadClbkSetVar;
         clbkPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
@@ -909,12 +909,12 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, flags);
 
     if (var && (flags & THREAD_SEND_WAIT)) {
-        
+
         /*
          * Leave job's result in passed variable
          * and return the code, like "catch" does.
          */
-        
+
         Tcl_Obj *resultObj = Tcl_GetObjResult(interp);
         if (!Tcl_SetVar2Ex(interp, var, NULL, resultObj, TCL_LEAVE_ERR_MSG)) {
             return TCL_ERROR;
@@ -942,7 +942,7 @@ usage:
  *  A standard Tcl result.
  *
  * Side effects:
- *  Script is sent to all known threads except the caller thread. 
+ *  Script is sent to all known threads except the caller thread.
  *
  *----------------------------------------------------------------------
  */
@@ -972,7 +972,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
      * Get the list of known threads. Note that this one may
      * actually change (thread may exit or otherwise cease to
      * exist) while we circle in the loop below. We really do
-     * not care about that here since we don't return any 
+     * not care about that here since we don't return any
      * script results to the caller.
      */
 
@@ -982,7 +982,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
         return TCL_OK;
     }
 
-    /* 
+    /*
      * Prepare the structure with the job description
      * to be sent asynchronously to each known thread.
      */
@@ -1020,7 +1020,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
  *
  * ThreadWaitObjCmd --
  *
- *  This procedure is invoked to process the "thread::wait" Tcl 
+ *  This procedure is invoked to process the "thread::wait" Tcl
  *  command. This enters the event loop.
  *
  * Results:
@@ -1054,9 +1054,9 @@ ThreadWaitObjCmd(dummy, interp, objc, objv)
  *
  * ThreadErrorProcObjCmd --
  *
- *  This procedure is invoked to process the "thread::errorproc" 
+ *  This procedure is invoked to process the "thread::errorproc"
  *  command. This registers a procedure to handle thread errors.
- *  Empty string as the name of the procedure will reset the 
+ *  Empty string as the name of the procedure will reset the
  *  default behaviour, which is writing to standard error channel.
  *
  * Results:
@@ -1130,7 +1130,7 @@ ThreadFreeError(clientData)
  *
  * ThreadJoinObjCmd --
  *
- *  This procedure is invoked to process the "thread::join" Tcl 
+ *  This procedure is invoked to process the "thread::join" Tcl
  *  command. See the user documentation for details on what it does.
  *
  * Results:
@@ -1150,7 +1150,7 @@ ThreadJoinObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     Tcl_ThreadId thrId;
-    
+
     Init(interp);
 
     /*
@@ -1215,7 +1215,7 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
     if (chan == (Tcl_Channel)NULL) {
         return TCL_ERROR;
     }
-    
+
     return ThreadTransfer(interp, thrId, Tcl_GetTopChannel(chan));
 }
 
@@ -1260,7 +1260,7 @@ ThreadDetachObjCmd(dummy, interp, objc, objv)
     if (chan == (Tcl_Channel)NULL) {
         return TCL_ERROR;
     }
-    
+
     return ThreadDetach(interp, Tcl_GetTopChannel(chan));
 }
 
@@ -1347,7 +1347,7 @@ ThreadExistsObjCmd(dummy, interp, objc, objv)
     }
 
     Tcl_SetBooleanObj(Tcl_GetObjResult(interp), ThreadExists(thrId));
-    
+
     return TCL_OK;
 }
 
@@ -1374,7 +1374,7 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     char *option, *value;
-    Tcl_ThreadId thrId;         /* Id of the thread to configure */ 
+    Tcl_ThreadId thrId;         /* Id of the thread to configure */
     int i;                      /* Iterate over arg-value pairs. */
     Tcl_DString ds;			    /* DString to hold result of
                                  * calling GetThreadOption. */
@@ -1435,7 +1435,7 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
  *----------------------------------------------------------------------
  */
 
-static int 
+static int
 ThreadSendEval(interp, clientData)
     Tcl_Interp *interp;
     ClientData clientData;
@@ -1463,7 +1463,7 @@ ThreadSendEval(interp, clientData)
  *----------------------------------------------------------------------
  */
 
-static int 
+static int
 ThreadClbkSetVar(interp, clientData)
     Tcl_Interp *interp;
     ClientData clientData;
@@ -1487,7 +1487,7 @@ ThreadClbkSetVar(interp, clientData)
      * Set the result variable
      */
 
-    if (Tcl_SetVar2Ex(interp, var, NULL, valObj, 
+    if (Tcl_SetVar2Ex(interp, var, NULL, valObj,
                       TCL_GLOBAL_ONLY | TCL_LEAVE_ERR_MSG) == NULL) {
         return TCL_ERROR;
     }
@@ -1519,7 +1519,7 @@ ThreadClbkSetVar(interp, clientData)
  *
  * ThreadCreate --
  *
- *  This procedure is invoked to create a thread containing an 
+ *  This procedure is invoked to create a thread containing an
  *  interp to run a script. This returns after the thread has
  *  started executing.
  *
@@ -1580,7 +1580,7 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
 
     Tcl_MutexUnlock(&threadMutex);
     Tcl_ConditionFinalize(&ctrl.condWait);
-    
+
     ThreadGetHandle(thrId, thrHandle);
     Tcl_SetObjResult(interp, Tcl_NewStringObj(thrHandle, -1));
 
@@ -1596,12 +1596,12 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
  *    execute a single TCL script. The argument to this function is
  *    a pointer to a structure that contains the text of the Tcl script
  *    to be executed, plus some synchronization primitives. Those are
- *    used so the caller gets signalized when the new thread has 
+ *    used so the caller gets signalized when the new thread has
  *    done its initialization.
  *
  *    Space to hold the ThreadControl structure itself is reserved on
  *    the stack of the calling function. The two condition variables
- *    in the ThreadControl structure are destroyed by the calling 
+ *    in the ThreadControl structure are destroyed by the calling
  *    function as well. The calling function will destroy the
  *    ThreadControl structure and the condition variable as soon as
  *    ctrlPtr->condWait is signaled, so this routine must make copies
@@ -1628,7 +1628,7 @@ NewThread(clientData)
 
     /*
      * Initialize the interpreter. The bad thing here is that we
-     * assume that initialization of the Tcl interp will be 
+     * assume that initialization of the Tcl interp will be
      * error free, which it may not. In the future we must recover
      * from this and exit gracefully (this is not that easy as
      * it seems on the first glance...)
@@ -1938,7 +1938,7 @@ ThreadList(interp, thrIdArray)
     ThreadSpecificData *tsdPtr;
 
     Tcl_MutexLock(&threadMutex);
-    
+
     /*
      * First walk; find out how many threads are registered.
      * We may avoid this and gain some speed by maintaining
@@ -1948,7 +1948,7 @@ ThreadList(interp, thrIdArray)
     for (tsdPtr = threadList; tsdPtr; tsdPtr = tsdPtr->nextPtr) {
         count++;
     }
-    
+
     if (count == 0) {
         Tcl_MutexUnlock(&threadMutex);
         return 0;
@@ -1995,11 +1995,11 @@ ThreadExists(thrId)
      Tcl_ThreadId thrId;
 {
     ThreadSpecificData *tsdPtr;
-    
+
     Tcl_MutexLock(&threadMutex);
     tsdPtr = ThreadExistsInner(thrId);
     Tcl_MutexUnlock(&threadMutex);
-    
+
     return tsdPtr != NULL;
 }
 
@@ -2008,7 +2008,7 @@ ThreadExists(thrId)
  *
  * ThreadExistsInner --
  *
- *  Test wether a thread given by it's id is known to us. Assumes 
+ *  Test wether a thread given by it's id is known to us. Assumes
  *  caller holds the thread mutex.
  *
  * Results:
@@ -2026,7 +2026,7 @@ ThreadExistsInner(thrId)
     Tcl_ThreadId thrId;              /* Thread id to look for. */
 {
     ThreadSpecificData *tsdPtr;
-    
+
     for (tsdPtr = threadList; tsdPtr; tsdPtr = tsdPtr->nextPtr) {
         if (tsdPtr->threadId == thrId) {
             return tsdPtr;
@@ -2047,7 +2047,7 @@ ThreadExistsInner(thrId)
  *  A standard Tcl result.
  *
  * Side effects:
- *  The status of the exiting thread is left in the interp result 
+ *  The status of the exiting thread is left in the interp result
  *  area, but only in the case of success.
  *
  *----------------------------------------------------------------------
@@ -2065,7 +2065,7 @@ ThreadJoin(interp, thrId)
     if (ret == TCL_OK) {
         Tcl_SetIntObj(Tcl_GetObjResult (interp), state);
     } else {
-        char thrHandle[THREAD_HNDLMAXLEN]; 
+        char thrHandle[THREAD_HNDLMAXLEN];
         ThreadGetHandle(thrId, thrHandle);
         Tcl_AppendResult(interp, "cannot join thread ", thrHandle, NULL);
     }
@@ -2133,7 +2133,7 @@ ThreadTransfer(interp, thrId, chan)
     }
 
     /*
-     * Short circut transfers to ourself.  Nothing to do.
+     * Short circuit transfers to ourself.  Nothing to do.
      */
 
     if (thrId == Tcl_GetCurrentThread()) {
@@ -2142,7 +2142,7 @@ ThreadTransfer(interp, thrId, chan)
 
     Tcl_MutexLock(&threadMutex);
 
-    /* 
+    /*
      * Verify the thread exists.
      */
 
@@ -2177,7 +2177,7 @@ ThreadTransfer(interp, thrId, chan)
     resultPtr->resultCode = -1;
     resultPtr->resultMsg  = (char *) NULL;
 
-    /* 
+    /*
      * Maintain the cleanup list.
      */
 
@@ -2212,7 +2212,7 @@ ThreadTransfer(interp, thrId, chan)
     resultPtr->eventPtr = NULL;
     resultPtr->nextPtr  = NULL;
     resultPtr->prevPtr  = NULL;
-    
+
     Tcl_MutexUnlock(&threadMutex);
 
     Tcl_ConditionFinalize(&resultPtr->done);
@@ -2287,7 +2287,7 @@ ThreadDetach(interp, chan)
         Tcl_SetResult(interp, "channel is shared", TCL_STATIC);
         return TCL_ERROR;
     }
-    
+
     /*
      * Cut the channel out of the interp/thread
      */
@@ -2297,7 +2297,7 @@ ThreadDetach(interp, chan)
     /*
      * Wrap it into the list of transfered channels. We generate no
      * events associated with the detached channel, thus really not
-     * needing the transfer event structure allocated here. This 
+     * needing the transfer event structure allocated here. This
      * is done purely to avoid having yet another wrapper.
      */
 
@@ -2316,10 +2316,10 @@ ThreadDetach(interp, chan)
     resultPtr->resultCode = -1;
     resultPtr->resultMsg  = (char*)NULL;
 
-    /* 
+    /*
      * Maintain the cleanup list. By setting the dst/srcThreadId
-     * to zero we signal the code in ThreadAttach that this is the 
-     * detached channel. Therefore it should not be mistaken for 
+     * to zero we signal the code in ThreadAttach that this is the
+     * detached channel. Therefore it should not be mistaken for
      * some regular TransferChannel operation underway. Also, this
      * will prevent the code in ThreadExitProc to splice out this
      * record from the list when the threads are exiting.
@@ -2346,7 +2346,7 @@ ThreadDetach(interp, chan)
  * ThreadAttach --
  *
  *  Attaches the previously detached channel into the current
- *  interpreter. 
+ *  interpreter.
  *
  * Results:
  *  A standard Tcl result.
@@ -2368,11 +2368,11 @@ ThreadAttach(interp, chanName)
     TransferResult *resPtr;
 
     /*
-     * Locate the channel to attach by looking up its name in 
+     * Locate the channel to attach by looking up its name in
      * the list of transfered channels. Watch that we don't
      * hit the regular channel transfer event.
      */
-    
+
     Tcl_MutexLock(&threadMutex);
     for (resPtr = transferList; resPtr; resPtr = resPtr->nextPtr) {
         chan = resPtr->eventPtr->chan;
@@ -2400,7 +2400,7 @@ ThreadAttach(interp, chanName)
     /*
      * Splice channel into the current interpreter
      */
-    
+
     Tcl_SpliceChannel(chan);
     Tcl_RegisterChannel(interp, chan);
     Tcl_UnregisterChannel((Tcl_Interp *)NULL, chan);
@@ -2438,7 +2438,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
     ThreadEvent *eventPtr;
     ThreadEventResult *resultPtr;
 
-    /* 
+    /*
      * Verify the thread exists and is not in the error state.
      * The thread is in the error state only if we've configured
      * it to unwind on script evaluation error and last script
@@ -2466,7 +2466,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
     }
 
     /*
-     * Short circut sends to ourself.
+     * Short circuit sends to ourself.
      */
 
     if (thrId == Tcl_GetCurrentThread()) {
@@ -2482,8 +2482,8 @@ ThreadSend(interp, thrId, send, clbk, flags)
             return TCL_OK;
         }
     }
-    
-    /* 
+
+    /*
      * Create the event for target thread event queue.
      */
 
@@ -2492,7 +2492,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
     eventPtr->clbkData = clbk;
 
     /*
-     * Target thread about to service 
+     * Target thread about to service
      * another event
      */
 
@@ -2542,7 +2542,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
         /*
          * Might potentially spend some time here, until the
          * worker thread clean's up it's queue a little bit.
-         */ 
+         */
         while (tsdPtr->maxEventsCount &&
                tsdPtr->eventsPending > tsdPtr->maxEventsCount) {
             Tcl_ConditionWait(&tsdPtr->doOneEvent, &threadMutex, NULL);
@@ -2550,8 +2550,8 @@ ThreadSend(interp, thrId, send, clbk, flags)
         Tcl_MutexUnlock(&threadMutex);
         return TCL_OK;
     }
-    
-    /* 
+
+    /*
      * Block on the result indefinitely.
      */
 
@@ -2605,7 +2605,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
  *  to stop.
  *
  * Results:
- *  TCL_OK always
+ *  Standard Tcl result.
  *
  * Side effects:
  *  Deletes any thread::send or thread::transfer events that are
@@ -2616,6 +2616,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
 static int
 ThreadWait()
 {
+    int code = TCL_OK;
     int canrun = 1;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
@@ -2636,8 +2637,17 @@ ThreadWait()
             Tcl_ConditionNotify(&tsdPtr->doOneEvent);
             Tcl_MutexUnlock(&threadMutex);
         }
+
+        /*
+         * Attempt to process one event, blocking forever until an
+         * event is actually received.  The event processed may cause
+         * a script in progress to be canceled or exceed its limit;
+         * therefore, check for these conditions if we are able to
+         * (i.e. we are running in a high enough version of Tcl).
+         */
+
         Tcl_DoOneEvent(TCL_ALL_EVENTS);
-        
+
         /*
          * Test stop condition under mutex since
          * some other thread may flip our flags.
@@ -2649,10 +2659,10 @@ ThreadWait()
     }
 
     /*
-     * Remove from the list of active threads, so nobody can post 
+     * Remove from the list of active threads, so nobody can post
      * work to this thread, since it is just about to terminate.
      */
-    
+
     ListRemove(tsdPtr);
 
     /*
@@ -2664,7 +2674,7 @@ ThreadWait()
 
     Tcl_DeleteEvents((Tcl_EventDeleteProc*)ThreadDeleteEvent, NULL);
 
-    return TCL_OK;
+    return code;
 }
 
 /*
@@ -2715,30 +2725,30 @@ ThreadReserve(interp, thrId, operation, wait)
     users = tsdPtr->refCount;
 
     if (users <= 0) {
-        
+
         /*
          * We're last attached user, so tear down the *target* thread
          */
-        
+
         tsdPtr->flags |= THREAD_FLAGS_STOPPED;
-        
+
         if (thrId && thrId != Tcl_GetCurrentThread() /* Not current! */) {
             ThreadEventResult *resultPtr = NULL;
 
             /*
-             * Remove from the list of active threads, so nobody can post 
+             * Remove from the list of active threads, so nobody can post
              * work to this thread, since it is just about to terminate.
              */
-            
+
             ListRemoveInner(tsdPtr);
-            
+
             /*
              * Send an dummy event, just to wake-up target thread.
              * It should immediately exit thereafter. We might get
-             * stuck here for long time if user really wants to 
+             * stuck here for long time if user really wants to
              * be absolutely sure that the thread has exited.
              */
-            
+
             if (dowait) {
                 resultPtr = (ThreadEventResult*)
                     Tcl_Alloc(sizeof(ThreadEventResult));
@@ -2803,7 +2813,7 @@ ThreadEventProc(evPtr, mask)
 {
     ThreadSpecificData* tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    Tcl_Interp         *interp   = NULL;
+    Tcl_Interp           *interp = NULL;
     Tcl_ThreadId           thrId = Tcl_GetCurrentThread();
     ThreadEvent        *eventPtr = (ThreadEvent*)evPtr;
     ThreadSendData      *sendPtr = eventPtr->sendData;
@@ -2818,7 +2828,7 @@ ThreadEventProc(evPtr, mask)
      * one. If not, just use the thread's main interpreter which is
      * stored in the thread specific data structure.
      * Note that later on we might discover that we're running the
-     * aync callback script. In this case, interpreter will be 
+     * aync callback script. In this case, interpreter will be
      * changed to one given in the callback.
      */
 
@@ -2841,7 +2851,7 @@ ThreadEventProc(evPtr, mask)
             if (clbkPtr) {
                 Tcl_CreateThreadExitHandler(ThreadFreeProc,
                                             (ClientData)clbkPtr);
-            }   
+            }
             code = (*sendPtr->execProc)(interp, (ClientData)sendPtr);
             Tcl_DeleteThreadExitHandler(ThreadFreeProc, (ClientData)sendPtr);
             if (clbkPtr) {
@@ -2878,7 +2888,7 @@ ThreadEventProc(evPtr, mask)
     } else if (clbkPtr && clbkPtr->threadId != thrId) {
 
         ThreadSendData *tmpPtr = (ThreadSendData*)clbkPtr;
-        
+
         /*
          * Route the callback back to it's originator.
          * Do not wait for the result.
@@ -2893,7 +2903,7 @@ ThreadEventProc(evPtr, mask)
 
     } else if (code != TCL_OK) {
         /*
-         * Only pass errors onto the registered error handler 
+         * Only pass errors onto the registered error handler
          * when we don't have a result target for this event.
          */
         ThreadErrorProc(interp);
@@ -2986,7 +2996,7 @@ ThreadSetResult(interp, code, resultPtr)
             errorInfo = NULL;
         }
     }
-    
+
     resultPtr->code = code;
 
     if (errorCode != NULL) {
@@ -3029,7 +3039,7 @@ ThreadGetOption(interp, thrId, option, dsPtr)
      * If the optionName is NULL it means that we want
      * a list of all options and values.
      */
-    
+
     len = (option == NULL) ? 0 : strlen(option);
 
     Tcl_MutexLock(&threadMutex);
@@ -3055,8 +3065,8 @@ ThreadGetOption(interp, thrId, option, dsPtr)
             return TCL_OK;
         }
     }
-    
-    if (len == 0 || (len > 2 && option[1] == 'u' 
+
+    if (len == 0 || (len > 2 && option[1] == 'u'
                      && !strncmp(option,"-unwindonerror", len))) {
         int flag = tsdPtr->flags & THREAD_FLAGS_UNWINDONERROR;
         if (len == 0) {
@@ -3068,7 +3078,7 @@ ThreadGetOption(interp, thrId, option, dsPtr)
             return TCL_OK;
         }
     }
-    
+
     if (len == 0 || (len > 3 && option[1] == 'e' && option[2] == 'r'
                      && !strncmp(option,"-errorstate", len))) {
         int flag = tsdPtr->flags & THREAD_FLAGS_INERROR;
@@ -3134,7 +3144,7 @@ ThreadSetOption(interp, thrId, option, value)
             Tcl_MutexUnlock(&threadMutex);
             return TCL_ERROR;
         }
-    } else if (len > 2 && option[1] == 'u' 
+    } else if (len > 2 && option[1] == 'u'
                && !strncmp(option,"-unwindonerror", len)) {
         int flag = 0;
         if (Tcl_GetBoolean(interp, value, &flag) != TCL_OK) {
@@ -3159,7 +3169,7 @@ ThreadSetOption(interp, thrId, option, value)
             tsdPtr->flags &= ~THREAD_FLAGS_INERROR;
         }
     }
-        
+
     Tcl_MutexUnlock(&threadMutex);
 
     return TCL_OK;
@@ -3251,11 +3261,11 @@ TransferEventProc(evPtr, mask)
         if (msg != NULL) {
             resultPtr->resultMsg = (char*)Tcl_Alloc(1+strlen (msg));
             strcpy (resultPtr->resultMsg, msg);
-        }    
+        }
         Tcl_ConditionNotify(&resultPtr->done);
         Tcl_MutexUnlock(&threadMutex);
     }
-    
+
     return 1;
 }
 
@@ -3327,29 +3337,29 @@ ThreadDeleteEvent(eventPtr, clientData)
         }
         return 1;
     }
-    if ((eventPtr->proc == TransferEventProc)) {
-        /* 
+    if (eventPtr->proc == TransferEventProc) {
+        /*
          * A channel is in flight toward the thread just exiting.
          * Pass it back to the originator, if possible.
          * Else kill it.
          */
         TransferEvent* evPtr = (TransferEvent *) eventPtr;
-        
+
         if (evPtr->resultPtr == (TransferResult *) NULL) {
             /* No thread to pass the channel back to. Kill it.
              * This requires to splice it temporarily into our channel
              * list and then forcing the ref.counter down to the real
              * value of zero. This destroys the channel.
              */
-            
+
             Tcl_SpliceChannel(evPtr->chan);
             Tcl_UnregisterChannel((Tcl_Interp *) NULL, evPtr->chan);
             return 1;
         }
-        
+
         /* Our caller (ThreadExitProc) will pass the channel back.
          */
-        
+
         return 1;
     }
 
@@ -3366,7 +3376,7 @@ ThreadDeleteEvent(eventPtr, clientData)
  *
  * ThreadExitProc --
  *
- *  This is called when the thread exits.  
+ *  This is called when the thread exits.
  *
  * Results:
  *  None.
@@ -3392,7 +3402,7 @@ ThreadExitProc(clientData)
     if (threadEvalScript && threadEvalScript != threadEmptyResult) {
         Tcl_Free((char*)threadEvalScript);
     }
-    
+
     Tcl_MutexLock(&threadMutex);
 
     /*
@@ -3403,37 +3413,37 @@ ThreadExitProc(clientData)
 
     ListRemoveInner(tsdPtr);
 
-    /* 
+    /*
      * Delete events posted to our queue while we were running.
-     * For threads exiting from the thread::wait command, this 
+     * For threads exiting from the thread::wait command, this
      * has already been done in ThreadWait() function.
-     * For one-shot threads, having something here is a very 
+     * For one-shot threads, having something here is a very
      * strange condition. It *may* happen if somebody posts us
      * an event while we were in the middle of processing some
      * lengthly user script. It is unlikely to happen, though.
-     */ 
+     */
 
     Tcl_DeleteEvents((Tcl_EventDeleteProc*)ThreadDeleteEvent, NULL);
 
     /*
-     * Walk the list of threads waiting for result from us 
+     * Walk the list of threads waiting for result from us
      * and inform them that we're about to exit.
      */
 
     for (resultPtr = resultList; resultPtr; resultPtr = nextPtr) {
         nextPtr = resultPtr->nextPtr;
         if (resultPtr->srcThreadId == self) {
-            
+
             /*
              * We are going away. By freeing up the result we signal
              * to the other thread we don't care about the result.
              */
-            
+
             SpliceOut(resultPtr, resultList);
             Tcl_Free((char*)resultPtr);
 
         } else if (resultPtr->dstThreadId == self) {
-            
+
             /*
              * Dang. The target is going away. Unblock the caller.
              * The result string must be dynamically allocated
@@ -3456,17 +3466,17 @@ ThreadExitProc(clientData)
              * This should not happen, as this thread should be in
              * ThreadTransfer at location (*).
              */
-            
+
             SpliceOut(tResultPtr, transferList);
             Tcl_Free((char*)tResultPtr);
-            
+
         } else if (tResultPtr->dstThreadId == self) {
             /*
              * Dang. The target is going away. Unblock the caller.
-             * The result string must be dynamically allocated 
+             * The result string must be dynamically allocated
              * because the main thread is going to call free on it.
              */
-            
+
             tResultPtr->resultMsg = strcpy(Tcl_Alloc(1+strlen(diemsg)),
                                            diemsg);
             tResultPtr->resultCode = TCL_ERROR;
@@ -3481,7 +3491,7 @@ ThreadExitProc(clientData)
  *
  * ThreadGetHandle --
  *
- *  Construct the handle of the thread which is suitable 
+ *  Construct the handle of the thread which is suitable
  *  to pass to Tcl.
  *
  * Results:
@@ -3529,7 +3539,7 @@ ThreadGetId(interp, handleObj, thrIdPtr)
         return TCL_OK;
     }
 
-    Tcl_AppendResult(interp, "invalid thread handle \"", 
+    Tcl_AppendResult(interp, "invalid thread handle \"",
                      thrHandle, "\"", NULL);
     return TCL_ERROR;
 }
@@ -3539,7 +3549,7 @@ ThreadGetId(interp, handleObj, thrIdPtr)
  *
  *  ErrorNoSuchThread --
  *
- *  Convenience function to set interpreter result when the thread 
+ *  Convenience function to set interpreter result when the thread
  *  given by it's ID cannot be found.
  *
  * Results:
@@ -3559,7 +3569,7 @@ ErrorNoSuchThread(interp, thrId)
     char thrHandle[THREAD_HNDLMAXLEN];
 
     ThreadGetHandle(thrId, thrHandle);
-    Tcl_AppendResult(interp, "thread \"", thrHandle, 
+    Tcl_AppendResult(interp, "thread \"", thrHandle,
                      "\" does not exist", NULL);
 }
 
@@ -3568,7 +3578,7 @@ ErrorNoSuchThread(interp, thrId)
  *
  *  ThreadCutChannel --
  *
- *  Dissociate a Tcl channel from the current thread/interp. 
+ *  Dissociate a Tcl channel from the current thread/interp.
  *
  * Results:
  *  None.
@@ -3585,17 +3595,15 @@ ThreadCutChannel(interp, chan)
     Tcl_Interp *interp;
     Tcl_Channel chan;
 {
-    const Tcl_ChannelType *chanTypePtr;
     Tcl_DriverWatchProc *watchProc;
 
     Tcl_ClearChannelHandlers(chan);
 
-    chanTypePtr = Tcl_GetChannelType(chan);
-    watchProc   = Tcl_ChannelWatchProc(chanTypePtr);
+    watchProc   = Tcl_ChannelWatchProc(Tcl_GetChannelType(chan));
 
     /*
      * This effectively disables processing of pending
-     * events which are ready to fire for the given 
+     * events which are ready to fire for the given
      * channel. If we do not do this, events will hit
      * the detached channel which is potentially being
      * owned by some other thread. This will wreck havoc
