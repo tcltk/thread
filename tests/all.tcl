@@ -8,7 +8,7 @@
 # All rights reserved.
 
 package require tcltest
-namespace import -force ::tcltest::*
+::tcltest::loadTestedCommands
 
 set ::tcltest::testSingleFile false
 set ::tcltest::testsDirectory [file dir [info script]]
@@ -35,13 +35,7 @@ if {[llength $::tcltest::matchFiles] > 0} {
 set timeCmd {clock format [clock seconds]}
 puts stdout "Tests began at [eval $timeCmd]"
 
-
 # These tests need to know which is the main thread
-
-# Require the accurate version for the tests so we don't pick up
-# older Thread packages by accident
-package require Tcl 8.4
-package require Thread 2.7
 set ::tcltest::mainThread [thread::id]
 
 puts stdout "Thread [package provide Thread]"

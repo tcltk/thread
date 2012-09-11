@@ -11,18 +11,15 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
-package require tcltest; namespace import -force ::tcltest::*
-
-# Require the accurate version for the tests so we don't pick up
-# older Thread packages by accident
-package require Tcl 8.4
-package require Thread 2.6
+package require tcltest
+namespace import ::tcltest::*
+tcltest::loadTestedCommands
 
 tcltest::testConstraint chanTransfer               \
     [expr {   $::tcl_platform(platform) == "unix"  \
            || $::tcl_patchLevel > "8.4.10"}]
 
-set dummy [::tcltest::makeFile dummyForTransfer dummyForTransfer]
+set dummy [makeFile dummyForTransfer dummyForTransfer]
 set tcltest::mainThread [thread::id]
 
 proc ThreadReap {} {

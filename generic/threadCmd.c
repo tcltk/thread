@@ -3789,13 +3789,11 @@ ThreadCutChannel(interp, chan)
     Tcl_Interp *interp;
     Tcl_Channel chan;
 {
-    CONST86 Tcl_ChannelType *chanTypePtr;
     Tcl_DriverWatchProc *watchProc;
 
     Tcl_ClearChannelHandlers(chan);
 
-    chanTypePtr = Tcl_GetChannelType(chan);
-    watchProc   = Tcl_ChannelWatchProc(chanTypePtr);
+    watchProc   = Tcl_ChannelWatchProc(Tcl_GetChannelType(chan));
 
     /*
      * This effectively disables processing of pending
