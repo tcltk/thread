@@ -82,8 +82,7 @@ Ns_ModuleInit(char *srv, char *mod)
     md->modname = strcpy(ns_malloc(strlen(mod)+1), mod);
     md->server  = strcpy(ns_malloc(strlen(srv)+1), srv);
 
-    return (Ns_TclInitInterps(srv, NsThread_Init, (void*)md) == TCL_OK)
-        ? NS_OK : NS_ERROR; 
+    return Ns_TclRegisterTrace(srv, NsThread_Init, (void*)md, NS_TCL_TRACE_CREATE);
 }
 
 #endif /* NS_AOLSERVER */

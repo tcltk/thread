@@ -1,3 +1,38 @@
+2012-08-29  Jan Nijtmans  <nijtmans@users.sf.net>
+
+	* generic/*.c:  Remove all (deprecated) usages of
+	_ANSI_ARGS_ and TCL_PARSE_PART1
+	* generic/threadSpCmd.c: Fix [Tcl Bug #3562640]: problem loading Thread
+	* generic/threadSvCmd.c: in 8.5, when compiled for 8.6.
+	* win/makefile.vc
+	* Makefile.in
+
+2012-07-17  Jan Nijtmans  <nijtmans@users.sf.net>
+
+	* win/makefile.vc: [Bug 3544932]: Visual studio compiler check fails
+
+2012-07-05 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadCmd.c: Fixed leaking callback data in ThreadSend()
+	plus some minor cosmetic changes (tx to Gustaf Neumann).
+
+2012-07-03 Zoran Vasiljevic <zv@archiware.com>
+
+	* generic/threadPoolCmd.c: [Bugs 3534440, 3534581] fixed.
+	Also, promoted jobId to be Tcl_WideInt (was uint).
+
+2012-04-26  Don Porter  <dgp@users.sourceforge.net>
+
+	* generic/threadSpCmd.c:	Eliminate some tricky finalization
+	problems by converting the SpBucket arrays from dynamic storage to
+	static storage so they no longer need to be finalized.  Since they
+	have fixed size of NUMSPBUCKETS, I don't see any strong reason not
+	to do this.
+
+2012-04-24  Don Porter  <dgp@users.sourceforge.net>
+
+	* generic/threadCmd.c: [Bug 1603234] Stop leak in [thread::transfer].
+
 2011-12-05  Joe Mistachkin  <joe@mistachkin.com>
 
 	* generic/threadCmd.c: Fix #define issue when compiling for Tcl 8.5.
