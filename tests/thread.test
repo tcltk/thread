@@ -519,7 +519,7 @@ test thread-17.6 {thread::transfer - socket - readable?} {chanTransfer} {
     set listener [socket -server accept 0]
     set port [lindex [fconfigure $listener -sockname] 2]
     set socket [socket localhost $port]
-    update ;# To run accept.
+    vwait lsock
 
     thread::transfer $tid $socket
 
@@ -543,7 +543,7 @@ test thread-17.7 {thread::transfer - socket - closeable?} {chanTransfer} {
     set listener [socket -server accept 0]
     set port [lindex [fconfigure $listener -sockname] 2]
     set socket [socket localhost $port]
-    update ;# To run accept.
+    vwait lsock
 
     thread::transfer $tid $socket
 
