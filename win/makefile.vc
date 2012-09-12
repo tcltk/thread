@@ -442,6 +442,7 @@ $(OUT_DIR)\pkgIndex.tcl: $(ROOT)\pkgIndex.tcl.in
 @PACKAGE_NAME@       thread
 @PACKAGE_VERSION@    $(DOTVERSION)
 @PKG_LIB_FILE@       $(PRJLIBNAME)
+@TCL_VERSION@        $(TCL_DOTVERSION)
 <<
 
 #---------------------------------------------------------------------
