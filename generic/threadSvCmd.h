@@ -127,7 +127,6 @@ typedef struct PsStore {
 
 typedef struct Bucket {
     Sp_RecursiveMutex lock;    /* */
-    Tcl_ThreadId lockt;        /* Thread holding the lock */
     Tcl_HashTable arrays;      /* Hash table of all arrays in bucket */
     Tcl_HashTable handles;     /* Hash table of given-out handles in bucket */
     struct Container *freeCt;  /* List of free Tcl-object containers */
