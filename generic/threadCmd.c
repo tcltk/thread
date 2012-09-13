@@ -26,22 +26,22 @@
 #endif
 
 /*
- * Check if this is Tcl 8.4 or lower. In that case, we will not have the TIP
+ * Check if this is Tcl 8.5 or higher. In that case, we will have the TIP
  * #143 APIs (i.e. interpreter resource limiting) available.
  */
-
+#define haveInterpLimit (tclVersion>84)
 #if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 5)
 # define Tcl_LimitExceeded ((int (*)(Tcl_Interp *)) \
     ((&(tclStubsPtr->tcl_PkgProvideEx))[524]))
 #endif
 
 /*
- * Check if this is Tcl 8.5 or lower.  In that case, we will not have the TIP
+ * Check if this is Tcl 8.6 or higher.  In that case, we will have the TIP
  * #285 APIs (i.e. asynchronous script cancellation) available.
  */
 
+#define haveInterpCancel (tclVersion>85)
 #if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 6)
-# define CONST86
 # define TCL_CANCEL_UNWIND 0x100000
 # define Tcl_CancelEval ((int (*)(Tcl_Interp *, Tcl_Obj *, ClientData, int)) \
     ((&(tclStubsPtr->tcl_PkgProvideEx))[580]))
@@ -110,17 +110,7 @@ static struct ThreadSpecificData *threadList = NULL;
 
 static char *threadEmptyResult = (char *)"";
 
-/*
- * This will be set to non-zero if TIP #143 functionality is available.
- */
-
-static int threadHaveInterpLimit = 0;
-
-/*
- * This will be set to non-zero if TIP #285 functionality is available.
- */
-
-static int threadHaveInterpCancel = 0;
+static int tclVersion = 0;
 
 /*
  * An instance of the following structure contains all information that is
@@ -432,16 +422,11 @@ ThreadInit(interp)
 
     Tcl_GetVersion(&major, &minor, NULL, NULL);
 
-    Tcl_MutexLock(&threadMutex);
-    if (major > 8 || (major == 8 && minor >= 5)) {
-	threadHaveInterpLimit = 1;
+    if (!tclVersion) {
+	tclVersion = 10 * major + minor;
     }
-    if (major > 8 || (major == 8 && minor >= 6)) {
-	threadHaveInterpCancel = 1;
-    }
-    Tcl_MutexUnlock(&threadMutex);
 
-    if (threadHaveInterpCancel) {
+    if (haveInterpCancel) {
 	TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
     }
 
@@ -2763,14 +2748,7 @@ ThreadWait()
 {
     int code = TCL_OK;
     int canrun = 1;
-    int haveInterpLimit;
-    int haveInterpCancel;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
-
-    Tcl_MutexLock(&threadMutex);
-    haveInterpLimit = threadHaveInterpLimit;
-    haveInterpCancel = threadHaveInterpCancel;
-    Tcl_MutexUnlock(&threadMutex);
 
     /*
      * Process events until signaled to stop.

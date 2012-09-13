@@ -1,3 +1,14 @@
+2012-09-13 Zoran Vasiljevic <zv@archiware.com>
+
+	* doc/html/tpool.html
+	* doc/man/tpool.n
+	* doc/tpool.man: fixed "tpool::create -idletime" description
+	[Tcl Bug 3534442]
+
+	* generic/threadSpCmd.h
+	* generic/threadSvCmd.h: removed some unused structure members
+	[Tcl Feature Request 3563391]
+
 2012-09-11  Jan Nijtmans  <nijtmans@users.sf.net>
 
 	* Makefile.in:       Use "::tcltest::loadTestedCommands" to make
