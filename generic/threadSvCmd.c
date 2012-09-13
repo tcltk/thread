@@ -40,14 +40,6 @@
 #define OBJS_TO_ALLOC_EACH_TIME 100
 
 /*
- * Handle binary compatibility regarding
- * Tcl_GetErrorLine, between 8.5 and 8.6
- * See Tcl bug #3562640.
- */
-#undef Tcl_GetErrorLine
-#define Tcl_GetErrorLine(interp) ((interp)->errorLine)
-
-/*
  * Reference to Tcl object types used in object-copy code.
  * Those are referenced read-only, thus no mutex protection.
  */
