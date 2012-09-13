@@ -23,9 +23,7 @@
 typedef struct SpBucket {
     Tcl_Mutex lock;            /* For locking the bucket */
     Tcl_Condition cond;        /* For waiting on threads to release items */
-    Tcl_ThreadId lockt;        /* Thread holding the lock */
     Tcl_HashTable handles;     /* Hash table of given-out handles in bucket */
-    struct Container *freeCt;  /* List of free Tcl-object containers */
 } SpBucket;
 
 #define NUMSPBUCKETS 32

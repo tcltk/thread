@@ -43,14 +43,6 @@
 #define SP_MUTEX   1  /* Any kind of mutex */
 #define SP_CONDV   2  /* The condition variable sync type */
 
-/*
- * Handle binary compatibility regarding
- * Tcl_GetErrorLine, between 8.5 and 8.6
- * See Tcl bug #3562640.
- */
-#undef Tcl_GetErrorLine
-#define Tcl_GetErrorLine(interp) ((interp)->errorLine)
-
 /* 
  * Structure representing one sync primitive (mutex, condition variable). 
  * We use buckets to manage Tcl names of sync primitives. Each bucket

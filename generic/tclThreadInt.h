@@ -92,4 +92,15 @@ MODULE_SCOPE int Tpool_Init(Tcl_Interp *interp);
   (ThreadSpecificData*)Tcl_GetThreadData((keyPtr),sizeof(ThreadSpecificData))
 #endif
 
+/*
+ * Handle binary compatibility regarding
+ * Tcl_GetErrorLine in 8.x
+ * See Tcl bug #3562640.
+ */
+#if (TCL_MAJOR_VERSION == 8)
+# undef Tcl_GetErrorLine
+# define Tcl_GetErrorLine(interp) ((interp)->errorLine)
+#endif
+
+
 #endif /* _TCL_THREAD_INT_H_ */
