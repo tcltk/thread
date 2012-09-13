@@ -390,11 +390,19 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
-    int major, minor;
-
-
     if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
         return TCL_ERROR;
+    }
+
+    if (!tclVersion) {
+	/*
+	 * Perform a version check now to stop using from trying to use
+	 * the TIP #143 or TIP #285 functionality if they are not present.
+	 */
+	int major, minor;
+
+	Tcl_GetVersion(&major, &minor, NULL, NULL);
+	tclVersion = 10 * major + minor;
     }
 
     TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
@@ -414,17 +422,6 @@ ThreadInit(interp)
     TCL_CMD(interp, THREAD_CMD_PREFIX"transfer",  ThreadTransferObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"detach",    ThreadDetachObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"attach",    ThreadAttachObjCmd);
-
-    /*
-     * Perform a version check now to stop using from trying to use
-     * the TIP #143 or TIP #285 functionality if they are not present.
-     */
-
-    Tcl_GetVersion(&major, &minor, NULL, NULL);
-
-    if (!tclVersion) {
-	tclVersion = 10 * major + minor;
-    }
 
     if (haveInterpCancel) {
 	TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
