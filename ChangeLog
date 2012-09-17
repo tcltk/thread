@@ -1,5 +1,7 @@
 2012-09-13 Zoran Vasiljevic <zv@archiware.com>
 
+	*** 2.7b1 TAGGED FOR RELEASE (thread-2-7-b1) ***
+
 	* doc/html/tpool.html
 	* doc/man/tpool.n
 	* doc/tpool.man: fixed "tpool::create -idletime" description
