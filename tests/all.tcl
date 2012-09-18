@@ -9,6 +9,7 @@
 
 package require tcltest
 ::tcltest::loadTestedCommands
+package require Thread
 
 set ::tcltest::testSingleFile false
 set ::tcltest::testsDirectory [file dir [info script]]
