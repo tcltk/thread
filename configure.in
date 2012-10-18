@@ -92,7 +92,8 @@ NS_PATH_AOLSERVER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 
-TEA_ADD_SOURCES([generic/threadCmd.c          \
+TEA_ADD_SOURCES([generic/threadAol.c          \
+                 generic/threadCmd.c          \
                  generic/threadSvCmd.c        \
                  generic/threadSpCmd.c        \
                  generic/threadPoolCmd.c      \
