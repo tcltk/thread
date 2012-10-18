@@ -21,10 +21,6 @@
 
 #include "tclThreadInt.h"
 
-#ifdef NS_AOLSERVER
-# include "aolstub.cpp"
-#endif
-
 /*
  * Check if this is Tcl 8.5 or higher. In that case, we will have the TIP
  * #143 APIs (i.e. interpreter resource limiting) available.
@@ -422,10 +418,7 @@ ThreadInit(interp)
     TCL_CMD(interp, THREAD_CMD_PREFIX"transfer",  ThreadTransferObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"detach",    ThreadDetachObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"attach",    ThreadAttachObjCmd);
-
-    if (haveInterpCancel) {
-	TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
-    }
+    TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
 
     /*
      * Add shared variable commands
@@ -1630,9 +1623,7 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
     ThreadCtrl ctrl;
     Tcl_ThreadId thrId;
 
-#ifdef NS_AOLSERVER
     ctrl.cd = Tcl_GetAssocData(interp, "thread:nsd", NULL);
-#endif
     ctrl.script   = (char *)script;
     ctrl.condWait = NULL;
     ctrl.flags    = 0;
@@ -2158,6 +2149,11 @@ ThreadCancel(interp, thrId, result, flags)
     }
 
     Tcl_MutexUnlock(&threadMutex);
+
+    if (!haveInterpCancel) {
+	Tcl_AppendResult(interp, "not supported with this Tcl version", NULL);
+	return TCL_ERROR;
+    }
 
     return Tcl_CancelEval(tsdPtr->interp,
             (result != NULL) ? Tcl_NewStringObj(result, -1) : NULL, 0, flags);

@@ -88,7 +88,7 @@ ROOT=..
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=$(ROOT)\generic\aolstub.cpp
+SOURCE=$(ROOT)\generic\threadAol.c
 # End Source File
 # Begin Source File
 

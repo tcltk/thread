@@ -217,7 +217,8 @@ install-doc: doc
 
 test: binaries libraries
 	$(TCLSH) `@CYGPATH@ $(srcdir)/tests/all.tcl` $(TESTFLAGS) \
-		-load "load `@CYGPATH@ $(PKG_LIB_FILE)` $(PACKAGE_NAME)"
+		-load "package ifneeded ${PACKAGE_NAME} ${PACKAGE_VERSION} \
+			[list load `@CYGPATH@ $(PKG_LIB_FILE)` $(PACKAGE_NAME)]"
 
 shell: binaries libraries
 	@$(TCLSH) $(SCRIPT)
