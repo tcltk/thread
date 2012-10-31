@@ -3,8 +3,7 @@
 #
 if {[array names ::tcl_platform threaded] != "threaded"} return
 
-# TODO: Change this to "8.4" for the final 2.7for84+ release
-if {[package vsatisfies [package provide Tcl] 8.5]} {
+if {[package vsatisfies [package provide Tcl] 8.4]} {
 
     package ifneeded Thread @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@]]
 
