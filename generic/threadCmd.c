@@ -206,7 +206,7 @@ typedef struct TransferResult {
     int resultCode;                       /* Set to TCL_OK or TCL_ERROR when
                                              the transfer is done. Def = -1 */
     char *resultMsg;                      /* Initialized to NULL. Set to a
-                                             allocated string by the targer
+                                             allocated string by the target
                                              thread in case of an error  */
     Tcl_ThreadId srcThreadId;             /* Id of src thread, if it dies */
     Tcl_ThreadId dstThreadId;             /* Id of tgt thread, if it dies */
@@ -286,7 +286,7 @@ static int
 ThreadEventProc(Tcl_Event *evPtr,
                                int mask);
 static int
-ThreadWait(void);
+ThreadWait(Tcl_Interp *interp);
 
 static int
 ThreadExists(Tcl_ThreadId id);
@@ -1069,7 +1069,7 @@ ThreadWaitObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    return ThreadWait();
+    return ThreadWait(interp);
 }
 
 /*
@@ -2737,7 +2737,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
  *----------------------------------------------------------------------
  */
 static int
-ThreadWait()
+ThreadWait(Tcl_Interp *interp)
 {
     int code = TCL_OK;
     int canrun = 1;
@@ -2790,8 +2790,6 @@ ThreadWait()
         }
         if (haveInterpLimit) {
             if (Tcl_LimitExceeded(tsdPtr->interp)) {
-                Tcl_ResetResult(tsdPtr->interp);
-                Tcl_AppendResult(tsdPtr->interp, "limit exceeded", NULL);
                 code = TCL_ERROR;
                 break;
             }
@@ -2810,12 +2808,21 @@ ThreadWait()
     /*
      * If the event processing loop above was terminated due to a
      * script in progress being canceled or exceeding its limits,
-     * call the registered error processing script now, if there
-     * is one.
+     * transfer the error to the current interpreter.
      */
 
     if (code != TCL_OK) {
-        ThreadErrorProc(tsdPtr->interp);
+        char buf[THREAD_HNDLMAXLEN];
+        const char *errorInfo;
+
+        errorInfo = Tcl_GetVar(tsdPtr->interp, "errorInfo", TCL_GLOBAL_ONLY);
+        if (errorInfo == NULL) {
+        	errorInfo = Tcl_GetStringResult(tsdPtr->interp);
+        }
+
+        ThreadGetHandle(Tcl_GetCurrentThread(), buf);
+        Tcl_AppendResult(interp, "Error from thread ", buf, "\n",
+                errorInfo, NULL);
     }
 
     /*
