@@ -164,7 +164,7 @@ VERSION         = $(PACKAGE_MAJOR)$(PACKAGE_MINOR)
 STUBPREFIX      = $(PROJECT)stub
 
 DLLOBJS = \
-	$(TMP_DIR)\threadAol.obj \
+	$(TMP_DIR)\threadNs.obj \
 	$(TMP_DIR)\threadCmd.obj \
 	$(TMP_DIR)\threadSvCmd.obj \
 	$(TMP_DIR)\threadSpCmd.obj \

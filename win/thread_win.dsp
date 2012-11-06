@@ -88,7 +88,7 @@ ROOT=..
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=$(ROOT)\generic\threadAol.c
+SOURCE=$(ROOT)\generic\threadNs.c
 # End Source File
 # Begin Source File
 

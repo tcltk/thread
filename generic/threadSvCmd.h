@@ -33,9 +33,9 @@
 /* #define OLD_COMPAT 1 */
 
 #ifdef NSV_COMPAT
-# define TSV_CMD2_PREFIX "nsv_"  /* Compatiblity prefix for AOLserver */
+# define TSV_CMD2_PREFIX "nsv_"  /* Compatiblity prefix for NaviServer/AOLserver */
 #else
-# define TSV_CMD2_PREFIX "sv_"   /* Regular command prefix for AOLserver */
+# define TSV_CMD2_PREFIX "sv_"   /* Regular command prefix for NaviServer/AOLserver */
 #endif
 #ifdef OLD_COMPAT
 # define TSV_CMD_PREFIX "thread::sv_" /* Old command prefix for Tcl */

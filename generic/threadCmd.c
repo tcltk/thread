@@ -3578,7 +3578,7 @@ ThreadExitProc(clientData)
     Tcl_MutexLock(&threadMutex);
 
     /*
-     * AOLserver and threadpool threads get started/stopped
+     * NaviServer/AOLserver and threadpool threads get started/stopped
      * out of the control of this interface so this is
      * the first chance to split them out of the thread list.
      */
