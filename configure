@@ -7027,7 +7027,7 @@ _ACEOF
 #-----------------------------------------------------------------------
 
 
-    vars="generic/threadNs.c          \
+    vars="generic/threadNs.c           \
                  generic/threadCmd.c          \
                  generic/threadSvCmd.c        \
                  generic/threadSpCmd.c        \

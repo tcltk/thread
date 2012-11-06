@@ -26,7 +26,7 @@
 AC_DEFUN(NS_PATH_AOLSERVER, [
     AC_MSG_CHECKING([for NaviServer/AOLserver configuration])
     AC_ARG_WITH(naviserver,
-    [  --with-naviserver        directory with NaviServer/AOLserver distribution],\
+    [  --with-naviserver       directory with NaviServer/AOLserver distribution],\
     with_naviserver=${withval})
 
     AC_CACHE_VAL(ac_cv_c_naviserver,[
