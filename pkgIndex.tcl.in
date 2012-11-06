@@ -3,8 +3,6 @@
 #
 if {[package vsatisfies [package provide Tcl] 8.4]} {
 
-    package ifneeded Thread @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@]]
-
     if {[llength [info commands apply]]} {
 	# We can use a lambda (anon function) and ::tcl::pkgconfig
 
@@ -48,4 +46,5 @@ if {[package vsatisfies [package provide Tcl] 8.4]} {
 	    rename @PACKAGE_NAME@_source {}
 	}
     }
+    package ifneeded Thread @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@]]
 }
