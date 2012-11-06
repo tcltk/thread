@@ -1,7 +1,7 @@
 /*
  * aolstub.cpp --
  *
- * Adds interface for loading the extension into the AOLserver.
+ * Adds interface for loading the extension into the NaviServer/AOLserver.
  *
  * Copyright (c) 2002 by Zoran Vasiljevic.
  *
@@ -12,18 +12,9 @@
 
 #ifdef NS_AOLSERVER
 #include <ns.h>
+#include "tclThreadInt.h"
 
 int Ns_ModuleVersion = 1;
-
-/*
- * Structure to pass to NsThread_Init. This holds the module
- * and virtual server name for proper interp initializations. 
- */
-
-struct mydata {
-    char *modname;
-    char *server;
-};
 
 /*
  *----------------------------------------------------------------------------
@@ -44,7 +35,7 @@ struct mydata {
 static int
 NsThread_Init (Tcl_Interp *interp, void *cd)
 {
-    struct mydata *md = (struct mydata*)cd;
+    NsThreadInterpData *md = (NsThreadInterpData*)cd;
     int ret = Thread_Init(interp);
 
     if (ret != TCL_OK) {
@@ -62,10 +53,10 @@ NsThread_Init (Tcl_Interp *interp, void *cd)
  *
  * Ns_ModuleInit --
  *
- *    Called by the AOLserver when loading shared object file.
+ *    Called by the NaviServer/AOLserver when loading shared object file.
  *
  * Results:
- *    Standard AOLserver result
+ *    Standard NaviServer/AOLserver result
  *
  * Side effects:
  *    Many. Depends on the package.
@@ -76,9 +67,9 @@ NsThread_Init (Tcl_Interp *interp, void *cd)
 int
 Ns_ModuleInit(char *srv, char *mod)
 {
-    struct mydata *md = NULL;
+    NsThreadInterpData *md = NULL;
 
-    md = (struct mydata*)ns_malloc(sizeof(struct mydata));
+    md = (NsThreadInterpData*)ns_malloc(sizeof(NsThreadInterpData));
     md->modname = strcpy(ns_malloc(strlen(mod)+1), mod);
     md->server  = strcpy(ns_malloc(strlen(srv)+1), srv);
 

@@ -69,9 +69,9 @@ static Tcl_Mutex  svMutex;      /* Protects inserts into above lists */
 static Tcl_Mutex  initMutex;    /* Serializes initialization issues */
 
 /*
- * The standard commands found in AOLserver nsv_* interface.
- * For sharp-eye readers: the implementaion of the "lappend" command
- * is moved to new list-command package, since it realy belongs there.
+ * The standard commands found in NaviServer/AOLserver nsv_* interface.
+ * For sharp-eye readers: the implementation of the "lappend" command
+ * is moved to new list-command package, since it really belongs there.
  */
 
 static Tcl_ObjCmdProc SvObjObjCmd;
@@ -161,7 +161,7 @@ Sv_RegisterCommand(cmdName, objProc, delProc)
 
     /*
      * Rewrite command name. This is needed so we can
-     * easily turn-on the compatiblity with AOLserver
+     * easily turn-on the compatiblity with NaviServer/AOLserver
      * command names.
      */
 
