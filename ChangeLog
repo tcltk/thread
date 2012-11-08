@@ -1,3 +1,9 @@
+2012-11-08  Don Porter  <dgp@users.sourceforge.net>
+
+	* configure.in:		Bump to version 2.7.0
+	* lib/ttrace.tcl:
+	* win/pkg.vc:
+
 2012-09-13 Zoran Vasiljevic <zv@archiware.com>
 
 	*** 2.7b1 TAGGED FOR RELEASE (thread-2-7-b1) ***
