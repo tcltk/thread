@@ -20,13 +20,13 @@
 #include <string.h> /* For memset and friends */
 
 /*
- * For linking against AOLserver require V4 at least
+ * For linking against NaviServer/AOLserver require V4 at least
  */
 
 #ifdef NS_AOLSERVER
 # include <ns.h>
 # if !defined(NS_MAJOR_VERSION) || NS_MAJOR_VERSION < 4
-#  error "unsupported AOLserver version"
+#  error "unsupported NaviServer/AOLserver version"
 # endif
 #endif
 
@@ -91,5 +91,26 @@ MODULE_SCOPE int Tpool_Init(Tcl_Interp *interp);
 #define TCL_TSD_INIT(keyPtr) \
   (ThreadSpecificData*)Tcl_GetThreadData((keyPtr),sizeof(ThreadSpecificData))
 #endif
+
+/*
+ * Structure to pass to NsThread_Init. This holds the module
+ * and virtual server name for proper interp initializations.
+ */
+
+typedef struct {
+    char *modname;
+    char *server;
+} NsThreadInterpData;
+
+/*
+ * Handle binary compatibility regarding
+ * Tcl_GetErrorLine in 8.x
+ * See Tcl bug #3562640.
+ */
+#if (TCL_MAJOR_VERSION == 8)
+# undef Tcl_GetErrorLine
+# define Tcl_GetErrorLine(interp) ((interp)->errorLine)
+#endif
+
 
 #endif /* _TCL_THREAD_INT_H_ */
