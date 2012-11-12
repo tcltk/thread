@@ -2154,6 +2154,7 @@ ThreadCancel(interp, thrId, result, flags)
     }
 
     if (!haveInterpCancel) {
+        Tcl_MutexUnlock(&threadMutex);
         Tcl_AppendResult(interp, "not supported with this Tcl version", NULL);
         return TCL_ERROR;
     }
