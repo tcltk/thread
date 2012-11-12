@@ -107,8 +107,7 @@ typedef struct {
  * Tcl_GetErrorLine in 8.x
  * See Tcl bug #3562640.
  */
-#if (TCL_MAJOR_VERSION == 8)
-# undef Tcl_GetErrorLine
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MAJOR_VERSION < 6)
 # define Tcl_GetErrorLine(interp) ((interp)->errorLine)
 #endif
 
