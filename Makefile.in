@@ -154,7 +154,7 @@ CLEANFILES	= @CLEANFILES@
 CPPFLAGS	= @CPPFLAGS@
 LIBS		= @PKG_LIBS@ @LIBS@
 AR		= @AR@
-CFLAGS		= @CFLAGS@
+CFLAGS		= @CFLAGS@ -DUSE_INTERP_ERRORLINE
 COMPILE		= $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
 #========================================================================
@@ -284,7 +284,7 @@ dist-clean:
 dist: dist-clean
 	mkdir -p $(DIST_DIR)
 	cp -p $(srcdir)/ChangeLog $(srcdir)/README* $(srcdir)/license.terms \
-		$(srcdir)/aclocal.m4 $(srcdir)/aolserver.m4 $(srcdir)/configure \
+		$(srcdir)/aclocal.m4 $(srcdir)/naviserver.m4 $(srcdir)/configure \
         $(srcdir)/*.in \
 		$(DIST_DIR)/
 	chmod 664 $(DIST_DIR)/Makefile.in $(DIST_DIR)/aclocal.m4

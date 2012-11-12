@@ -69,11 +69,11 @@ namespace eval ttrace {
         interp alias {} [namespace current]::_set     {} tsv::set
         interp alias {} [namespace current]::_unset   {} tsv::unset
     } else {
-        error "requires AOLserver or Tcl threading extension"
+        error "requires NaviServer/AOLserver or Tcl threading extension"
     }
 
     # Keep in sync with the Thread package
-    package provide Ttrace 2.7b1
+    package provide Ttrace 2.7.0
 
     # Package variables
     variable resolvers ""     ; # List of registered resolvers

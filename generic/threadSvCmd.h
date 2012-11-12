@@ -27,26 +27,20 @@
 
 /*
  * Uncomment following line to force command-line
- * compatibility with older thread::sv_ commands
- * If you leave it commented-out, the older style
- * command is going to be included in addition to
- * the new tsv::* style.
+ * compatibility with older thread::sv_ commands.
  */
 
 /* #define OLD_COMPAT 1 */
 
-#ifdef NS_AOLSERVER
-# ifdef NSV_COMPAT
-#  define TSV_CMD_PREFIX "nsv_"  /* Compatiblity prefix for AOLserver */
-# else
-#  define TSV_CMD_PREFIX "sv_"   /* Regular command prefix for AOLserver */
-# endif
+#ifdef NSV_COMPAT
+# define TSV_CMD2_PREFIX "nsv_"  /* Compatiblity prefix for NaviServer/AOLserver */
 #else
-# ifdef OLD_COMPAT
-#  define TSV_CMD_PREFIX "thread::sv_" /* Old command prefix for Tcl */
-# else
-#  define TSV_CMD_PREFIX "tsv::" /* Regular command prefix for Tcl */
-# endif
+# define TSV_CMD2_PREFIX "sv_"   /* Regular command prefix for NaviServer/AOLserver */
+#endif
+#ifdef OLD_COMPAT
+# define TSV_CMD_PREFIX "thread::sv_" /* Old command prefix for Tcl */
+#else
+# define TSV_CMD_PREFIX "tsv::" /* Regular command prefix for Tcl */
 #endif
 
 /*
@@ -167,9 +161,9 @@ typedef struct Container {
 typedef struct SvCmdInfo {
     char *name;                 /* The short name of the command */
     char *cmdName;              /* Real (rewritten) name of the command */
+    char *cmdName2;             /* Real AOL (rewritten) name of the command */
     Tcl_ObjCmdProc *objProcPtr; /* The object-based command procedure */
     Tcl_CmdDeleteProc *delProcPtr; /* Pointer to command delete function */
-    ClientData *clientData;     /* Pointer passed to above command */
     struct SvCmdInfo *nextPtr;  /* Next in chain of registered commands */
 } SvCmdInfo;
 
@@ -195,7 +189,7 @@ typedef struct RegType {
  */
 
 MODULE_SCOPE void
-Sv_RegisterCommand(const char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*,ClientData);
+Sv_RegisterCommand(const char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*);
 
 MODULE_SCOPE void
 Sv_RegisterObjType(const Tcl_ObjType*, Tcl_DupInternalRepProc*);

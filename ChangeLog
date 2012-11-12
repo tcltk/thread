@@ -1,3 +1,12 @@
+2012-11-10 Zoran Vasiljevic <zv@archiware.com>
+
+	* genric/threadCmd.c: fixed race condition on
+	thread-local storage in ThreadCancel().
+
+2012-11-10 Zoran Vasiljevic <zv@archiware.com>
+
+	*** Merged "thread-2-7for84+" branch ***
+	
 2012-09-13 Zoran Vasiljevic <zv@archiware.com>
 
 	*** 2.7b1 TAGGED FOR RELEASE (thread-2-7-b1) ***
