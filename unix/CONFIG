@@ -32,14 +32,14 @@
 #
 # AOLserver 4.X; Uses public Tcl library.
 # ----------------------------------------------------
-# aoldir="/usr/local/aolserver"
+# nsdir="/usr/local/naviserver"
 # ../configure --enable-threads \
-#   --with-aolserver=$aoldir \
-#   --prefix=$aoldir --exec-prefix=$aoldir
+#   --with-naviserver=$nsdir \
+#   --prefix=$nsdir --exec-prefix=$nsdir
 #
-# AOLserver uses its own package loading mechanism.
+# NaviServer/AOLserver uses its own package loading mechanism.
 # To load, just do "ns_eval package require Thread"
-# at the AOLserver startup or later from any thread.
+# at the NaviServer/AOLserver startup or later from any thread.
 #
 #
 # Mac OS X; Uses public Tcl library.

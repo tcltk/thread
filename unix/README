@@ -28,23 +28,24 @@ To explore other building options, look into the CONFIG file for more
 information.
 
 
-Note for AOLserver users
+Note for NaviServer/AOLserver users
 ------------------------
 
-The extension can be compiled as a loadable module for the AOLserver 
-version 4.0 or higher. In order to do this, use "--with-aolserver"
-configure option to specify the directory containing the AOLserver
-distribution. The CONFIG script has an example how to invoke configure
-in order to build the extension as AOLserver module.
-Note, however, that "make install" and "make test" targets are still
-not supported for AOLserver builds. This will be corrected in one of
+The extension can be compiled as a loadable module for the
+NaviServer/AOLserver  version 4.0 or higher. In order to do this,
+use "--with-naviserver" configure option to specify the directory
+containing the NaviServer/AOLserver distribution. The CONFIG script
+has an example how to invoke configure in order to build the
+extension as NaviServer/AOLserver module. Note, however, that
+"make install" and "make test" targets are still not supported for
+NaviServer/AOLserver builds. This will be corrected in one of
 the future releases.
 
 To fine-tune, you might also want to make the tsv::* commands replace
-the AOLserver built-in nsv_* family of commands, since they are API 
-compatible and provide richer command set plus advanced shared-object
-storage of shared data. Go to the generic/threadSvCmd.h file and look
-at the beginning of the file for the:
+the NaviServer/AOLserver built-in nsv_* family of commands, since
+they are API  compatible and provide richer command set plus advanced
+shared-object storage of shared data. Go to the generic/threadSvCmd.h
+file and look at the beginning of the file for the:
 
 /* #define NSV_COMPAT 1 */
 

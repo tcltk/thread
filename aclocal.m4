@@ -5,7 +5,7 @@
 # re-checkout the thread module
 #
 builtin(include,tclconfig/tcl.m4)
-builtin(include,aolserver.m4)
+builtin(include,naviserver.m4)
 
 #
 # Handle the "--with-gdbm" option for linking-in
