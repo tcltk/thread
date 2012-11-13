@@ -22,14 +22,32 @@
 #include "tclThreadInt.h"
 
 /*
- * Check if this is Tcl 8.5 or higher. In that case, we will have the TIP
+ * Check if this is Tcl 8.5 or higher.  In that case, we will have the TIP
  * #143 APIs (i.e. interpreter resource limiting) available.
  */
 
+#ifndef TCL_TIP143
+# if (TCL_MAJOR_VERSION > 8) || \
+     ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 5))
+#  define TCL_TIP143
+# endif
+#endif
+
+/*
+ * If TIP #143 support is enabled and we are compiling against a pre-Tcl 8.5
+ * core, hard-wire the necessary APIs using the "well-known" offsets into the 
+ * stubs table.
+ */
+
 #define haveInterpLimit (tclVersion>84)
-#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 5)
-# define Tcl_LimitExceeded ((int (*)(Tcl_Interp *)) \
-    ((&(tclStubsPtr->tcl_PkgProvideEx))[524]))
+#if defined(TCL_TIP143) && (TCL_MAJOR_VERSION == 8) && \
+    (TCL_MINOR_VERSION < 5)
+# if defined(USE_TCL_STUBS)
+#  define Tcl_LimitExceeded ((int (*)(Tcl_Interp *)) \
+     ((&(tclStubsPtr->tcl_PkgProvideEx))[524]))
+# else
+#  error "Supporting TIP #143 requires USE_TCL_STUBS before Tcl 8.5"
+# endif
 #endif
 
 /*
@@ -38,12 +56,30 @@
  */
 
 #define haveInterpCancel (tclVersion>85)
-#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 6)
-# define TCL_CANCEL_UNWIND 0x100000
-# define Tcl_CancelEval ((int (*)(Tcl_Interp *, Tcl_Obj *, ClientData, int)) \
-    ((&(tclStubsPtr->tcl_PkgProvideEx))[580]))
-# define Tcl_Canceled ((int (*)(Tcl_Interp *, int)) \
-    ((&(tclStubsPtr->tcl_PkgProvideEx))[581]))
+#ifndef TCL_TIP285
+# if (TCL_MAJOR_VERSION > 8) || \
+     ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 6))
+#  define TCL_TIP285
+# endif
+#endif
+
+/*
+ * If TIP #285 support is enabled and we are compiling against a pre-Tcl 8.6
+ * core, hard-wire the necessary APIs using the "well-known" offsets into the 
+ * stubs table.
+ */
+
+#if defined(TCL_TIP285) && (TCL_MAJOR_VERSION == 8) && \
+    (TCL_MINOR_VERSION < 6)
+# if defined(USE_TCL_STUBS)
+#  define TCL_CANCEL_UNWIND	0x100000
+#  define Tcl_CancelEval ((int (*)(Tcl_Interp *, Tcl_Obj *, ClientData, int)) \
+     ((&(tclStubsPtr->tcl_PkgProvideEx))[580]))
+#  define Tcl_Canceled ((int (*)(Tcl_Interp *, int)) \
+     ((&(tclStubsPtr->tcl_PkgProvideEx))[581]))
+# else
+#  error "Supporting TIP #285 requires USE_TCL_STUBS before Tcl 8.6"
+# endif
 #endif
 
 /*
@@ -107,7 +143,9 @@ static struct ThreadSpecificData *threadList = NULL;
 
 static char *threadEmptyResult = (char *)"";
 
+#if defined(TCL_TIP143) || defined(TCL_TIP285)
 static int tclVersion = 0;
+#endif
 
 /*
  * An instance of the following structure contains all information that is
@@ -354,11 +392,13 @@ static void
 ThreadCutChannel(Tcl_Interp *interp,
                                Tcl_Channel channel);
 
+#ifdef TCL_TIP285
 static int
 ThreadCancel(Tcl_Interp *interp,
                                Tcl_ThreadId thrId,
                                const char *result,
                                int flags);
+#endif
 
 /*
  * Functions implementing Tcl commands
@@ -381,7 +421,10 @@ static Tcl_ObjCmdProc ThreadJoinObjCmd;
 static Tcl_ObjCmdProc ThreadTransferObjCmd;
 static Tcl_ObjCmdProc ThreadDetachObjCmd;
 static Tcl_ObjCmdProc ThreadAttachObjCmd;
+
+#ifdef TCL_TIP285
 static Tcl_ObjCmdProc ThreadCancelObjCmd;
+#endif
 
 static int
 ThreadInit(interp)
@@ -391,18 +434,20 @@ ThreadInit(interp)
         return TCL_ERROR;
     }
 
+#if defined(TCL_TIP143) || defined(TCL_TIP285)
     if (!tclVersion) {
 
-        /*
-         * Get the current core version to decide wether to use
-         * some lately introduced core features or to back-off.
-         */
+	/*
+	 * Get the current core version to decide whether to use
+	 * some lately introduced core features or to back-off.
+	 */
 
-        int major, minor;
-        
-        Tcl_GetVersion(&major, &minor, NULL, NULL);
-        tclVersion = 10 * major + minor;
+	int major, minor;
+
+	Tcl_GetVersion(&major, &minor, NULL, NULL);
+	tclVersion = 10 * major + minor;
     }
+#endif
 
     TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"send",      ThreadSendObjCmd);
@@ -421,7 +466,9 @@ ThreadInit(interp)
     TCL_CMD(interp, THREAD_CMD_PREFIX"transfer",  ThreadTransferObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"detach",    ThreadDetachObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"attach",    ThreadAttachObjCmd);
+#ifdef TCL_TIP285
     TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
+#endif
 
     /*
      * Add shared variable commands
@@ -1446,6 +1493,7 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
     return TCL_OK;
 }
 
+#ifdef TCL_TIP285
 /*
  *----------------------------------------------------------------------
  *
@@ -1501,6 +1549,7 @@ ThreadCancelObjCmd(dummy, interp, objc, objv)
 
     return ThreadCancel(interp, thrId, result, flags);
 }
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -2116,6 +2165,7 @@ ThreadExistsInner(thrId)
     return NULL;
 }
 
+#ifdef TCL_TIP285
 /*
  *----------------------------------------------------------------------
  *
@@ -2141,7 +2191,6 @@ ThreadCancel(interp, thrId, result, flags)
 {
     int code;
     Tcl_Obj *resultObj = NULL;
-
     ThreadSpecificData *tsdPtr; /* ... of the target thread */
 
     Tcl_MutexLock(&threadMutex);
@@ -2166,9 +2215,9 @@ ThreadCancel(interp, thrId, result, flags)
     code = Tcl_CancelEval(tsdPtr->interp, resultObj, NULL, flags);
 
     Tcl_MutexUnlock(&threadMutex);
-
     return code;
 }
+#endif
 
 /*
  *----------------------------------------------------------------------
@@ -2782,6 +2831,7 @@ ThreadWait(Tcl_Interp *interp)
 
         Tcl_DoOneEvent(TCL_ALL_EVENTS);
 
+#ifdef TCL_TIP285
         if (haveInterpCancel) {
 
             /*
@@ -2800,12 +2850,15 @@ ThreadWait(Tcl_Interp *interp)
                 break;
             }
         }
+#endif
+#ifdef TCL_TIP143
         if (haveInterpLimit) {
             if (Tcl_LimitExceeded(tsdPtr->interp)) {
                 code = TCL_ERROR;
                 break;
             }
         }
+#endif
 
         /*
          * Test stop condition under mutex since
@@ -2817,10 +2870,12 @@ ThreadWait(Tcl_Interp *interp)
         Tcl_MutexUnlock(&threadMutex);
     }
 
+#if defined(TCL_TIP143) || defined(TCL_TIP285)
     /*
      * If the event processing loop above was terminated due to a
      * script in progress being canceled or exceeding its limits,
-     * transfer the error to the current interpreter.
+     * call the registered error processing script now, if there
+     * is one.
      */
 
     if (code != TCL_OK) {
@@ -2836,6 +2891,7 @@ ThreadWait(Tcl_Interp *interp)
         Tcl_AppendResult(interp, "Error from thread ", buf, "\n",
                 errorInfo, NULL);
     }
+#endif
 
     /*
      * Remove from the list of active threads, so nobody can post
