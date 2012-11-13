@@ -1715,7 +1715,7 @@ NewThread(clientData)
      */
 
 #ifdef NS_AOLSERVER
-    struct mydata *md = (struct mydata*)ctrlPtr->cd;
+    NsThreadInterpData *md = (NsThreadInterpData *)ctrlPtr->cd;
     Ns_ThreadSetName("-tclthread-");
     interp = (Tcl_Interp*)Ns_TclAllocateInterp(md ? md->server : NULL);
 #else
