@@ -20,10 +20,6 @@
 #include "threadSvKeylistCmd.h" /* Shared variants of list commands */
 #include "psGdbm.h"             /* The gdbm persistent store implementation */
 
-#ifdef NS_AOLSERVER
-# define HIDE_DOTNAMES       /* tsv::names cmd does not list .<name> arrays */
-#endif
-
 /*
  * Number of buckets to spread shared arrays into. Each bucket is
  * associated with one mutex so locking a bucket locks all arrays
@@ -73,9 +69,9 @@ static Tcl_Mutex  svMutex;      /* Protects inserts into above lists */
 static Tcl_Mutex  initMutex;    /* Serializes initialization issues */
 
 /*
- * The standard commands found in AOLserver nsv_* interface.
- * For sharp-eye readers: the implementaion of the "lappend" command
- * is moved to new list-command package, since it realy belongs there.
+ * The standard commands found in NaviServer/AOLserver nsv_* interface.
+ * For sharp-eye readers: the implementation of the "lappend" command
+ * is moved to new list-command package, since it really belongs there.
  */
 
 static Tcl_ObjCmdProc SvObjObjCmd;
@@ -144,34 +140,36 @@ static int SvObjDispatchObjCmd(ClientData arg,
  */
 
 void
-Sv_RegisterCommand(cmdName, objProc, delProc, clientData)
+Sv_RegisterCommand(cmdName, objProc, delProc)
     const char *cmdName;                /* Name of command to register */
     Tcl_ObjCmdProc *objProc;            /* Object-based command procedure */
     Tcl_CmdDeleteProc *delProc;         /* Command delete procedure */
-    ClientData clientData;              /* Private data ptr to pass to cmd */
 {
-    int len = strlen(cmdName) + strlen(TSV_CMD_PREFIX);
-    SvCmdInfo *newCmd = (SvCmdInfo*)Tcl_Alloc(sizeof(SvCmdInfo) + len + 1);
+    int len = strlen(cmdName) + strlen(TSV_CMD_PREFIX) + 1;
+    int len2 = strlen(cmdName) + strlen(TSV_CMD2_PREFIX) + 1;
+    SvCmdInfo *newCmd = (SvCmdInfo*)Tcl_Alloc(sizeof(SvCmdInfo) + len + len2);
 
     /*
      * Setup new command structure
      */
 
     newCmd->cmdName = (char*)((char*)newCmd + sizeof(SvCmdInfo));
+    newCmd->cmdName2 = newCmd->cmdName + len;
 
     newCmd->objProcPtr = objProc;
     newCmd->delProcPtr = delProc;
-    newCmd->clientData = clientData;
 
     /*
      * Rewrite command name. This is needed so we can
-     * easily turn-on the compatiblity with AOLserver
+     * easily turn-on the compatiblity with NaviServer/AOLserver
      * command names.
      */
 
     strcpy(newCmd->cmdName, TSV_CMD_PREFIX);
     strcat(newCmd->cmdName, cmdName);
     newCmd->name = newCmd->cmdName + strlen(TSV_CMD_PREFIX);
+    strcpy(newCmd->cmdName2, TSV_CMD2_PREFIX);
+    strcat(newCmd->cmdName2, cmdName);
 
     /*
      * Plug-in in shared list of commands.
@@ -1113,8 +1111,8 @@ SvObjDispatchObjCmd(arg, interp, objc, objv)
  */
 
 static int
-SvObjObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
+SvObjObjCmd(arg, interp, objc, objv)
+    ClientData arg;                     /* Just passed to subcommands. */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
@@ -1158,7 +1156,7 @@ SvObjObjCmd(dummy, interp, objc, objv)
      */
 
     sprintf(buf, "::%p", (int*)svObj);
-    Tcl_CreateObjCommand(interp, buf, SvObjDispatchObjCmd, (int*)svObj, NULL);
+    Tcl_CreateObjCommand(interp, buf, SvObjDispatchObjCmd, (int*)svObj, arg);
     Tcl_ResetResult(interp);
     Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, -1));
 
@@ -1478,8 +1476,8 @@ SvUnsetObjCmd(dummy, interp, objc, objv)
  */
 
 static int
-SvNamesObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
+SvNamesObjCmd(aol, interp, objc, objv)
+    ClientData aol;                     /* !=0 when running in AOL */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
@@ -1506,11 +1504,7 @@ SvNamesObjCmd(dummy, interp, objc, objv)
         hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
         while (hPtr) {
             char *key = Tcl_GetHashKey(&bucketPtr->arrays, hPtr);
-#ifdef HIDE_DOTNAMES
-            if (*key != '.' /* Hide .<name> arrays */ &&
-#else
-            if (1 &&
-#endif
+            if ((!aol || (*key != '.')) /* Hide .<name> arrays for AOL*/ &&
                 (pattern == NULL || Tcl_StringMatch(key, pattern))) {
                 Tcl_ListObjAppendElement(interp, resObj,
                         Tcl_NewStringObj(key, -1));
@@ -2092,19 +2086,19 @@ SvRegisterStdCommands(void)
     if (initialized == 0) {
         Tcl_MutexLock(&initMutex);
         if (initialized == 0) {
-            Sv_RegisterCommand("var",    SvObjObjCmd,    NULL, NULL);
-            Sv_RegisterCommand("object", SvObjObjCmd,    NULL, NULL);
-            Sv_RegisterCommand("set",    SvSetObjCmd,    NULL, NULL);
-            Sv_RegisterCommand("unset",  SvUnsetObjCmd,  NULL, NULL);
-            Sv_RegisterCommand("get",    SvGetObjCmd,    NULL, NULL);
-            Sv_RegisterCommand("incr",   SvIncrObjCmd,   NULL, NULL);
-            Sv_RegisterCommand("exists", SvExistsObjCmd, NULL, NULL);
-            Sv_RegisterCommand("append", SvAppendObjCmd, NULL, NULL);
-            Sv_RegisterCommand("array",  SvArrayObjCmd,  NULL, NULL);
-            Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL, NULL);
-            Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL, NULL);
-            Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL, NULL);
-            Sv_RegisterCommand("lock",   SvLockObjCmd,   NULL, NULL);
+            Sv_RegisterCommand("var",    SvObjObjCmd,    NULL);
+            Sv_RegisterCommand("object", SvObjObjCmd,    NULL);
+            Sv_RegisterCommand("set",    SvSetObjCmd,    NULL);
+            Sv_RegisterCommand("unset",  SvUnsetObjCmd,  NULL);
+            Sv_RegisterCommand("get",    SvGetObjCmd,    NULL);
+            Sv_RegisterCommand("incr",   SvIncrObjCmd,   NULL);
+            Sv_RegisterCommand("exists", SvExistsObjCmd, NULL);
+            Sv_RegisterCommand("append", SvAppendObjCmd, NULL);
+            Sv_RegisterCommand("array",  SvArrayObjCmd,  NULL);
+            Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL);
+            Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL);
+            Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL);
+            Sv_RegisterCommand("lock",   SvLockObjCmd,   NULL);
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);
@@ -2167,7 +2161,11 @@ Sv_Init (interp)
 
     for (cmdPtr = svCmdInfo; cmdPtr; cmdPtr = cmdPtr->nextPtr) {
         Tcl_CreateObjCommand(interp, cmdPtr->cmdName, cmdPtr->objProcPtr,
-                (ClientData)cmdPtr->clientData, (Tcl_CmdDeleteProc*)0);
+                (ClientData)0, (Tcl_CmdDeleteProc*)0);
+#ifdef NS_AOLSERVER
+        Tcl_CreateObjCommand(interp, cmdPtr->cmdName2, cmdPtr->objProcPtr,
+                (ClientData)1, (Tcl_CmdDeleteProc*)0);
+#endif
     }
 
     /*

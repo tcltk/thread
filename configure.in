@@ -37,14 +37,13 @@ TEA_PATH_TCLCONFIG
 TEA_LOAD_TCLCONFIG
 
 if test "${TCL_MAJOR_VERSION}" -ne 8 ; then
-    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.6+
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
 Found config for Tcl ${TCL_VERSION}])
 fi
-if test "${TCL_MINOR_VERSION}" -lt 6 ; then
-    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.6+
+if test "${TCL_MINOR_VERSION}" -lt 4 ; then
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
 Found config for Tcl ${TCL_VERSION}])
 fi
-
 
 #--------------------------------------------------------------------
 # Load the tkConfig.sh file if necessary (Tk extension)
@@ -77,8 +76,8 @@ TEA_SETUP_COMPILER
 TCLTHREAD_WITH_GDBM
 
 #--------------------------------------------------------------------
-# Locate the AOLserver dir for compilation as AOLserver module.
-# This will declare AOL_INCLUDES, AOL_LIBS and define NS_AOLSERVER.
+# Locate the NaviServer/AOLserver dir for compilation as NaviServer/AOLserver module.
+# This will declare NS_INCLUDES, NS_LIBS and define NS_AOLSERVER.
 #--------------------------------------------------------------------
 
 NS_PATH_AOLSERVER
@@ -93,7 +92,8 @@ NS_PATH_AOLSERVER
 # and PKG_TCL_SOURCES.
 #-----------------------------------------------------------------------
 
-TEA_ADD_SOURCES([generic/threadCmd.c          \
+TEA_ADD_SOURCES([generic/threadNs.c           \
+                 generic/threadCmd.c          \
                  generic/threadSvCmd.c        \
                  generic/threadSpCmd.c        \
                  generic/threadPoolCmd.c      \
@@ -104,8 +104,8 @@ TEA_ADD_SOURCES([generic/threadCmd.c          \
 ])
 
 TEA_ADD_HEADERS([generic/tclThread.h])
-TEA_ADD_INCLUDES([${AOL_INCLUDES}])
-TEA_ADD_LIBS([${GDBM_LIBS} ${AOL_LIBS}])
+TEA_ADD_INCLUDES([${NS_INCLUDES}])
+TEA_ADD_LIBS([${GDBM_LIBS} ${NS_LIBS}])
 TEA_ADD_CFLAGS([${GDBM_CFLAGS}])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([lib/ttrace.tcl])

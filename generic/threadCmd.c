@@ -21,8 +21,29 @@
 
 #include "tclThreadInt.h"
 
-#ifdef NS_AOLSERVER
-# include "aolstub.cpp"
+/*
+ * Check if this is Tcl 8.5 or higher. In that case, we will have the TIP
+ * #143 APIs (i.e. interpreter resource limiting) available.
+ */
+
+#define haveInterpLimit (tclVersion>84)
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 5)
+# define Tcl_LimitExceeded ((int (*)(Tcl_Interp *)) \
+    ((&(tclStubsPtr->tcl_PkgProvideEx))[524]))
+#endif
+
+/*
+ * Check if this is Tcl 8.6 or higher.  In that case, we will have the TIP
+ * #285 APIs (i.e. asynchronous script cancellation) available.
+ */
+
+#define haveInterpCancel (tclVersion>85)
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 6)
+# define TCL_CANCEL_UNWIND 0x100000
+# define Tcl_CancelEval ((int (*)(Tcl_Interp *, Tcl_Obj *, ClientData, int)) \
+    ((&(tclStubsPtr->tcl_PkgProvideEx))[580]))
+# define Tcl_Canceled ((int (*)(Tcl_Interp *, int)) \
+    ((&(tclStubsPtr->tcl_PkgProvideEx))[581]))
 #endif
 
 /*
@@ -85,6 +106,8 @@ static struct ThreadSpecificData *threadList = NULL;
  */
 
 static char *threadEmptyResult = (char *)"";
+
+static int tclVersion = 0;
 
 /*
  * An instance of the following structure contains all information that is
@@ -364,19 +387,21 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
-    int tclIsThreaded = 0;;
-
-    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
+    if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
         return TCL_ERROR;
     }
 
-    if (Tcl_Eval(interp, "::tcl::pkgconfig get threaded") != TCL_OK
-	    || Tcl_GetBooleanFromObj(interp,
-	    Tcl_GetObjResult(interp), &tclIsThreaded) != TCL_OK
-	    || !tclIsThreaded) {
-	Tcl_SetObjResult(interp, Tcl_NewStringObj(
-		"Tcl core wasn't compiled for threading.", -1));
-	return TCL_ERROR;
+    if (!tclVersion) {
+
+        /*
+         * Get the current core version to decide wether to use
+         * some lately introduced core features or to back-off.
+         */
+
+        int major, minor;
+        
+        Tcl_GetVersion(&major, &minor, NULL, NULL);
+        tclVersion = 10 * major + minor;
     }
 
     TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
@@ -1601,9 +1626,7 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
     ThreadCtrl ctrl;
     Tcl_ThreadId thrId;
 
-#ifdef NS_AOLSERVER
     ctrl.cd = Tcl_GetAssocData(interp, "thread:nsd", NULL);
-#endif
     ctrl.script   = (char *)script;
     ctrl.condWait = NULL;
     ctrl.flags    = 0;
@@ -1692,7 +1715,7 @@ NewThread(clientData)
      */
 
 #ifdef NS_AOLSERVER
-    struct mydata *md = (struct mydata*)ctrlPtr->cd;
+    NsThreadInterpData *md = (NsThreadInterpData *)ctrlPtr->cd;
     Ns_ThreadSetName("-tclthread-");
     interp = (Tcl_Interp*)Ns_TclAllocateInterp(md ? md->server : NULL);
 #else
@@ -2116,22 +2139,35 @@ ThreadCancel(interp, thrId, result, flags)
     const char *result;         /* The error message or NULL for default. */
     int flags;                  /* Flags for Tcl_CancelEval. */
 {
-    ThreadSpecificData *tsdPtr = NULL; /* ... of the target thread */
+    int code;
+    Tcl_Obj *resultObj = NULL;
+
+    ThreadSpecificData *tsdPtr; /* ... of the target thread */
 
     Tcl_MutexLock(&threadMutex);
 
     tsdPtr = ThreadExistsInner(thrId);
-
     if (tsdPtr == (ThreadSpecificData*)NULL) {
         Tcl_MutexUnlock(&threadMutex);
         ErrorNoSuchThread(interp, thrId);
         return TCL_ERROR;
     }
 
+    if (!haveInterpCancel) {
+        Tcl_MutexUnlock(&threadMutex);
+        Tcl_AppendResult(interp, "not supported with this Tcl version", NULL);
+        return TCL_ERROR;
+    }
+
+    if (result != NULL) {
+        resultObj = Tcl_NewStringObj(result, -1);
+    }
+
+    code = Tcl_CancelEval(tsdPtr->interp, resultObj, NULL, flags);
+
     Tcl_MutexUnlock(&threadMutex);
 
-    return Tcl_CancelEval(tsdPtr->interp,
-            (result != NULL) ? Tcl_NewStringObj(result, -1) : NULL, 0, flags);
+    return code;
 }
 
 /*
@@ -2746,25 +2782,29 @@ ThreadWait(Tcl_Interp *interp)
 
         Tcl_DoOneEvent(TCL_ALL_EVENTS);
 
-        /*
-         * If the script has been unwound, bail out immediately. This does
-         * not follow the recommended guidelines for how extensions should
-         * handle the script cancellation functionality because this is
-         * not a "normal" extension. Most extensions do not have a command
-         * that simply enters an infinite Tcl event loop. Normal extensions
-         * should not specify the TCL_CANCEL_UNWIND when calling the
-         * Tcl_Canceled function to check if the command has been canceled.
-         */
+        if (haveInterpCancel) {
 
-        if (Tcl_Canceled(tsdPtr->interp,
-                TCL_LEAVE_ERR_MSG | TCL_CANCEL_UNWIND) == TCL_ERROR) {
-            code = TCL_ERROR;
-            break;
+            /*
+             * If the script has been unwound, bail out immediately. This does
+             * not follow the recommended guidelines for how extensions should
+             * handle the script cancellation functionality because this is
+             * not a "normal" extension. Most extensions do not have a command
+             * that simply enters an infinite Tcl event loop. Normal extensions
+             * should not specify the TCL_CANCEL_UNWIND when calling the
+             * Tcl_Canceled function to check if the command has been canceled.
+             */
+
+            if (Tcl_Canceled(tsdPtr->interp,
+                    TCL_LEAVE_ERR_MSG | TCL_CANCEL_UNWIND) == TCL_ERROR) {
+                code = TCL_ERROR;
+                break;
+            }
         }
-
-        if (Tcl_LimitExceeded(tsdPtr->interp)) {
-            code = TCL_ERROR;
-            break;
+        if (haveInterpLimit) {
+            if (Tcl_LimitExceeded(tsdPtr->interp)) {
+                code = TCL_ERROR;
+                break;
+            }
         }
 
         /*
@@ -3550,7 +3590,7 @@ ThreadExitProc(clientData)
     Tcl_MutexLock(&threadMutex);
 
     /*
-     * AOLserver and threadpool threads get started/stopped
+     * NaviServer/AOLserver and threadpool threads get started/stopped
      * out of the control of this interface so this is
      * the first chance to split them out of the thread list.
      */

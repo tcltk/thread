@@ -92,16 +92,16 @@ Sv_RegisterListCommands(void)
     if (initialized == 0) {
         Tcl_MutexLock(&initMutex);
         if (initialized == 0) {
-            Sv_RegisterCommand("lpop",     SvLpopObjCmd,     NULL, NULL);
-            Sv_RegisterCommand("lpush",    SvLpushObjCmd,    NULL, NULL);
-            Sv_RegisterCommand("lappend",  SvLappendObjCmd,  NULL, NULL);
-            Sv_RegisterCommand("lreplace", SvLreplaceObjCmd, NULL, NULL);
-            Sv_RegisterCommand("linsert",  SvLinsertObjCmd,  NULL, NULL);
-            Sv_RegisterCommand("llength",  SvLlengthObjCmd,  NULL, NULL);
-            Sv_RegisterCommand("lindex",   SvLindexObjCmd,   NULL, NULL);
-            Sv_RegisterCommand("lrange",   SvLrangeObjCmd,   NULL, NULL);
-            Sv_RegisterCommand("lsearch",  SvLsearchObjCmd,  NULL, NULL);
-            Sv_RegisterCommand("lset",     SvLsetObjCmd,     NULL, NULL);
+            Sv_RegisterCommand("lpop",     SvLpopObjCmd,     NULL);
+            Sv_RegisterCommand("lpush",    SvLpushObjCmd,    NULL);
+            Sv_RegisterCommand("lappend",  SvLappendObjCmd,  NULL);
+            Sv_RegisterCommand("lreplace", SvLreplaceObjCmd, NULL);
+            Sv_RegisterCommand("linsert",  SvLinsertObjCmd,  NULL);
+            Sv_RegisterCommand("llength",  SvLlengthObjCmd,  NULL);
+            Sv_RegisterCommand("lindex",   SvLindexObjCmd,   NULL);
+            Sv_RegisterCommand("lrange",   SvLrangeObjCmd,   NULL);
+            Sv_RegisterCommand("lsearch",  SvLsearchObjCmd,  NULL);
+            Sv_RegisterCommand("lset",     SvLsetObjCmd,     NULL);
             Sv_RegisterObjType(Tcl_GetObjType("list"), DupListObjShared);
             initialized = 1;
         }
