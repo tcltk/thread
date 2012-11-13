@@ -2934,7 +2934,17 @@ ThreadWait(Tcl_Interp *interp)
      */
 
     if (code != TCL_OK) {
-        ThreadErrorProc(tsdPtr->interp);
+        char buf[THREAD_HNDLMAXLEN];
+        const char *errorInfo;
+
+        errorInfo = Tcl_GetVar(tsdPtr->interp, "errorInfo", TCL_GLOBAL_ONLY);
+        if (errorInfo == NULL) {
+        	errorInfo = Tcl_GetStringResult(tsdPtr->interp);
+        }
+
+        ThreadGetHandle(Tcl_GetCurrentThread(), buf);
+        Tcl_AppendResult(interp, "Error from thread ", buf, "\n",
+                errorInfo, NULL);
     }
 #endif
 
