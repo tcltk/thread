@@ -39,6 +39,7 @@
  * stubs table.
  */
 
+#define haveInterpLimit (tclVersion>84)
 #if defined(TCL_TIP143) && (TCL_MAJOR_VERSION == 8) && \
     (TCL_MINOR_VERSION < 5)
 # if defined(USE_TCL_STUBS)
@@ -54,6 +55,7 @@
  * #285 APIs (i.e. asynchronous script cancellation) available.
  */
 
+#define haveInterpCancel (tclVersion>85)
 #ifndef TCL_TIP285
 # if (TCL_MAJOR_VERSION > 8) || \
      ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 6))
@@ -141,20 +143,8 @@ static struct ThreadSpecificData *threadList = NULL;
 
 static char *threadEmptyResult = (char *)"";
 
-/*
- * This will be set to non-zero if TIP #143 functionality is available.
- */
-
-#ifdef TCL_TIP143
-static int threadHaveInterpLimit = 0;
-#endif
-
-/*
- * This will be set to non-zero if TIP #285 functionality is available.
- */
-
-#ifdef TCL_TIP285
-static int threadHaveInterpCancel = 0;
+#if defined(TCL_TIP143) || defined(TCL_TIP285)
+static int tclVersion = 0;
 #endif
 
 /*
@@ -440,23 +430,24 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
-    Tcl_Obj *boolObjPtr;
-    const char *msg;
-    int boolVar;
-
     if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
         return TCL_ERROR;
     }
 
-    boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", 0);
+#if defined(TCL_TIP143) || defined(TCL_TIP285)
+    if (!tclVersion) {
 
-    if (boolObjPtr == NULL
-	|| Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_OK
-	|| boolVar == 0) {
-        msg = "Tcl core wasn't compiled for threading.";
-        Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
-        return TCL_ERROR;
+    	/*
+    	 * Get the current core version to decide whether to use
+    	 * some lately introduced core features or to back-off.
+    	 */
+
+    	int major, minor;
+
+    	Tcl_GetVersion(&major, &minor, NULL, NULL);
+    	tclVersion = 10 * major + minor;
     }
+#endif
 
     TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"send",      ThreadSendObjCmd);
@@ -475,34 +466,6 @@ ThreadInit(interp)
     TCL_CMD(interp, THREAD_CMD_PREFIX"transfer",  ThreadTransferObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"detach",    ThreadDetachObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"attach",    ThreadAttachObjCmd);
-
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
-    {
-        /*
-         * This package may have been compiled against Tcl 8.5 or higher;
-         * however, what if it is being loaded by Tcl 8.4 or lower?  Perform
-         * a version check now to stop using from trying to use the TIP #143
-         * or TIP #285 functionality if they are not present.
-         */
-
-        int major, minor;
-
-        Tcl_GetVersion(&major, &minor, NULL, NULL);
-
-        Tcl_MutexLock(&threadMutex);
-        if (major > 8 || (major == 8 && minor >= 5)) {
-            threadHaveInterpLimit = 1;
-        }
-        if (major > 8 || (major == 8 && minor >= 6)) {
-            threadHaveInterpCancel = 1;
-        }
-        Tcl_MutexUnlock(&threadMutex);
-
-        if (major > 8 || (major == 8 && minor >= 6)) {
-            TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
-        }
-    }
-#endif
 
     /*
      * Add shared variable commands
@@ -2236,7 +2199,7 @@ ThreadCancel(interp, thrId, result, flags)
         return TCL_ERROR;
     }
 
-    if (!threadHaveInterpCancel) {
+    if (!haveInterpCancel) {
         Tcl_MutexUnlock(&threadMutex);
         Tcl_AppendResult(interp, "not supported with this Tcl version", NULL);
         return TCL_ERROR;
@@ -2835,22 +2798,7 @@ ThreadWait(Tcl_Interp *interp)
 {
     int code = TCL_OK;
     int canrun = 1;
-    int haveInterpLimit;
-    int haveInterpCancel;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
-
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
-    Tcl_MutexLock(&threadMutex);
-#endif
-#ifdef TCL_TIP143
-    haveInterpLimit = threadHaveInterpLimit;
-#endif
-#ifdef TCL_TIP285
-    haveInterpCancel = threadHaveInterpCancel;
-#endif
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
-    Tcl_MutexUnlock(&threadMutex);
-#endif
 
     /*
      * Process events until signaled to stop.
