@@ -2874,8 +2874,7 @@ ThreadWait(Tcl_Interp *interp)
     /*
      * If the event processing loop above was terminated due to a
      * script in progress being canceled or exceeding its limits,
-     * call the registered error processing script now, if there
-     * is one.
+     * transfer the error to the current interpreter.
      */
 
     if (code != TCL_OK) {
