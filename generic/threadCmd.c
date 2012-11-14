@@ -143,9 +143,7 @@ static struct ThreadSpecificData *threadList = NULL;
 
 static char *threadEmptyResult = (char *)"";
 
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
 static int tclVersion = 0;
-#endif
 
 /*
  * An instance of the following structure contains all information that is
@@ -434,7 +432,6 @@ ThreadInit(interp)
         return TCL_ERROR;
     }
 
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
     if (!tclVersion) {
 
 	/*
@@ -443,11 +440,34 @@ ThreadInit(interp)
 	 */
 
 	int major, minor;
+	Tcl_Obj *boolObjPtr;
+	const char *msg;
+	int boolVar;
 
 	Tcl_GetVersion(&major, &minor, NULL, NULL);
-	tclVersion = 10 * major + minor;
+
+	if ((major>8) || (minor>4)) {
+	    if (Tcl_EvalEx(interp, "::tcl::pkgconfig get threaded", -1,
+		    TCL_EVAL_GLOBAL) != TCL_OK) {
+		return TCL_ERROR;
+	    }
+	    boolObjPtr = Tcl_GetObjResult(interp);
+	} else {
+	    boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", TCL_GLOBAL_ONLY);
+	}
+	if (boolObjPtr == NULL
+		|| Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_OK
+		|| boolVar == 0) {
+	    msg = "Tcl core wasn't compiled for threading.";
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
+	    return TCL_ERROR;
+	}
+    Tcl_MutexLock(&threadMutex);
+	if (!tclVersion) {
+	    tclVersion = 10 * major + minor;
+	}
+    Tcl_MutexUnlock(&threadMutex);
     }
-#endif
 
     TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"send",      ThreadSendObjCmd);

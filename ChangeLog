@@ -1,3 +1,15 @@
+2012-11-14  Jan Nijtmans  <nijtmans@users.sf.net>
+
+	* generic/threadCmd.c: Move back test for core threaded functionality
+	* pkgIndex.tcl.in:     from pkgIndex.tcl to threadCmd.c, so it cannot
+	be escaped any more.
+
+2012-11-13  Joe Mistachkin  <joe@mistachkin.com>
+
+	* generic/threadCmd.c: merge compileTipCheck to trunk. Additional
+	functionality to switch off TIP 143/285 functionality for static
+	builds.
+
 2012-11-10 Zoran Vasiljevic <zv@archiware.com>
 
 	* genric/threadCmd.c: fixed race condition on
