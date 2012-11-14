@@ -247,6 +247,7 @@ crt = -MT
 !endif
 
 cflags = $(cflags) -DMODULE_SCOPE=extern
+cflags = $(cflags) -DTCL_TIP143 -DTCL_TIP285
 
 !if !$(STATIC_BUILD)
 cflags = $(cflags) -DUSE_TCL_STUBS
