@@ -27,8 +27,7 @@
  */
 
 #ifndef TCL_TIP143
-# if (TCL_MAJOR_VERSION > 8) || \
-     ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 5))
+# if (TCL_MAJOR_VERSION > 8) || (TCL_MINOR_VERSION > 4)
 #  define TCL_TIP143
 # endif
 #endif
@@ -57,8 +56,7 @@
 
 #define haveInterpCancel (tclVersion>85)
 #ifndef TCL_TIP285
-# if (TCL_MAJOR_VERSION > 8) || \
-     ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION >= 6))
+# if (TCL_MAJOR_VERSION > 8) || (TCL_MINOR_VERSION > 5)
 #  define TCL_TIP285
 # endif
 #endif
@@ -208,7 +206,7 @@ static ThreadSendProc ThreadClbkSetVar;   /* Sets the named variable */
  * threads. The ThreadSendData is used for source->target command passing,
  * while the ThreadClbkData is used for doing asynchronous callbacks.
  *
- * Important: structures below must have first three elements indentical!
+ * Important: structures below must have first three elements identical!
  */
 
 typedef struct ThreadSendData {
@@ -274,7 +272,7 @@ static char *errorProcString;      /* Tcl script to run when reporting error */
 #endif
 
 /*
- * Miscelaneous functions used within this file
+ * Miscellaneous functions used within this file
  */
 
 static Tcl_EventDeleteProc ThreadDeleteEvent;
@@ -462,11 +460,11 @@ ThreadInit(interp)
 	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
 	    return TCL_ERROR;
 	}
-    Tcl_MutexLock(&threadMutex);
+	Tcl_MutexLock(&threadMutex);
 	if (!tclVersion) {
 	    tclVersion = 10 * major + minor;
 	}
-    Tcl_MutexUnlock(&threadMutex);
+	Tcl_MutexUnlock(&threadMutex);
     }
 
     TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
@@ -2127,7 +2125,7 @@ ThreadList(interp, thrIdArray)
  *
  * ThreadExists --
  *
- *  Test wether a thread given by it's id is known to us.
+ *  Test whether a thread given by it's id is known to us.
  *
  * Results:
  *  Pointer to thread specific data structure or
@@ -2157,7 +2155,7 @@ ThreadExists(thrId)
  *
  * ThreadExistsInner --
  *
- *  Test wether a thread given by it's id is known to us. Assumes
+ *  Test whether a thread given by it's id is known to us. Assumes
  *  caller holds the thread mutex.
  *
  * Results:
@@ -3077,12 +3075,12 @@ ThreadEventProc(evPtr, mask)
     int code = TCL_ERROR; /* Pessimistic assumption */
 
     /*
-     * See wether user has any preferences about which interpreter
-     * to use for running this job. The job structure might indentify
+     * See whether user has any preferences about which interpreter
+     * to use for running this job. The job structure might identify
      * one. If not, just use the thread's main interpreter which is
      * stored in the thread specific data structure.
      * Note that later on we might discover that we're running the
-     * aync callback script. In this case, interpreter will be
+     * async callback script. In this case, interpreter will be
      * changed to one given in the callback.
      */
 
