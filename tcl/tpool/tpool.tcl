@@ -23,7 +23,8 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 # -----------------------------------------------------------------------------
 
-package require Thread 2.7-
+package require Tcl    8.5-
+package require Thread 2.5-
 set thisScript [info script]
 
 namespace eval tpool {

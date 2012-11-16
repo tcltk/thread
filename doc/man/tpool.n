@@ -239,7 +239,7 @@ Database Class:	\\fB\\$3\\fR
 \\$1\l'|0\(ul'\\$2
 ..
 
-.TH "tpool" n 2.6  "Tcl Threading"
+.TH "tpool" n 2.7  "Tcl Threading"
 .BS
 .SH "NAME"
 tpool \-
@@ -247,7 +247,7 @@ Part of the Tcl threading extension implementing pools of worker threads.
 .SH "SYNOPSIS"
 package require \fBTcl  8.4\fR
 .sp
-package require \fBThread  ?2.6?\fR
+package require \fBThread  ?2.7?\fR
 .sp
 \fBtpool::create\fR ?options?
 .sp

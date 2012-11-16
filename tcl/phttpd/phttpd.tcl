@@ -32,8 +32,8 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 # -----------------------------------------------------------------------------
 
-package require Tcl    8.4
-package require Thread 2.7-
+package require Tcl    8.5-
+package require Thread 2.5-
 
 #
 # Modify the following in order to load the
