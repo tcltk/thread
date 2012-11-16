@@ -376,25 +376,17 @@ ThreadInit(interp)
 	 */
 
 	int major, minor;
-	Tcl_Obj *boolObjPtr;
-	const char *msg;
 	int boolVar;
 
 	Tcl_GetVersion(&major, &minor, NULL, NULL);
 
-	if ((major>8) || (minor>4)) {
-	    if (Tcl_EvalEx(interp, "::tcl::pkgconfig get threaded", -1,
-		    TCL_EVAL_GLOBAL) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    boolObjPtr = Tcl_GetObjResult(interp);
-	} else {
-	    boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", TCL_GLOBAL_ONLY);
+	if (Tcl_EvalEx(interp, "::tcl::pkgconfig get threaded", -1,
+		TCL_EVAL_GLOBAL) != TCL_OK) {
+	    return TCL_ERROR;
 	}
-	if (boolObjPtr == NULL
-		|| Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_OK
-		|| boolVar == 0) {
-	    msg = "Tcl core wasn't compiled for threading.";
+	if (Tcl_GetBooleanFromObj(interp, Tcl_GetObjResult(interp), &boolVar)
+		!= TCL_OK || boolVar == 0) {
+	    const char *msg = "Tcl core wasn't compiled for threading.";
 	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
 	    return TCL_ERROR;
 	}
