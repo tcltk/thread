@@ -21,7 +21,7 @@ with the Tcl threading extension:
 [example {
 
     % package require Ttrace
-    2.6.5
+    2.7.0
 
     % set t1 [thread::create {package require Ttrace; thread::wait}]
     tid0x1802800

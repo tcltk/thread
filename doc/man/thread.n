@@ -239,14 +239,14 @@ Database Class:	\\fB\\$3\\fR
 \\$1\l'|0\(ul'\\$2
 ..
 
-.TH "thread" n 2.6  "Tcl Threading"
+.TH "thread" n 2.7  "Tcl Threading"
 .BS
 .SH "NAME"
 thread \- Extension for script access to Tcl threading
 .SH "SYNOPSIS"
 package require \fBTcl  8.4\fR
 .sp
-package require \fBThread  ?2.6?\fR
+package require \fBThread  ?2.7?\fR
 .sp
 \fBthread::create\fR ?-joinable? ?-preserved? ?script?
 .sp
