@@ -239,14 +239,14 @@ Database Class:	\\fB\\$3\\fR
 \\$1\l'|0\(ul'\\$2
 ..
 
-.TH "ttrace" n 2.6  "Tcl Threading"
+.TH "ttrace" n 2.7  "Tcl Threading"
 .BS
 .SH "NAME"
 ttrace \- Trace-based interpreter initialization
 .SH "SYNOPSIS"
 package require \fBTcl  8.4\fR
 .sp
-package require \fBThread  ?2.6?\fR
+package require \fBThread  ?2.7?\fR
 .sp
 \fBttrace::eval\fR \fIarg\fR ?arg ...?
 .sp
@@ -298,7 +298,7 @@ with the Tcl threading extension:
 .nf
 
     % package require Ttrace
-    2.6.5
+    2.7.0
 
     % set t1 [thread::create {package require Ttrace; thread::wait}]
     tid0x1802800
