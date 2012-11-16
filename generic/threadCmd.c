@@ -362,7 +362,9 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
-    if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
+    /* TCL_VERSION should be "9.0", but that can only be done
+     * when Tcl 9.0 is final. */
+    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
         return TCL_ERROR;
     }
 
