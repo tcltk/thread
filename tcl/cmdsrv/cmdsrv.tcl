@@ -27,8 +27,8 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 # -----------------------------------------------------------------------------
 
-package require Tcl    8.4
-package require Thread 2.5
+package require Tcl    8.4-
+package require Thread 2.7-
 
 namespace eval cmdsrv {
     variable data; # Stores global configuration options

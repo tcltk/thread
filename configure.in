@@ -17,7 +17,7 @@ dnl	to configure the system for the local environment.
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
-AC_INIT([thread], [2.7.0])
+AC_INIT([thread], [3.0a1])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -37,11 +37,11 @@ TEA_PATH_TCLCONFIG
 TEA_LOAD_TCLCONFIG
 
 if test "${TCL_MAJOR_VERSION}" -ne 8 ; then
-    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.6+
 Found config for Tcl ${TCL_VERSION}])
 fi
-if test "${TCL_MINOR_VERSION}" -lt 4 ; then
-    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+if test "${TCL_MINOR_VERSION}" -lt 6 ; then
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.6+
 Found config for Tcl ${TCL_VERSION}])
 fi
 
@@ -183,15 +183,6 @@ TEA_ENABLE_SYMBOLS
 #--------------------------------------------------------------------
 
 AC_DEFINE(USE_TCL_STUBS, 1, [Use Tcl stubs])
-
-#--------------------------------------------------------------------
-# Enable compile-time support for TIP #143 and TIP #285.  When using
-# a pre-Tcl 8.5 or 8.6 core, respectively, the actual functionality
-# will not be available at runtime.
-#--------------------------------------------------------------------
-
-AC_DEFINE(TCL_TIP143, 1, [Enable TIP #143 support])
-AC_DEFINE(TCL_TIP285, 1, [Enable TIP #285 support])
 
 #--------------------------------------------------------------------
 # This macro generates a line to use when building a library.  It

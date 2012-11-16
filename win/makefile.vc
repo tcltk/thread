@@ -229,7 +229,7 @@ cdebug	= -Zi -W3 $(DEBUGFLAGS)
 !endif
 
 ### Declarations common to all compiler options
-cwarn = $(WARNINGS) -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE -D USE_INTERP_ERRORLINE
+cwarn = $(WARNINGS) -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE
 cflags = -nologo -c $(COMPILERFLAGS) $(cwarn) -Fp$(TMP_DIR)^\
 
 !if $(MSVCRT)
@@ -247,7 +247,7 @@ crt = -MT
 !endif
 
 cflags = $(cflags) -DMODULE_SCOPE=extern
-cflags = $(cflags) -DTCL_TIP143 -DTCL_TIP285
+cflags = $(cflags)
 
 !if !$(STATIC_BUILD)
 cflags = $(cflags) -DUSE_TCL_STUBS
