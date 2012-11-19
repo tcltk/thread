@@ -239,7 +239,7 @@ Database Class:	\\fB\\$3\\fR
 \\$1\l'|0\(ul'\\$2
 ..
 
-.TH "tsv" n 2.6  "Tcl Threading"
+.TH "tsv" n 2.7  "Tcl Threading"
 .BS
 .SH "NAME"
 tsv \-
@@ -248,7 +248,7 @@ manipulation of data shared between threads.
 .SH "SYNOPSIS"
 package require \fBTcl  8.4\fR
 .sp
-package require \fBThread  ?2.6?\fR
+package require \fBThread  ?2.7?\fR
 .sp
 \fBtsv::names\fR ?pattern?
 .sp
