@@ -531,7 +531,7 @@ ThreadInit(interp)
  *----------------------------------------------------------------------
  */
 
-EXTERN int
+DLLEXPORT int
 Thread_Init(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
