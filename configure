@@ -2708,6 +2708,7 @@ _ACEOF
 
 
 
+if test "${TCL_MAJOR_VERSION}" -ne 9 ; then
 if test "${TCL_MAJOR_VERSION}" -ne 8 ; then
     { { echo "$as_me:$LINENO: error: ${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
 Found config for Tcl ${TCL_VERSION}" >&5
@@ -2721,6 +2722,7 @@ Found config for Tcl ${TCL_VERSION}" >&5
 echo "$as_me: error: ${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
 Found config for Tcl ${TCL_VERSION}" >&2;}
    { (exit 1); exit 1; }; }
+fi
 fi
 
 #--------------------------------------------------------------------
