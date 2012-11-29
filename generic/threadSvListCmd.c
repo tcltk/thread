@@ -1083,7 +1083,7 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
             break;
         }
 
-        listPtr->internalRep.twoPtrValue.ptr2 = (VOID*)chainPtr;
+        listPtr->internalRep.twoPtrValue.ptr2 = (void *)chainPtr;
 
         /*
          * Determine the index of the requested element.
@@ -1136,7 +1136,7 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
     }
 
     if (result == TCL_OK) {
-        listPtr->internalRep.twoPtrValue.ptr2 = (VOID*)chainPtr;
+        listPtr->internalRep.twoPtrValue.ptr2 = (void *)chainPtr;
         /* Spoil all the string reps */
         while (listPtr != NULL) {
             subListPtr = (Tcl_Obj*)listPtr->internalRep.twoPtrValue.ptr2;
