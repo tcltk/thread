@@ -682,7 +682,7 @@ SvLsearchObjCmd (arg, interp, objc, objv)
         goto cmd_err;
     }
     if (imode) {
-        ret = Tcl_GetIndexFromObj(interp, objv[imode], modes, "search mode",
+        ret = Tcl_GetIndexFromObjStruct(interp, objv[imode], modes, sizeof(char *), "search mode",
                 0, &mode);
         if (ret != TCL_OK) {
             goto cmd_err;

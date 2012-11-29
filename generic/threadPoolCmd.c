@@ -1506,8 +1506,8 @@ TpoolEval(interp, script, scriptLen, rPtr)
     }
     rPtr->retcode = ret;
     if (ret == TCL_ERROR) {
-        errorCode = (char*)Tcl_GetVar(interp, "errorCode", TCL_GLOBAL_ONLY);
-        errorInfo = (char*)Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
+        errorCode = (char*)Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
+        errorInfo = (char*)Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         if (errorCode != NULL) {
             rPtr->errorCode = Tcl_Alloc(1 + strlen(errorCode));
             strcpy(rPtr->errorCode, errorCode);
