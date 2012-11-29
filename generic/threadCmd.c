@@ -426,7 +426,11 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
+#if TCL_MAJOR_VERSION == 8
     if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
+#else
+    if (Tcl_InitStubs(interp, TCL_PATCH_LEVEL, 0) == NULL) {
+#endif
         return TCL_ERROR;
     }
 

@@ -2,6 +2,29 @@
 # Tcl package index file, version 1.1
 #
 
+if {[package vsatisfies @TCL_VERSION@ 9]} {
+    # Shared lib was compiled against Tcl 9 headers.  Enable [load]ing
+    # only in Tcl 9 interps.
+    if {![package vsatisfies [package provide Tcl] 9]} {return}
+
+    package ifneeded Thread @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@]]
+
+    package ifneeded Ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
+    if {[info exists ::env(TCL_THREAD_LIBRARY)] &&
+	[file readable $::env(TCL_THREAD_LIBRARY)/ttrace.tcl]} {
+	source $::env(TCL_THREAD_LIBRARY)/ttrace.tcl
+    } elseif {[file readable [file join $dir .. lib ttrace.tcl]]} {
+	source [file join $dir .. lib ttrace.tcl]
+    } elseif {[file readable [file join $dir ttrace.tcl]]} {
+	source [file join $dir ttrace.tcl]
+    }
+    if {[namespace which ::ttrace::update] ne ""} {
+	::ttrace::update
+    }
+    }} $dir]
+    return
+}
+
 # Pre-8.4 Tcl interps we dont support at all.  Bye!
 if {![package vsatisfies [package provide Tcl] 8.4]} {return}
 
@@ -57,6 +80,4 @@ package ifneeded Ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
 	::ttrace::update
     }
 }} $dir]
-
-
 
