@@ -22,16 +22,10 @@
 
 #include <tcl.h>
 
-#undef  TCL_STORAGE_CLASS
-#define TCL_STORAGE_CLASS DLLEXPORT
-
 /*
  * Exported from threadCmd.c file.
  */
 
-EXTERN int Thread_Init(Tcl_Interp *interp);
-
-#undef  TCL_STORAGE_CLASS
-#define TCL_STORAGE_CLASS DLLIMPORT
+DLLEXPORT int Thread_Init(Tcl_Interp *interp);
 
 #endif /* _TCL_THREAD_H_ */
