@@ -362,10 +362,13 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
-    /* TCL_VERSION should be "9.0", but that can only be done
-     * when Tcl 9.0 is final. */
-    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
-        return TCL_ERROR;
+    /* Tcl 8.6 interps are only supported on 32-bit machines.
+     * Lower than that is never supported. Bye!
+     */
+
+    if (!Tcl_InitStubs(interp, "9.0", 0) && ((sizeof(size_t) != 4)
+	    || !Tcl_InitStubs(interp, "8.6", 0))) {
+	return TCL_ERROR;
     }
 
     if (!tclVersion) {
