@@ -482,7 +482,7 @@ EnsureKeyedListSpace (keylIntPtr, newNumEntries)
                 ckalloc (newSize * sizeof (keylEntry_t));
         } else {
             keylIntPtr->entries = (keylEntry_t *)
-                ckrealloc ((VOID *) keylIntPtr->entries,
+                ckrealloc ((void *) keylIntPtr->entries,
                            newSize * sizeof (keylEntry_t));
         }
         keylIntPtr->arraySize = newSize;
@@ -678,7 +678,7 @@ DupKeyedListInternalRep (srcPtr, copyPtr)
         Tcl_IncrRefCount (copyIntPtr->entries [idx].valuePtr);
     }
 
-    copyPtr->internalRep.otherValuePtr = (VOID *) copyIntPtr;
+    copyPtr->internalRep.otherValuePtr = (void *) copyIntPtr;
     copyPtr->typePtr = &keyedListType;
 
     KEYL_REP_ASSERT (copyIntPtr);
@@ -721,7 +721,7 @@ DupKeyedListInternalRepShared (srcPtr, copyPtr)
         Tcl_IncrRefCount(copyIntPtr->entries [idx].valuePtr);
     }
 
-    copyPtr->internalRep.otherValuePtr = (VOID *) copyIntPtr;
+    copyPtr->internalRep.otherValuePtr = (void *) copyIntPtr;
     copyPtr->typePtr = &keyedListType;
 
     KEYL_REP_ASSERT (copyIntPtr);
@@ -764,7 +764,7 @@ SetKeyedListFromAny (interp, objPtr)
         (objPtr->typePtr->freeIntRepProc != NULL)) {
         (*objPtr->typePtr->freeIntRepProc) (objPtr);
     }
-    objPtr->internalRep.otherValuePtr = (VOID *) keylIntPtr;
+    objPtr->internalRep.otherValuePtr = (void *) keylIntPtr;
     objPtr->typePtr = &keyedListType;
 
     KEYL_REP_ASSERT (keylIntPtr);
@@ -825,7 +825,7 @@ UpdateStringOfKeyedList (keylPtr)
 
     Tcl_DecrRefCount (tmpListObj);
     if (listObjv != staticListObjv)
-        ckfree ((VOID*) listObjv);
+        ckfree ((void*) listObjv);
 }
 
 /*-----------------------------------------------------------------------------
@@ -842,7 +842,7 @@ TclX_NewKeyedListObj ()
     Tcl_Obj *keylPtr = Tcl_NewObj ();
     keylIntObj_t *keylIntPtr = AllocKeyedListIntRep ();
 
-    keylPtr->internalRep.otherValuePtr = (VOID *) keylIntPtr;
+    keylPtr->internalRep.otherValuePtr = (void *) keylIntPtr;
     keylPtr->typePtr = &keyedListType;
     return keylPtr;
 }

@@ -207,7 +207,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
         Tcl_WrongNumArgs(interp, 1, objv, "option ?args?");
         return TCL_ERROR;
     }
-    ret = Tcl_GetIndexFromObj(interp, objv[1], cmdOpts, "option", 0, &opt);
+    ret = Tcl_GetIndexFromObjStruct(interp, objv[1], cmdOpts, sizeof(char *), "option", 0, &opt);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -382,7 +382,7 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
         Tcl_WrongNumArgs(interp, 1, objv, "option ?args?");
         return TCL_ERROR;
     }
-    ret = Tcl_GetIndexFromObj(interp, objv[1], cmdOpts, "option", 0, &opt);
+    ret = Tcl_GetIndexFromObjStruct(interp, objv[1], cmdOpts, sizeof(char *), "option", 0, &opt);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
@@ -542,7 +542,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
         Tcl_WrongNumArgs(interp, 1, objv, "option ?args?");
         return TCL_ERROR;
     }
-    ret = Tcl_GetIndexFromObj(interp, objv[1], cmdOpts, "option", 0, &opt);
+    ret = Tcl_GetIndexFromObjStruct(interp, objv[1], cmdOpts, sizeof(char *), "option", 0, &opt);
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
