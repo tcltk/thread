@@ -682,7 +682,7 @@ SvLsearchObjCmd (arg, interp, objc, objv)
         goto cmd_err;
     }
     if (imode) {
-        ret = Tcl_GetIndexFromObj(interp, objv[imode], modes, "search mode",
+        ret = Tcl_GetIndexFromObjStruct(interp, objv[imode], modes, sizeof(char *), "search mode",
                 0, &mode);
         if (ret != TCL_OK) {
             goto cmd_err;
@@ -1083,7 +1083,7 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
             break;
         }
 
-        listPtr->internalRep.twoPtrValue.ptr2 = (VOID*)chainPtr;
+        listPtr->internalRep.twoPtrValue.ptr2 = (void*)chainPtr;
 
         /*
          * Determine the index of the requested element.
@@ -1136,7 +1136,7 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
     }
 
     if (result == TCL_OK) {
-        listPtr->internalRep.twoPtrValue.ptr2 = (VOID*)chainPtr;
+        listPtr->internalRep.twoPtrValue.ptr2 = (void*)chainPtr;
         /* Spoil all the string reps */
         while (listPtr != NULL) {
             subListPtr = (Tcl_Obj*)listPtr->internalRep.twoPtrValue.ptr2;
