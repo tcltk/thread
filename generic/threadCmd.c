@@ -383,14 +383,14 @@ ThreadInit(interp)
 
 	Tcl_GetVersion(&major, &minor, NULL, NULL);
 
-	if (Tcl_EvalEx(interp, "::tcl::pkgconfig get threaded", -1,
+	if (Tcl_EvalEx(interp, "::tcl::pkgconfig get threaded", TCL_STRLEN,
 		TCL_EVAL_GLOBAL) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	if (Tcl_GetBooleanFromObj(interp, Tcl_GetObjResult(interp), &boolVar)
 		!= TCL_OK || boolVar == 0) {
 	    const char *msg = "Tcl core wasn't compiled for threading.";
-	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, TCL_STRLEN));
 	    return TCL_ERROR;
 	}
 	Tcl_MutexLock(&threadMutex);
@@ -761,7 +761,7 @@ ThreadIdObjCmd(dummy, interp, objc, objv)
     }
 
     ThreadGetHandle(Tcl_GetCurrentThread(), thrHandle);
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(thrHandle, -1));
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(thrHandle, TCL_STRLEN));
 
     return TCL_OK;
 }
@@ -1523,7 +1523,7 @@ ThreadSendEval(interp, clientData)
     ThreadSendData *sendPtr = (ThreadSendData*)clientData;
     char *script = (char*)sendPtr->clientData;
 
-    return Tcl_EvalEx(interp, script, -1, TCL_EVAL_GLOBAL);
+    return Tcl_EvalEx(interp, script, TCL_STRLEN, TCL_EVAL_GLOBAL);
 }
 
 /*
@@ -1558,7 +1558,7 @@ ThreadClbkSetVar(interp, clientData)
      * We will use it to fill-in the result variable.
      */
 
-    valObj = Tcl_NewStringObj(resultPtr->result, -1);
+    valObj = Tcl_NewStringObj(resultPtr->result, TCL_STRLEN);
     if (resultPtr->result != threadEmptyResult) {
         Tcl_Free(resultPtr->result);
     }
@@ -1660,7 +1660,7 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
     Tcl_ConditionFinalize(&ctrl.condWait);
 
     ThreadGetHandle(thrId, thrHandle);
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(thrHandle, -1));
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(thrHandle, TCL_STRLEN));
 
     return TCL_OK;
 }
@@ -1841,10 +1841,10 @@ ThreadErrorProc(interp)
             return;
         }
         ThreadGetHandle(Tcl_GetCurrentThread(), buf);
-        Tcl_WriteChars(errChannel, "Error from thread ", -1);
-        Tcl_WriteChars(errChannel, buf, -1);
+        Tcl_WriteChars(errChannel, "Error from thread ", TCL_STRLEN);
+        Tcl_WriteChars(errChannel, buf, TCL_STRLEN);
         Tcl_WriteChars(errChannel, "\n", 1);
-        Tcl_WriteChars(errChannel, errorInfo, -1);
+        Tcl_WriteChars(errChannel, errorInfo, TCL_STRLEN);
         Tcl_WriteChars(errChannel, "\n", 1);
 #endif
     } else {
@@ -2151,7 +2151,7 @@ ThreadCancel(interp, thrId, result, flags)
     }
 
     if (result != NULL) {
-        resultObj = Tcl_NewStringObj(result, -1);
+        resultObj = Tcl_NewStringObj(result, TCL_STRLEN);
     }
 
     code = Tcl_CancelEval(tsdPtr->interp, resultObj, NULL, flags);
@@ -2705,7 +2705,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
     }
 
     code = resultPtr->code;
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(resultPtr->result, -1));
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(resultPtr->result, TCL_STRLEN));
 
     /*
      * Cleanup

@@ -563,7 +563,7 @@ ReleaseContainer(interp, svObj, mode)
             val = Tcl_GetStringFromObj(svObj->tclObj, &len);
             if ((*psPtr->psPut)(psPtr->psHandle, key, val, len) == -1) {
                 const char *err = (*psPtr->psError)(psPtr->psHandle);
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, -1));
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
                 return TCL_ERROR;
             }
         }
@@ -1158,7 +1158,7 @@ SvObjObjCmd(arg, interp, objc, objv)
     sprintf(buf, "::%p", (int*)svObj);
     Tcl_CreateObjCommand(interp, buf, (ClientData)SvObjDispatchObjCmd, (int*)svObj, arg);
     Tcl_ResetResult(interp);
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, -1));
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, TCL_STRLEN));
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 }
@@ -1265,7 +1265,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
                 if (arrayPtr->psPtr) {
                     PsStore *psPtr = arrayPtr->psPtr;
                     char *err = (*psPtr->psError)(psPtr->psHandle);
-                    Tcl_SetObjResult(interp, Tcl_NewStringObj(err, -1));
+                    Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
                 }
                 goto cmdExit;
             }
@@ -1292,7 +1292,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
                 char *key = Tcl_GetHashKey(&arrayPtr->vars, hPtr);
                 if (pattern == NULL || Tcl_StringMatch(key, pattern)) {
                     Tcl_ListObjAppendElement(interp, resObj,
-                            Tcl_NewStringObj(key, -1));
+                            Tcl_NewStringObj(key, TCL_STRLEN));
                     if (index == AGET) {
                         elObj = (Container*)Tcl_GetHashValue(hPtr);
                         Tcl_ListObjAppendElement(interp, resObj,
@@ -1373,7 +1373,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
             PsStore *psPtr = arrayPtr->psPtr;
             if ((*psPtr->psClose)(psPtr->psHandle) == -1) {
                 char *err = (*psPtr->psError)(psPtr->psHandle);
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, -1));
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
                 ret = TCL_ERROR;
                 goto cmdExit;
             }
@@ -1891,7 +1891,7 @@ SvPopObjCmd(arg, interp, objc, objv)
         if (svObj->arrayPtr->psPtr) {
             PsStore *psPtr = svObj->arrayPtr->psPtr;
             char *err = (*psPtr->psError)(psPtr->psHandle);
-            Tcl_SetObjResult(interp, Tcl_NewStringObj(err,-1));
+            Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
         }
         ret = TCL_ERROR;
         goto cmd_exit;
@@ -1969,7 +1969,7 @@ SvMoveObjCmd(arg, interp, objc, objv)
             PsStore *psPtr = svObj->arrayPtr->psPtr;
             if ((*psPtr->psDelete)(psPtr->psHandle, key) == -1) {
                 char *err = (*psPtr->psError)(psPtr->psHandle);
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, -1));
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
                 return TCL_ERROR;
             }
         }
@@ -2051,7 +2051,7 @@ SvLockObjCmd(dummy, interp, objc, objv)
         /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
          * See Tcl bug #3562640 */
         sprintf(msg, "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
-        Tcl_AddObjErrorInfo(interp, msg, -1);
+        Tcl_AddObjErrorInfo(interp, msg, TCL_STRLEN);
     }
 
     /*
