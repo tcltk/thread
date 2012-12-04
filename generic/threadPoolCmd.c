@@ -196,10 +196,11 @@ static int
 TpoolCreateObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int ii, minw, maxw, idle, len;
+    int ii, minw, maxw, idle;
+    STRLEN_TYPE len;
     char buf[64], *exs = NULL, *cmd = NULL;
     ThreadPool *tpoolPtr;
 
@@ -332,11 +333,12 @@ static int
 TpoolPostObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     Tcl_WideInt jobId = 0;
-    int ii, detached = 0, nowait = 0, len;
+    int ii, detached = 0, nowait = 0;
+    STRLEN_TYPE len;
     const char *tpoolName, *script;
     TpoolResult *rPtr;
     ThreadPool *tpoolPtr;
@@ -494,10 +496,11 @@ static int
 TpoolWaitObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int ii, done, wObjc;
+    int ii, done;
+    STRLEN_TYPE wObjc;
     Tcl_WideInt jobId;
     char *tpoolName, *listVar = NULL;
     Tcl_Obj *waitList, *doneList, **wObjv;
@@ -608,10 +611,11 @@ static int
 TpoolCancelObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int ii, wObjc;
+    int ii;
+    STRLEN_TYPE wObjc;
     Tcl_WideInt jobId;
     char *tpoolName, *listVar = NULL;
     Tcl_Obj *doneList, *waitList, **wObjv;
@@ -703,7 +707,7 @@ static int
 TpoolGetObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ret;
@@ -797,7 +801,7 @@ static int
 TpoolReserveObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ret;
@@ -852,7 +856,7 @@ static int
 TpoolReleaseObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ret;
@@ -907,7 +911,7 @@ static int
 TpoolSuspendObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     char *tpoolName;
@@ -957,7 +961,7 @@ static int
 TpoolResumeObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     char *tpoolName;
@@ -1007,7 +1011,7 @@ static int
 TpoolNamesObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    int         objc;           /* Number of arguments. */
+    STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     ThreadPool *tpoolPtr;

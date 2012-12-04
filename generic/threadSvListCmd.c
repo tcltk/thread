@@ -9,6 +9,7 @@
  * ----------------------------------------------------------------------------
  */
 
+#include "tclThreadInt.h"
 #include "threadSvCmd.h"
 #include "threadSvListCmd.h"
 
@@ -64,7 +65,7 @@ static Tcl_Mutex initMutex;
  */
 
 static Tcl_Obj*
-SvLsetFlat(Tcl_Interp *interp, Tcl_Obj *listPtr, int indexCount,
+SvLsetFlat(Tcl_Interp *interp, Tcl_Obj *listPtr, STRLEN_TYPE indexCount,
            Tcl_Obj **indexArray, Tcl_Obj *valuePtr);
 
 
@@ -130,10 +131,11 @@ static int
 SvLpopObjCmd (arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
-    int ret, off, llen, index = 0, iarg = 0;
+    int ret, off, index = 0, iarg = 0;
+    STRLEN_TYPE llen;
     Tcl_Obj *elPtr = NULL;
     Container *svObj = (Container*)arg;
 
@@ -209,10 +211,11 @@ static int
 SvLpushObjCmd (arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
-    int off, ret, flg, llen, index = 0;
+    int off, ret, flg, index = 0;
+    STRLEN_TYPE llen;
     Tcl_Obj *args[1];
     Container *svObj = (Container*)arg;
 
@@ -281,7 +284,7 @@ static int
 SvLappendObjCmd(arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
     int i, ret, flg, off;
@@ -341,11 +344,12 @@ static int
 SvLreplaceObjCmd (arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
     const char *firstArg;
-    int argLen, ret, off, llen, first, last, ndel, nargs, i, j;
+    int ret, off, first, last, ndel, nargs, i, j;
+    STRLEN_TYPE argLen, llen;
     Tcl_Obj **args = NULL;
     Container *svObj = (Container*)arg;
 
@@ -438,10 +442,11 @@ static int
 SvLrangeObjCmd (arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
-    int ret, off, llen, first, last, nargs, i, j;
+    int ret, off, first, last, nargs, i, j;
+    STRLEN_TYPE llen;
     Tcl_Obj **elPtrs, **args;
     Container *svObj = (Container*)arg;
 
@@ -519,10 +524,11 @@ static int
 SvLinsertObjCmd (arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
-    int off, ret, flg, llen, nargs, index = 0, i, j;
+    int off, ret, flg, nargs, index = 0, i, j;
+    STRLEN_TYPE llen;
     Tcl_Obj **args;
     Container *svObj = (Container*)arg;
 
@@ -598,10 +604,11 @@ static int
 SvLlengthObjCmd (arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
-    int llen, off, ret;
+    int off, ret;
+    STRLEN_TYPE llen;
     Container *svObj = (Container*)arg;
 
     /*
@@ -648,15 +655,16 @@ static int
 SvLsearchObjCmd (arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
-    int ret, off, listc, mode, imode, ipatt, length, index, match, i;
+    int ret, off, mode, imode, ipatt, index, match, i;
+    STRLEN_TYPE listc, length;
     const char *patBytes;
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
 
-    static const char *modes[] = {"-exact", "-glob", "-regexp", NULL};
+    static const char *const modes[] = {"-exact", "-glob", "-regexp", NULL};
     enum {LS_EXACT, LS_GLOB, LS_REGEXP};
 
     mode = LS_GLOB;
@@ -704,7 +712,7 @@ SvLsearchObjCmd (arg, interp, objc, objv)
             break;
 
         case LS_EXACT: {
-            int elemLen;
+        	STRLEN_TYPE elemLen;
             const char *bytes = Tcl_GetStringFromObj(listv[i], &elemLen);
             if (length == elemLen) {
                 match = (memcmp(bytes, patBytes, (size_t)length) == 0);
@@ -754,11 +762,12 @@ static int
 SvLindexObjCmd (arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
     Tcl_Obj **elPtrs;
-    int ret, off, llen, index;
+    int ret, off, index;
+    STRLEN_TYPE llen;
     Container *svObj = (Container*)arg;
 
     /*
@@ -814,7 +823,7 @@ static int
 SvLsetObjCmd (arg, interp, objc, objv)
     ClientData arg;
     Tcl_Interp *interp;
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj *const objv[];
 {
     Tcl_Obj *lPtr;
@@ -879,7 +888,8 @@ DupListObjShared(srcPtr, copyPtr)
     Tcl_Obj *srcPtr;            /* Object with internal rep to copy. */
     Tcl_Obj *copyPtr;           /* Object with internal rep to set. */
 {
-    int i, llen;
+    int i;
+    STRLEN_TYPE llen;
     Tcl_Obj *elObj, **newObjList;
 
     Tcl_ListObjLength(NULL, srcPtr, &llen);
@@ -975,7 +985,8 @@ SvGetIntForIndex(interp, objPtr, endValue, indexPtr)
                              * representing an index. */
 {
     const char *bytes;
-    int length, offset;
+    STRLEN_TYPE length;
+    int offset;
 
     bytes = Tcl_GetStringFromObj(objPtr, &length);
 
@@ -1029,11 +1040,12 @@ static Tcl_Obj*
 SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
      Tcl_Interp *interp;     /* Tcl interpreter */
      Tcl_Obj *listPtr;       /* Pointer to the list being modified */
-     int indexCount;         /* Number of index args */
+     STRLEN_TYPE indexCount;         /* Number of index args */
      Tcl_Obj **indexArray;
      Tcl_Obj *valuePtr;      /* Value arg to 'lset' */
 {
-    int elemCount, index, result, i;
+    int index, result, i;
+    STRLEN_TYPE elemCount;
     Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
 
     /*

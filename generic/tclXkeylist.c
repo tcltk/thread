@@ -85,7 +85,7 @@ static int
 TclX_IsNullObj (objPtr)
     Tcl_Obj *objPtr;
 {
-    int length;
+	STRLEN_TYPE length;
 
     if (objPtr->typePtr == NULL) {
         return (objPtr->length == 0);
@@ -159,7 +159,7 @@ TclX_WrongArgs (interp, commandNameObj, string)
 {
     const char *commandName;
     Tcl_Obj *resultPtr = Tcl_GetObjResult (interp);
-    int      commandLength;
+    STRLEN_TYPE commandLength;
 
     commandName = Tcl_GetStringFromObj (commandNameObj, &commandLength);
 
@@ -294,31 +294,31 @@ UpdateStringOfKeyedList(Tcl_Obj *keylPtr);
 static int
 Tcl_KeylgetObjCmd(ClientData   clientData,
                                Tcl_Interp  *interp,
-                               int          objc,
+                               STRLEN_TYPE  objc,
                                Tcl_Obj     *const objv[]);
 
 static int
 Tcl_KeylsetObjCmd(ClientData   clientData,
                                Tcl_Interp  *interp,
-                               int          objc,
+                               STRLEN_TYPE  objc,
                                Tcl_Obj     *const objv[]);
 
 static int
 Tcl_KeyldelObjCmd(ClientData   clientData,
                                Tcl_Interp  *interp,
-                               int          objc,
+                               STRLEN_TYPE  objc,
                                Tcl_Obj     *const objv[]);
 
 static int
 Tcl_KeylkeysObjCmd(ClientData   clientData,
                                 Tcl_Interp  *interp,
-                                int          objc,
-                                 Tcl_Obj     *const objv[]);
+                                STRLEN_TYPE  objc,
+                                Tcl_Obj     *const objv[]);
 
 /*
  * Type definition.
  */
-Tcl_ObjType keyedListType = {
+const Tcl_ObjType keyedListType = {
     "keyedList",              /* name */
     FreeKeyedListInternalRep, /* freeIntRepProc */
     DupKeyedListInternalRep,  /* dupIntRepProc */
@@ -593,10 +593,10 @@ ObjToKeyedListEntry (interp, objPtr, entryPtr)
     Tcl_Obj     *objPtr;
     keylEntry_t *entryPtr;
 {
-    int objc;
+    STRLEN_TYPE objc;
     Tcl_Obj **objv;
     const char *key;
-    int keyLen;
+    STRLEN_TYPE keyLen;
 
     if (Tcl_ListObjGetElements (interp, objPtr, &objc, &objv) != TCL_OK) {
         Tcl_ResetResult (interp);
@@ -743,7 +743,8 @@ SetKeyedListFromAny (interp, objPtr)
     Tcl_Obj    *objPtr;
 {
     keylIntObj_t *keylIntPtr;
-    int idx, objc;
+    int idx;
+    STRLEN_TYPE objc;
     Tcl_Obj **objv;
 
     if (Tcl_ListObjGetElements (interp, objPtr, &objc, &objv) != TCL_OK)
@@ -788,7 +789,8 @@ UpdateStringOfKeyedList (keylPtr)
     Tcl_Obj  *keylPtr;
 {
 #define UPDATE_STATIC_SIZE 32
-    int idx, strLen;
+    int idx;
+    STRLEN_TYPE strLen;
     Tcl_Obj **listObjv, *entryObjv [2], *tmpListObj;
     Tcl_Obj *staticListObjv [UPDATE_STATIC_SIZE];
     char *listStr;
@@ -1154,12 +1156,13 @@ static int
 Tcl_KeylgetObjCmd (clientData, interp, objc, objv)
     ClientData   clientData;
     Tcl_Interp  *interp;
-    int          objc;
+    STRLEN_TYPE  objc;
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylPtr, *valuePtr;
     const char *varName, *key;
-    int keyLen, status;
+    STRLEN_TYPE keyLen;
+    int status;
 
     if ((objc < 2) || (objc > 4)) {
         return TclX_WrongArgs (interp, objv [0],
@@ -1237,12 +1240,13 @@ static int
 Tcl_KeylsetObjCmd (clientData, interp, objc, objv)
     ClientData   clientData;
     Tcl_Interp  *interp;
-    int          objc;
+    STRLEN_TYPE  objc;
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylVarPtr, *newVarObj;
     const char *varName, *key;
-    int idx, keyLen;
+    int idx;
+    STRLEN_TYPE keyLen;
 
     if ((objc < 4) || ((objc % 2) != 0)) {
         return TclX_WrongArgs (interp, objv [0],
@@ -1301,12 +1305,13 @@ static int
 Tcl_KeyldelObjCmd (clientData, interp, objc, objv)
     ClientData   clientData;
     Tcl_Interp  *interp;
-    int          objc;
+    STRLEN_TYPE  objc;
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylVarPtr, *keylPtr;
     const char *varName, *key;
-    int idx, keyLen, status;
+    int idx, status;
+    STRLEN_TYPE keyLen;
 
     if (objc < 3) {
         return TclX_WrongArgs (interp, objv [0], "listvar key ?key ...?");
@@ -1364,12 +1369,13 @@ static int
 Tcl_KeylkeysObjCmd (clientData, interp, objc, objv)
     ClientData   clientData;
     Tcl_Interp  *interp;
-    int          objc;
+    STRLEN_TYPE  objc;
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylPtr, *listObjPtr;
     const char *varName, *key;
-    int keyLen, status;
+    STRLEN_TYPE keyLen;
+    int status;
 
     if ((objc < 2) || (objc > 3)) {
         return TclX_WrongArgs (interp, objv [0], "listvar ?key?");

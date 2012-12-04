@@ -179,15 +179,16 @@ static int
 ThreadMutexObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
-    int opt, ret, nameLen;
+    int opt, ret;
+    STRLEN_TYPE nameLen;
     const char *mutexName;
     char type;
     SpMutex *mutexPtr;
 
-    static const char *cmdOpts[] = {
+    static const char *const cmdOpts[] = {
         "create", "destroy", "lock", "unlock", NULL
     };
     enum options {
@@ -352,16 +353,17 @@ static int
 ThreadRWMutexObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
-    int opt, ret, nameLen;
+    int opt, ret;
+    STRLEN_TYPE nameLen;
     const char *mutexName;
     SpMutex *mutexPtr;
     Sp_ReadWriteMutex *rwPtr;
     Sp_AnyMutex **lockPtr;
 
-    static const char *cmdOpts[] = {
+    static const char *const cmdOpts[] = {
         "create", "destroy", "rlock", "wlock", "unlock", NULL
     };
     enum options {
@@ -514,15 +516,16 @@ static int
 ThreadCondObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
-    int opt, ret, nameLen, timeMsec = 0;
+    int opt, ret, timeMsec = 0;
+    STRLEN_TYPE nameLen;
     const char *condvName, *mutexName;
     SpMutex *mutexPtr;
     SpCondv *condvPtr;
 
-    static const char *cmdOpts[] = {
+    static const char *const cmdOpts[] = {
         "create", "destroy", "notify", "wait", NULL
     };
     enum options {
@@ -680,10 +683,11 @@ static int
 ThreadEvalObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
-    int ret, optx, internal, nameLen;
+    int ret, optx, internal;
+    STRLEN_TYPE nameLen;
     const char *mutexName;
     Tcl_Obj *scriptObj;
     SpMutex *mutexPtr = NULL;

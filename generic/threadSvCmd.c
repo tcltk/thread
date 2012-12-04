@@ -507,7 +507,7 @@ AcquireContainer(arrayPtr, key, flags)
         PsStore *psPtr = arrayPtr->psPtr;
         if (psPtr) {
             char *val = NULL;
-            int len = 0;
+            STRLEN_TYPE len = 0;
             if ((*psPtr->psGet)(psPtr->psHandle, key, &val, &len) == 0) {
                 tclObj = Tcl_NewStringObj(val, len);
                 (*psPtr->psFree)(val);
@@ -551,7 +551,7 @@ ReleaseContainer(interp, svObj, mode)
     int mode;
 {
     PsStore *psPtr = svObj->arrayPtr->psPtr;
-    int len;
+    STRLEN_TYPE len;
     char *key, *val;
 
     switch (mode) {
@@ -1114,7 +1114,7 @@ static int
 SvObjObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Just passed to subcommands. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int new, off, ret, flg;
@@ -1184,16 +1184,17 @@ static int
 SvArrayObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Pointer to object container. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
-    int i, argx = 0, lobjc = 0, index, ret = TCL_OK;
+    int i, argx = 0, index, ret = TCL_OK;
+    STRLEN_TYPE lobjc = 0;
     const char *arrayName = NULL;
     Array *arrayPtr = NULL;
     Tcl_Obj **lobjv = NULL;
     Container *svObj, *elObj = NULL;
 
-    static const char *opts[] = {
+    static const char *const opts[] = {
         "set",  "reset", "get", "names", "size", "exists", "isbound",
         "bind", "unbind", NULL
     };
@@ -1318,7 +1319,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
          */
 
         PsStore *psPtr;
-        int len;
+        STRLEN_TYPE len;
         char *psurl, *key = NULL, *val = NULL;
 
         if (objc < 4) {
@@ -1413,7 +1414,7 @@ static int
 SvUnsetObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ii;
@@ -1479,10 +1480,11 @@ static int
 SvNamesObjCmd(aol, interp, objc, objv)
     ClientData aol;                     /* !=0 when running in AOL */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
-    int i, len;
+    int i;
+    STRLEN_TYPE len;
     const char *pattern = NULL;
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
@@ -1540,7 +1542,7 @@ static int
 SvGetObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Pointer to object container. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int off, ret;
@@ -1607,7 +1609,7 @@ static int
 SvExistsObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Pointer to object container. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int off, ret;
@@ -1656,7 +1658,7 @@ static int
 SvSetObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Pointer to object container */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, off, flg, mode;
@@ -1723,7 +1725,7 @@ static int
 SvIncrObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Pointer to object container */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int off, ret, flg, new = 0;
@@ -1796,7 +1798,7 @@ static int
 SvAppendObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Pointer to object container */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int i, off, flg, ret;
@@ -1850,7 +1852,7 @@ static int
 SvPopObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Pointer to object container */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, off;
@@ -1935,7 +1937,7 @@ static int
 SvMoveObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Pointer to object container. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, off, new;
@@ -2005,7 +2007,7 @@ static int
 SvLockObjCmd(dummy, interp, objc, objv)
     ClientData dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret;

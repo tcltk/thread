@@ -19,6 +19,13 @@
 #include <stdlib.h> /* For strtoul */
 #include <string.h> /* For memset and friends */
 
+#ifdef TCL_STRLEN
+# define STRLEN_TYPE size_t
+#else
+# define TCL_STRLEN (-1)
+# define STRLEN_TYPE int
+#endif
+
 /*
  * For linking against NaviServer/AOLserver require V4 at least
  */

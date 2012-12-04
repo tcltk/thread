@@ -16,6 +16,7 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "tclThreadInt.h"
 #include "threadSpCmd.h" /* For recursive locks */
 
 /*
@@ -83,10 +84,10 @@
 
 typedef ClientData (ps_open_proc)(const char*);
 
-typedef int (ps_get_proc)   (ClientData, const char*, char**, int*);
-typedef int (ps_put_proc)   (ClientData, const char*, char*, int);
-typedef int (ps_first_proc) (ClientData, char**, char**, int*);
-typedef int (ps_next_proc)  (ClientData, char**, char**, int*);
+typedef int (ps_get_proc)   (ClientData, const char*, char**, STRLEN_TYPE *);
+typedef int (ps_put_proc)   (ClientData, const char*, char*, STRLEN_TYPE );
+typedef int (ps_first_proc) (ClientData, char**, char**, STRLEN_TYPE *);
+typedef int (ps_next_proc)  (ClientData, char**, char**, STRLEN_TYPE *);
 typedef int (ps_delete_proc)(ClientData, const char*);
 typedef int (ps_close_proc) (ClientData);
 typedef void(ps_free_proc)  (char*);

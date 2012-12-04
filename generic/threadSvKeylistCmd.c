@@ -26,7 +26,7 @@
  * for usage in the thread shared variables code.
  */
 
-extern Tcl_ObjType keyedListType;
+extern const Tcl_ObjType keyedListType;
 
 /*
  * Wrapped keyed-list commands
@@ -100,7 +100,7 @@ static int
 SvKeylsetObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int i, off, ret, flg;
@@ -159,7 +159,7 @@ static int
 SvKeylgetObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, flg, off;
@@ -211,7 +211,7 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
     } else {
         Tcl_Obj *resObjPtr = Sv_DuplicateObj(valObjPtr);
         if (varObjPtr) {
-            int len;
+        	STRLEN_TYPE len;
             Tcl_ResetResult(interp);
             Tcl_SetBooleanObj(Tcl_GetObjResult(interp), 1);
             Tcl_GetStringFromObj(varObjPtr, &len);
@@ -250,7 +250,7 @@ static int
 SvKeyldelObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int i, off, ret;
@@ -309,7 +309,7 @@ static int
 SvKeylkeysObjCmd(arg, interp, objc, objv)
     ClientData arg;                     /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
+    STRLEN_TYPE objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, off;
