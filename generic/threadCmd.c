@@ -365,9 +365,9 @@ ThreadInit(interp)
     /* Tcl 8.6 interps are only supported on 32-bit machines.
      * Lower than that is never supported. Bye!
      */
+	const char *ver = (sizeof(size_t) == 4) ? "8.6-" : "9.0";
 
-    if (!Tcl_InitStubs(interp, "9.0", 0) && ((sizeof(size_t) != 4)
-	    || !Tcl_InitStubs(interp, "8.6", 0))) {
+    if (!Tcl_InitStubs(interp, ver, 0)) {
 	return TCL_ERROR;
     }
 
