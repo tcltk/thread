@@ -1156,7 +1156,7 @@ SvObjObjCmd(arg, interp, objc, objv)
      */
 
     sprintf(buf, "::%p", (int*)svObj);
-    Tcl_CreateObjCommand(interp, buf, SvObjDispatchObjCmd, (int*)svObj, arg);
+    Tcl_CreateObjCommand(interp, buf, (ClientData)SvObjDispatchObjCmd, (int*)svObj, arg);
     Tcl_ResetResult(interp);
     Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, -1));
 
@@ -1218,7 +1218,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
 
     Tcl_ResetResult(interp);
 
-    if (Tcl_GetIndexFromObj(interp,objv[1],opts,"option",0,&index) != TCL_OK) {
+    if (Tcl_GetIndexFromObjStruct(interp,objv[1],opts, sizeof(char *),"option",0,&index) != TCL_OK) {
         ret = TCL_ERROR;
 
     } else if (index == AEXISTS) {

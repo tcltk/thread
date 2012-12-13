@@ -541,7 +541,7 @@ Thread_Init(interp)
         return status;
     }
 
-    return Tcl_PkgProvide(interp, "Thread", PACKAGE_VERSION);
+    return Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
 }
 
 /*
@@ -918,6 +918,12 @@ ThreadNamesObjCmd(dummy, interp, objc, objv)
  *----------------------------------------------------------------------
  */
 
+static void
+threadSendFree(ClientData ptr)
+{
+	Tcl_Free((char *)ptr);
+}
+
 static int
 ThreadSendObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
@@ -985,7 +991,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
 
         clbkPtr = (ThreadClbkData*)Tcl_Alloc(sizeof(ThreadClbkData));
         clbkPtr->execProc   = ThreadClbkSetVar;
-        clbkPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
+        clbkPtr->freeProc   = threadSendFree;
         clbkPtr->interp     = interp;
         clbkPtr->threadId   = Tcl_GetCurrentThread();
         clbkPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+vlen), var);
@@ -998,7 +1004,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     sendPtr = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
     sendPtr->interp     = NULL; /* Signal to use thread main interp */
     sendPtr->execProc   = ThreadSendEval;
-    sendPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
+    sendPtr->freeProc   = threadSendFree;
     sendPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+len), script);
 
     ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, flags);
@@ -1084,7 +1090,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
 
     job.interp     = NULL; /* Signal to use thread's main interp */
     job.execProc   = ThreadSendEval;
-    job.freeProc   = (ThreadSendFree*)Tcl_Free;
+    job.freeProc   = threadSendFree;
     job.clientData = NULL;
 
     /*
@@ -1652,12 +1658,12 @@ ThreadClbkSetVar(interp, clientData)
     if (resultPtr->code == TCL_ERROR) {
         if (resultPtr->errorCode) {
             var = "errorCode";
-            Tcl_SetVar(interp, var, resultPtr->errorCode, TCL_GLOBAL_ONLY);
+            Tcl_SetVar2(interp, var, NULL, resultPtr->errorCode, TCL_GLOBAL_ONLY);
             Tcl_Free((char*)resultPtr->errorCode);
         }
         if (resultPtr->errorInfo) {
             var = "errorInfo";
-            Tcl_SetVar(interp, var, resultPtr->errorInfo, TCL_GLOBAL_ONLY);
+            Tcl_SetVar2(interp, var, NULL, resultPtr->errorInfo, TCL_GLOBAL_ONLY);
             Tcl_Free((char*)resultPtr->errorInfo);
         }
         Tcl_SetObjResult(interp, valObj);
@@ -1898,7 +1904,7 @@ ThreadErrorProc(interp)
     char buf[THREAD_HNDLMAXLEN];
     const char *errorInfo;
 
-    errorInfo = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
+    errorInfo = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
     if (errorInfo == NULL) {
         errorInfo = "";
     }
@@ -1928,7 +1934,7 @@ ThreadErrorProc(interp)
 
         sendPtr = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
         sendPtr->execProc   = ThreadSendEval;
-        sendPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
+        sendPtr->freeProc   = threadSendFree;
         sendPtr->clientData = (ClientData) Tcl_Merge(3, argv);
         sendPtr->interp     = NULL;
 
@@ -2903,7 +2909,7 @@ ThreadWait(Tcl_Interp *interp)
         char buf[THREAD_HNDLMAXLEN];
         const char *errorInfo;
 
-        errorInfo = Tcl_GetVar(tsdPtr->interp, "errorInfo", TCL_GLOBAL_ONLY);
+        errorInfo = Tcl_GetVar2(tsdPtr->interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         if (errorInfo == NULL) {
         	errorInfo = Tcl_GetStringResult(tsdPtr->interp);
         }
@@ -3248,8 +3254,8 @@ ThreadSetResult(interp, code, resultPtr)
         resultPtr->result = (reslen) ?
             strcpy(Tcl_Alloc(1+reslen), result) : threadEmptyResult;
         if (code == TCL_ERROR) {
-            errorCode = Tcl_GetVar(interp, "errorCode", TCL_GLOBAL_ONLY);
-            errorInfo = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
+            errorCode = Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
+            errorInfo = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         } else {
             errorCode = NULL;
             errorInfo = NULL;
