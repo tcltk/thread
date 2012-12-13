@@ -914,6 +914,12 @@ ThreadNamesObjCmd(dummy, interp, objc, objv)
  *----------------------------------------------------------------------
  */
 
+static void
+threadSendFree(ClientData ptr)
+{
+	Tcl_Free((char *)ptr);
+}
+
 static int
 ThreadSendObjCmd(dummy, interp, objc, objv)
     ClientData  dummy;          /* Not used. */
@@ -981,7 +987,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
 
         clbkPtr = (ThreadClbkData*)Tcl_Alloc(sizeof(ThreadClbkData));
         clbkPtr->execProc   = ThreadClbkSetVar;
-        clbkPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
+        clbkPtr->freeProc   = threadSendFree;
         clbkPtr->interp     = interp;
         clbkPtr->threadId   = Tcl_GetCurrentThread();
         clbkPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+vlen), var);
@@ -994,7 +1000,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     sendPtr = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
     sendPtr->interp     = NULL; /* Signal to use thread main interp */
     sendPtr->execProc   = ThreadSendEval;
-    sendPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
+    sendPtr->freeProc   = threadSendFree;
     sendPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+len), script);
 
     ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, flags);
@@ -1080,7 +1086,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
 
     job.interp     = NULL; /* Signal to use thread's main interp */
     job.execProc   = ThreadSendEval;
-    job.freeProc   = (ThreadSendFree*)Tcl_Free;
+    job.freeProc   = threadSendFree;
     job.clientData = NULL;
 
     /*
@@ -1924,7 +1930,7 @@ ThreadErrorProc(interp)
 
         sendPtr = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
         sendPtr->execProc   = ThreadSendEval;
-        sendPtr->freeProc   = (ThreadSendFree*)Tcl_Free;
+        sendPtr->freeProc   = threadSendFree;
         sendPtr->clientData = (ClientData) Tcl_Merge(3, argv);
         sendPtr->interp     = NULL;
 
