@@ -1,4 +1,4 @@
-/* 
+/*
  * tclXkeylist.h --
  *
  * Extended Tcl keyed list commands and interfaces.
@@ -17,7 +17,7 @@
 #ifndef _KEYLIST_H_
 #define _KEYLIST_H_
 
-/* 
+/*
  * Keyed list object interface commands
  */
 
