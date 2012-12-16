@@ -34,7 +34,7 @@
 
 /*
  * If TIP #143 support is enabled and we are compiling against a pre-Tcl 8.5
- * core, hard-wire the necessary APIs using the "well-known" offsets into the 
+ * core, hard-wire the necessary APIs using the "well-known" offsets into the
  * stubs table.
  */
 
@@ -63,7 +63,7 @@
 
 /*
  * If TIP #285 support is enabled and we are compiling against a pre-Tcl 8.6
- * core, hard-wire the necessary APIs using the "well-known" offsets into the 
+ * core, hard-wire the necessary APIs using the "well-known" offsets into the
  * stubs table.
  */
 
@@ -426,8 +426,13 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
-    if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
-	if (Tcl_InitStubs(interp, "8.4-9.1", 0) == NULL) {
+    /* If sizeof(size_t) != sizeof(int), then Thread 2.7 only
+     * loads in the same major Tcl version as it was compiled
+     * with, try that first. */
+    if (!Tcl_InitStubs(interp, ((sizeof(size_t) == sizeof(int))
+	    || (TCL_MAJOR_VERSION == 8))?"8.4":"9.0", 0)) {
+	if ((sizeof(size_t) != sizeof(int)) ||
+		!Tcl_InitStubs(interp, "8.4-", 0)) {
 	    return TCL_ERROR;
 	}
 	Tcl_ResetResult(interp);
@@ -895,7 +900,7 @@ ThreadNamesObjCmd(dummy, interp, objc, objv)
     Tcl_SetObjResult(interp, Tcl_NewStringObj(result, length));
 
     Tcl_DStringFree(&threadNames);
-    Tcl_Free((char*)thrIdArray);
+    ckfree((char*)thrIdArray);
 
     return TCL_OK;
 }
@@ -920,7 +925,7 @@ ThreadNamesObjCmd(dummy, interp, objc, objv)
 static void
 threadSendFree(ClientData ptr)
 {
-	Tcl_Free((char *)ptr);
+	ckfree((char *)ptr);
 }
 
 static int
@@ -988,23 +993,23 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
          * We should do a vwait on the "var" to get notified.
          */
 
-        clbkPtr = (ThreadClbkData*)Tcl_Alloc(sizeof(ThreadClbkData));
+        clbkPtr = (ThreadClbkData*)ckalloc(sizeof(ThreadClbkData));
         clbkPtr->execProc   = ThreadClbkSetVar;
         clbkPtr->freeProc   = threadSendFree;
         clbkPtr->interp     = interp;
         clbkPtr->threadId   = Tcl_GetCurrentThread();
-        clbkPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+vlen), var);
+        clbkPtr->clientData = (ClientData)strcpy(ckalloc(1+vlen), var);
     }
 
     /*
      * Prepare job record for the target thread
      */
 
-    sendPtr = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
+    sendPtr = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
     sendPtr->interp     = NULL; /* Signal to use thread main interp */
     sendPtr->execProc   = ThreadSendEval;
     sendPtr->freeProc   = threadSendFree;
-    sendPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+len), script);
+    sendPtr->clientData = (ClientData)strcpy(ckalloc(1+len), script);
 
     ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, flags);
 
@@ -1103,13 +1108,13 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
         if (thrIdArray[ii] == Tcl_GetCurrentThread()) {
             continue; /* Do not broadcast self */
         }
-        sendPtr  = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
+        sendPtr  = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
         *sendPtr = job;
-        sendPtr->clientData = (ClientData)strcpy(Tcl_Alloc(1+len), script);
+        sendPtr->clientData = (ClientData)strcpy(ckalloc(1+len), script);
         ThreadSend(interp, thrIdArray[ii], sendPtr, NULL, THREAD_SEND_HEAD);
     }
 
-    Tcl_Free((char*)thrIdArray);
+    ckfree((char*)thrIdArray);
     Tcl_ResetResult(interp);
 
     return TCL_OK;
@@ -1191,7 +1196,7 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
         }
     } else {
         if (errorProcString) {
-            Tcl_Free(errorProcString);
+            ckfree(errorProcString);
         }
         proc = Tcl_GetStringFromObj(objv[1], &len);
         if (len == 0) {
@@ -1199,7 +1204,7 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
             errorProcString = NULL;
         } else {
 	    errorThreadId = Tcl_GetCurrentThread();
-            errorProcString = Tcl_Alloc(1+strlen(proc));
+            errorProcString = ckalloc(1+strlen(proc));
             strcpy(errorProcString, proc);
 	    Tcl_DeleteThreadExitHandler(ThreadFreeError, NULL);
 	    Tcl_CreateThreadExitHandler(ThreadFreeError, NULL);
@@ -1219,7 +1224,7 @@ ThreadFreeError(clientData)
 	Tcl_MutexUnlock(&threadMutex);
 	return;
     }
-    Tcl_Free(errorProcString);
+    ckfree(errorProcString);
     errorThreadId = NULL;
     errorProcString = NULL;
     Tcl_MutexUnlock(&threadMutex);
@@ -1638,7 +1643,7 @@ ThreadClbkSetVar(interp, clientData)
 
     valObj = Tcl_NewStringObj(resultPtr->result, -1);
     if (resultPtr->result != threadEmptyResult) {
-        Tcl_Free(resultPtr->result);
+        ckfree(resultPtr->result);
     }
 
     /*
@@ -1658,12 +1663,12 @@ ThreadClbkSetVar(interp, clientData)
         if (resultPtr->errorCode) {
             var = "errorCode";
             Tcl_SetVar2(interp, var, NULL, resultPtr->errorCode, TCL_GLOBAL_ONLY);
-            Tcl_Free((char*)resultPtr->errorCode);
+            ckfree((char*)resultPtr->errorCode);
         }
         if (resultPtr->errorInfo) {
             var = "errorInfo";
             Tcl_SetVar2(interp, var, NULL, resultPtr->errorInfo, TCL_GLOBAL_ONLY);
-            Tcl_Free((char*)resultPtr->errorInfo);
+            ckfree((char*)resultPtr->errorInfo);
         }
         Tcl_SetObjResult(interp, valObj);
         Tcl_BackgroundError(interp);
@@ -1819,7 +1824,7 @@ NewThread(clientData)
      */
 
     scriptLen = strlen(ctrlPtr->script);
-    evalScript = strcpy((char*)Tcl_Alloc(scriptLen+1), ctrlPtr->script);
+    evalScript = strcpy((char*)ckalloc(scriptLen+1), ctrlPtr->script);
     Tcl_CreateThreadExitHandler(ThreadExitProc,(ClientData)evalScript);
 
     /*
@@ -1931,7 +1936,7 @@ ThreadErrorProc(interp)
         argv[1] = buf;
         argv[2] = errorInfo;
 
-        sendPtr = (ThreadSendData*)Tcl_Alloc(sizeof(ThreadSendData));
+        sendPtr = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
         sendPtr->execProc   = ThreadSendEval;
         sendPtr->freeProc   = threadSendFree;
         sendPtr->clientData = (ClientData) Tcl_Merge(3, argv);
@@ -2114,7 +2119,7 @@ ThreadList(interp, thrIdArray)
      * Allocate storage for passing thread id's to caller
      */
 
-    *thrIdArray = (Tcl_ThreadId*)Tcl_Alloc(count * sizeof(Tcl_ThreadId));
+    *thrIdArray = (Tcl_ThreadId*)ckalloc(count * sizeof(Tcl_ThreadId));
 
     /*
      * Second walk; fill-in the array with thread ID's
@@ -2372,8 +2377,8 @@ ThreadTransfer(interp, thrId, chan)
      * Wrap it into an event.
      */
 
-    resultPtr = (TransferResult*)Tcl_Alloc(sizeof(TransferResult));
-    evPtr     = (TransferEvent *)Tcl_Alloc(sizeof(TransferEvent));
+    resultPtr = (TransferResult*)ckalloc(sizeof(TransferResult));
+    evPtr     = (TransferEvent *)ckalloc(sizeof(TransferEvent));
 
     evPtr->chan       = chan;
     evPtr->event.proc = TransferEventProc;
@@ -2445,19 +2450,19 @@ ThreadTransfer(interp, thrId, chan)
 
         if (resultPtr->resultMsg) {
             Tcl_AppendResult(interp, resultPtr->resultMsg, NULL);
-            Tcl_Free(resultPtr->resultMsg);
+            ckfree(resultPtr->resultMsg);
         } else {
             Tcl_AppendResult(interp, "for reasons unknown", NULL);
         }
-	Tcl_Free((char *)resultPtr);
+	ckfree((char *)resultPtr);
 
         return TCL_ERROR;
     }
 
     if (resultPtr->resultMsg) {
-        Tcl_Free(resultPtr->resultMsg);
+        ckfree(resultPtr->resultMsg);
     }
-    Tcl_Free((char *)resultPtr);
+    ckfree((char *)resultPtr);
 
     return TCL_OK;
 }
@@ -2511,8 +2516,8 @@ ThreadDetach(interp, chan)
      * is done purely to avoid having yet another wrapper.
      */
 
-    resultPtr = (TransferResult*)Tcl_Alloc(sizeof(TransferResult));
-    evPtr     = (TransferEvent*)Tcl_Alloc(sizeof(TransferEvent));
+    resultPtr = (TransferResult*)ckalloc(sizeof(TransferResult));
+    evPtr     = (TransferEvent*)ckalloc(sizeof(TransferEvent));
 
     evPtr->chan       = chan;
     evPtr->event.proc = NULL;
@@ -2594,8 +2599,8 @@ ThreadAttach(interp, chanName)
                 return TCL_ERROR;
             }
             SpliceOut(resPtr, transferList);
-            Tcl_Free((char*)resPtr->eventPtr);
-            Tcl_Free((char*)resPtr);
+            ckfree((char*)resPtr->eventPtr);
+            ckfree((char*)resPtr);
             found = 1;
             break;
         }
@@ -2697,7 +2702,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
      * Create the event for target thread event queue.
      */
 
-    eventPtr = (ThreadEvent*)Tcl_Alloc(sizeof(ThreadEvent));
+    eventPtr = (ThreadEvent*)ckalloc(sizeof(ThreadEvent));
     eventPtr->sendData = send;
     eventPtr->clbkData = clbk;
 
@@ -2722,7 +2727,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
         resultPtr              = NULL;
         eventPtr->resultPtr    = NULL;
     } else {
-        resultPtr = (ThreadEventResult*)Tcl_Alloc(sizeof(ThreadEventResult));
+        resultPtr = (ThreadEventResult*)ckalloc(sizeof(ThreadEventResult));
         resultPtr->done        = (Tcl_Condition)NULL;
         resultPtr->result      = NULL;
         resultPtr->errorCode   = NULL;
@@ -2782,11 +2787,11 @@ ThreadSend(interp, thrId, send, clbk, flags)
     if (resultPtr->code == TCL_ERROR) {
         if (resultPtr->errorCode) {
             Tcl_SetErrorCode(interp, resultPtr->errorCode, NULL);
-            Tcl_Free(resultPtr->errorCode);
+            ckfree(resultPtr->errorCode);
         }
         if (resultPtr->errorInfo) {
             Tcl_AddErrorInfo(interp, resultPtr->errorInfo);
-            Tcl_Free(resultPtr->errorInfo);
+            ckfree(resultPtr->errorInfo);
         }
     }
 
@@ -2799,9 +2804,9 @@ ThreadSend(interp, thrId, send, clbk, flags)
 
     Tcl_ConditionFinalize(&resultPtr->done);
     if (resultPtr->result != threadEmptyResult) {
-        Tcl_Free(resultPtr->result);
+        ckfree(resultPtr->result);
     }
-    Tcl_Free((char*)resultPtr);
+    ckfree((char*)resultPtr);
 
     return code;
 }
@@ -3012,7 +3017,7 @@ ThreadReserve(interp, thrId, operation, wait)
 
             if (dowait) {
                 resultPtr = (ThreadEventResult*)
-                    Tcl_Alloc(sizeof(ThreadEventResult));
+                    ckalloc(sizeof(ThreadEventResult));
                 resultPtr->done        = (Tcl_Condition)NULL;
                 resultPtr->result      = NULL;
                 resultPtr->code        = TCL_OK;
@@ -3023,7 +3028,7 @@ ThreadReserve(interp, thrId, operation, wait)
                 SpliceIn(resultPtr, resultList);
             }
 
-            evPtr = (ThreadEvent*)Tcl_Alloc(sizeof(ThreadEvent));
+            evPtr = (ThreadEvent*)ckalloc(sizeof(ThreadEvent));
             evPtr->event.proc = ThreadEventProc;
             evPtr->sendData   = NULL;
             evPtr->clbkData   = NULL;
@@ -3039,9 +3044,9 @@ ThreadReserve(interp, thrId, operation, wait)
                 SpliceOut(resultPtr, resultList);
                 Tcl_ConditionFinalize(&resultPtr->done);
                 if (resultPtr->result != threadEmptyResult) {
-                    Tcl_Free(resultPtr->result); /* Will be ignored anyway */
+                    ckfree(resultPtr->result); /* Will be ignored anyway */
                 }
-                Tcl_Free((char*)resultPtr);
+                ckfree((char*)resultPtr);
             }
         }
     }
@@ -3246,12 +3251,12 @@ ThreadSetResult(interp, code, resultPtr)
         result    = "no target interp!";
         reslen    = strlen(result);
         resultPtr->result = (reslen) ?
-            strcpy(Tcl_Alloc(1+reslen), result) : threadEmptyResult;
+            strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
     } else {
         result = Tcl_GetStringResult(interp);
         reslen = strlen(result);
         resultPtr->result = (reslen) ?
-            strcpy(Tcl_Alloc(1+reslen), result) : threadEmptyResult;
+            strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
         if (code == TCL_ERROR) {
             errorCode = Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
             errorInfo = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
@@ -3264,13 +3269,13 @@ ThreadSetResult(interp, code, resultPtr)
     resultPtr->code = code;
 
     if (errorCode != NULL) {
-        resultPtr->errorCode = Tcl_Alloc(1+strlen(errorCode));
+        resultPtr->errorCode = ckalloc(1+strlen(errorCode));
         strcpy(resultPtr->errorCode, errorCode);
     } else {
         resultPtr->errorCode = NULL;
     }
     if (errorInfo != NULL) {
-        resultPtr->errorInfo = Tcl_Alloc(1+strlen(errorInfo));
+        resultPtr->errorInfo = ckalloc(1+strlen(errorInfo));
         strcpy(resultPtr->errorInfo, errorInfo);
     } else {
         resultPtr->errorInfo = NULL;
@@ -3523,7 +3528,7 @@ TransferEventProc(evPtr, mask)
         Tcl_MutexLock(&threadMutex);
         resultPtr->resultCode = code;
         if (msg != NULL) {
-            resultPtr->resultMsg = (char*)Tcl_Alloc(1+strlen (msg));
+            resultPtr->resultMsg = (char*)ckalloc(1+strlen (msg));
             strcpy (resultPtr->resultMsg, msg);
         }
         Tcl_ConditionNotify(&resultPtr->done);
@@ -3563,7 +3568,7 @@ ThreadFreeProc(clientData)
         if (anyPtr->clientData) {
             (*anyPtr->freeProc)(anyPtr->clientData);
         }
-        Tcl_Free((char*)anyPtr);
+        ckfree((char*)anyPtr);
     }
 }
 
@@ -3666,7 +3671,7 @@ ThreadExitProc(clientData)
     TransferResult *tResultPtr, *tNextPtr;
 
     if (threadEvalScript && threadEvalScript != threadEmptyResult) {
-        Tcl_Free((char*)threadEvalScript);
+        ckfree((char*)threadEvalScript);
     }
 
     Tcl_MutexLock(&threadMutex);
@@ -3706,7 +3711,7 @@ ThreadExitProc(clientData)
              */
 
             SpliceOut(resultPtr, resultList);
-            Tcl_Free((char*)resultPtr);
+            ckfree((char*)resultPtr);
 
         } else if (resultPtr->dstThreadId == self) {
 
@@ -3716,7 +3721,7 @@ ThreadExitProc(clientData)
              * because the main thread is going to call free on it.
              */
 
-            resultPtr->result = strcpy(Tcl_Alloc(1+strlen(diemsg)), diemsg);
+            resultPtr->result = strcpy(ckalloc(1+strlen(diemsg)), diemsg);
             resultPtr->code = TCL_ERROR;
             resultPtr->errorCode = resultPtr->errorInfo = NULL;
             Tcl_ConditionNotify(&resultPtr->done);
@@ -3734,7 +3739,7 @@ ThreadExitProc(clientData)
              */
 
             SpliceOut(tResultPtr, transferList);
-            Tcl_Free((char*)tResultPtr);
+            ckfree((char*)tResultPtr);
 
         } else if (tResultPtr->dstThreadId == self) {
             /*
@@ -3743,7 +3748,7 @@ ThreadExitProc(clientData)
              * because the main thread is going to call free on it.
              */
 
-            tResultPtr->resultMsg = strcpy(Tcl_Alloc(1+strlen(diemsg)),
+            tResultPtr->resultMsg = strcpy(ckalloc(1+strlen(diemsg)),
                                            diemsg);
             tResultPtr->resultCode = TCL_ERROR;
             Tcl_ConditionNotify(&tResultPtr->done);

@@ -1,4 +1,4 @@
-/* 
+/*
  * threadPoolCmd.c --
  *
  * This file implements the Tcl thread pools.
@@ -239,10 +239,10 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
             }
         } else if (OPT_CMP(opt, "-initcmd")) {
             const char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
-            cmd  = strcpy(Tcl_Alloc(len+1), val);
+            cmd  = strcpy(ckalloc(len+1), val);
         } else if (OPT_CMP(opt, "-exitcmd")) {
             const char *val = Tcl_GetStringFromObj(objv[ii+1], &len);
-            exs  = strcpy(Tcl_Alloc(len+1), val);
+            exs  = strcpy(ckalloc(len+1), val);
         } else {
             goto usage;
         }
@@ -266,7 +266,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
      * Allocate and initialize thread pool structure
      */
 
-    tpoolPtr = (ThreadPool*)Tcl_Alloc(sizeof(ThreadPool));
+    tpoolPtr = (ThreadPool*)ckalloc(sizeof(ThreadPool));
     memset(tpoolPtr, 0, sizeof(ThreadPool));
 
     tpoolPtr->minWorkers  = minw;
@@ -446,7 +446,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
      * Create new job ticket and put it on the list.
      */
 
-    rPtr = (TpoolResult*)Tcl_Alloc(sizeof(TpoolResult));
+    rPtr = (TpoolResult*)ckalloc(sizeof(TpoolResult));
     memset(rPtr, 0, sizeof(TpoolResult));
 
     if (detached == 0) {
@@ -454,7 +454,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
         rPtr->jobId = jobId;
     }
 
-    rPtr->script    = strcpy(Tcl_Alloc(len+1), script);
+    rPtr->script    = strcpy(ckalloc(len+1), script);
     rPtr->scriptLen = len;
     rPtr->detached  = detached;
     rPtr->threadId  = Tcl_GetCurrentThread();
@@ -662,8 +662,8 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
                     tpoolPtr->workTail = rPtr->prevPtr;
                 }
                 SetResult(NULL, rPtr); /* Just to free the result */
-                Tcl_Free(rPtr->script);
-                Tcl_Free((char*)rPtr);
+                ckfree(rPtr->script);
+                ckfree((char*)rPtr);
                 Tcl_ListObjAppendElement(interp, doneList, wObjv[ii]);
                 break;
             }
@@ -765,7 +765,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
 
     ret = rPtr->retcode;
     SetResult(interp, rPtr);
-    Tcl_Free((char*)rPtr);
+    ckfree((char*)rPtr);
 
     if (resVar) {
         Tcl_SetVar2Ex(interp, resVar, NULL, Tcl_GetObjResult(interp), 0);
@@ -1140,7 +1140,7 @@ TpoolWorker(clientData)
 
     if (rPtr->retcode == 1) {
         errMsg = (char*)Tcl_GetStringResult(interp);
-        rPtr->result = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
+        rPtr->result = strcpy(ckalloc(strlen(errMsg)+1), errMsg);
         Tcl_ConditionNotify(&tpoolPtr->cond);
         Tcl_MutexUnlock(&startMutex);
         goto out;
@@ -1155,7 +1155,7 @@ TpoolWorker(clientData)
         if (rPtr->retcode != TCL_OK) {
             rPtr->retcode = 1;
             errMsg = (char*)Tcl_GetStringResult(interp);
-            rPtr->result  = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
+            rPtr->result  = strcpy(ckalloc(strlen(errMsg)+1), errMsg);
             Tcl_ConditionNotify(&tpoolPtr->cond);
             Tcl_MutexUnlock(&startMutex);
             goto out;
@@ -1224,14 +1224,14 @@ TpoolWorker(clientData)
         Tcl_MutexUnlock(&tpoolPtr->mutex);
         TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
         Tcl_MutexLock(&tpoolPtr->mutex);
-        Tcl_Free(rPtr->script);
+        ckfree(rPtr->script);
         if (!rPtr->detached) {
             int new;
             Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone,
                                                  (void *)(size_t)rPtr->jobId, &new),
                              (ClientData)rPtr);
         } else {
-            Tcl_Free((char*)rPtr);
+            ckfree((char*)rPtr);
         }
     }
 
@@ -1509,11 +1509,11 @@ TpoolEval(interp, script, scriptLen, rPtr)
         errorCode = (char*)Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
         errorInfo = (char*)Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         if (errorCode != NULL) {
-            rPtr->errorCode = Tcl_Alloc(1 + strlen(errorCode));
+            rPtr->errorCode = ckalloc(1 + strlen(errorCode));
             strcpy(rPtr->errorCode, errorCode);
         }
         if (errorInfo != NULL) {
-            rPtr->errorInfo = Tcl_Alloc(1 + strlen(errorInfo));
+            rPtr->errorInfo = ckalloc(1 + strlen(errorInfo));
             strcpy(rPtr->errorInfo, errorInfo);
         }
     }
@@ -1524,7 +1524,7 @@ TpoolEval(interp, script, scriptLen, rPtr)
     if (reslen == 0) {
         rPtr->result = threadEmptyResult;
     } else {
-        rPtr->result = strcpy(Tcl_Alloc(1 + reslen), result);
+        rPtr->result = strcpy(ckalloc(1 + reslen), result);
     }
 
     return ret;
@@ -1559,7 +1559,7 @@ SetResult(interp, rPtr)
             if (interp) {
                 Tcl_SetObjResult(interp, Tcl_NewStringObj(rPtr->result,-1));
             }
-            Tcl_Free(rPtr->result);
+            ckfree(rPtr->result);
             rPtr->result = NULL;
         }
     }
@@ -1568,14 +1568,14 @@ SetResult(interp, rPtr)
             if (interp) {
                 Tcl_SetObjErrorCode(interp,Tcl_NewStringObj(rPtr->errorCode,-1));
             }
-            Tcl_Free(rPtr->errorCode);
+            ckfree(rPtr->errorCode);
             rPtr->errorCode = NULL;
         }
         if (rPtr->errorInfo) {
             if (interp) {
                 Tcl_AddObjErrorInfo(interp, rPtr->errorInfo, -1);
             }
-            Tcl_Free(rPtr->errorInfo);
+            ckfree(rPtr->errorInfo);
             rPtr->errorInfo = NULL;
         }
     }
@@ -1663,10 +1663,10 @@ TpoolRelease(tpoolPtr)
      */
 
     if (tpoolPtr->initScript) {
-        Tcl_Free(tpoolPtr->initScript);
+        ckfree(tpoolPtr->initScript);
     }
     if (tpoolPtr->exitScript) {
-        Tcl_Free(tpoolPtr->exitScript);
+        ckfree(tpoolPtr->exitScript);
     }
 
     /*
@@ -1677,17 +1677,17 @@ TpoolRelease(tpoolPtr)
     while (hPtr != NULL) {
         rPtr = (TpoolResult*)Tcl_GetHashValue(hPtr);
         if (rPtr->result && rPtr->result != threadEmptyResult) {
-            Tcl_Free(rPtr->result);
+            ckfree(rPtr->result);
         }
         if (rPtr->retcode == TCL_ERROR) {
             if (rPtr->errorInfo) {
-                Tcl_Free(rPtr->errorInfo);
+                ckfree(rPtr->errorInfo);
             }
             if (rPtr->errorCode) {
-                Tcl_Free(rPtr->errorCode);
+                ckfree(rPtr->errorCode);
             }
         }
-        Tcl_Free((char*)rPtr);
+        ckfree((char*)rPtr);
         Tcl_DeleteHashEntry(hPtr);
         hPtr = Tcl_NextHashEntry(&search);
     }
@@ -1698,12 +1698,12 @@ TpoolRelease(tpoolPtr)
      */
 
     for (rPtr = tpoolPtr->workHead; rPtr; rPtr = rPtr->nextPtr) {
-        Tcl_Free(rPtr->script);
-        Tcl_Free((char*)rPtr);
+        ckfree(rPtr->script);
+        ckfree((char*)rPtr);
     }
     Tcl_MutexFinalize(&tpoolPtr->mutex);
     Tcl_ConditionFinalize(&tpoolPtr->cond);
-    Tcl_Free((char*)tpoolPtr);
+    ckfree((char*)tpoolPtr);
 
     return 0;
 }
@@ -1787,7 +1787,7 @@ SignalWaiter(tpoolPtr)
         return;
     }
 
-    evPtr = (Tcl_Event*)Tcl_Alloc(sizeof(Tcl_Event));
+    evPtr = (Tcl_Event*)ckalloc(sizeof(Tcl_Event));
     evPtr->proc = RunStopEvent;
 
     Tcl_ThreadQueueEvent(waitPtr->threadId,(Tcl_Event*)evPtr,TCL_QUEUE_TAIL);
@@ -1815,7 +1815,7 @@ InitWaiter ()
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     if (tsdPtr->waitPtr == NULL) {
-        tsdPtr->waitPtr = (TpoolWaiter*)Tcl_Alloc(sizeof(TpoolWaiter));
+        tsdPtr->waitPtr = (TpoolWaiter*)ckalloc(sizeof(TpoolWaiter));
         tsdPtr->waitPtr->prevPtr  = NULL;
         tsdPtr->waitPtr->nextPtr  = NULL;
         tsdPtr->waitPtr->threadId = Tcl_GetCurrentThread();
@@ -1844,7 +1844,7 @@ ThrExitHandler(clientData)
 {
     ThreadSpecificData *tsdPtr = (ThreadSpecificData *)clientData;
 
-    Tcl_Free((char*)tsdPtr->waitPtr);
+    ckfree((char*)tsdPtr->waitPtr);
 }
 
 /*

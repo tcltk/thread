@@ -29,7 +29,7 @@ static ps_geterr_proc ps_gdbm_geterr;
 
 /*
  * This structure collects all the various pointers
- * to the functions implementing the gdbm store. 
+ * to the functions implementing the gdbm store.
  */
 
 PsStore GdbmStore = {
@@ -62,7 +62,7 @@ PsStore GdbmStore = {
  *
  *-----------------------------------------------------------------------------
  */
-void 
+void
 Sv_RegisterGdbmStore(void)
 {
     Sv_RegisterPsStore(&GdbmStore);
@@ -83,7 +83,7 @@ Sv_RegisterGdbmStore(void)
  *
  *-----------------------------------------------------------------------------
  */
-static ClientData 
+static ClientData
 ps_gdbm_open(path)
     const char *path;
 {
@@ -114,7 +114,7 @@ ps_gdbm_open(path)
  *
  *-----------------------------------------------------------------------------
  */
-static int 
+static int
 ps_gdbm_close(handle)
     ClientData handle;
 {
@@ -135,11 +135,11 @@ ps_gdbm_close(handle)
  *      0 - ok
  *
  * Side effects:
- *      Data returned must be freed by the caller. 
+ *      Data returned must be freed by the caller.
  *
  *-----------------------------------------------------------------------------
  */
-static int 
+static int
 ps_gdbm_get(handle, key, dataptrptr, lenptr)
      ClientData handle;
      const char   *key;
@@ -156,7 +156,7 @@ ps_gdbm_get(handle, key, dataptrptr, lenptr)
     if (drec.dptr == NULL) {
         return 1;
     }
-    
+
     *dataptrptr = drec.dptr;
     *lenptr = drec.dsize;
 
@@ -175,11 +175,11 @@ ps_gdbm_get(handle, key, dataptrptr, lenptr)
  *      0 - ok
  *
  * Side effects:
- *      Data returned must be freed by the caller. 
+ *      Data returned must be freed by the caller.
  *
  *-----------------------------------------------------------------------------
  */
-static int 
+static int
 ps_gdbm_first(handle, keyptrptr, dataptrptr, lenptr)
     ClientData  handle;
     char   **keyptrptr;
@@ -197,7 +197,7 @@ ps_gdbm_first(handle, keyptrptr, dataptrptr, lenptr)
     if (drec.dptr == NULL) {
         return 1;
     }
-    
+
     *dataptrptr = drec.dptr;
     *lenptr = drec.dsize;
     *keyptrptr = dkey.dptr;
@@ -217,7 +217,7 @@ ps_gdbm_first(handle, keyptrptr, dataptrptr, lenptr)
  *      0 - ok
  *
  * Side effects:
- *      Data returned must be freed by the caller. 
+ *      Data returned must be freed by the caller.
  *
  *-----------------------------------------------------------------------------
  */
@@ -243,7 +243,7 @@ static int ps_gdbm_next(handle, keyptrptr, dataptrptr, lenptr)
     if (drec.dptr == NULL) {
         return 1;
     }
-    
+
     *dataptrptr = drec.dptr;
     *lenptr = drec.dsize;
     *keyptrptr = dnext.dptr;
@@ -264,11 +264,11 @@ static int ps_gdbm_next(handle, keyptrptr, dataptrptr, lenptr)
  *
  * Side effects:
  *      If the key is already associated with some user data, this will
- *      be replaced by the new data chunk. 
+ *      be replaced by the new data chunk.
  *
  *-----------------------------------------------------------------------------
  */
-static int 
+static int
 ps_gdbm_put(handle, key, dataptr, len)
     ClientData handle;
     const char   *key;
@@ -306,11 +306,11 @@ ps_gdbm_put(handle, key, dataptr, len)
  *
  * Side effects:
  *      If the key is already associated with some user data, this will
- *      be replaced by the new data chunk. 
+ *      be replaced by the new data chunk.
  *
  *-----------------------------------------------------------------------------
  */
-static int 
+static int
 ps_gdbm_delete(handle, key)
     ClientData handle;
     const char   *key;
