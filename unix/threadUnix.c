@@ -1,4 +1,4 @@
-/* 
+/*
  * threadUnix.c --
  *
  * Unix specific aspects for the thread extension.

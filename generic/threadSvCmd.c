@@ -147,7 +147,7 @@ Sv_RegisterCommand(cmdName, objProc, delProc)
 {
     int len = strlen(cmdName) + strlen(TSV_CMD_PREFIX) + 1;
     int len2 = strlen(cmdName) + strlen(TSV_CMD2_PREFIX) + 1;
-    SvCmdInfo *newCmd = (SvCmdInfo*)Tcl_Alloc(sizeof(SvCmdInfo) + len + len2);
+    SvCmdInfo *newCmd = (SvCmdInfo*)ckalloc(sizeof(SvCmdInfo) + len + len2);
 
     /*
      * Setup new command structure
@@ -213,7 +213,7 @@ Sv_RegisterObjType(typePtr, dupProc)
     const Tcl_ObjType *typePtr;               /* Type of object to register */
     Tcl_DupInternalRepProc *dupProc;    /* Custom object duplicator */
 {
-    RegType *newType = (RegType*)Tcl_Alloc(sizeof(RegType));
+    RegType *newType = (RegType*)ckalloc(sizeof(RegType));
 
     /*
      * Setup new type structure
@@ -253,7 +253,7 @@ Sv_RegisterPsStore(psStorePtr)
      PsStore *psStorePtr;
 {
 
-    PsStore *psPtr = (PsStore*)Tcl_Alloc(sizeof(PsStore));
+    PsStore *psPtr = (PsStore*)ckalloc(sizeof(PsStore));
 
     *psPtr = *psStorePtr;
 
@@ -394,7 +394,7 @@ Sv_PutContainer(interp, svObj, mode)
  *
  * Side effects;
  *      Memory gets allocated. Caller should free the return value of this
- *      function using Tcl_Free().
+ *      function using ckfree().
  *
  *-----------------------------------------------------------------------------
  */
@@ -460,7 +460,7 @@ GetPsStore(char *handle)
         if (strcmp(tmpPtr->type, type) == 0) {
             tmpPtr->psHandle = (*tmpPtr->psOpen)(addr);
             if (tmpPtr->psHandle) {
-                psPtr = (PsStore*)Tcl_Alloc(sizeof(PsStore));
+                psPtr = (PsStore*)ckalloc(sizeof(PsStore));
                 *psPtr = *tmpPtr;
                 psPtr->nextPtr = NULL;
             }
@@ -797,7 +797,7 @@ CreateArray(bucketPtr, arrayName)
         return (Array*)Tcl_GetHashValue(hPtr);
     }
 
-    arrayPtr = (Array*)Tcl_Alloc(sizeof(Array));
+    arrayPtr = (Array*)ckalloc(sizeof(Array));
     arrayPtr->bucketPtr = bucketPtr;
     arrayPtr->entryPtr  = hPtr;
     arrayPtr->psPtr     = NULL;
@@ -837,17 +837,17 @@ DeleteArray(arrayPtr)
         if ((*psPtr->psClose)(psPtr->psHandle) == -1) {
             return TCL_ERROR;
         }
-        Tcl_Free((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
+        ckfree((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
     }
     if (arrayPtr->bindAddr) {
-        Tcl_Free(arrayPtr->bindAddr);
+        ckfree(arrayPtr->bindAddr);
     }
     if (arrayPtr->entryPtr) {
         Tcl_DeleteHashEntry(arrayPtr->entryPtr);
     }
 
     Tcl_DeleteHashTable(&arrayPtr->vars);
-    Tcl_Free((char*)arrayPtr);
+    ckfree((char*)arrayPtr);
 
     return TCL_OK;
 }
@@ -880,7 +880,7 @@ SvAllocateContainers(bucketPtr)
     register Container *prevPtr = NULL, *objPtr = NULL;
     register int i;
 
-    basePtr = (char*)Tcl_Alloc(bytesToAlloc);
+    basePtr = (char*)ckalloc(bytesToAlloc);
     memset(basePtr, 0, bytesToAlloc);
 
     objPtr = (Container*)basePtr;
@@ -920,7 +920,7 @@ SvFinalizeContainers(bucketPtr)
     while (objPtr) {
         if (objPtr->chunkAddr == (char*)objPtr) {
             tmpPtr = objPtr->nextPtr;
-            Tcl_Free((char*)objPtr);
+            ckfree((char*)objPtr);
             objPtr = tmpPtr;
         } else {
             objPtr = objPtr->nextPtr;
@@ -1031,7 +1031,7 @@ Sv_DuplicateObj(objPtr)
         dupPtr->bytes = NULL;
     } else if (objPtr->bytes != Sv_tclEmptyStringRep) {
         /* A copy of TclInitStringRep macro */
-        dupPtr->bytes = (char*)Tcl_Alloc((unsigned)objPtr->length + 1);
+        dupPtr->bytes = (char*)ckalloc((unsigned)objPtr->length + 1);
         if (objPtr->length > 0) {
             memcpy((void*)dupPtr->bytes,(void*)objPtr->bytes,
                    (unsigned)objPtr->length);
@@ -1346,7 +1346,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
             Tcl_HashSearch search;
             Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
             arrayPtr->psPtr = psPtr;
-            arrayPtr->bindAddr = strcpy(Tcl_Alloc(len+1), psurl);
+            arrayPtr->bindAddr = strcpy(ckalloc(len+1), psurl);
             while (hPtr) {
                 svObj = Tcl_GetHashValue(hPtr);
                 if (ReleaseContainer(interp, svObj, SV_CHANGED) != TCL_OK) {
@@ -1358,7 +1358,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
         } else {
             arrayPtr = LockArray(interp, arrayName, FLAGS_CREATEARRAY);
             arrayPtr->psPtr = psPtr;
-            arrayPtr->bindAddr = strcpy(Tcl_Alloc(len+1), psurl);
+            arrayPtr->bindAddr = strcpy(ckalloc(len+1), psurl);
         }
         if (!(*psPtr->psFirst)(psPtr->psHandle, &key, &val, &len)) {
             do {
@@ -1376,7 +1376,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
                 ret = TCL_ERROR;
                 goto cmdExit;
             }
-            Tcl_Free((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
+            ckfree((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
         } else {
             Tcl_AppendResult(interp, "shared variable is not bound", NULL);
             ret = TCL_ERROR;
@@ -2175,7 +2175,7 @@ Sv_Init (interp)
     if (buckets == NULL) {
         Tcl_MutexLock(&bucketsMutex);
         if (buckets == NULL) {
-            buckets = (Bucket *)Tcl_Alloc(sizeof(Bucket) * NUMBUCKETS);
+            buckets = (Bucket *)ckalloc(sizeof(Bucket) * NUMBUCKETS);
 	    Tcl_CreateExitHandler(SvFinalize, NULL);
 
             for (i = 0; i < NUMBUCKETS; ++i) {
@@ -2267,7 +2267,7 @@ SvFinalize (clientData)
                 Tcl_DeleteHashTable(&bucketPtr->handles);
                 Tcl_DeleteHashTable(&bucketPtr->arrays);
             }
-            Tcl_Free((char *)buckets), buckets = NULL;
+            ckfree((char *)buckets), buckets = NULL;
         }
         buckets = NULL;
         Tcl_MutexUnlock(&bucketsMutex);
@@ -2283,7 +2283,7 @@ SvFinalize (clientData)
         cmdPtr = svCmdInfo;
         while (cmdPtr) {
             SvCmdInfo *tmpPtr = cmdPtr->nextPtr;
-            Tcl_Free((char*)cmdPtr);
+            ckfree((char*)cmdPtr);
             cmdPtr = tmpPtr;
         }
         svCmdInfo = NULL;
@@ -2297,7 +2297,7 @@ SvFinalize (clientData)
         regPtr = regType;
         while (regPtr) {
             RegType *tmpPtr = regPtr->nextPtr;
-            Tcl_Free((char*)regPtr);
+            ckfree((char*)regPtr);
             regPtr = tmpPtr;
         }
         regType = NULL;

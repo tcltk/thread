@@ -39,7 +39,7 @@ ThreadpKill (Tcl_Interp *interp, long id)
 
     if (winOpenThreadProc) {
 	hThread = winOpenThreadProc(THREAD_TERMINATE, FALSE, id);
-	/* 
+	/*
 	 * not to be misunderstood as "devilishly clever",
 	 * but evil in it's pure form.
 	 */

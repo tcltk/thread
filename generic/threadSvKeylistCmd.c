@@ -1,4 +1,4 @@
-/* 
+/*
  * threadSvKeylist.c --
  *
  * This file implements keyed-list commands as part of the thread
@@ -107,9 +107,9 @@ SvKeylsetObjCmd(arg, interp, objc, objv)
     char *key;
     Tcl_Obj *val;
     Container *svObj = (Container*)arg;
-    
+
     /*
-     * Syntax: 
+     * Syntax:
      *          sv::keylset array lkey key value ?key value ...?
      *          $keylist keylset key value ?key value ...?
      */
@@ -121,7 +121,7 @@ SvKeylsetObjCmd(arg, interp, objc, objv)
     }
     if ((objc - off) < 2 || ((objc - off) % 2)) {
         Tcl_WrongNumArgs(interp, off, objv, "key value ?key value ...?");
-        goto cmd_err;   
+        goto cmd_err;
     }
     for (i = off; i < objc; i += 2) {
         key = Tcl_GetString(objv[i]);
@@ -129,7 +129,7 @@ SvKeylsetObjCmd(arg, interp, objc, objv)
         ret = TclX_KeyedListSet(interp, svObj->tclObj, key, val);
         if (ret != TCL_OK) {
             goto cmd_err;
-        } 
+        }
     }
 
     return Sv_PutContainer(interp, svObj, SV_CHANGED);
@@ -168,7 +168,7 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
     Container *svObj = (Container*)arg;
 
     /*
-     * Syntax: 
+     * Syntax:
      *          sv::keylget array lkey ?key? ?var?
      *          $keylist keylget ?key? ?var?
      */
@@ -180,7 +180,7 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
     }
     if ((objc - off) > 2) {
         Tcl_WrongNumArgs(interp, off, objv, "?key? ?var?");
-        goto cmd_err;   
+        goto cmd_err;
     }
     if ((objc - off) == 0) {
         if (Sv_PutContainer(interp, svObj, SV_UNCHANGED) != TCL_OK) {
@@ -193,7 +193,7 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
     } else {
         varObjPtr = NULL;
     }
-    
+
     key = Tcl_GetString(objv[off]);
     ret = TclX_KeyedListGet(interp, svObj->tclObj, key, &valObjPtr);
     if (ret == TCL_ERROR) {
@@ -258,7 +258,7 @@ SvKeyldelObjCmd(arg, interp, objc, objv)
     Container *svObj = (Container*)arg;
 
     /*
-     * Syntax: 
+     * Syntax:
      *          sv::keyldel array lkey key ?key ...?
      *          $keylist keyldel ?key ...?
      */
@@ -281,7 +281,7 @@ SvKeyldelObjCmd(arg, interp, objc, objv)
             goto cmd_err;
         }
     }
-    
+
     return Sv_PutContainer(interp, svObj, SV_CHANGED);
 
  cmd_err:
@@ -318,7 +318,7 @@ SvKeylkeysObjCmd(arg, interp, objc, objv)
     Container *svObj = (Container*)arg;
 
     /*
-     * Syntax: 
+     * Syntax:
      *          sv::keylkeys array lkey ?key?
      *          $keylist keylkeys ?key?
      */
@@ -345,7 +345,7 @@ SvKeylkeysObjCmd(arg, interp, objc, objv)
     }
 
     Tcl_SetObjResult (interp, listObj); /* listObj allocated by API !*/
-    
+
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 
  cmd_err:
