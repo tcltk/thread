@@ -1,4 +1,4 @@
-/* 
+/*
  * This is the header file for the module that implements shared variables.
  * for protected multithreaded access.
  *
@@ -78,7 +78,7 @@
 #define SV_ERROR          -1   /* Object may be in incosistent state */
 
 /*
- * Definitions of functions implementing simple key/value 
+ * Definitions of functions implementing simple key/value
  * persistent storage for shared variable arrays.
  */
 
@@ -96,7 +96,7 @@ typedef char* (ps_geterr_proc)(ClientData);
 
 /*
  * This structure maintains a bunch of pointers to functions implementing
- * the simple persistence layer for the shared variable arrays. 
+ * the simple persistence layer for the shared variable arrays.
  */
 
 typedef struct PsStore {
@@ -116,7 +116,7 @@ typedef struct PsStore {
 
 /*
  * The following structure defines a collection of arrays.
- * Only the arrays within a given bucket share a lock, 
+ * Only the arrays within a given bucket share a lock,
  * allowing for more concurency.
  */
 

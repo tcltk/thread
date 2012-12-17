@@ -21,7 +21,7 @@
  *
  * Main difference to standard Tcl commands is that our commands
  * operate on list variable per-reference instead per-value.
- * This way we avoid frequent object shuffling between shared 
+ * This way we avoid frequent object shuffling between shared
  * containers and current interpreter, thus increasing speed.
  */
 
@@ -399,7 +399,7 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
 
     nargs = objc - (off + 2);
     if (nargs) {
-        args = (Tcl_Obj**)Tcl_Alloc(nargs * sizeof(Tcl_Obj*));
+        args = (Tcl_Obj**)ckalloc(nargs * sizeof(Tcl_Obj*));
         for(i = off + 2, j = 0; i < objc; i++, j++) {
             args[j] = Sv_DuplicateObj(objv[i]);
         }
@@ -412,7 +412,7 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
                 Tcl_DecrRefCount(args[j]);
             }
         }
-        Tcl_Free((char*)args);
+        ckfree((char*)args);
     }
 
     return Sv_PutContainer(interp, svObj, SV_CHANGED);
@@ -487,14 +487,14 @@ SvLrangeObjCmd (arg, interp, objc, objv)
     }
 
     nargs = last - first + 1;
-    args  = (Tcl_Obj**)Tcl_Alloc(nargs * sizeof(Tcl_Obj*));
+    args  = (Tcl_Obj**)ckalloc(nargs * sizeof(Tcl_Obj*));
     for (i = first, j = 0; i <= last; i++, j++) {
         args[j] = Sv_DuplicateObj(elPtrs[i]);
     }
 
     Tcl_ResetResult(interp);
     Tcl_SetListObj(Tcl_GetObjResult(interp), nargs, args);
-    Tcl_Free((char*)args);
+    ckfree((char*)args);
 
  cmd_ok:
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
@@ -562,7 +562,7 @@ SvLinsertObjCmd (arg, interp, objc, objv)
     }
 
     nargs = objc - (off + 1);
-    args  = (Tcl_Obj**)Tcl_Alloc(nargs * sizeof(Tcl_Obj*));
+    args  = (Tcl_Obj**)ckalloc(nargs * sizeof(Tcl_Obj*));
     for (i = off + 1, j = 0; i < objc; i++, j++) {
          args[j] = Sv_DuplicateObj(objv[i]);
     }
@@ -571,11 +571,11 @@ SvLinsertObjCmd (arg, interp, objc, objv)
         for (i = off + 1, j = 0; i < objc; i++, j++) {
             Tcl_DecrRefCount(args[j]);
         }
-        Tcl_Free((char*)args);
+        ckfree((char*)args);
         goto cmd_err;
     }
 
-    Tcl_Free((char*)args);
+    ckfree((char*)args);
 
     return Sv_PutContainer(interp, svObj, SV_CHANGED);
 
@@ -630,7 +630,7 @@ SvLlengthObjCmd (arg, interp, objc, objv)
     if (Sv_PutContainer(interp, svObj, SV_UNCHANGED) != TCL_OK) {
         return TCL_ERROR;
     }
-    
+
     return ret;
 }
 
@@ -893,13 +893,13 @@ DupListObjShared(srcPtr, copyPtr)
     Tcl_Obj *elObj, **newObjList;
 
     Tcl_ListObjLength(NULL, srcPtr, &llen);
-    if (llen == 0) { 
+    if (llen == 0) {
         (*srcPtr->typePtr->dupIntRepProc)(srcPtr, copyPtr);
         copyPtr->refCount = 0;
         return;
     }
 
-    newObjList = (Tcl_Obj**)Tcl_Alloc(llen*sizeof(Tcl_Obj*));
+    newObjList = (Tcl_Obj**)ckalloc(llen*sizeof(Tcl_Obj*));
 
     for (i = 0; i < llen; i++) {
         Tcl_ListObjIndex(NULL, srcPtr, i, &elObj);
@@ -908,7 +908,7 @@ DupListObjShared(srcPtr, copyPtr)
 
     Tcl_SetListObj(copyPtr, llen, newObjList);
 
-    Tcl_Free((char*)newObjList);
+    ckfree((char*)newObjList);
 }
 
 /*
@@ -1054,7 +1054,7 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
      */
 
     if (indexCount == 1 &&
-        Tcl_ListObjGetElements(interp, indexArray[0], &indexCount, 
+        Tcl_ListObjGetElements(interp, indexArray[0], &indexCount,
                                &indexArray) != TCL_OK) {
         /*
          * Index arg designates something that is neither an index
@@ -1105,11 +1105,11 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
         if (result != TCL_OK) {
             break;
         }
-        
+
         /*
          * Check that the index is in range.
          */
-        
+
         if (index < 0 || index >= elemCount) {
             Tcl_SetObjResult(interp,
                              Tcl_NewStringObj("list index out of range", -1));
@@ -1125,7 +1125,7 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
             result = TCL_OK;
             break;
         }
-    
+
         /*
          * Extract the appropriate sublist and chain it onto the linked
          * list of Tcl_Obj's whose string reps must be spoilt.
@@ -1156,10 +1156,10 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
             listPtr->internalRep.twoPtrValue.ptr2 = NULL;
             listPtr = subListPtr;
         }
-        
+
         return valuePtr;
     }
-    
+
     return NULL;
 }
 

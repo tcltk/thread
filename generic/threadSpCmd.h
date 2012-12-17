@@ -1,4 +1,4 @@
-/* 
+/*
  * This is the header file for the module that implements some missing
  * synchronization priomitives from the Tcl API.
  *
@@ -16,7 +16,7 @@
 
 /*
  * The following structure defines a locking bucket. A locking
- * bucket is associated with a mutex and protects access to 
+ * bucket is associated with a mutex and protects access to
  * objects stored in bucket hash table.
  */
 

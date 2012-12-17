@@ -18,6 +18,7 @@
 #include "tclThread.h"
 #include <stdlib.h> /* For strtoul */
 #include <string.h> /* For memset and friends */
+#include <stdarg.h> /* For va_list */
 
 #ifdef TCL_STRLEN
 # define STRLEN_TYPE size_t

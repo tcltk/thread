@@ -1,21 +1,21 @@
-/* 
+/*
  * threadSpCmd.c --
  *
- * This file implements commands for script-level access to thread 
+ * This file implements commands for script-level access to thread
  * synchronization primitives. Currently, the exclusive mutex, the
- * recursive mutex. the reader/writer mutex and condition variable 
+ * recursive mutex. the reader/writer mutex and condition variable
  * objects are exposed to the script programmer.
  *
  * Additionaly, a locked eval is also implemented. This is a practical
  * convenience function which relieves the programmer from the need
  * to take care about unlocking some mutex after evaluating a protected
  * part of code. The locked eval is recursive-savvy since it used the
- * recursive mutex for internal locking. 
+ * recursive mutex for internal locking.
  *
- * The Tcl interface to the locking and synchronization primitives 
+ * The Tcl interface to the locking and synchronization primitives
  * attempts to catch some very common problems in thread programming
  * like attempting to lock an exclusive mutex twice from the same
- * thread (deadlock), waiting on the condition variable without 
+ * thread (deadlock), waiting on the condition variable without
  * locking the mutex, destroying primitives while being used, etc...
  * This all comes with some additional internal locking costs but
  * the benefits outweight the costs, especially considering overall
@@ -43,8 +43,8 @@
 #define SP_MUTEX   1  /* Any kind of mutex */
 #define SP_CONDV   2  /* The condition variable sync type */
 
-/* 
- * Structure representing one sync primitive (mutex, condition variable). 
+/*
+ * Structure representing one sync primitive (mutex, condition variable).
  * We use buckets to manage Tcl names of sync primitives. Each bucket
  * is associated with a mutex. Each time we process the Tcl name of an
  * sync primitive, we compute it's (trivial) hash and use this hash to
@@ -75,7 +75,7 @@ typedef struct _SpMutex {
 } SpMutex;
 
 /*
- * Structure representing a condition variable. 
+ * Structure representing a condition variable.
  */
 
 typedef struct _SpCondv {
@@ -88,7 +88,7 @@ typedef struct _SpCondv {
 } SpCondv;
 
 /*
- * This global data is used to map opaque Tcl-level names 
+ * This global data is used to map opaque Tcl-level names
  * to pointers of their corresponding synchronization objects.
  */
 
@@ -148,7 +148,7 @@ static int       AnyMutexIsLocked  (Sp_AnyMutex *mPtr, Tcl_ThreadId);
 #define IsRecursive(a)   ((a)->type == RMUTEXID)
 #define IsReadWrite(a)   ((a)->type == WMUTEXID)
 
-/* 
+/*
  * This macro produces a hash-value for table-lookups given a handle
  * and its length. It is implemented as macro just for speed.
  * It is actually a trivial thing because the handles are simple
@@ -194,8 +194,8 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
     enum options {
         m_CREATE, m_DESTROY, m_LOCK, m_UNLOCK
     };
-    
-    /* 
+
+    /*
      * Syntax:
      *
      *     thread::mutex create ?-recursive?
@@ -220,7 +220,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
     if (opt == (int)m_CREATE) {
         Tcl_Obj *nameObj;
         const char *arg;
-        
+
         /*
          * Parse out which type of mutex to create
          */
@@ -244,7 +244,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
          * Create the requested mutex
          */
 
-        mutexPtr = (SpMutex*)Tcl_Alloc(sizeof(SpMutex));
+        mutexPtr = (SpMutex*)ckalloc(sizeof(SpMutex));
         mutexPtr->type   = type;
         mutexPtr->bucket = NULL;
         mutexPtr->hentry = NULL;
@@ -369,8 +369,8 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
     enum options {
         w_CREATE, w_DESTROY, w_RLOCK, w_WLOCK, w_UNLOCK
     };
-    
-    /* 
+
+    /*
      * Syntax:
      *
      *     thread::rwmutex create
@@ -399,7 +399,7 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
             Tcl_WrongNumArgs(interp, 1, objv, "create");
             return TCL_ERROR;
         }
-        mutexPtr = (SpMutex*)Tcl_Alloc(sizeof(SpMutex));
+        mutexPtr = (SpMutex*)ckalloc(sizeof(SpMutex));
         mutexPtr->type   = WMUTEXID;
         mutexPtr->refcnt = 0;
         mutexPtr->bucket = NULL;
@@ -460,7 +460,7 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
 
     lockPtr = &mutexPtr->lock;
     rwPtr = (Sp_ReadWriteMutex*) lockPtr;
-    
+
     switch ((enum options)opt) {
     case w_RLOCK:
         if (!Sp_ReadWriteMutexRLock(rwPtr)) {
@@ -532,7 +532,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
         c_CREATE, c_DESTROY, c_NOTIFY, c_WAIT
     };
 
-    /* 
+    /*
      * Syntax:
      *
      *    thread::cond create
@@ -560,7 +560,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
             Tcl_WrongNumArgs(interp, 1, objv, "create");
             return TCL_ERROR;
         }
-        condvPtr = (SpCondv*)Tcl_Alloc(sizeof(SpCondv));
+        condvPtr = (SpCondv*)ckalloc(sizeof(SpCondv));
         condvPtr->refcnt = 0;
         condvPtr->bucket = NULL;
         condvPtr->hentry = NULL;
@@ -575,7 +575,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
     }
 
     /*
-     * All others require at least a valid handle. 
+     * All others require at least a valid handle.
      */
 
     if (objc < 3) {
@@ -619,7 +619,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
 
         /*
          * May improve the Tcl_ConditionWait() to report timeouts so we can
-         * inform script programmer about this interesting fact. I think 
+         * inform script programmer about this interesting fact. I think
          * there is still a place for something like Tcl_ConditionWaitEx()
          * or similar in the core.
          */
@@ -642,7 +642,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
             Tcl_AppendResult(interp, "no such mutex \"",mutexName,"\"", NULL);
             return TCL_ERROR;
         }
-        if (!IsExclusive(mutexPtr)  
+        if (!IsExclusive(mutexPtr)
             || SpCondvWait(condvPtr, mutexPtr, timeMsec) == 0) {
             PutCondv(condvPtr);
             PutMutex(mutexPtr);
@@ -693,7 +693,7 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
     SpMutex *mutexPtr = NULL;
     static Sp_RecursiveMutex evalMutex;
 
-    /* 
+    /*
      * Syntax:
      *
      *     thread::eval ?-lock <mutexHandle>? arg ?arg ...?
@@ -711,10 +711,10 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
      * Find out wether to use the internal (recursive) mutex
      * or external mutex given on the command line, and lock
      * the corresponding mutex immediately.
-     * 
+     *
      * We are using recursive internal mutex so we can easily
-     * support the recursion w/o danger of deadlocking. If 
-     * however, user gives us an exclusive mutex, we will 
+     * support the recursion w/o danger of deadlocking. If
+     * however, user gives us an exclusive mutex, we will
      * throw error on attempt to recursively call us.
      */
 
@@ -750,11 +750,11 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
 
     /*
      * Evaluate passed arguments as Tcl script. Note that
-     * Tcl_EvalObjEx throws away the passed object by 
+     * Tcl_EvalObjEx throws away the passed object by
      * doing an decrement reference count on it. This also
      * means we need not build object bytecode rep.
      */
-    
+
     if (objc == 1) {
         scriptObj = Tcl_DuplicateObj(objv[optx]);
     } else {
@@ -815,7 +815,7 @@ GetName(int type, void *addrPtr)
     Tcl_MutexLock(&initMutex);
     id = idcounter++;
     Tcl_MutexUnlock(&initMutex);
-        
+
     sprintf(name, "%cid%d", type, id);
 
     return Tcl_NewStringObj(name, -1);
@@ -1013,7 +1013,7 @@ RemoveMutex(const char *name, int len)
     }
     PutMutex(mutexPtr);
     RemoveAnyItem(SP_MUTEX, name, len);
-    Tcl_Free((char*)mutexPtr);
+    ckfree((char*)mutexPtr);
 
     return 1;
 }
@@ -1049,7 +1049,7 @@ RemoveCondv(const char *name, int len)
     }
     PutCondv(condvPtr);
     RemoveAnyItem(SP_CONDV, name, len);
-    Tcl_Free((char*)condvPtr);
+    ckfree((char*)condvPtr);
 
     return 1;
 }
@@ -1065,7 +1065,7 @@ RemoveCondv(const char *name, int len)
  *      Standard Tcl result.
  *
  * Side effects:
- *      Initializes shared hash table for storing sync primitive 
+ *      Initializes shared hash table for storing sync primitive
  *      handles and pointers.
  *
  *----------------------------------------------------------------------
@@ -1116,12 +1116,12 @@ Sp_Init (interp)
  *      0 - mutex is not locked (pending deadlock?)
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
 
-static int 
+static int
 SpMutexLock(SpMutex *mutexPtr)
 {
     Sp_AnyMutex **lockPtr = &mutexPtr->lock;
@@ -1130,7 +1130,7 @@ SpMutexLock(SpMutex *mutexPtr)
     case EMUTEXID:
         return Sp_ExclusiveMutexLock((Sp_ExclusiveMutex*)lockPtr);
         break;
-    case RMUTEXID: 
+    case RMUTEXID:
         return Sp_RecursiveMutexLock((Sp_RecursiveMutex*)lockPtr);
         break;
     }
@@ -1150,7 +1150,7 @@ SpMutexLock(SpMutex *mutexPtr)
  *      0 - mutex was not locked
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1198,7 +1198,7 @@ SpMutexFinalize(SpMutex *mutexPtr)
     if (AnyMutexIsLocked((Sp_AnyMutex*)mutexPtr->lock, (Tcl_ThreadId)0)) {
         return 0;
     }
-    
+
     /*
      * At this point, the mutex could be locked again, hence it
      * is important never to call this function unprotected.
@@ -1233,7 +1233,7 @@ SpMutexFinalize(SpMutex *mutexPtr)
  *      0 - not waited as mutex is not locked in the same thread
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1284,15 +1284,15 @@ SpCondvWait(SpCondv *condvPtr, SpMutex *mutexPtr, int msec)
  *      Signalizes the condition variable.
  *
  * Results:
- *      None. 
+ *      None.
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
 
-static void 
+static void
 SpCondvNotify(SpCondv *condvPtr)
 {
     if (condvPtr->cond) {
@@ -1312,12 +1312,12 @@ SpCondvNotify(SpCondv *condvPtr)
  *      0 - variable is in use
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
 
-static int 
+static int
 SpCondvFinalize(SpCondv *condvPtr)
 {
     if (condvPtr->mutex != NULL) {
@@ -1343,7 +1343,7 @@ SpCondvFinalize(SpCondv *condvPtr)
  *      0 - mutex is not locked; same thread tries to locks twice
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1362,7 +1362,7 @@ Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *muxPtr)
         Tcl_MutexLock(&initMutex);
         if (*muxPtr == (Sp_ExclusiveMutex_*)0) {
             *muxPtr = (Sp_ExclusiveMutex_*)
-                Tcl_Alloc(sizeof(Sp_ExclusiveMutex_));
+                ckalloc(sizeof(Sp_ExclusiveMutex_));
             memset(*muxPtr, 0, sizeof(Sp_ExclusiveMutex_));
         }
         Tcl_MutexUnlock(&initMutex);
@@ -1382,7 +1382,7 @@ Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *muxPtr)
 
     /*
      * Many threads can come to this point.
-     * Only one will succeed locking the 
+     * Only one will succeed locking the
      * mutex. Others will block...
      */
 
@@ -1408,7 +1408,7 @@ Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *muxPtr)
  *      0 - mutex is not locked
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1431,7 +1431,7 @@ Sp_ExclusiveMutexIsLocked(Sp_ExclusiveMutex *muxPtr)
  ?      0 - mutex was never locked
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1475,7 +1475,7 @@ Sp_ExclusiveMutexUnlock(Sp_ExclusiveMutex *muxPtr)
  *      more threads to finalize the mutex at the same time.
  *
  * Results:
- *      None. 
+ *      None.
  *
  * Side effects:
  *      Mutex is destroyed.
@@ -1494,7 +1494,7 @@ Sp_ExclusiveMutexFinalize(Sp_ExclusiveMutex *muxPtr)
         if (emPtr->mutex) {
             Tcl_MutexFinalize(&emPtr->mutex);
         }
-        Tcl_Free((char*)*muxPtr);
+        ckfree((char*)*muxPtr);
     }
 }
 
@@ -1528,7 +1528,7 @@ Sp_RecursiveMutexLock(Sp_RecursiveMutex *muxPtr)
         Tcl_MutexLock(&initMutex);
         if (*muxPtr == (Sp_RecursiveMutex_*)0) {
             *muxPtr = (Sp_RecursiveMutex_*)
-                Tcl_Alloc(sizeof(Sp_RecursiveMutex_));
+                ckalloc(sizeof(Sp_RecursiveMutex_));
             memset(*muxPtr, 0, sizeof(Sp_RecursiveMutex_));
         }
         Tcl_MutexUnlock(&initMutex);
@@ -1536,7 +1536,7 @@ Sp_RecursiveMutexLock(Sp_RecursiveMutex *muxPtr)
 
     rmPtr = *(Sp_RecursiveMutex_**)muxPtr;
     Tcl_MutexLock(&rmPtr->lock);
-    
+
     if (rmPtr->owner == thisThread) {
         /*
          * We are already holding the mutex
@@ -1582,7 +1582,7 @@ Sp_RecursiveMutexLock(Sp_RecursiveMutex *muxPtr)
  *      0 - mutex is not locked
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1605,7 +1605,7 @@ Sp_RecursiveMutexIsLocked(Sp_RecursiveMutex *muxPtr)
  *      0 - mutex never locked
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1646,7 +1646,7 @@ Sp_RecursiveMutexUnlock(Sp_RecursiveMutex *muxPtr)
  *      more threads to finalize the mutex at the same time.
  *
  * Results:
- *      None. 
+ *      None.
  *
  * Side effects:
  *      Mutex is destroyed.
@@ -1665,7 +1665,7 @@ Sp_RecursiveMutexFinalize(Sp_RecursiveMutex *muxPtr)
         if (rmPtr->cond) {
             Tcl_ConditionFinalize(&rmPtr->cond);
         }
-        Tcl_Free((char*)*muxPtr);
+        ckfree((char*)*muxPtr);
     }
 }
 
@@ -1681,7 +1681,7 @@ Sp_RecursiveMutexFinalize(Sp_RecursiveMutex *muxPtr)
  *      0 - mutex is not locked as we already hold the write lock
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1700,7 +1700,7 @@ Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *muxPtr)
         Tcl_MutexLock(&initMutex);
         if (*muxPtr == (Sp_ReadWriteMutex_*)0) {
             *muxPtr = (Sp_ReadWriteMutex_*)
-                Tcl_Alloc(sizeof(Sp_ReadWriteMutex_));
+                ckalloc(sizeof(Sp_ReadWriteMutex_));
             memset(*muxPtr, 0, sizeof(Sp_ReadWriteMutex_));
         }
         Tcl_MutexUnlock(&initMutex);
@@ -1736,7 +1736,7 @@ Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *muxPtr)
  *      0 - same thread attempts to write-lock the mutex twice
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1755,7 +1755,7 @@ Sp_ReadWriteMutexWLock(Sp_ReadWriteMutex *muxPtr)
         Tcl_MutexLock(&initMutex);
         if (*muxPtr == (Sp_ReadWriteMutex_*)0) {
             *muxPtr = (Sp_ReadWriteMutex_*)
-                Tcl_Alloc(sizeof(Sp_ReadWriteMutex_));
+                ckalloc(sizeof(Sp_ReadWriteMutex_));
             memset(*muxPtr, 0, sizeof(Sp_ReadWriteMutex_));
         }
         Tcl_MutexUnlock(&initMutex);
@@ -1791,7 +1791,7 @@ Sp_ReadWriteMutexWLock(Sp_ReadWriteMutex *muxPtr)
  *      0 - mutex is not locked
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
@@ -1810,7 +1810,7 @@ Sp_ReadWriteMutexIsLocked(Sp_ReadWriteMutex *muxPtr)
  *      Unlock the reader/writer mutex.
  *
  * Results:
- *      None. 
+ *      None.
  *
  * Side effects:
  *
@@ -1825,7 +1825,7 @@ Sp_ReadWriteMutexUnlock(Sp_ReadWriteMutex *muxPtr)
     if (*muxPtr == (Sp_ReadWriteMutex_*)0) {
         return 0; /* Never locked before */
     }
-    
+
     rwPtr = *(Sp_ReadWriteMutex_**)muxPtr;
     Tcl_MutexLock(&rwPtr->lock);
     if (rwPtr->lockcount == 0) {
@@ -1856,7 +1856,7 @@ Sp_ReadWriteMutexUnlock(Sp_ReadWriteMutex *muxPtr)
  *      more threads to finalize the mutex at the same time.
  *
  * Results:
- *      None. 
+ *      None.
  *
  * Side effects:
  *      Mutex is destroyed.
@@ -1878,7 +1878,7 @@ Sp_ReadWriteMutexFinalize(Sp_ReadWriteMutex *muxPtr)
         if (rwPtr->wcond) {
             Tcl_ConditionFinalize(&rwPtr->wcond);
         }
-        Tcl_Free((char*)*muxPtr);
+        ckfree((char*)*muxPtr);
     }
 }
 
@@ -1896,11 +1896,11 @@ Sp_ReadWriteMutexFinalize(Sp_ReadWriteMutex *muxPtr)
  *      0 - mutex is not locked (optionally by the given thread)
  *
  * Side effects:
- *      None.  
+ *      None.
  *
  *----------------------------------------------------------------------
  */
-static int 
+static int
 AnyMutexIsLocked(Sp_AnyMutex *mPtr, Tcl_ThreadId threadId)
 {
     int locked = 0;
