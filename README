@@ -6,10 +6,6 @@ This is the source distribution of the Tcl Thread extension.
 You can use this extension to gain script-level access to Tcl 
 threading capabilities.
 The extension can be used with Tcl cores starting from Tcl8.4 and later.
-(This beta can be compiled using Tcl8.4 or later, and it can run with
-Tcl8.5 and later. The only reason why it cannot run with Tcl 8.4 is
-because Tcl 8.4 cannot handle package versions with "b" in it. Therefore
-the final Thread 2.7for84+ release will run fine with Tcl 8.4)
 Also, this extension supports, i.e. can be used as a loadable module of,
 AOLserver 4.x series of the highly-scalable web server from America Online. 
 
