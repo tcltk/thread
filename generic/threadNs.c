@@ -40,7 +40,7 @@ NsThread_Init (Tcl_Interp *interp, void *cd)
 
     if (ret != TCL_OK) {
         Ns_Log(Warning, "can't load module %s: %s", md->modname,
-               Tcl_GetStringResult(interp));
+        		Tcl_GetStringFromObj(Tcl_GetObjResult(interp), NULL));
         return TCL_ERROR;
     }
     Tcl_SetAssocData(interp, "thread:nsd", NULL, (ClientData)md);

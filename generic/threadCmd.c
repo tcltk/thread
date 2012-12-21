@@ -38,7 +38,7 @@
  * stubs table.
  */
 
-#define haveInterpLimit (tclVersion>84)
+#define haveInterpLimit (threadTclVersion>84)
 #if defined(TCL_TIP143) && (TCL_MAJOR_VERSION == 8) && \
     (TCL_MINOR_VERSION < 5)
 # if defined(USE_TCL_STUBS)
@@ -54,7 +54,7 @@
  * #285 APIs (i.e. asynchronous script cancellation) available.
  */
 
-#define haveInterpCancel (tclVersion>85)
+#define haveInterpCancel (threadTclVersion>85)
 #ifndef TCL_TIP285
 # if (TCL_MAJOR_VERSION > 8) || (TCL_MINOR_VERSION > 5)
 #  define TCL_TIP285
@@ -141,7 +141,7 @@ static struct ThreadSpecificData *threadList = NULL;
 
 static char *threadEmptyResult = (char *)"";
 
-static int tclVersion = 0;
+int threadTclVersion = 0;
 
 /*
  * An instance of the following structure contains all information that is
@@ -430,7 +430,7 @@ ThreadInit(interp)
         return TCL_ERROR;
     }
 
-    if (!tclVersion) {
+    if (!threadTclVersion) {
 
 	/*
 	 * Get the current core version to decide whether to use
@@ -461,8 +461,8 @@ ThreadInit(interp)
 	    return TCL_ERROR;
 	}
 	Tcl_MutexLock(&threadMutex);
-	if (!tclVersion) {
-	    tclVersion = 10 * major + minor;
+	if (!threadTclVersion) {
+		threadTclVersion = 10 * major + minor;
 	}
 	Tcl_MutexUnlock(&threadMutex);
     }
@@ -713,7 +713,7 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     if (objc > 1) {
-        if (OPT_CMP(Tcl_GetString(objv[1]), "-wait")) {
+        if (OPT_CMP(Tcl_GetStringFromObj(objv[1], NULL), "-wait")) {
             wait = 1;
 	    if (objc > 2) {
         	if (ThreadGetId(interp, objv[2], &thrId) != TCL_OK) {
@@ -975,7 +975,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
             /*
              * FIXME: Do something for callbacks to self
              */
-            Tcl_SetResult(interp, "can't notify self", TCL_STATIC);
+            Tcl_SetObjResult(interp, Tcl_NewStringObj("can't notify self", -1));
             return TCL_ERROR;
         }
 
@@ -1184,7 +1184,7 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
     Tcl_MutexLock(&threadMutex);
     if (objc == 1) {
         if (errorProcString) {
-            Tcl_SetResult(interp, errorProcString, TCL_VOLATILE);
+            Tcl_SetObjResult(interp, Tcl_NewStringObj(errorProcString, -1));
         }
     } else {
         if (errorProcString) {
@@ -1308,7 +1308,7 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    chan = Tcl_GetChannel(interp, Tcl_GetString(objv[2]), NULL);
+    chan = Tcl_GetChannel(interp, Tcl_GetStringFromObj(objv[2], NULL), NULL);
     if (chan == (Tcl_Channel)NULL) {
         return TCL_ERROR;
     }
@@ -1353,7 +1353,7 @@ ThreadDetachObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    chan = Tcl_GetChannel(interp, Tcl_GetString(objv[1]), NULL);
+    chan = Tcl_GetChannel(interp, Tcl_GetStringFromObj(objv[1], NULL), NULL);
     if (chan == (Tcl_Channel)NULL) {
         return TCL_ERROR;
     }
@@ -1398,7 +1398,7 @@ ThreadAttachObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    chanName = Tcl_GetString(objv[1]);
+    chanName = Tcl_GetStringFromObj(objv[1], NULL);
     if (Tcl_IsChannelExisting(chanName)) {
         return TCL_OK;
     }
@@ -1498,7 +1498,7 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
     }
     if (objc == 3) {
         Tcl_DStringInit(&ds);
-        option = Tcl_GetString(objv[2]);
+        option = Tcl_GetStringFromObj(objv[2], NULL);
         if (ThreadGetOption(interp, thrId, option, &ds) != TCL_OK) {
             Tcl_DStringFree(&ds);
             return TCL_ERROR;
@@ -1507,8 +1507,8 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
         return TCL_OK;
     }
     for (i = 3; i < objc; i += 2) {
-        option = Tcl_GetString(objv[i-1]);
-        value  = Tcl_GetString(objv[i]);
+        option = Tcl_GetStringFromObj(objv[i-1], NULL);
+        value  = Tcl_GetStringFromObj(objv[i], NULL);
         if (ThreadSetOption(interp, thrId, option, value) != TCL_OK) {
             return TCL_ERROR;
         }
@@ -1554,7 +1554,7 @@ ThreadCancelObjCmd(dummy, interp, objc, objv)
     flags = 0;
     ii = 1;
     if ((objc == 3) || (objc == 4)) {
-        if (OPT_CMP(Tcl_GetString(objv[ii]), "-unwind")) {
+        if (OPT_CMP(Tcl_GetStringFromObj(objv[ii], NULL), "-unwind")) {
             flags |= TCL_CANCEL_UNWIND;
             ii++;
         }
@@ -1566,7 +1566,7 @@ ThreadCancelObjCmd(dummy, interp, objc, objv)
 
     ii++;
     if (ii < objc) {
-        result = Tcl_GetString(objv[ii]);
+        result = Tcl_GetStringFromObj(objv[ii], NULL);
     } else {
         result = NULL;
     }
@@ -1654,12 +1654,12 @@ ThreadClbkSetVar(interp, clientData)
     if (resultPtr->code == TCL_ERROR) {
         if (resultPtr->errorCode) {
             var = "errorCode";
-            Tcl_SetVar2(interp, var, NULL, resultPtr->errorCode, TCL_GLOBAL_ONLY);
+            Tcl_SetVar2Ex(interp, var, NULL, Tcl_NewStringObj(resultPtr->errorCode, -1), TCL_GLOBAL_ONLY);
             ckfree((char*)resultPtr->errorCode);
         }
         if (resultPtr->errorInfo) {
             var = "errorInfo";
-            Tcl_SetVar2(interp, var, NULL, resultPtr->errorInfo, TCL_GLOBAL_ONLY);
+            Tcl_SetVar2Ex(interp, var, NULL, Tcl_NewStringObj(resultPtr->errorInfo, -1), TCL_GLOBAL_ONLY);
             ckfree((char*)resultPtr->errorInfo);
         }
         Tcl_SetObjResult(interp, valObj);
@@ -1708,7 +1708,7 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
     if (Tcl_CreateThread(&thrId, NewThread, (ClientData)&ctrl,
             stacksize, flags) != TCL_OK) {
         Tcl_MutexUnlock(&threadMutex);
-        Tcl_SetResult(interp, "can't create a new thread", TCL_STATIC);
+        Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", -1));
         return TCL_ERROR;
     }
 
@@ -1907,7 +1907,7 @@ ThreadErrorProc(interp)
 
     if (errorProcString == NULL) {
 #ifdef NS_AOLSERVER
-        Ns_Log(Error, "%s\n%s", Tcl_GetStringResult(interp), errorInfo);
+        Ns_Log(Error, "%s\n%s", Tcl_GetStringFromObj(Tcl_GetObjResult(interp), NULL), errorInfo);
 #else
         Tcl_Channel errChannel = Tcl_GetStdChannel(TCL_STDERR);
         if (errChannel == NULL) {
@@ -2332,10 +2332,10 @@ ThreadTransfer(interp, thrId, chan)
     TransferResult *resultPtr;
 
     if (!Tcl_IsChannelRegistered(interp, chan)) {
-        Tcl_SetResult(interp, "channel is not registered here", TCL_STATIC);
+        Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is not registered here", -1));
     }
     if (Tcl_IsChannelShared(chan)) {
-        Tcl_SetResult(interp, "channel is shared", TCL_STATIC);
+        Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", -1));
         return TCL_ERROR;
     }
 
@@ -2488,10 +2488,10 @@ ThreadDetach(interp, chan)
     TransferResult *resultPtr;
 
     if (!Tcl_IsChannelRegistered(interp, chan)) {
-        Tcl_SetResult(interp, "channel is not registered here", TCL_STATIC);
+        Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is not registered here", -1));
     }
     if (Tcl_IsChannelShared(chan)) {
-        Tcl_SetResult(interp, "channel is shared", TCL_STATIC);
+        Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", -1));
         return TCL_ERROR;
     }
 
@@ -2665,7 +2665,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
             ThreadFreeProc((ClientData)clbk);
         }
         if (inerror) {
-            Tcl_SetResult(interp, "thread is in error", TCL_STATIC);
+            Tcl_SetObjResult(interp, Tcl_NewStringObj("thread is in error", -1));
         } else {
             ErrorNoSuchThread(interp, thrId);
         }
@@ -2907,7 +2907,7 @@ ThreadWait(Tcl_Interp *interp)
 
         errorInfo = Tcl_GetVar2(tsdPtr->interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         if (errorInfo == NULL) {
-        	errorInfo = Tcl_GetStringResult(tsdPtr->interp);
+        	errorInfo = Tcl_GetStringFromObj(Tcl_GetObjResult(tsdPtr->interp), NULL);
         }
 
         ThreadGetHandle(Tcl_GetCurrentThread(), buf);
@@ -3245,8 +3245,7 @@ ThreadSetResult(interp, code, resultPtr)
         resultPtr->result = (reslen) ?
             strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
     } else {
-        result = Tcl_GetStringResult(interp);
-        reslen = strlen(result);
+        result = Tcl_GetStringFromObj(Tcl_GetObjResult(interp), &reslen);
         resultPtr->result = (reslen) ?
             strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
         if (code == TCL_ERROR) {

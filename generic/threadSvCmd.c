@@ -316,8 +316,8 @@ Sv_GetContainer(interp, objc, objv, retObj, offset, flags)
             return TCL_ERROR;
         }
 
-        array = Tcl_GetString(objv[1]);
-        key   = Tcl_GetString(objv[2]);
+        array = Tcl_GetStringFromObj(objv[1], NULL);
+        key   = Tcl_GetStringFromObj(objv[2], NULL);
 
         *offset = 3; /* Consumed three arguments: cmd, array, key */
 
@@ -329,7 +329,7 @@ Sv_GetContainer(interp, objc, objv, retObj, offset, flags)
         if (arrayPtr == NULL) {
             return TCL_BREAK;
         }
-        *retObj = AcquireContainer(arrayPtr, Tcl_GetString(objv[2]), flags);
+        *retObj = AcquireContainer(arrayPtr, Tcl_GetStringFromObj(objv[2], NULL), flags);
         if (*retObj == NULL) {
             UnlockArray(arrayPtr);
             Tcl_AppendResult(interp, "no key ", array, "(", key, ")", NULL);
@@ -340,7 +340,7 @@ Sv_GetContainer(interp, objc, objv, retObj, offset, flags)
         LOCK_CONTAINER(*retObj);
         if (Tcl_FindHashEntry(handles, (char*)(*retObj)) == NULL) {
             UNLOCK_CONTAINER(*retObj);
-            Tcl_SetResult(interp, "key has been deleted", TCL_STATIC);
+            Tcl_SetObjResult(interp, Tcl_NewStringObj("key has been deleted", -1));
             return TCL_BREAK;
         }
         *offset = 2; /* Consumed two arguments: object, cmd */
@@ -1075,7 +1075,7 @@ SvObjDispatchObjCmd(arg, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    cmdName = Tcl_GetString(objv[1]);
+    cmdName = Tcl_GetStringFromObj(objv[1], NULL);
 
     /*
      * Do simple linear search. We may later replace this list
@@ -1209,7 +1209,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    arrayName = Tcl_GetString(objv[2]);
+    arrayName = Tcl_GetStringFromObj(objv[2], NULL);
     arrayPtr  = LockArray(interp, arrayName, FLAGS_NOERRMSG);
 
     if (objc > 3) {
@@ -1270,7 +1270,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
             }
         }
         for (i = 0; i < lobjc; i += 2) {
-            const char *key = Tcl_GetString(lobjv[i]);
+            const char *key = Tcl_GetStringFromObj(lobjv[i], NULL);
             elObj = AcquireContainer(arrayPtr, key, FLAGS_CREATEVAR);
             Tcl_DecrRefCount(elObj->tclObj);
             elObj->tclObj = Sv_DuplicateObj(lobjv[i+1]);
@@ -1285,7 +1285,7 @@ SvArrayObjCmd(arg, interp, objc, objv)
         if (arrayPtr) {
             Tcl_HashSearch search;
             Tcl_Obj *resObj = Tcl_NewListObj(0, NULL);
-            const char *pattern = (argx == 0) ? NULL : Tcl_GetString(objv[argx]);
+            const char *pattern = (argx == 0) ? NULL : Tcl_GetStringFromObj(objv[argx], NULL);
             Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
             while (hPtr) {
                 char *key = Tcl_GetHashKey(&arrayPtr->vars, hPtr);
@@ -1425,7 +1425,7 @@ SvUnsetObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    arrayName = Tcl_GetString(objv[1]);
+    arrayName = Tcl_GetStringFromObj(objv[1], NULL);
     arrayPtr  = LockArray(interp, arrayName, 0);
 
     if (arrayPtr == NULL) {
@@ -1438,7 +1438,7 @@ SvUnsetObjCmd(dummy, interp, objc, objv)
         }
     } else {
         for (ii = 2; ii < objc; ii++) {
-            const char *key = Tcl_GetString(objv[ii]);
+            const char *key = Tcl_GetStringFromObj(objv[ii], NULL);
             Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&arrayPtr->vars, key);
             if (hPtr) {
                 if (DeleteContainer((Container*)Tcl_GetHashValue(hPtr))
@@ -1954,7 +1954,7 @@ SvMoveObjCmd(arg, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    toKey = Tcl_GetString(objv[off]);
+    toKey = Tcl_GetStringFromObj(objv[off], NULL);
     hPtr = Tcl_CreateHashEntry(&svObj->arrayPtr->vars, toKey, &new);
 
     if (!new) {
@@ -2020,12 +2020,11 @@ SvLockObjCmd(dummy, interp, objc, objv)
      */
 
     if (objc < 3) {
-        Tcl_AppendResult(interp, "wrong # args: should be \"",
-                         Tcl_GetString(objv[0]), "array arg ?arg...?\"", NULL);
+    	Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
         return TCL_ERROR;
     }
 
-    arrayPtr  = LockArray(interp, Tcl_GetString(objv[1]), FLAGS_CREATEARRAY);
+    arrayPtr  = LockArray(interp, Tcl_GetStringFromObj(objv[1], NULL), FLAGS_CREATEARRAY);
     bucketPtr = arrayPtr->bucketPtr;
 
     /*
@@ -2049,7 +2048,7 @@ SvLockObjCmd(dummy, interp, objc, objv)
         /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
          * See Tcl bug #3562640 */
         sprintf(msg, "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
-        Tcl_AddObjErrorInfo(interp, msg, -1);
+        Tcl_AddErrorInfo(interp, msg);
     }
 
     /*
