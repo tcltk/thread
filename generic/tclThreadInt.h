@@ -107,9 +107,28 @@ typedef struct {
  * Tcl_GetErrorLine in 8.x
  * See Tcl bug #3562640.
  */
-#if (TCL_MAJOR_VERSION == 8)
+
+MODULE_SCOPE int threadTclVersion;
+
+typedef struct {
+    void *unused1;
+    void *unused2;
+    int errorLine;
+} tclInterpType;
+
+#if defined(TCL_TIP285)
 # undef Tcl_GetErrorLine
-# define Tcl_GetErrorLine(interp) ((interp)->errorLine)
+# if defined(USE_TCL_STUBS)
+#   define Tcl_GetErrorLine(interp) ((threadTclVersion>85)? \
+    ((int (*)(Tcl_Interp *))((&(tclStubsPtr->tcl_PkgProvideEx))[605]))(interp): \
+    (((tclInterpType *)(interp))->errorLine))
+#   undef Tcl_AddErrorInfo
+#   define Tcl_AddErrorInfo(interp, msg) ((threadTclVersion>85)? \
+    ((void (*)(Tcl_Interp *, Tcl_Obj *))((&(tclStubsPtr->tcl_PkgProvideEx))[574]))(interp, Tcl_NewStringObj(msg, -1)): \
+    ((void (*)(Tcl_Interp *, const char *))((&(tclStubsPtr->tcl_PkgProvideEx))[66]))(interp, msg))
+# else
+#   define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
+# endif
 #endif
 
 
