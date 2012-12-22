@@ -1,3 +1,28 @@
+2012-12-21  Jan Nijtmans  <nijtmans@users.sf.net>
+
+	* generic/tclThreadInt.h: Add runtime detection of Tcl_AddErrorInfo
+	* generic/*.c:	vs. Tcl_AppendObjToErrorInfo and Tcl_GetErrorLine vs.
+	interp->errorLine. Replace Tcl_GetString to Tcl_GetStringFromObj
+	everywhere. This will make it more likely that Thread will run
+	in Tcl9 unmodified, no matter what API changes are made.
+
+2012-12-16  Jan Nijtmans  <nijtmans@users.sf.net>
+
+	* generic/*.c: Rename Tcl_Free -> ckfree and Tcl_Alloc -> ckalloc,
+	which allows a debug build of Thread use the debug versions of
+	those functions.
+
+2012-12-13  Jan Nijtmans  <nijtmans@users.sf.net>
+
+	* generic/threadCmd.c: Tcl_Free cannot be used directly as
+	freeProc (will break in "novem"), so use a small wrapper.
+
+2012-11-08  Don Porter  <dgp@users.sourceforge.net>
+
+	*** 2.7.0 TAGGED FOR RELEASE (thread-2-7-0) ***
+
+	* README: Update for stable release.
+
 2012-11-14  Jan Nijtmans  <nijtmans@users.sf.net>
 
 	* generic/threadCmd.c: Move back test for core threaded functionality
@@ -18,7 +43,7 @@
 2012-11-10 Zoran Vasiljevic <zv@archiware.com>
 
 	*** Merged "thread-2-7for84+" branch ***
-	
+
 2012-11-08  Don Porter  <dgp@users.sourceforge.net>
 
 	* configure.in:		Bump to version 2.7.0
