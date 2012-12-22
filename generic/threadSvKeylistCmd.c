@@ -124,7 +124,7 @@ SvKeylsetObjCmd(arg, interp, objc, objv)
         goto cmd_err;
     }
     for (i = off; i < objc; i += 2) {
-        key = Tcl_GetString(objv[i]);
+        key = Tcl_GetStringFromObj(objv[i], NULL);
         val = Sv_DuplicateObj(objv[i+1]);
         ret = TclX_KeyedListSet(interp, svObj->tclObj, key, val);
         if (ret != TCL_OK) {
@@ -194,7 +194,7 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
         varObjPtr = NULL;
     }
 
-    key = Tcl_GetString(objv[off]);
+    key = Tcl_GetStringFromObj(objv[off], NULL);
     ret = TclX_KeyedListGet(interp, svObj->tclObj, key, &valObjPtr);
     if (ret == TCL_ERROR) {
         goto cmd_err;
@@ -272,7 +272,7 @@ SvKeyldelObjCmd(arg, interp, objc, objv)
         goto cmd_err;
     }
     for (i = off; i < objc; i++) {
-        key = Tcl_GetString(objv[i]);
+        key = Tcl_GetStringFromObj(objv[i], NULL);
         ret = TclX_KeyedListDelete(interp, svObj->tclObj, key);
         if (ret == TCL_BREAK) {
             Tcl_AppendResult(interp, "key \"", key, "\" not found", NULL);
@@ -332,7 +332,7 @@ SvKeylkeysObjCmd(arg, interp, objc, objv)
          goto cmd_err;
     }
     if ((objc - off) == 1) {
-        key = Tcl_GetString(objv[off]);
+        key = Tcl_GetStringFromObj(objv[off], NULL);
     }
 
     ret = TclX_KeyedListGetKeys(interp, svObj->tclObj, key, &listObj);

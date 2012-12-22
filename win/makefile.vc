@@ -178,7 +178,7 @@ DLLOBJS = \
 	$(TMP_DIR)\thread.res
 !endif
 
-PRJHEADERS = 
+PRJHEADERS =
 
 #-------------------------------------------------------------------------
 # Target names and paths ( shouldn't need changing )
