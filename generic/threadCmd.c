@@ -1585,12 +1585,12 @@ ThreadClbkSetVar(interp, clientData)
     if (resultPtr->code == TCL_ERROR) {
         if (resultPtr->errorCode) {
             var = "errorCode";
-            Tcl_SetVar2(interp, var, NULL, resultPtr->errorCode, TCL_GLOBAL_ONLY);
+            Tcl_SetVar2Ex(interp, var, NULL, Tcl_NewStringObj(resultPtr->errorCode, TCL_STRLEN), TCL_GLOBAL_ONLY);
             ckfree((char*)resultPtr->errorCode);
         }
         if (resultPtr->errorInfo) {
             var = "errorInfo";
-            Tcl_SetVar2(interp, var, NULL, resultPtr->errorInfo, TCL_GLOBAL_ONLY);
+            Tcl_SetVar2Ex(interp, var, NULL, Tcl_NewStringObj(resultPtr->errorInfo, TCL_STRLEN), TCL_GLOBAL_ONLY);
             ckfree((char*)resultPtr->errorInfo);
         }
         Tcl_SetObjResult(interp, valObj);
@@ -1838,7 +1838,7 @@ ThreadErrorProc(interp)
 
     if (errorProcString == NULL) {
 #ifdef NS_AOLSERVER
-        Ns_Log(Error, "%s\n%s", Tcl_GetStringResult(interp), errorInfo);
+        Ns_Log(Error, "%s\n%s", Tcl_GetStringFromObj(Tcl_GetObjResult(interp), NULL), errorInfo);
 #else
         Tcl_Channel errChannel = Tcl_GetStdChannel(TCL_STDERR);
         if (errChannel == NULL) {
@@ -2820,7 +2820,7 @@ ThreadWait(Tcl_Interp *interp)
 
         errorInfo = Tcl_GetVar2(tsdPtr->interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         if (errorInfo == NULL) {
-        	errorInfo = Tcl_GetStringResult(tsdPtr->interp);
+        	errorInfo = Tcl_GetStringFromObj(Tcl_GetObjResult(tsdPtr->interp), NULL);
         }
 
         ThreadGetHandle(Tcl_GetCurrentThread(), buf);
@@ -3157,8 +3157,7 @@ ThreadSetResult(interp, code, resultPtr)
         resultPtr->result = (reslen) ?
             strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
     } else {
-        result = Tcl_GetStringResult(interp);
-        reslen = strlen(result);
+        result = Tcl_GetStringFromObj(Tcl_GetObjResult(interp), &reslen);
         resultPtr->result = (reslen) ?
             strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
         if (code == TCL_ERROR) {

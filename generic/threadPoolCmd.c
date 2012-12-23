@@ -1143,7 +1143,7 @@ TpoolWorker(clientData)
 #endif
 
     if (rPtr->retcode == 1) {
-        errMsg = (char*)Tcl_GetStringResult(interp);
+        errMsg = (char*)Tcl_GetStringFromObj(Tcl_GetObjResult(interp), NULL);
         rPtr->result = strcpy(ckalloc(strlen(errMsg)+1), errMsg);
         Tcl_ConditionNotify(&tpoolPtr->cond);
         Tcl_MutexUnlock(&startMutex);
@@ -1158,7 +1158,7 @@ TpoolWorker(clientData)
         TpoolEval(interp, tpoolPtr->initScript, TCL_STRLEN, rPtr);
         if (rPtr->retcode != TCL_OK) {
             rPtr->retcode = 1;
-            errMsg = (char*)Tcl_GetStringResult(interp);
+            errMsg = (char*)Tcl_GetStringFromObj(Tcl_GetObjResult(interp), NULL);
             rPtr->result  = strcpy(ckalloc(strlen(errMsg)+1), errMsg);
             Tcl_ConditionNotify(&tpoolPtr->cond);
             Tcl_MutexUnlock(&startMutex);
@@ -1522,8 +1522,7 @@ TpoolEval(interp, script, scriptLen, rPtr)
         }
     }
 
-    result = (char*)Tcl_GetStringResult(interp);
-    reslen = strlen(result);
+    result = (char*)Tcl_GetStringFromObj(Tcl_GetObjResult(interp), &reslen);
 
     if (reslen == 0) {
         rPtr->result = threadEmptyResult;
