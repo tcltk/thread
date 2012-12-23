@@ -644,7 +644,7 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     if (objc > 1) {
-        if (OPT_CMP(Tcl_GetString(objv[1]), "-wait")) {
+        if (OPT_CMP(Tcl_GetStringFromObj(objv[1], NULL), "-wait")) {
             wait = 1;
 	    if (objc > 2) {
         	if (ThreadGetId(interp, objv[2], &thrId) != TCL_OK) {
@@ -1241,7 +1241,7 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    chan = Tcl_GetChannel(interp, Tcl_GetString(objv[2]), NULL);
+    chan = Tcl_GetChannel(interp, Tcl_GetStringFromObj(objv[2], NULL), NULL);
     if (chan == (Tcl_Channel)NULL) {
         return TCL_ERROR;
     }
@@ -1286,7 +1286,7 @@ ThreadDetachObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    chan = Tcl_GetChannel(interp, Tcl_GetString(objv[1]), NULL);
+    chan = Tcl_GetChannel(interp, Tcl_GetStringFromObj(objv[1], NULL), NULL);
     if (chan == (Tcl_Channel)NULL) {
         return TCL_ERROR;
     }
@@ -1331,7 +1331,7 @@ ThreadAttachObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    chanName = Tcl_GetString(objv[1]);
+    chanName = Tcl_GetStringFromObj(objv[1], NULL);
     if (Tcl_IsChannelExisting(chanName)) {
         return TCL_OK;
     }
@@ -1431,7 +1431,7 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
     }
     if (objc == 3) {
         Tcl_DStringInit(&ds);
-        option = Tcl_GetString(objv[2]);
+        option = Tcl_GetStringFromObj(objv[2], NULL);
         if (ThreadGetOption(interp, thrId, option, &ds) != TCL_OK) {
             Tcl_DStringFree(&ds);
             return TCL_ERROR;
@@ -1440,8 +1440,8 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
         return TCL_OK;
     }
     for (i = 3; i < objc; i += 2) {
-        option = Tcl_GetString(objv[i-1]);
-        value  = Tcl_GetString(objv[i]);
+        option = Tcl_GetStringFromObj(objv[i-1], NULL);
+        value  = Tcl_GetStringFromObj(objv[i], NULL);
         if (ThreadSetOption(interp, thrId, option, value) != TCL_OK) {
             return TCL_ERROR;
         }
@@ -1486,7 +1486,7 @@ ThreadCancelObjCmd(dummy, interp, objc, objv)
     flags = 0;
     ii = 1;
     if ((objc == 3) || (objc == 4)) {
-        if (OPT_CMP(Tcl_GetString(objv[ii]), "-unwind")) {
+        if (OPT_CMP(Tcl_GetStringFromObj(objv[ii], NULL), "-unwind")) {
             flags |= TCL_CANCEL_UNWIND;
             ii++;
         }
@@ -1498,7 +1498,7 @@ ThreadCancelObjCmd(dummy, interp, objc, objv)
 
     ii++;
     if (ii < objc) {
-        result = Tcl_GetString(objv[ii]);
+        result = Tcl_GetStringFromObj(objv[ii], NULL);
     } else {
         result = NULL;
     }
@@ -2705,7 +2705,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
             ckfree(resultPtr->errorCode);
         }
         if (resultPtr->errorInfo) {
-            Tcl_AddErrorInfo(interp, resultPtr->errorInfo);
+        	Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(resultPtr->errorInfo, TCL_STRLEN));
             ckfree(resultPtr->errorInfo);
         }
     }

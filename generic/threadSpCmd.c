@@ -702,7 +702,7 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
     if (objc < 2) {
       syntax:
         Tcl_AppendResult(interp, "wrong # args: should be \"",
-                         Tcl_GetString(objv[0]),
+                         Tcl_GetStringFromObj(objv[0], NULL),
                          " ?-lock <mutexHandle>? arg ?arg...?\"", NULL);
         return TCL_ERROR;
     }
@@ -718,7 +718,7 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
      * throw error on attempt to recursively call us.
      */
 
-    if (OPT_CMP(Tcl_GetString(objv[1]), "-lock") == 0) {
+    if (OPT_CMP(Tcl_GetStringFromObj(objv[1], NULL), "-lock") == 0) {
         internal = 1;
         optx = 1;
         Sp_RecursiveMutexLock(&evalMutex);
@@ -770,7 +770,7 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
         /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
          * See Tcl bug #3562640 */
         sprintf(msg, "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
-        Tcl_AddObjErrorInfo(interp, msg, TCL_STRLEN);
+        Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_STRLEN));
     }
 
     /*
