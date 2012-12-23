@@ -701,9 +701,8 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
 
     if (objc < 2) {
       syntax:
-        Tcl_AppendResult(interp, "wrong # args: should be \"",
-                         Tcl_GetStringFromObj(objv[0], NULL),
-                         " ?-lock <mutexHandle>? arg ?arg...?\"", NULL);
+        Tcl_WrongNumArgs(interp, 1, objv,
+                         "?-lock <mutexHandle>? arg ?arg...?");
         return TCL_ERROR;
     }
 

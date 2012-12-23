@@ -1071,7 +1071,7 @@ CreateWorker(interp, tpoolPtr)
     Tcl_MutexLock(&startMutex);
     if (Tcl_CreateThread(&id, TpoolWorker, (ClientData)&result,
                          TCL_THREAD_STACK_DEFAULT, 0) != TCL_OK) {
-        Tcl_SetResult(interp, "can't create a new thread", TCL_STATIC);
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_STRLEN));
         Tcl_MutexUnlock(&startMutex);
         return TCL_ERROR;
     }

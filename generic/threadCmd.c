@@ -907,7 +907,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
             /*
              * FIXME: Do something for callbacks to self
              */
-            Tcl_SetResult(interp, "can't notify self", TCL_STATIC);
+            Tcl_SetObjResult(interp, Tcl_NewStringObj("can't notify self", TCL_STRLEN));
             return TCL_ERROR;
         }
 
@@ -1117,7 +1117,7 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
     Tcl_MutexLock(&threadMutex);
     if (objc == 1) {
         if (errorProcString) {
-            Tcl_SetResult(interp, errorProcString, TCL_VOLATILE);
+        	Tcl_SetObjResult(interp, Tcl_NewStringObj(errorProcString, TCL_STRLEN));
         }
     } else {
         if (errorProcString) {
@@ -1639,7 +1639,7 @@ ThreadCreate(interp, script, stacksize, flags, preserve)
     if (Tcl_CreateThread(&thrId, NewThread, (ClientData)&ctrl,
             stacksize, flags) != TCL_OK) {
         Tcl_MutexUnlock(&threadMutex);
-        Tcl_SetResult(interp, "can't create a new thread", TCL_STATIC);
+        Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_STRLEN));
         return TCL_ERROR;
     }
 
@@ -2255,10 +2255,10 @@ ThreadTransfer(interp, thrId, chan)
     TransferResult *resultPtr;
 
     if (!Tcl_IsChannelRegistered(interp, chan)) {
-        Tcl_SetResult(interp, "channel is not registered here", TCL_STATIC);
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is not registered here", TCL_STRLEN));
     }
     if (Tcl_IsChannelShared(chan)) {
-        Tcl_SetResult(interp, "channel is shared", TCL_STATIC);
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", TCL_STRLEN));
         return TCL_ERROR;
     }
 
@@ -2411,10 +2411,10 @@ ThreadDetach(interp, chan)
     TransferResult *resultPtr;
 
     if (!Tcl_IsChannelRegistered(interp, chan)) {
-        Tcl_SetResult(interp, "channel is not registered here", TCL_STATIC);
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is not registered here", TCL_STRLEN));
     }
     if (Tcl_IsChannelShared(chan)) {
-        Tcl_SetResult(interp, "channel is shared", TCL_STATIC);
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", TCL_STRLEN));
         return TCL_ERROR;
     }
 
@@ -2588,7 +2588,7 @@ ThreadSend(interp, thrId, send, clbk, flags)
             ThreadFreeProc((ClientData)clbk);
         }
         if (inerror) {
-            Tcl_SetResult(interp, "thread is in error", TCL_STATIC);
+        	Tcl_SetObjResult(interp, Tcl_NewStringObj("thread is in error", TCL_STRLEN));
         } else {
             ErrorNoSuchThread(interp, thrId);
         }

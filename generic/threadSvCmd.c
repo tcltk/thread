@@ -340,7 +340,7 @@ Sv_GetContainer(interp, objc, objv, retObj, offset, flags)
         LOCK_CONTAINER(*retObj);
         if (Tcl_FindHashEntry(handles, (char*)(*retObj)) == NULL) {
             UNLOCK_CONTAINER(*retObj);
-            Tcl_SetResult(interp, "key has been deleted", TCL_STATIC);
+            Tcl_SetObjResult(interp, Tcl_NewStringObj("key has been deleted", TCL_STRLEN));
             return TCL_BREAK;
         }
         *offset = 2; /* Consumed two arguments: object, cmd */
@@ -2022,8 +2022,7 @@ SvLockObjCmd(dummy, interp, objc, objv)
      */
 
     if (objc < 3) {
-        Tcl_AppendResult(interp, "wrong # args: should be \"",
-                         Tcl_GetStringFromObj(objv[0], NULL), "array arg ?arg...?\"", NULL);
+        Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
         return TCL_ERROR;
     }
 
