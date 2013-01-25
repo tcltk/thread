@@ -126,6 +126,10 @@ typedef struct {
 #   define Tcl_AddErrorInfo(interp, msg) ((threadTclVersion>85)? \
     ((void (*)(Tcl_Interp *, Tcl_Obj *))((&(tclStubsPtr->tcl_PkgProvideEx))[574]))(interp, Tcl_NewStringObj(msg, -1)): \
     ((void (*)(Tcl_Interp *, const char *))((&(tclStubsPtr->tcl_PkgProvideEx))[66]))(interp, msg))
+#   undef Tcl_BackgroundError
+#   define Tcl_BackgroundError(interp) ((threadTclVersion>85)? \
+    ((void (*)(Tcl_Interp *, int))((&(tclStubsPtr->tcl_PkgProvideEx))[609]))(interp, TCL_ERROR): \
+    ((void (*)(Tcl_Interp *))((&(tclStubsPtr->tcl_PkgProvideEx))[76]))(interp))
 # else
 #   define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
 # endif
