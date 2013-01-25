@@ -354,7 +354,7 @@ ValidateKeyedList (keylIntPtr)
         TclX_Assert (entryPtr->key != NULL);
         TclX_Assert (entryPtr->valuePtr->refCount >= 1);
         if (entryPtr->valuePtr->typePtr == &keyedListType) {
-            ValidateKeyedList (entryPtr->valuePtr->internalRep.otherValuePtr);
+            ValidateKeyedList (entryPtr->valuePtr->internalRep.twoPtrValue.ptr1);
         }
     }
 }
@@ -641,7 +641,7 @@ static void
 FreeKeyedListInternalRep (keylPtr)
     Tcl_Obj *keylPtr;
 {
-    FreeKeyedListData ((keylIntObj_t *) keylPtr->internalRep.otherValuePtr);
+    FreeKeyedListData(keylPtr->internalRep.twoPtrValue.ptr1);
 }
 
 /*-----------------------------------------------------------------------------
@@ -659,7 +659,7 @@ DupKeyedListInternalRep (srcPtr, copyPtr)
     Tcl_Obj *copyPtr;
 {
     keylIntObj_t *srcIntPtr =
-        (keylIntObj_t *) srcPtr->internalRep.otherValuePtr;
+        srcPtr->internalRep.twoPtrValue.ptr1;
     keylIntObj_t *copyIntPtr;
     int idx;
 
@@ -678,7 +678,7 @@ DupKeyedListInternalRep (srcPtr, copyPtr)
         Tcl_IncrRefCount (copyIntPtr->entries [idx].valuePtr);
     }
 
-    copyPtr->internalRep.otherValuePtr = (void *) copyIntPtr;
+    copyPtr->internalRep.twoPtrValue.ptr1 = copyIntPtr;
     copyPtr->typePtr = &keyedListType;
 
     KEYL_REP_ASSERT (copyIntPtr);
@@ -701,7 +701,7 @@ DupKeyedListInternalRepShared (srcPtr, copyPtr)
     Tcl_Obj *copyPtr;
 {
     keylIntObj_t *srcIntPtr =
-        (keylIntObj_t *) srcPtr->internalRep.otherValuePtr;
+        srcPtr->internalRep.twoPtrValue.ptr1;
     keylIntObj_t *copyIntPtr;
     int idx;
 
@@ -721,7 +721,7 @@ DupKeyedListInternalRepShared (srcPtr, copyPtr)
         Tcl_IncrRefCount(copyIntPtr->entries [idx].valuePtr);
     }
 
-    copyPtr->internalRep.otherValuePtr = (void *) copyIntPtr;
+    copyPtr->internalRep.twoPtrValue.ptr1 = copyIntPtr;
     copyPtr->typePtr = &keyedListType;
 
     KEYL_REP_ASSERT (copyIntPtr);
@@ -765,7 +765,7 @@ SetKeyedListFromAny (interp, objPtr)
         (objPtr->typePtr->freeIntRepProc != NULL)) {
         (*objPtr->typePtr->freeIntRepProc) (objPtr);
     }
-    objPtr->internalRep.otherValuePtr = (void *) keylIntPtr;
+    objPtr->internalRep.twoPtrValue.ptr1 = keylIntPtr;
     objPtr->typePtr = &keyedListType;
 
     KEYL_REP_ASSERT (keylIntPtr);
@@ -795,7 +795,7 @@ UpdateStringOfKeyedList (keylPtr)
     Tcl_Obj *staticListObjv [UPDATE_STATIC_SIZE];
     char *listStr;
     keylIntObj_t *keylIntPtr =
-        (keylIntObj_t *) keylPtr->internalRep.otherValuePtr;
+        keylPtr->internalRep.twoPtrValue.ptr1;
 
     /*
      * Conversion to strings is done via list objects to support binary data.
@@ -844,7 +844,7 @@ TclX_NewKeyedListObj ()
     Tcl_Obj *keylPtr = Tcl_NewObj ();
     keylIntObj_t *keylIntPtr = AllocKeyedListIntRep ();
 
-    keylPtr->internalRep.otherValuePtr = (void *) keylIntPtr;
+    keylPtr->internalRep.twoPtrValue.ptr1 = keylIntPtr;
     keylPtr->typePtr = &keyedListType;
     return keylPtr;
 }
@@ -879,7 +879,7 @@ TclX_KeyedListGet (interp, keylPtr, key, valuePtrPtr)
 
     if (Tcl_ConvertToType (interp, keylPtr, &keyedListType) != TCL_OK)
         return TCL_ERROR;
-    keylIntPtr = (keylIntObj_t *) keylPtr->internalRep.otherValuePtr;
+    keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
     KEYL_REP_ASSERT (keylIntPtr);
 
     findIdx = FindKeyedListEntry (keylIntPtr, key, NULL, &nextSubKey);
@@ -935,7 +935,7 @@ TclX_KeyedListSet (interp, keylPtr, key, valuePtr)
 
     if (Tcl_ConvertToType (interp, keylPtr, &keyedListType) != TCL_OK)
         return TCL_ERROR;
-    keylIntPtr = (keylIntObj_t *) keylPtr->internalRep.otherValuePtr;
+    keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
     KEYL_REP_ASSERT (keylIntPtr);
 
     findIdx = FindKeyedListEntry (keylIntPtr, key,
@@ -1032,7 +1032,7 @@ TclX_KeyedListDelete (interp, keylPtr, key)
 
     if (Tcl_ConvertToType (interp, keylPtr, &keyedListType) != TCL_OK)
         return TCL_ERROR;
-    keylIntPtr = (keylIntObj_t *) keylPtr->internalRep.otherValuePtr;
+    keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
 
     findIdx = FindKeyedListEntry (keylIntPtr, key, NULL, &nextSubKey);
 
@@ -1066,8 +1066,8 @@ TclX_KeyedListDelete (interp, keylPtr, key)
                                    keylIntPtr->entries [findIdx].valuePtr,
                                    nextSubKey);
     if (status == TCL_OK) {
-        subKeylIntPtr = (keylIntObj_t *)
-            keylIntPtr->entries [findIdx].valuePtr->internalRep.otherValuePtr;
+        subKeylIntPtr =
+            keylIntPtr->entries [findIdx].valuePtr->internalRep.twoPtrValue.ptr1;
         if (subKeylIntPtr->numEntries == 0) {
             DeleteKeyedListEntry (keylIntPtr, findIdx);
         }
@@ -1108,7 +1108,7 @@ TclX_KeyedListGetKeys (interp, keylPtr, key, listObjPtrPtr)
 
     if (Tcl_ConvertToType (interp, keylPtr, &keyedListType) != TCL_OK)
         return TCL_ERROR;
-    keylIntPtr = (keylIntObj_t *) keylPtr->internalRep.otherValuePtr;
+    keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
 
     /*
      * If key is not NULL or empty, then recurse down until we go past

@@ -1594,7 +1594,7 @@ ThreadClbkSetVar(interp, clientData)
             ckfree((char*)resultPtr->errorInfo);
         }
         Tcl_SetObjResult(interp, valObj);
-        Tcl_BackgroundError(interp);
+        Tcl_BackgroundException(interp, TCL_ERROR);
     }
 
     return TCL_OK;
