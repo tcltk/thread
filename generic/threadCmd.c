@@ -616,11 +616,11 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
     script = THREAD_CMD_PREFIX"wait";
 
     for (argc = 1; argc < objc; argc++) {
-        arg = Tcl_GetStringFromObj(objv[argc], NULL);
+        arg = Tcl_GetString(objv[argc]);
         if (OPT_CMP(arg, "--")) {
             argc++;
             if ((argc + 1) == objc) {
-                script = Tcl_GetStringFromObj(objv[argc], NULL);
+                script = Tcl_GetString(objv[argc]);
             } else {
                 goto usage;
             }
@@ -630,7 +630,7 @@ ThreadCreateObjCmd(dummy, interp, objc, objv)
         } else if (OPT_CMP(arg, "-preserved")) {
             rsrv = 1;
         } else if ((argc + 1) == objc) {
-            script = Tcl_GetStringFromObj(objv[argc], NULL);
+            script = Tcl_GetString(objv[argc]);
         } else {
             goto usage;
         }
@@ -721,7 +721,7 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     if (objc > 1) {
-        if (OPT_CMP(Tcl_GetStringFromObj(objv[1], NULL), "-wait")) {
+        if (OPT_CMP(Tcl_GetString(objv[1]), "-wait")) {
             wait = 1;
 	    if (objc > 2) {
         	if (ThreadGetId(interp, objv[2], &thrId) != TCL_OK) {
@@ -935,7 +935,8 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int ret, len, vlen = 0, ii = 0, flags = 0;
+    size_t len, vlen = 0;
+    int ret, ii = 0, flags = 0;
     Tcl_ThreadId thrId;
     const char *script, *arg, *var = NULL;
 
@@ -955,7 +956,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     flags = THREAD_SEND_WAIT;
 
     for (ii = 1; ii < objc; ii++) {
-        arg = Tcl_GetStringFromObj(objv[ii], NULL);
+        arg = Tcl_GetString(objv[ii]);
         if (OPT_CMP(arg, "-async")) {
             flags &= ~THREAD_SEND_WAIT;
         } else if (OPT_CMP(arg, "-head")) {
@@ -974,9 +975,11 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
         goto usage;
     }
 
-    script = Tcl_GetStringFromObj(objv[ii], &len);
+    script = Tcl_GetString(objv[ii]);
+    len = objv[ii]->length;
     if (++ii < objc) {
-        var = Tcl_GetStringFromObj(objv[ii], &vlen);
+        var = Tcl_GetString(objv[ii]);
+        vlen = objv[ii]->length;
     }
     if (var && (flags & THREAD_SEND_WAIT) == 0) {
         if (thrId == Tcl_GetCurrentThread()) {
@@ -1059,7 +1062,8 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int ii, len, nthreads;
+    int ii, nthreads;
+    size_t len;
     const char *script;
     Tcl_ThreadId *thrIdArray;
     ThreadSendData *sendPtr, job;
@@ -1071,7 +1075,8 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    script = Tcl_GetStringFromObj(objv[1], &len);
+    script = Tcl_GetString(objv[1]);
+    len = objv[1]->length;
 
     /*
      * Get the list of known threads. Note that this one may
@@ -1180,7 +1185,7 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int len;
+    size_t len;
     char *proc;
 
     Init(interp);
@@ -1198,7 +1203,8 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
         if (errorProcString) {
             ckfree(errorProcString);
         }
-        proc = Tcl_GetStringFromObj(objv[1], &len);
+        proc = Tcl_GetString(objv[1]);
+        len = objv[1]->length;
         if (len == 0) {
 	    errorThreadId = NULL;
             errorProcString = NULL;
@@ -1316,7 +1322,7 @@ ThreadTransferObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    chan = Tcl_GetChannel(interp, Tcl_GetStringFromObj(objv[2], NULL), NULL);
+    chan = Tcl_GetChannel(interp, Tcl_GetString(objv[2]), NULL);
     if (chan == (Tcl_Channel)NULL) {
         return TCL_ERROR;
     }
@@ -1361,7 +1367,7 @@ ThreadDetachObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    chan = Tcl_GetChannel(interp, Tcl_GetStringFromObj(objv[1], NULL), NULL);
+    chan = Tcl_GetChannel(interp, Tcl_GetString(objv[1]), NULL);
     if (chan == (Tcl_Channel)NULL) {
         return TCL_ERROR;
     }
@@ -1406,7 +1412,7 @@ ThreadAttachObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    chanName = Tcl_GetStringFromObj(objv[1], NULL);
+    chanName = Tcl_GetString(objv[1]);
     if (Tcl_IsChannelExisting(chanName)) {
         return TCL_OK;
     }
@@ -1506,7 +1512,7 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
     }
     if (objc == 3) {
         Tcl_DStringInit(&ds);
-        option = Tcl_GetStringFromObj(objv[2], NULL);
+        option = Tcl_GetString(objv[2]);
         if (ThreadGetOption(interp, thrId, option, &ds) != TCL_OK) {
             Tcl_DStringFree(&ds);
             return TCL_ERROR;
@@ -1515,8 +1521,8 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
         return TCL_OK;
     }
     for (i = 3; i < objc; i += 2) {
-        option = Tcl_GetStringFromObj(objv[i-1], NULL);
-        value  = Tcl_GetStringFromObj(objv[i], NULL);
+        option = Tcl_GetString(objv[i-1]);
+        value  = Tcl_GetString(objv[i]);
         if (ThreadSetOption(interp, thrId, option, value) != TCL_OK) {
             return TCL_ERROR;
         }
@@ -1562,7 +1568,7 @@ ThreadCancelObjCmd(dummy, interp, objc, objv)
     flags = 0;
     ii = 1;
     if ((objc == 3) || (objc == 4)) {
-        if (OPT_CMP(Tcl_GetStringFromObj(objv[ii], NULL), "-unwind")) {
+        if (OPT_CMP(Tcl_GetString(objv[ii]), "-unwind")) {
             flags |= TCL_CANCEL_UNWIND;
             ii++;
         }
@@ -1574,7 +1580,7 @@ ThreadCancelObjCmd(dummy, interp, objc, objv)
 
     ii++;
     if (ii < objc) {
-        result = Tcl_GetStringFromObj(objv[ii], NULL);
+        result = Tcl_GetString(objv[ii]);
     } else {
         result = NULL;
     }
@@ -1915,7 +1921,7 @@ ThreadErrorProc(interp)
 
     if (errorProcString == NULL) {
 #ifdef NS_AOLSERVER
-        Ns_Log(Error, "%s\n%s", Tcl_GetStringFromObj(Tcl_GetObjResult(interp), NULL), errorInfo);
+        Ns_Log(Error, "%s\n%s", Tcl_GetString(Tcl_GetObjResult(interp)), errorInfo);
 #else
         Tcl_Channel errChannel = Tcl_GetStdChannel(TCL_STDERR);
         if (errChannel == NULL) {
@@ -2915,7 +2921,7 @@ ThreadWait(Tcl_Interp *interp)
 
         errorInfo = Tcl_GetVar2(tsdPtr->interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         if (errorInfo == NULL) {
-        	errorInfo = Tcl_GetStringFromObj(Tcl_GetObjResult(tsdPtr->interp), NULL);
+        	errorInfo = Tcl_GetString(Tcl_GetObjResult(tsdPtr->interp));
         }
 
         ThreadGetHandle(Tcl_GetCurrentThread(), buf);
@@ -3241,7 +3247,7 @@ ThreadSetResult(interp, code, resultPtr)
     int code;
     ThreadEventResult *resultPtr;
 {
-    int reslen;
+    size_t reslen;
     const char *errorCode, *errorInfo, *result;
 
     if (interp == NULL) {
@@ -3253,7 +3259,8 @@ ThreadSetResult(interp, code, resultPtr)
         resultPtr->result = (reslen) ?
             strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
     } else {
-        result = Tcl_GetStringFromObj(Tcl_GetObjResult(interp), &reslen);
+        result = Tcl_GetString(Tcl_GetObjResult(interp));
+        reslen = Tcl_GetObjResult(interp)->length;
         resultPtr->result = (reslen) ?
             strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
         if (code == TCL_ERROR) {
@@ -3803,7 +3810,7 @@ ThreadGetId(interp, handleObj, thrIdPtr)
      Tcl_Obj *handleObj;
      Tcl_ThreadId *thrIdPtr;
 {
-    const char *thrHandle = Tcl_GetStringFromObj(handleObj, NULL);
+    const char *thrHandle = Tcl_GetString(handleObj);
 
     if (sscanf(thrHandle, THREAD_HNDLPREFIX"%p", thrIdPtr) == 1) {
         return TCL_OK;
