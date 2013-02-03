@@ -705,7 +705,7 @@ SvLsearchObjCmd (arg, interp, objc, objv)
         match = 0;
         switch (mode) {
         case LS_GLOB:
-            match = Tcl_StringMatch(Tcl_GetStringFromObj(listv[i], NULL), patBytes);
+            match = Tcl_StringMatch(Tcl_GetString(listv[i]), patBytes);
             break;
 
         case LS_EXACT: {
