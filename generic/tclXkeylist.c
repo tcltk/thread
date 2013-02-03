@@ -25,8 +25,16 @@
  *-----------------------------------------------------------------------------
  */
 
+#include "tclThreadInt.h"
 #include "threadSvCmd.h"
 #include "tclXkeylist.h"
+
+#undef Tcl_RegisterObjType
+#define Tcl_RegisterObjType(typePtr) if (threadTclVersion<90) { \
+    ((void (*)(const Tcl_ObjType *))((&(tclStubsPtr->tcl_PkgProvideEx))[211]))(typePtr); \
+} else { \
+    (typePtr)->setFromAnyProc = NULL; \
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -67,7 +75,6 @@
 static const char *tclXWrongArgs = "wrong # args: ";
 
 static const Tcl_ObjType *listType;
-static const Tcl_ObjType *stringType;
 
 /*-----------------------------------------------------------------------------
  * TclX_IsNullObj --
@@ -86,16 +93,11 @@ TclX_IsNullObj (objPtr)
     Tcl_Obj *objPtr;
 {
     if (objPtr->typePtr == NULL) {
-        return (objPtr->length == 0);
-    } else {
-        if (objPtr->typePtr == listType) {
-            int length;
-            Tcl_ListObjLength(NULL, objPtr, &length);
-            return (length == 0);
-        } else if (objPtr->typePtr == stringType) {
-            (void)Tcl_GetString(objPtr);
-            return (objPtr->length == 0);
-        }
+	return (objPtr->length == 0);
+    } else if (objPtr->typePtr == listType) {
+	int length;
+	Tcl_ListObjLength(NULL, objPtr, &length);
+	return (length == 0);
     }
     (void)Tcl_GetString(objPtr);
     return (objPtr->length == 0);
@@ -1428,13 +1430,13 @@ void
 TclX_KeyedListInit (interp)
     Tcl_Interp *interp;
 {
-#ifdef USE_TCL_STUBS
-    if (Tcl_RegisterObjType)
-#endif
-    Tcl_RegisterObjType (&keyedListType);
+    Tcl_Obj *listobj;
+    Tcl_RegisterObjType(&keyedListType);
 
-    listType = Tcl_GetObjType("list");
-    stringType = Tcl_GetObjType("string");
+    listobj = Tcl_NewObj();
+    listobj = Tcl_NewListObj(1, &listobj);
+    listType = listobj->typePtr;
+    Tcl_DecrRefCount(listobj);
 
     if (0) {
     Tcl_CreateObjCommand (interp,
