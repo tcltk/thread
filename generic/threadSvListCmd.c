@@ -102,7 +102,12 @@ Sv_RegisterListCommands(void)
             Sv_RegisterCommand("lrange",   SvLrangeObjCmd,   NULL);
             Sv_RegisterCommand("lsearch",  SvLsearchObjCmd,  NULL);
             Sv_RegisterCommand("lset",     SvLsetObjCmd,     NULL);
-            Sv_RegisterObjType(Tcl_GetObjType("list"), DupListObjShared);
+
+            /* Create list with 1 empty element. */
+            Tcl_Obj *listobj= Tcl_NewObj();
+            listobj = Tcl_NewListObj(1, &listobj);
+            Sv_RegisterObjType(listobj->typePtr, DupListObjShared);
+            Tcl_DecrRefCount(listobj);
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);
