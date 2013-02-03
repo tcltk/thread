@@ -119,16 +119,16 @@ static int       SpCondvWait       (SpCondv *, SpMutex *, int);
 static void      SpCondvNotify     (SpCondv *);
 static int       SpCondvFinalize   (SpCondv *);
 
-static void      AddAnyItem        (int, const char *, int, SpItem *);
-static SpItem*   GetAnyItem        (int, const char *, int);
+static void      AddAnyItem        (int, const char *, size_t, SpItem *);
+static SpItem*   GetAnyItem        (int, const char *, size_t);
 static void      PutAnyItem        (SpItem *);
-static SpItem *  RemoveAnyItem     (int, const char*, int);
+static SpItem *  RemoveAnyItem     (int, const char*, size_t);
 
-static int       RemoveMutex       (const char *, int);
-static int       RemoveCondv       (const char *, int);
+static int       RemoveMutex       (const char *, size_t);
+static int       RemoveCondv       (const char *, size_t);
 
 static Tcl_Obj*  GetName           (int, void *);
-static SpBucket* GetBucket         (int, const char *, int);
+static SpBucket* GetBucket         (int, const char *, size_t);
 
 static int       AnyMutexIsLocked  (Sp_AnyMutex *mPtr, Tcl_ThreadId);
 
@@ -183,7 +183,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int opt, ret;
-    STRLEN_TYPE nameLen;
+    size_t nameLen;
     const char *mutexName;
     char type;
     SpMutex *mutexPtr;
@@ -231,7 +231,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
             Tcl_WrongNumArgs(interp, 2, objv, "?-recursive?");
             return TCL_ERROR;
         } else {
-            arg = Tcl_GetStringFromObj(objv[2], NULL);
+            arg = Tcl_GetString(objv[2]);
             if (OPT_CMP(arg, "-recursive")) {
                 type = RMUTEXID;
             } else {
@@ -255,7 +255,8 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
          */
 
         nameObj = GetName(mutexPtr->type, (void*)mutexPtr);
-        mutexName = Tcl_GetStringFromObj(nameObj, &nameLen);
+        mutexName = Tcl_GetString(nameObj);
+        nameLen = nameObj->length;
         AddMutex(mutexName, nameLen, mutexPtr);
         Tcl_SetObjResult(interp, nameObj);
         return TCL_OK;
@@ -270,7 +271,8 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    mutexName = Tcl_GetStringFromObj(objv[2], &nameLen);
+    mutexName = Tcl_GetString(objv[2]);
+    nameLen = objv[2]->length;
 
     /*
      * Try mutex destroy
@@ -357,7 +359,7 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int opt, ret;
-    STRLEN_TYPE nameLen;
+    size_t nameLen;
     const char *mutexName;
     SpMutex *mutexPtr;
     Sp_ReadWriteMutex *rwPtr;
@@ -407,8 +409,8 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
         mutexPtr->lock   = NULL; /* Will be auto-initialized */
 
         nameObj = GetName(mutexPtr->type, (void*)mutexPtr);
-        mutexName = Tcl_GetStringFromObj(nameObj, &nameLen);
-        AddMutex(mutexName, nameLen, mutexPtr);
+        mutexName = Tcl_GetString(nameObj);
+        AddMutex(mutexName, nameObj->length, mutexPtr);
         Tcl_SetObjResult(interp, nameObj);
         return TCL_OK;
     }
@@ -422,7 +424,8 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    mutexName = Tcl_GetStringFromObj(objv[2], &nameLen);
+    mutexName = Tcl_GetString(objv[2]);
+    nameLen = objv[2]->length;
 
     /*
      * Try mutex destroy
@@ -520,7 +523,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int opt, ret, timeMsec = 0;
-    STRLEN_TYPE nameLen;
+    size_t nameLen;
     const char *condvName, *mutexName;
     SpMutex *mutexPtr;
     SpCondv *condvPtr;
@@ -568,8 +571,8 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
         condvPtr->cond   = NULL; /* Will be auto-initialized */
 
         nameObj = GetName(CONDVID, (void*)condvPtr);
-        condvName = Tcl_GetStringFromObj(nameObj, &nameLen);
-        AddCondv(condvName, nameLen, condvPtr);
+        condvName = Tcl_GetString(nameObj);
+        AddCondv(condvName, nameObj->length, condvPtr);
         Tcl_SetObjResult(interp, nameObj);
         return TCL_OK;
     }
@@ -583,7 +586,8 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    condvName = Tcl_GetStringFromObj(objv[2], &nameLen);
+    condvName = Tcl_GetString(objv[2]);
+    nameLen = objv[2]->length;
 
     /*
      * Try variable destroy.
@@ -635,8 +639,8 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
                 return TCL_ERROR;
             }
         }
-        mutexName = Tcl_GetStringFromObj(objv[3], &nameLen);
-        mutexPtr  = GetMutex(mutexName, nameLen);
+        mutexName = Tcl_GetString(objv[3]);
+        mutexPtr  = GetMutex(mutexName, objv[3]->length);
         if (mutexPtr == NULL) {
             PutCondv(condvPtr);
             Tcl_AppendResult(interp, "no such mutex \"",mutexName,"\"", NULL);
@@ -687,7 +691,6 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, optx, internal;
-    STRLEN_TYPE nameLen;
     const char *mutexName;
     Tcl_Obj *scriptObj;
     SpMutex *mutexPtr = NULL;
@@ -717,7 +720,7 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
      * throw error on attempt to recursively call us.
      */
 
-    if (OPT_CMP(Tcl_GetStringFromObj(objv[1], NULL), "-lock") == 0) {
+    if (OPT_CMP(Tcl_GetString(objv[1]), "-lock") == 0) {
         internal = 1;
         optx = 1;
         Sp_RecursiveMutexLock(&evalMutex);
@@ -727,8 +730,8 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
         if ((objc - optx) < 1) {
             goto syntax;
         }
-        mutexName = Tcl_GetStringFromObj(objv[2], &nameLen);
-        mutexPtr  = GetMutex(mutexName, nameLen);
+        mutexName = Tcl_GetString(objv[2]);
+        mutexPtr  = GetMutex(mutexName, objv[2]->length);
         if (mutexPtr == NULL) {
             Tcl_AppendResult(interp, "no such mutex \"",mutexName,"\"", NULL);
             return TCL_ERROR;
@@ -837,7 +840,7 @@ GetName(int type, void *addrPtr)
  */
 
 static SpBucket*
-GetBucket(int type, const char *name, int len)
+GetBucket(int type, const char *name, size_t len)
 {
     switch (type) {
     case SP_MUTEX: return &muxBuckets[GetHash(name, len)];
@@ -864,7 +867,7 @@ GetBucket(int type, const char *name, int len)
  */
 
 static SpItem*
-GetAnyItem(int type, const char *name, int len)
+GetAnyItem(int type, const char *name, size_t len)
 {
     SpItem *itemPtr = NULL;
     SpBucket *bucketPtr = GetBucket(type, name, len);
@@ -924,7 +927,7 @@ PutAnyItem(SpItem *itemPtr)
  */
 
 static void
-AddAnyItem(int type, const char *handle, int len, SpItem *itemPtr)
+AddAnyItem(int type, const char *handle, size_t len, SpItem *itemPtr)
 {
     int new;
     SpBucket *bucketPtr = GetBucket(type, handle, len);
@@ -959,7 +962,7 @@ AddAnyItem(int type, const char *handle, int len, SpItem *itemPtr)
  */
 
 static SpItem *
-RemoveAnyItem(int type, const char *name, int len)
+RemoveAnyItem(int type, const char *name, size_t len)
 {
     SpItem *itemPtr = NULL;
     SpBucket *bucketPtr = GetBucket(type, name, len);
@@ -1000,7 +1003,7 @@ RemoveAnyItem(int type, const char *name, int len)
  */
 
 static int
-RemoveMutex(const char *name, int len)
+RemoveMutex(const char *name, size_t len)
 {
     SpMutex *mutexPtr = GetMutex(name, len);
     if (mutexPtr == NULL) {
@@ -1036,7 +1039,7 @@ RemoveMutex(const char *name, int len)
  */
 
 static int
-RemoveCondv(const char *name, int len)
+RemoveCondv(const char *name, size_t len)
 {
     SpCondv *condvPtr = GetCondv(name, len);
     if (condvPtr == NULL) {

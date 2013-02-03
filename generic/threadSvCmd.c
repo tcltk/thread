@@ -2126,9 +2126,11 @@ int
 Sv_Init (interp)
     Tcl_Interp *interp;
 {
-    register int i;
+    int i;
     Bucket *bucketPtr;
     SvCmdInfo *cmdPtr;
+    const Tcl_UniChar no[3] = {'n', 'o', 0} ;
+    Tcl_Obj *obj;
 
     /*
      * Add keyed-list datatype
@@ -2150,11 +2152,23 @@ Sv_Init (interp)
      * in custom object duplicator function.
      */
 
-    booleanObjTypePtr   = Tcl_GetObjType("boolean");
-    byteArrayObjTypePtr = Tcl_GetObjType("bytearray");
-    doubleObjTypePtr    = Tcl_GetObjType("double");
-    intObjTypePtr       = Tcl_GetObjType("int");
-    stringObjTypePtr    = Tcl_GetObjType("string");
+    obj = Tcl_NewUnicodeObj(no, -1);
+    stringObjTypePtr = obj->typePtr;
+    Tcl_GetBooleanFromObj(NULL, obj, &i);
+    booleanObjTypePtr   = obj->typePtr;
+    Tcl_DecrRefCount(obj);
+
+    obj = Tcl_NewByteArrayObj((unsigned char *)no, 2);
+    byteArrayObjTypePtr = obj->typePtr;
+    Tcl_DecrRefCount(obj);
+
+    obj = Tcl_NewDoubleObj(1.5);
+    doubleObjTypePtr    = obj->typePtr;
+    Tcl_DecrRefCount(obj);
+
+    obj = Tcl_NewIntObj(5);
+    intObjTypePtr       = obj->typePtr;
+    Tcl_DecrRefCount(obj);
 
     /*
      * Plug-in registered commands in current interpreter
