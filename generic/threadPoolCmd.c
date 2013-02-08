@@ -773,7 +773,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
 
     if (resVar) {
         Tcl_SetVar2Ex(interp, resVar, NULL, Tcl_GetObjResult(interp), 0);
-        Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
+        Tcl_SetObjResult(interp, Tcl_NewLongObj(ret));
         ret = TCL_OK;
     }
 
@@ -830,7 +830,7 @@ TpoolReserveObjCmd(dummy, interp, objc, objv)
 
     ret = TpoolReserve(tpoolPtr);
     Tcl_MutexUnlock(&listMutex);
-    Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
+    Tcl_SetObjResult(interp, Tcl_NewLongObj(ret));
 
     return TCL_OK;
 }
@@ -885,7 +885,7 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
 
     ret = TpoolRelease(tpoolPtr);
     Tcl_MutexUnlock(&listMutex);
-    Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
+    Tcl_SetObjResult(interp, Tcl_NewLongObj(ret));
 
     return TCL_OK;
 }

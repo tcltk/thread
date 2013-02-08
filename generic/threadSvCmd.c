@@ -1223,18 +1223,18 @@ SvArrayObjCmd(arg, interp, objc, objv)
         ret = TCL_ERROR;
 
     } else if (index == AEXISTS) {
-        Tcl_SetBooleanObj(Tcl_GetObjResult(interp), arrayPtr ? 1 : 0);
+        Tcl_SetLongObj(Tcl_GetObjResult(interp), arrayPtr!=0);
 
     } else if (index == AISBOUND) {
         if (arrayPtr == NULL) {
-            Tcl_SetBooleanObj(Tcl_GetObjResult(interp), 0);
+            Tcl_SetLongObj(Tcl_GetObjResult(interp), 0);
         } else {
-            Tcl_SetBooleanObj(Tcl_GetObjResult(interp), arrayPtr->psPtr ? 1:0);
+            Tcl_SetLongObj(Tcl_GetObjResult(interp), arrayPtr->psPtr!=0);
         }
 
     } else if (index == ASIZE) {
         if (arrayPtr == NULL) {
-            Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
+            Tcl_SetLongObj(Tcl_GetObjResult(interp), 0);
         } else {
             Tcl_SetLongObj(Tcl_GetObjResult(interp),arrayPtr->vars.numEntries);
         }
@@ -1561,8 +1561,7 @@ SvGetObjCmd(arg, interp, objc, objv)
         if ((objc - off) == 0) {
             return TCL_ERROR;
         } else {
-            Tcl_ResetResult(interp);
-            Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
+            Tcl_SetObjResult(interp, Tcl_NewLongObj(0));
             return TCL_OK;
         }
     case TCL_ERROR:
@@ -1578,8 +1577,7 @@ SvGetObjCmd(arg, interp, objc, objv)
             Tcl_DecrRefCount(res);
             goto cmd_err;
         }
-        Tcl_ResetResult(interp);
-        Tcl_SetIntObj(Tcl_GetObjResult(interp), 1);
+        Tcl_SetObjResult(interp, Tcl_NewLongObj(1));
     }
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
@@ -1624,15 +1622,13 @@ SvExistsObjCmd(arg, interp, objc, objv)
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     switch (ret) {
     case TCL_BREAK: /* Array/key not found */
-        Tcl_ResetResult(interp);
-        Tcl_SetBooleanObj(Tcl_GetObjResult(interp), 0);
+        Tcl_SetObjResult(interp, Tcl_NewLongObj(0));
         return TCL_OK;
     case TCL_ERROR:
         return TCL_ERROR;
     }
 
-    Tcl_ResetResult(interp);
-    Tcl_SetBooleanObj(Tcl_GetObjResult(interp), 1);
+    Tcl_SetObjResult(interp, Tcl_NewLongObj(1));
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 }
@@ -1874,8 +1870,7 @@ SvPopObjCmd(arg, interp, objc, objv)
         if ((objc - off) == 0) {
             return TCL_ERROR;
         } else {
-            Tcl_ResetResult(interp);
-            Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
+            Tcl_SetObjResult(interp, Tcl_NewLongObj(0));
             return TCL_OK;
         }
     case TCL_ERROR:
@@ -1904,8 +1899,7 @@ SvPopObjCmd(arg, interp, objc, objv)
             ret = TCL_ERROR;
             goto cmd_exit;
         }
-        Tcl_ResetResult(interp);
-        Tcl_SetIntObj(Tcl_GetObjResult(interp), 1);
+        Tcl_SetObjResult(interp, Tcl_NewLongObj(1));
     }
 
   cmd_exit:
@@ -2022,8 +2016,8 @@ SvLockObjCmd(dummy, interp, objc, objv)
      */
 
     if (objc < 3) {
-        Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
-        return TCL_ERROR;
+	Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
+	return TCL_ERROR;
     }
 
     arrayPtr  = LockArray(interp, Tcl_GetString(objv[1]), FLAGS_CREATEARRAY);
@@ -2162,11 +2156,11 @@ Sv_Init (interp)
     byteArrayObjTypePtr = obj->typePtr;
     Tcl_DecrRefCount(obj);
 
-    obj = Tcl_NewDoubleObj(1.5);
+    obj = Tcl_NewDoubleObj(0.0);
     doubleObjTypePtr    = obj->typePtr;
     Tcl_DecrRefCount(obj);
 
-    obj = Tcl_NewIntObj(5);
+    obj = Tcl_NewLongObj(0);
     intObjTypePtr       = obj->typePtr;
     Tcl_DecrRefCount(obj);
 

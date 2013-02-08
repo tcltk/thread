@@ -950,7 +950,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
         if (!Tcl_SetVar2Ex(interp, var, NULL, resultObj, TCL_LEAVE_ERR_MSG)) {
             return TCL_ERROR;
         }
-        Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
+        Tcl_SetObjResult(interp, Tcl_NewLongObj(ret));
         return TCL_OK;
     }
 
@@ -1380,7 +1380,7 @@ ThreadExistsObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    Tcl_SetBooleanObj(Tcl_GetObjResult(interp), ThreadExists(thrId));
+    Tcl_SetLongObj(Tcl_GetObjResult(interp), ThreadExists(thrId)!=0);
 
     return TCL_OK;
 }
@@ -2197,7 +2197,7 @@ ThreadJoin(interp, thrId)
     ret = Tcl_JoinThread(thrId, &state);
 
     if (ret == TCL_OK) {
-        Tcl_SetIntObj(Tcl_GetObjResult (interp), state);
+        Tcl_SetLongObj(Tcl_GetObjResult (interp), state);
     } else {
         char thrHandle[THREAD_HNDLMAXLEN];
         ThreadGetHandle(thrId, thrHandle);
@@ -2960,7 +2960,7 @@ ThreadReserve(interp, thrId, operation, wait)
     }
 
     Tcl_MutexUnlock(&threadMutex);
-    Tcl_SetIntObj(Tcl_GetObjResult(interp), (users > 0) ? users : 0);
+    Tcl_SetLongObj(Tcl_GetObjResult(interp), (users > 0) ? users : 0);
 
     return TCL_OK;
 }
