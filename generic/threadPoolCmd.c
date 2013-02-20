@@ -502,7 +502,8 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
     int ii, done;
     STRLEN_TYPE wObjc;
     Tcl_WideInt jobId;
-    char *tpoolName, *listVar = NULL;
+    char *tpoolName;
+    Tcl_Obj *listVar = NULL;
     Tcl_Obj *waitList, *doneList, **wObjv;
     ThreadPool *tpoolPtr;
     TpoolResult *rPtr;
@@ -519,7 +520,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     if (objc == 4) {
-        listVar = Tcl_GetString(objv[3]);
+        listVar = objv[3];
     }
     if (Tcl_ListObjGetElements(interp, objv[2], &wObjc, &wObjv) != TCL_OK) {
         return TCL_ERROR;
@@ -583,7 +584,7 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
     Tcl_MutexUnlock(&tpoolPtr->mutex);
 
     if (listVar) {
-        Tcl_SetVar2Ex(interp, listVar, NULL, waitList, 0);
+        Tcl_ObjSetVar2(interp, listVar, NULL, waitList, 0);
     }
 
     Tcl_SetObjResult(interp, doneList);
@@ -617,7 +618,8 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
     int ii;
     STRLEN_TYPE wObjc;
     Tcl_WideInt jobId;
-    char *tpoolName, *listVar = NULL;
+    char *tpoolName;
+    Tcl_Obj *listVar = NULL;
     Tcl_Obj *doneList, *waitList, **wObjv;
     ThreadPool *tpoolPtr;
     TpoolResult *rPtr;
@@ -631,7 +633,7 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     if (objc == 4) {
-        listVar = Tcl_GetString(objv[3]);
+        listVar = objv[3];
     }
     if (Tcl_ListObjGetElements(interp, objv[2], &wObjc, &wObjv) != TCL_OK) {
         return TCL_ERROR;
@@ -679,7 +681,7 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
     Tcl_MutexUnlock(&tpoolPtr->mutex);
 
     if (listVar) {
-        Tcl_SetVar2Ex(interp, listVar, NULL, waitList, 0);
+        Tcl_ObjSetVar2(interp, listVar, NULL, waitList, 0);
     }
 
     Tcl_SetObjResult(interp, doneList);
@@ -712,7 +714,8 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
 {
     int ret;
     Tcl_WideInt jobId;
-    char *tpoolName, *resVar = NULL;
+    char *tpoolName;
+    Tcl_Obj *resVar = NULL;
     ThreadPool *tpoolPtr;
     TpoolResult *rPtr;
     Tcl_HashEntry *hPtr;
@@ -729,7 +732,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
     if (objc == 4) {
-        resVar = Tcl_GetString(objv[3]);
+        resVar = objv[3];
     }
 
     /*
@@ -772,7 +775,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
     ckfree((char*)rPtr);
 
     if (resVar) {
-        Tcl_SetVar2Ex(interp, resVar, NULL, Tcl_GetObjResult(interp), 0);
+        Tcl_ObjSetVar2(interp, resVar, NULL, Tcl_GetObjResult(interp), 0);
         Tcl_SetObjResult(interp, Tcl_NewLongObj(ret));
         ret = TCL_OK;
     }
@@ -1504,7 +1507,7 @@ TpoolEval(interp, script, scriptLen, rPtr)
     int ret;
     size_t reslen;
     const char *result;
-    char *errorCode, *errorInfo;
+    const char *errorCode, *errorInfo;
 
     ret = Tcl_EvalEx(interp, script, scriptLen, TCL_EVAL_GLOBAL);
     if (rPtr == NULL || rPtr->detached) {
@@ -1512,8 +1515,8 @@ TpoolEval(interp, script, scriptLen, rPtr)
     }
     rPtr->retcode = ret;
     if (ret == TCL_ERROR) {
-        errorCode = (char*)Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
-        errorInfo = (char*)Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
+        errorCode = Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
+        errorInfo = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         if (errorCode != NULL) {
             rPtr->errorCode = ckalloc(1 + strlen(errorCode));
             strcpy(rPtr->errorCode, errorCode);
