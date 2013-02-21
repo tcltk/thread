@@ -861,7 +861,8 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     size_t len, vlen = 0;
     int ret, ii = 0, flags = 0;
     Tcl_ThreadId thrId;
-    const char *script, *arg, *var = NULL;
+    const char *script, *arg;
+    Tcl_Obj *var = NULL;
 
     ThreadClbkData *clbkPtr = NULL;
     ThreadSendData *sendPtr = NULL;
@@ -901,7 +902,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     script = Tcl_GetString(objv[ii]);
     len = objv[ii]->length;
     if (++ii < objc) {
-        var = Tcl_GetString(objv[ii]);
+        var = objv[ii];
         vlen = objv[ii]->length;
     }
     if (var && (flags & THREAD_SEND_WAIT) == 0) {
@@ -924,7 +925,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
         clbkPtr->freeProc   = threadSendFree;
         clbkPtr->interp     = interp;
         clbkPtr->threadId   = Tcl_GetCurrentThread();
-        clbkPtr->clientData = (ClientData)strcpy(ckalloc(1+vlen), var);
+        clbkPtr->clientData = (ClientData)strcpy(ckalloc(1+vlen), Tcl_GetString(var));
     }
 
     /*
@@ -947,7 +948,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
          */
 
         Tcl_Obj *resultObj = Tcl_GetObjResult(interp);
-        if (!Tcl_SetVar2Ex(interp, var, NULL, resultObj, TCL_LEAVE_ERR_MSG)) {
+        if (!Tcl_ObjSetVar2(interp, var, NULL, resultObj, TCL_LEAVE_ERR_MSG)) {
             return TCL_ERROR;
         }
         Tcl_SetObjResult(interp, Tcl_NewLongObj(ret));

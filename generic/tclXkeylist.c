@@ -1160,22 +1160,20 @@ Tcl_KeylgetObjCmd (clientData, interp, objc, objv)
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylPtr, *valuePtr;
-    const char *varName, *key;
+    const char *key;
     int status;
 
     if ((objc < 2) || (objc > 4)) {
         return TclX_WrongArgs (interp, objv [0],
                                "listvar ?key? ?retvar | {}?");
     }
-    varName = Tcl_GetString(objv [1]);
-
     /*
      * Handle request for list of keys, use keylkeys command.
      */
     if (objc == 2)
         return Tcl_KeylkeysObjCmd (clientData, interp, objc, objv);
 
-    keylPtr = Tcl_GetVar2Ex(interp, varName, NULL, TCL_LEAVE_ERR_MSG);
+    keylPtr = Tcl_ObjGetVar2(interp, objv[1], NULL, TCL_LEAVE_ERR_MSG);
     if (keylPtr == NULL) {
         return TCL_ERROR;
     }
@@ -1220,7 +1218,7 @@ Tcl_KeylgetObjCmd (clientData, interp, objc, objv)
      * Variable (or empty variable name) specified.
      */
     if (!TclX_IsNullObj(objv [3])) {
-        if (Tcl_SetVar2Ex(interp, Tcl_GetString(objv[3]), NULL,
+        if (Tcl_ObjSetVar2(interp, objv[3], NULL,
                           valuePtr, TCL_LEAVE_ERR_MSG) == NULL)
             return TCL_ERROR;
     }
@@ -1243,21 +1241,20 @@ Tcl_KeylsetObjCmd (clientData, interp, objc, objv)
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylVarPtr, *newVarObj;
-    const char *varName, *key;
+    const char *key;
     int idx;
 
     if ((objc < 4) || ((objc % 2) != 0)) {
         return TclX_WrongArgs (interp, objv [0],
                                "listvar key value ?key value...?");
     }
-    varName = Tcl_GetString(objv [1]);
 
     /*
      * Get the variable that we are going to update.  If the var doesn't exist,
      * create it.  If it is shared by more than being a variable, duplicated
      * it.
      */
-    keylVarPtr = Tcl_GetVar2Ex(interp, varName, NULL, 0);
+    keylVarPtr = Tcl_ObjGetVar2(interp, objv[1], NULL, 0);
     if ((keylVarPtr == NULL) || (Tcl_IsShared (keylVarPtr))) {
         if (keylVarPtr == NULL) {
             keylVarPtr = TclX_NewKeyedListObj ();
@@ -1279,7 +1276,7 @@ Tcl_KeylsetObjCmd (clientData, interp, objc, objv)
         }
     }
 
-    if (Tcl_SetVar2Ex(interp, varName, NULL, keylVarPtr,
+    if (Tcl_ObjSetVar2(interp, objv[1], NULL, keylVarPtr,
                       TCL_LEAVE_ERR_MSG) == NULL) {
         goto errorExit;
     }
@@ -1307,25 +1304,24 @@ Tcl_KeyldelObjCmd (clientData, interp, objc, objv)
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylVarPtr, *keylPtr;
-    const char *varName, *key;
+    const char *key;
     int idx, status;
 
     if (objc < 3) {
         return TclX_WrongArgs (interp, objv [0], "listvar key ?key ...?");
     }
-    varName = Tcl_GetString(objv[1]);
 
     /*
      * Get the variable that we are going to update.  If it is shared by more
      * than being a variable, duplicated it.
      */
-    keylVarPtr = Tcl_GetVar2Ex(interp, varName, NULL, TCL_LEAVE_ERR_MSG);
+    keylVarPtr = Tcl_ObjGetVar2(interp, objv[1], NULL, TCL_LEAVE_ERR_MSG);
     if (keylVarPtr == NULL) {
         return TCL_ERROR;
     }
     if (Tcl_IsShared (keylVarPtr)) {
         keylPtr = Tcl_DuplicateObj (keylVarPtr);
-        keylVarPtr = Tcl_SetVar2Ex(interp, varName, NULL, keylPtr, TCL_LEAVE_ERR_MSG);
+        keylVarPtr = Tcl_ObjSetVar2(interp, objv[1], NULL, keylPtr, TCL_LEAVE_ERR_MSG);
         if (keylVarPtr == NULL) {
             Tcl_DecrRefCount (keylPtr);
             return TCL_ERROR;
@@ -1370,15 +1366,14 @@ Tcl_KeylkeysObjCmd (clientData, interp, objc, objv)
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylPtr, *listObjPtr;
-    const char *varName, *key;
+    const char *key;
     int status;
 
     if ((objc < 2) || (objc > 3)) {
         return TclX_WrongArgs(interp, objv [0], "listvar ?key?");
     }
-    varName = Tcl_GetString(objv[1]);
 
-    keylPtr = Tcl_GetVar2Ex(interp, varName, NULL, TCL_LEAVE_ERR_MSG);
+    keylPtr = Tcl_ObjGetVar2(interp, objv[1], NULL, TCL_LEAVE_ERR_MSG);
     if (keylPtr == NULL) {
         return TCL_ERROR;
     }
