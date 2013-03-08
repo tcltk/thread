@@ -92,6 +92,12 @@ Sv_RegisterListCommands(void)
     if (initialized == 0) {
         Tcl_MutexLock(&initMutex);
         if (initialized == 0) {
+            /* Create list with 1 empty element. */
+            Tcl_Obj *listobj = Tcl_NewObj();
+            listobj = Tcl_NewListObj(1, &listobj);
+            Sv_RegisterObjType(listobj->typePtr, DupListObjShared);
+            Tcl_DecrRefCount(listobj);
+
             Sv_RegisterCommand("lpop",     SvLpopObjCmd,     NULL);
             Sv_RegisterCommand("lpush",    SvLpushObjCmd,    NULL);
             Sv_RegisterCommand("lappend",  SvLappendObjCmd,  NULL);
@@ -103,11 +109,6 @@ Sv_RegisterListCommands(void)
             Sv_RegisterCommand("lsearch",  SvLsearchObjCmd,  NULL);
             Sv_RegisterCommand("lset",     SvLsetObjCmd,     NULL);
 
-            /* Create list with 1 empty element. */
-            Tcl_Obj *listobj= Tcl_NewObj();
-            listobj = Tcl_NewListObj(1, &listobj);
-            Sv_RegisterObjType(listobj->typePtr, DupListObjShared);
-            Tcl_DecrRefCount(listobj);
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);
