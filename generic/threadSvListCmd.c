@@ -351,7 +351,8 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
     Tcl_Obj *const objv[];
 {
     const char *firstArg;
-    int argLen, ret, off, llen, first, last, ndel, nargs, i, j;
+    size_t argLen;
+    int ret, off, llen, first, last, ndel, nargs, i, j;
     Tcl_Obj **args = NULL;
     Container *svObj = (Container*)arg;
 
@@ -382,7 +383,8 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
         goto cmd_err;
     }
 
-    firstArg = Tcl_GetStringFromObj(objv[off], &argLen);
+    firstArg = Tcl_GetString(objv[off]);
+    argLen = objv[off]->length;
     if (first < 0)  {
         first = 0;
     }
@@ -656,7 +658,8 @@ SvLsearchObjCmd (arg, interp, objc, objv)
     int objc;
     Tcl_Obj *const objv[];
 {
-    int ret, off, listc, mode, imode, ipatt, length, index, match, i;
+    size_t length;
+    int ret, off, listc, mode, imode, ipatt, index, match, i;
     const char *patBytes;
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
@@ -699,7 +702,8 @@ SvLsearchObjCmd (arg, interp, objc, objv)
     }
 
     index = -1;
-    patBytes = Tcl_GetStringFromObj(objv[ipatt], &length);
+    patBytes = Tcl_GetString(objv[ipatt]);
+    length = objv[ipatt]->length;
 
     for (i = 0; i < listc; i++) {
         match = 0;
@@ -709,10 +713,9 @@ SvLsearchObjCmd (arg, interp, objc, objv)
             break;
 
         case LS_EXACT: {
-            int elemLen;
-            const char *bytes = Tcl_GetStringFromObj(listv[i], &elemLen);
-            if (length == elemLen) {
-                match = (memcmp(bytes, patBytes, (size_t)length) == 0);
+            const char *bytes = Tcl_GetString(listv[i]);
+            if (length == listv[i]->length) {
+                match = (memcmp(bytes, patBytes, length) == 0);
             }
             break;
         }
@@ -979,12 +982,14 @@ SvGetIntForIndex(interp, objPtr, endValue, indexPtr)
                              * representing an index. */
 {
     const char *bytes;
-    int length, offset;
+    size_t length;
+    int offset;
 
-    bytes = Tcl_GetStringFromObj(objPtr, &length);
+    bytes = Tcl_GetString(objPtr);
+    length = objPtr->length;
 
     if ((*bytes != 'e')
-        || (strncmp(bytes, "end",(size_t)((length > 3) ? 3 : length)) != 0)) {
+        || (strncmp(bytes, "end",((length > 3) ? 3 : length)) != 0)) {
         if (Tcl_GetIntFromObj(NULL, objPtr, &offset) != TCL_OK) {
             goto intforindex_error;
         }

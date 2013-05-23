@@ -433,37 +433,23 @@ ThreadInit(interp)
     if (!threadTclVersion) {
 
 	/*
+	 * Check whether we are running threaded Tcl.
 	 * Get the current core version to decide whether to use
 	 * some lately introduced core features or to back-off.
 	 */
 
 	int major, minor;
-	Tcl_Obj *boolObjPtr;
-	const char *msg;
-	int boolVar;
 
-	Tcl_GetVersion(&major, &minor, NULL, NULL);
-
-	if ((major>8) || (minor>4)) {
-	    if (Tcl_EvalEx(interp, "::tcl::pkgconfig get threaded", -1,
-		    TCL_EVAL_GLOBAL) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    boolObjPtr = Tcl_GetObjResult(interp);
-	} else {
-	    boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", TCL_GLOBAL_ONLY);
-	}
-	if (boolObjPtr == NULL
-		|| Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_OK
-		|| boolVar == 0) {
-	    msg = "Tcl core wasn't compiled for threading.";
+	Tcl_MutexLock(&threadMutex);
+	if (threadMutex == NULL){
+	    /* If threadMutex==NULL here, it means that Tcl_MutexLock() is
+	     * a dummy function, which is the case in unthreaded Tcl */
+	    const char *msg = "Tcl core wasn't compiled for threading";
 	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
 	    return TCL_ERROR;
 	}
-	Tcl_MutexLock(&threadMutex);
-	if (!threadTclVersion) {
-		threadTclVersion = 10 * major + minor;
-	}
+	Tcl_GetVersion(&major, &minor, NULL, NULL);
+	threadTclVersion = 10 * major + minor;
 	Tcl_MutexUnlock(&threadMutex);
     }
 

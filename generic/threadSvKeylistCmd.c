@@ -210,10 +210,9 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
     } else {
         Tcl_Obj *resObjPtr = Sv_DuplicateObj(valObjPtr);
         if (varObjPtr) {
-            int len;
             Tcl_SetObjResult(interp, Tcl_NewLongObj(1));
-            Tcl_GetStringFromObj(varObjPtr, &len);
-            if (len) {
+            Tcl_GetString(varObjPtr);
+            if (varObjPtr->length) {
                 Tcl_ObjSetVar2(interp, varObjPtr, NULL, resObjPtr, 0);
             }
         } else {
