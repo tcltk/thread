@@ -98,16 +98,16 @@ Sv_RegisterListCommands(void)
             Sv_RegisterObjType(listobj->typePtr, DupListObjShared);
             Tcl_DecrRefCount(listobj);
 
-            Sv_RegisterCommand("lpop",     SvLpopObjCmd,     NULL);
-            Sv_RegisterCommand("lpush",    SvLpushObjCmd,    NULL);
-            Sv_RegisterCommand("lappend",  SvLappendObjCmd,  NULL);
-            Sv_RegisterCommand("lreplace", SvLreplaceObjCmd, NULL);
-            Sv_RegisterCommand("linsert",  SvLinsertObjCmd,  NULL);
-            Sv_RegisterCommand("llength",  SvLlengthObjCmd,  NULL);
-            Sv_RegisterCommand("lindex",   SvLindexObjCmd,   NULL);
-            Sv_RegisterCommand("lrange",   SvLrangeObjCmd,   NULL);
-            Sv_RegisterCommand("lsearch",  SvLsearchObjCmd,  NULL);
-            Sv_RegisterCommand("lset",     SvLsetObjCmd,     NULL);
+            Sv_RegisterCommand("lpop",     SvLpopObjCmd,     NULL, 0);
+            Sv_RegisterCommand("lpush",    SvLpushObjCmd,    NULL, 0);
+            Sv_RegisterCommand("lappend",  SvLappendObjCmd,  NULL, 0);
+            Sv_RegisterCommand("lreplace", SvLreplaceObjCmd, NULL, 0);
+            Sv_RegisterCommand("linsert",  SvLinsertObjCmd,  NULL, 0);
+            Sv_RegisterCommand("llength",  SvLlengthObjCmd,  NULL, 0);
+            Sv_RegisterCommand("lindex",   SvLindexObjCmd,   NULL, 0);
+            Sv_RegisterCommand("lrange",   SvLrangeObjCmd,   NULL, 0);
+            Sv_RegisterCommand("lsearch",  SvLsearchObjCmd,  NULL, 0);
+            Sv_RegisterCommand("lset",     SvLsetObjCmd,     NULL, 0);
 
             initialized = 1;
         }

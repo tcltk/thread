@@ -165,6 +165,7 @@ typedef struct SvCmdInfo {
     Tcl_ObjCmdProc *objProcPtr; /* The object-based command procedure */
     Tcl_CmdDeleteProc *delProcPtr; /* Pointer to command delete function */
     struct SvCmdInfo *nextPtr;  /* Next in chain of registered commands */
+    int aolSpecial;
 } SvCmdInfo;
 
 /*
@@ -189,7 +190,7 @@ typedef struct RegType {
  */
 
 MODULE_SCOPE void
-Sv_RegisterCommand(const char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*);
+Sv_RegisterCommand(const char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*, int);
 
 MODULE_SCOPE void
 Sv_RegisterObjType(const Tcl_ObjType*, Tcl_DupInternalRepProc*);

@@ -140,10 +140,11 @@ static int SvObjDispatchObjCmd(ClientData arg,
  */
 
 void
-Sv_RegisterCommand(cmdName, objProc, delProc)
+Sv_RegisterCommand(cmdName, objProc, delProc, aolSpecial)
     const char *cmdName;                /* Name of command to register */
     Tcl_ObjCmdProc *objProc;            /* Object-based command procedure */
     Tcl_CmdDeleteProc *delProc;         /* Command delete procedure */
+    int aolSpecial;
 {
     int len = strlen(cmdName) + strlen(TSV_CMD_PREFIX) + 1;
     int len2 = strlen(cmdName) + strlen(TSV_CMD2_PREFIX) + 1;
@@ -155,6 +156,7 @@ Sv_RegisterCommand(cmdName, objProc, delProc)
 
     newCmd->cmdName = (char*)((char*)newCmd + sizeof(SvCmdInfo));
     newCmd->cmdName2 = newCmd->cmdName + len;
+    newCmd->aolSpecial = aolSpecial;
 
     newCmd->objProcPtr = objProc;
     newCmd->delProcPtr = delProc;
@@ -1062,7 +1064,7 @@ Sv_DuplicateObj(objPtr)
 
 static int
 SvObjDispatchObjCmd(arg, interp, objc, objv)
-    ClientData arg;                     /* Just passed to the command. */
+    ClientData arg;                     /* Just passed to the command, if eolSpecial. */
     Tcl_Interp *interp;                 /* Current interpreter. */
     int objc;                           /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
@@ -1086,6 +1088,9 @@ SvObjDispatchObjCmd(arg, interp, objc, objv)
 
     for (cmdPtr = svCmdInfo; cmdPtr; cmdPtr = cmdPtr->nextPtr) {
         if (!strcmp(cmdPtr->name, cmdName)) {
+            if (!cmdPtr->aolSpecial) {
+                arg = NULL;
+            }
             return (*cmdPtr->objProcPtr)(arg, interp, objc, objv);
         }
     }
@@ -2079,19 +2084,19 @@ SvRegisterStdCommands(void)
     if (initialized == 0) {
         Tcl_MutexLock(&initMutex);
         if (initialized == 0) {
-            Sv_RegisterCommand("var",    SvObjObjCmd,    NULL);
-            Sv_RegisterCommand("object", SvObjObjCmd,    NULL);
-            Sv_RegisterCommand("set",    SvSetObjCmd,    NULL);
-            Sv_RegisterCommand("unset",  SvUnsetObjCmd,  NULL);
-            Sv_RegisterCommand("get",    SvGetObjCmd,    NULL);
-            Sv_RegisterCommand("incr",   SvIncrObjCmd,   NULL);
-            Sv_RegisterCommand("exists", SvExistsObjCmd, NULL);
-            Sv_RegisterCommand("append", SvAppendObjCmd, NULL);
-            Sv_RegisterCommand("array",  SvArrayObjCmd,  NULL);
-            Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL);
-            Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL);
-            Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL);
-            Sv_RegisterCommand("lock",   SvLockObjCmd,   NULL);
+            Sv_RegisterCommand("var",    SvObjObjCmd,    NULL, 1);
+            Sv_RegisterCommand("object", SvObjObjCmd,    NULL, 1);
+            Sv_RegisterCommand("set",    SvSetObjCmd,    NULL, 0);
+            Sv_RegisterCommand("unset",  SvUnsetObjCmd,  NULL, 0);
+            Sv_RegisterCommand("get",    SvGetObjCmd,    NULL, 0);
+            Sv_RegisterCommand("incr",   SvIncrObjCmd,   NULL, 0);
+            Sv_RegisterCommand("exists", SvExistsObjCmd, NULL, 0);
+            Sv_RegisterCommand("append", SvAppendObjCmd, NULL, 0);
+            Sv_RegisterCommand("array",  SvArrayObjCmd,  NULL, 0);
+            Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL, 1);
+            Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL, 0);
+            Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL, 0);
+            Sv_RegisterCommand("lock",   SvLockObjCmd,   NULL, 0);
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);
@@ -2171,7 +2176,7 @@ Sv_Init (interp)
                 (ClientData)0, (Tcl_CmdDeleteProc*)0);
 #ifdef NS_AOLSERVER
         Tcl_CreateObjCommand(interp, cmdPtr->cmdName2, cmdPtr->objProcPtr,
-                (ClientData)1, (Tcl_CmdDeleteProc*)0);
+                (ClientData)cmdPtr->aolSpecial, (Tcl_CmdDeleteProc*)0);
 #endif
     }
 
