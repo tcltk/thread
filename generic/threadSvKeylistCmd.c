@@ -68,10 +68,10 @@ Sv_RegisterKeylistCommands(void)
     if (initialized == 0) {
         Tcl_MutexLock(&initMutex);
         if (initialized == 0) {
-            Sv_RegisterCommand("keylset",  SvKeylsetObjCmd,  NULL);
-            Sv_RegisterCommand("keylget",  SvKeylgetObjCmd,  NULL);
-            Sv_RegisterCommand("keyldel",  SvKeyldelObjCmd,  NULL);
-            Sv_RegisterCommand("keylkeys", SvKeylkeysObjCmd, NULL);
+            Sv_RegisterCommand("keylset",  SvKeylsetObjCmd,  NULL, 0);
+            Sv_RegisterCommand("keylget",  SvKeylgetObjCmd,  NULL, 0);
+            Sv_RegisterCommand("keyldel",  SvKeyldelObjCmd,  NULL, 0);
+            Sv_RegisterCommand("keylkeys", SvKeylkeysObjCmd, NULL, 0);
             Sv_RegisterObjType(&keyedListType, DupKeyedListInternalRepShared);
             initialized = 1;
         }
