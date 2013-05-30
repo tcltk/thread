@@ -152,6 +152,7 @@ typedef struct Container {
     int epoch;                 /* Track object changes */
     char *chunkAddr;           /* Address of one chunk of object containers */
     struct Container *nextPtr; /* Next object container in the free list */
+    int aolSpecial;
 } Container;
 
 /*
