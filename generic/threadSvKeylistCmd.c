@@ -202,7 +202,7 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
 
     if (ret == TCL_BREAK) {
         if (varObjPtr) {
-            Tcl_SetObjResult(interp, Tcl_NewLongObj(0));
+            Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
         } else {
             Tcl_AppendResult (interp, "key \"", key, "\" not found", NULL);
             goto cmd_err;
@@ -210,7 +210,7 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
     } else {
         Tcl_Obj *resObjPtr = Sv_DuplicateObj(valObjPtr);
         if (varObjPtr) {
-            Tcl_SetObjResult(interp, Tcl_NewLongObj(1));
+            Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
             Tcl_GetString(varObjPtr);
             if (varObjPtr->length) {
                 Tcl_ObjSetVar2(interp, varObjPtr, NULL, resObjPtr, 0);

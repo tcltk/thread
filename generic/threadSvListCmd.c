@@ -625,7 +625,7 @@ SvLlengthObjCmd (arg, interp, objc, objv)
 
     ret = Tcl_ListObjLength(interp, svObj->tclObj, &llen);
     if (ret == TCL_OK) {
-        Tcl_SetObjResult(interp, Tcl_NewLongObj(llen));
+        Tcl_SetObjResult(interp, Tcl_NewIntObj(llen));
     }
     if (Sv_PutContainer(interp, svObj, SV_UNCHANGED) != TCL_OK) {
         return TCL_ERROR;
@@ -732,7 +732,7 @@ SvLsearchObjCmd (arg, interp, objc, objv)
         }
     }
 
-    Tcl_SetObjResult(interp, Tcl_NewLongObj(index));
+    Tcl_SetObjResult(interp, Tcl_NewIntObj(index));
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 
