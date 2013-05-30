@@ -1220,20 +1220,20 @@ SvArrayObjCmd(
         ret = TCL_ERROR;
 
     } else if (index == AEXISTS) {
-        Tcl_SetLongObj(Tcl_GetObjResult(interp), arrayPtr!=0);
+        Tcl_SetIntObj(Tcl_GetObjResult(interp), arrayPtr!=0);
 
     } else if (index == AISBOUND) {
         if (arrayPtr == NULL) {
-            Tcl_SetLongObj(Tcl_GetObjResult(interp), 0);
+            Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
         } else {
-            Tcl_SetLongObj(Tcl_GetObjResult(interp), arrayPtr->psPtr!=0);
+            Tcl_SetIntObj(Tcl_GetObjResult(interp), arrayPtr->psPtr!=0);
         }
 
     } else if (index == ASIZE) {
         if (arrayPtr == NULL) {
-            Tcl_SetLongObj(Tcl_GetObjResult(interp), 0);
+            Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
         } else {
-            Tcl_SetLongObj(Tcl_GetObjResult(interp),arrayPtr->vars.numEntries);
+            Tcl_SetWideIntObj(Tcl_GetObjResult(interp),arrayPtr->vars.numEntries);
         }
 
     } else if (index == ASET || index == ARESET) {
@@ -1558,7 +1558,7 @@ SvGetObjCmd(
         if ((objc - off) == 0) {
             return TCL_ERROR;
         } else {
-            Tcl_SetObjResult(interp, Tcl_NewLongObj(0));
+            Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
             return TCL_OK;
         }
     case TCL_ERROR:
@@ -1574,7 +1574,7 @@ SvGetObjCmd(
             Tcl_DecrRefCount(res);
             goto cmd_err;
         }
-        Tcl_SetObjResult(interp, Tcl_NewLongObj(1));
+        Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
     }
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
@@ -1619,13 +1619,13 @@ SvExistsObjCmd(
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     switch (ret) {
     case TCL_BREAK: /* Array/key not found */
-        Tcl_SetObjResult(interp, Tcl_NewLongObj(0));
+        Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
         return TCL_OK;
     case TCL_ERROR:
         return TCL_ERROR;
     }
 
-    Tcl_SetObjResult(interp, Tcl_NewLongObj(1));
+    Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 }
@@ -1722,7 +1722,7 @@ SvIncrObjCmd(
              Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int off, ret, flg, new = 0;
-    long incrValue = 1, currValue = 0;
+    Tcl_WideInt incrValue = 1, currValue = 0;
     Container *svObj = (Container*)arg;
 
     /*
@@ -1745,7 +1745,7 @@ SvIncrObjCmd(
         new = 1;
     }
     if ((objc - off)) {
-        ret = Tcl_GetLongFromObj(interp, objv[off], &incrValue);
+        ret = Tcl_GetWideIntFromObj(interp, objv[off], &incrValue);
         if (ret != TCL_OK) {
             goto cmd_err;
         }
@@ -1753,16 +1753,16 @@ SvIncrObjCmd(
     if (new) {
         currValue = 0;
     } else {
-        ret = Tcl_GetLongFromObj(interp, svObj->tclObj, &currValue);
+        ret = Tcl_GetWideIntFromObj(interp, svObj->tclObj, &currValue);
         if (ret != TCL_OK) {
             goto cmd_err;
         }
     }
 
     incrValue += currValue;
-    Tcl_SetLongObj(svObj->tclObj, incrValue);
+    Tcl_SetWideIntObj(svObj->tclObj, incrValue);
     Tcl_ResetResult(interp);
-    Tcl_SetLongObj(Tcl_GetObjResult(interp), incrValue);
+    Tcl_SetWideIntObj(Tcl_GetObjResult(interp), incrValue);
 
     return Sv_PutContainer(interp, svObj, SV_CHANGED);
 
@@ -1867,7 +1867,7 @@ SvPopObjCmd(
         if ((objc - off) == 0) {
             return TCL_ERROR;
         } else {
-            Tcl_SetObjResult(interp, Tcl_NewLongObj(0));
+            Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
             return TCL_OK;
         }
     case TCL_ERROR:
@@ -1896,7 +1896,7 @@ SvPopObjCmd(
             ret = TCL_ERROR;
             goto cmd_exit;
         }
-        Tcl_SetObjResult(interp, Tcl_NewLongObj(1));
+        Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
     }
 
   cmd_exit:
@@ -2157,7 +2157,7 @@ Sv_Init (interp)
     doubleObjTypePtr    = obj->typePtr;
     Tcl_DecrRefCount(obj);
 
-    obj = Tcl_NewLongObj(0);
+    obj = Tcl_NewIntObj(0);
     intObjTypePtr       = obj->typePtr;
     Tcl_DecrRefCount(obj);
 
@@ -2170,7 +2170,7 @@ Sv_Init (interp)
                 (ClientData)0, (Tcl_CmdDeleteProc*)0);
 #ifdef NS_AOLSERVER
         Tcl_CreateObjCommand(interp, cmdPtr->cmdName2, cmdPtr->objProcPtr,
-                (ClientData)cmdPtr->aolSpecial, (Tcl_CmdDeleteProc*)0);
+                (ClientData)(size_t)cmdPtr->aolSpecial, (Tcl_CmdDeleteProc*)0);
 #endif
     }
 
