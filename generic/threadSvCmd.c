@@ -561,7 +561,8 @@ ReleaseContainer(
     case SV_CHANGED:
         if (psPtr) {
             key = Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
-            val = Tcl_GetStringFromObj(svObj->tclObj, &len);
+            val = Tcl_GetString(svObj->tclObj);
+            len = svObj->tclObj->length;
             if ((*psPtr->psPut)(psPtr->psHandle, key, val, len) == -1) {
                 const char *err = (*psPtr->psError)(psPtr->psHandle);
                 Tcl_SetObjResult(interp, Tcl_NewStringObj(err, -1));
@@ -1331,7 +1332,8 @@ SvArrayObjCmd(
             goto cmdExit;
         }
 
-        psurl = Tcl_GetStringFromObj(objv[3], &len);
+        psurl = Tcl_GetString(objv[3]);
+        len = objv[3]->length;
         psPtr = GetPsStore(psurl);
 
         if (psPtr == NULL) {
@@ -1492,7 +1494,8 @@ SvNamesObjCmd(
         return TCL_ERROR;
     }
     if (objc == 2) {
-        pattern = Tcl_GetStringFromObj(objv[1], &len);
+        pattern = Tcl_GetString(objv[1]);
+        len = objv[1]->length;
     }
 
     resObj = Tcl_NewListObj(0, NULL);
