@@ -1,10 +1,16 @@
+2013-05-23  Jan Nijtmans  <nijtmans@users.sf.net>
+
+	* generic/threadSvKeylistCmd.c: Change a few internal variable
+	* generic/threadSvListCmd.c:    from type int to type size_t.
+	* generic/threadCmd.c:          Simplify determination of whether
+	Tcl is compiled with thread support.
+	* configure: re-generate with latest TEA.
+
 2012-12-21  Jan Nijtmans  <nijtmans@users.sf.net>
 
 	* generic/tclThreadInt.h: Add runtime detection of Tcl_AddErrorInfo
 	* generic/*.c:	vs. Tcl_AppendObjToErrorInfo and Tcl_GetErrorLine vs.
-	interp->errorLine. Replace Tcl_GetString to Tcl_GetStringFromObj
-	everywhere. This will make it more likely that Thread will run
-	in Tcl9 unmodified, no matter what API changes are made.
+	interp->errorLine.
 
 2012-12-16  Jan Nijtmans  <nijtmans@users.sf.net>
 

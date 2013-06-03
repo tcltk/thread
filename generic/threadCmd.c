@@ -429,8 +429,8 @@ ThreadInit(interp)
     /* If sizeof(size_t) != sizeof(int), then Thread 2.7 only
      * loads in the same major Tcl version as it was compiled
      * with, try that first. */
-    if (!Tcl_InitStubs(interp, ((sizeof(size_t) == sizeof(int))
-	    || (TCL_MAJOR_VERSION == 8))?"8.4":"9.0", 0)) {
+    if (Tcl_InitStubs(interp, ((sizeof(size_t) == sizeof(int))
+	    || (TCL_MAJOR_VERSION == 8))?"8.4":"9.0", 0) == NULL) {
 	if ((sizeof(size_t) != sizeof(int)) ||
 		!Tcl_InitStubs(interp, "8.4-", 0)) {
 	    return TCL_ERROR;
@@ -441,37 +441,23 @@ ThreadInit(interp)
     if (!threadTclVersion) {
 
 	/*
+	 * Check whether we are running threaded Tcl.
 	 * Get the current core version to decide whether to use
 	 * some lately introduced core features or to back-off.
 	 */
 
 	int major, minor;
-	Tcl_Obj *boolObjPtr;
-	const char *msg;
-	int boolVar;
 
-	Tcl_GetVersion(&major, &minor, NULL, NULL);
-
-	if ((major>8) || (minor>4)) {
-	    if (Tcl_EvalEx(interp, "::tcl::pkgconfig get threaded", -1,
-		    TCL_EVAL_GLOBAL) != TCL_OK) {
-		return TCL_ERROR;
-	    }
-	    boolObjPtr = Tcl_GetObjResult(interp);
-	} else {
-	    boolObjPtr = Tcl_GetVar2Ex(interp, "::tcl_platform", "threaded", TCL_GLOBAL_ONLY);
-	}
-	if (boolObjPtr == NULL
-		|| Tcl_GetBooleanFromObj(interp, boolObjPtr, &boolVar) != TCL_OK
-		|| boolVar == 0) {
-	    msg = "Tcl core wasn't compiled for threading.";
+	Tcl_MutexLock(&threadMutex);
+	if (threadMutex == NULL){
+	    /* If threadMutex==NULL here, it means that Tcl_MutexLock() is
+	     * a dummy function, which is the case in unthreaded Tcl */
+	    const char *msg = "Tcl core wasn't compiled for threading";
 	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
 	    return TCL_ERROR;
 	}
-	Tcl_MutexLock(&threadMutex);
-	if (!threadTclVersion) {
-		threadTclVersion = 10 * major + minor;
-	}
+	Tcl_GetVersion(&major, &minor, NULL, NULL);
+	threadTclVersion = 10 * major + minor;
 	Tcl_MutexUnlock(&threadMutex);
     }
 
@@ -938,7 +924,8 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     size_t len, vlen = 0;
     int ret, ii = 0, flags = 0;
     Tcl_ThreadId thrId;
-    const char *script, *arg, *var = NULL;
+    const char *script, *arg;
+    Tcl_Obj *var = NULL;
 
     ThreadClbkData *clbkPtr = NULL;
     ThreadSendData *sendPtr = NULL;
@@ -978,7 +965,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     script = Tcl_GetString(objv[ii]);
     len = objv[ii]->length;
     if (++ii < objc) {
-        var = Tcl_GetString(objv[ii]);
+        var = objv[ii];
         vlen = objv[ii]->length;
     }
     if (var && (flags & THREAD_SEND_WAIT) == 0) {
@@ -1001,7 +988,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
         clbkPtr->freeProc   = threadSendFree;
         clbkPtr->interp     = interp;
         clbkPtr->threadId   = Tcl_GetCurrentThread();
-        clbkPtr->clientData = (ClientData)strcpy(ckalloc(1+vlen), var);
+        clbkPtr->clientData = (ClientData)strcpy(ckalloc(1+vlen), Tcl_GetString(var));
     }
 
     /*
@@ -1024,10 +1011,10 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
          */
 
         Tcl_Obj *resultObj = Tcl_GetObjResult(interp);
-        if (!Tcl_SetVar2Ex(interp, var, NULL, resultObj, TCL_LEAVE_ERR_MSG)) {
+        if (!Tcl_ObjSetVar2(interp, var, NULL, resultObj, TCL_LEAVE_ERR_MSG)) {
             return TCL_ERROR;
         }
-        Tcl_SetObjResult(interp, Tcl_NewLongObj(ret));
+        Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
         return TCL_OK;
     }
 
@@ -1457,7 +1444,7 @@ ThreadExistsObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    Tcl_SetLongObj(Tcl_GetObjResult(interp), ThreadExists(thrId)!=0);
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), ThreadExists(thrId)!=0);
 
     return TCL_OK;
 }
@@ -2284,7 +2271,7 @@ ThreadJoin(interp, thrId)
     ret = Tcl_JoinThread(thrId, &state);
 
     if (ret == TCL_OK) {
-        Tcl_SetLongObj(Tcl_GetObjResult (interp), state);
+        Tcl_SetIntObj(Tcl_GetObjResult (interp), state);
     } else {
         char thrHandle[THREAD_HNDLMAXLEN];
         ThreadGetHandle(thrId, thrHandle);
@@ -3058,7 +3045,7 @@ ThreadReserve(interp, thrId, operation, wait)
     }
 
     Tcl_MutexUnlock(&threadMutex);
-    Tcl_SetLongObj(Tcl_GetObjResult(interp), (users > 0) ? users : 0);
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), (users > 0) ? users : 0);
 
     return TCL_OK;
 }
