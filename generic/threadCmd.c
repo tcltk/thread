@@ -427,7 +427,11 @@ ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
     if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
-        return TCL_ERROR;
+	if ((sizeof(size_t) != sizeof(int)) ||
+		!Tcl_InitStubs(interp, "8.4-", 0)) {
+	    return TCL_ERROR;
+	}
+	Tcl_ResetResult(interp);
     }
 
     if (!threadTclVersion) {
