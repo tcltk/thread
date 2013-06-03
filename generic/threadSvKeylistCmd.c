@@ -68,10 +68,10 @@ Sv_RegisterKeylistCommands(void)
     if (initialized == 0) {
         Tcl_MutexLock(&initMutex);
         if (initialized == 0) {
-            Sv_RegisterCommand("keylset",  SvKeylsetObjCmd,  NULL);
-            Sv_RegisterCommand("keylget",  SvKeylgetObjCmd,  NULL);
-            Sv_RegisterCommand("keyldel",  SvKeyldelObjCmd,  NULL);
-            Sv_RegisterCommand("keylkeys", SvKeylkeysObjCmd, NULL);
+            Sv_RegisterCommand("keylset",  SvKeylsetObjCmd,  NULL, 0);
+            Sv_RegisterCommand("keylget",  SvKeylgetObjCmd,  NULL, 0);
+            Sv_RegisterCommand("keyldel",  SvKeyldelObjCmd,  NULL, 0);
+            Sv_RegisterCommand("keylkeys", SvKeylkeysObjCmd, NULL, 0);
             Sv_RegisterObjType(&keyedListType, DupKeyedListInternalRepShared);
             initialized = 1;
         }
@@ -202,7 +202,7 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
 
     if (ret == TCL_BREAK) {
         if (varObjPtr) {
-            Tcl_SetObjResult(interp, Tcl_NewLongObj(0));
+            Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
         } else {
             Tcl_AppendResult (interp, "key \"", key, "\" not found", NULL);
             goto cmd_err;
@@ -210,10 +210,9 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
     } else {
         Tcl_Obj *resObjPtr = Sv_DuplicateObj(valObjPtr);
         if (varObjPtr) {
-            int len;
-            Tcl_SetObjResult(interp, Tcl_NewLongObj(1));
-            Tcl_GetStringFromObj(varObjPtr, &len);
-            if (len) {
+            Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
+            Tcl_GetString(varObjPtr);
+            if (varObjPtr->length) {
                 Tcl_ObjSetVar2(interp, varObjPtr, NULL, resObjPtr, 0);
             }
         } else {
