@@ -2,8 +2,14 @@
 # Tcl package index file, version 1.1
 #
 
-# Pre-8.4 Tcl interps we dont support at all.  Bye!
-if {![package vsatisfies [package provide Tcl] 8.4]} {return}
+if {![package vsatisfies [package provide Tcl] 8.4]} {
+    # Pre-8.4 Tcl interps we dont support at all.  Bye!
+    # 9.0+ Tcl interps are only supported on 32-bit platforms.
+    if {![package vsatisfies [package provide Tcl] 9.0]
+	    || ($::tcl_platform(pointerSize) != 4)} {
+	return
+    }
+}
 
 # All Tcl 8.4+ interps can [load] Thread @PACKAGE_VERSION@
 #
