@@ -82,8 +82,6 @@ static struct ThreadSpecificData *threadList = NULL;
 
 static char *threadEmptyResult = (char *)"";
 
-static int tclVersion = 0;
-
 /*
  * An instance of the following structure contains all information that is
  * passed into a new thread when the thread is created using either the
@@ -367,35 +365,19 @@ ThreadInit(interp)
      */
 	const char *ver = (sizeof(size_t) == sizeof(int))? "8.6-": "9.0";
 
-    if (!Tcl_InitStubs(interp, ver, 0)) {
+    if (!((Tcl_InitStubs)(interp, ver, (int)sizeof(size_t),
+	    TCL_VERSION, TCL_STUB_MAGIC))) {
 	return TCL_ERROR;
     }
 
-    if (!tclVersion) {
-
-	/*
-	 * Get the current core version to decide whether to use
-	 * some lately introduced core features or to back-off.
-	 */
-
-	int major, minor;
-	int boolVar;
-
-	Tcl_GetVersion(&major, &minor, NULL, NULL);
-
-	if (Tcl_EvalEx(interp, "::tcl::pkgconfig get threaded", TCL_STRLEN,
-		TCL_EVAL_GLOBAL) != TCL_OK) {
-	    return TCL_ERROR;
-	}
-	if (Tcl_GetBooleanFromObj(interp, Tcl_GetObjResult(interp), &boolVar)
-		!= TCL_OK || boolVar == 0) {
-	    const char *msg = "Tcl core wasn't compiled for threading.";
-	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, TCL_STRLEN));
-	    return TCL_ERROR;
-	}
+    if (threadMutex == NULL){
 	Tcl_MutexLock(&threadMutex);
-	if (!tclVersion) {
-	    tclVersion = 10 * major + minor;
+	if (threadMutex == NULL){
+	    /* If threadMutex==NULL here, it means that Tcl_MutexLock() is
+	     * a dummy function, which is the case in unthreaded Tcl */
+	    const char *msg = "Tcl core wasn't compiled for threading";
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
+	    return TCL_ERROR;
 	}
 	Tcl_MutexUnlock(&threadMutex);
     }
@@ -951,7 +933,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
         if (!Tcl_ObjSetVar2(interp, var, NULL, resultObj, TCL_LEAVE_ERR_MSG)) {
             return TCL_ERROR;
         }
-        Tcl_SetObjResult(interp, Tcl_NewLongObj(ret));
+        Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
         return TCL_OK;
     }
 
@@ -1381,7 +1363,7 @@ ThreadExistsObjCmd(dummy, interp, objc, objv)
         return TCL_ERROR;
     }
 
-    Tcl_SetLongObj(Tcl_GetObjResult(interp), ThreadExists(thrId)!=0);
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), ThreadExists(thrId)!=0);
 
     return TCL_OK;
 }
@@ -2198,7 +2180,7 @@ ThreadJoin(interp, thrId)
     ret = Tcl_JoinThread(thrId, &state);
 
     if (ret == TCL_OK) {
-        Tcl_SetLongObj(Tcl_GetObjResult (interp), state);
+        Tcl_SetIntObj(Tcl_GetObjResult (interp), state);
     } else {
         char thrHandle[THREAD_HNDLMAXLEN];
         ThreadGetHandle(thrId, thrHandle);
@@ -2961,7 +2943,7 @@ ThreadReserve(interp, thrId, operation, wait)
     }
 
     Tcl_MutexUnlock(&threadMutex);
-    Tcl_SetLongObj(Tcl_GetObjResult(interp), (users > 0) ? users : 0);
+    Tcl_SetIntObj(Tcl_GetObjResult(interp), (users > 0) ? users : 0);
 
     return TCL_OK;
 }
