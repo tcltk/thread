@@ -1482,7 +1482,7 @@ SvNamesObjCmd(
               int objc,                           /* Number of arguments. */
               Tcl_Obj *const objv[])              /* Argument objects. */
 {
-    int i, len;
+    int i;
     const char *pattern = NULL;
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
@@ -1495,7 +1495,6 @@ SvNamesObjCmd(
     }
     if (objc == 2) {
         pattern = Tcl_GetString(objv[1]);
-        len = objv[1]->length;
     }
 
     resObj = Tcl_NewListObj(0, NULL);
