@@ -118,7 +118,7 @@ static void SvFinalizeContainers(Bucket*);
 static void SvFinalize(ClientData);
 #endif /* SV_FINALIZE */
 
-static PsStore* GetPsStore(char *handle);
+static PsStore* GetPsStore(const char *handle);
 
 static int SvObjDispatchObjCmd(ClientData arg,
             Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]);
@@ -251,7 +251,7 @@ Sv_RegisterObjType(
  */
 
 void
-Sv_RegisterPsStore(PsStore *psStorePtr)
+Sv_RegisterPsStore(const PsStore *psStorePtr)
 {
 
     PsStore *psPtr = (PsStore*)ckalloc(sizeof(PsStore));
@@ -401,10 +401,11 @@ Sv_PutContainer(
  */
 
 static PsStore*
-GetPsStore(char *handle)
+GetPsStore(const char *handle)
 {
     int i;
-    char *type = handle, *addr, *delimiter = strchr(handle, ':');
+    const char *type = handle;
+    char *addr, *delimiter = strchr(handle, ':');
     PsStore *tmpPtr, *psPtr = NULL;
 
     /*
@@ -459,7 +460,7 @@ GetPsStore(char *handle)
     Tcl_MutexLock(&svMutex);
     for (tmpPtr = psStore; tmpPtr; tmpPtr = tmpPtr->nextPtr) {
         if (strcmp(tmpPtr->type, type) == 0) {
-            tmpPtr->psHandle = (*tmpPtr->psOpen)(addr);
+            tmpPtr->psHandle = tmpPtr->psOpen(addr);
             if (tmpPtr->psHandle) {
                 psPtr = (PsStore*)ckalloc(sizeof(PsStore));
                 *psPtr = *tmpPtr;
@@ -508,10 +509,10 @@ AcquireContainer(
         PsStore *psPtr = arrayPtr->psPtr;
         if (psPtr) {
             char *val = NULL;
-            STRLEN_TYPE len = 0;
-            if ((*psPtr->psGet)(psPtr->psHandle, key, &val, &len) == 0) {
+            size_t len = 0;
+            if (psPtr->psGet(psPtr->psHandle, key, &val, &len) == 0) {
                 tclObj = Tcl_NewStringObj(val, len);
-                (*psPtr->psFree)(val);
+                psPtr->psFree(val);
             }
         }
         if (!(flags & FLAGS_CREATEVAR) && tclObj == NULL) {
@@ -551,8 +552,8 @@ ReleaseContainer(
                  Container *svObj,
                  int mode)
 {
-    PsStore *psPtr = svObj->arrayPtr->psPtr;
-    STRLEN_TYPE len;
+    const PsStore *psPtr = svObj->arrayPtr->psPtr;
+    size_t len;
     char *key, *val;
 
     switch (mode) {
@@ -563,8 +564,8 @@ ReleaseContainer(
             key = Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
             val = Tcl_GetString(svObj->tclObj);
             len = svObj->tclObj->length;
-            if ((*psPtr->psPut)(psPtr->psHandle, key, val, len) == -1) {
-                const char *err = (*psPtr->psError)(psPtr->psHandle);
+            if (psPtr->psPut(psPtr->psHandle, key, val, len) == -1) {
+                const char *err = psPtr->psError(psPtr->psHandle);
                 Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
                 return TCL_ERROR;
             }
@@ -652,7 +653,7 @@ DeleteContainer(
         PsStore *psPtr = svObj->arrayPtr->psPtr;
         if (psPtr) {
             char *key = Tcl_GetHashKey(&svObj->arrayPtr->vars,svObj->entryPtr);
-            if ((*psPtr->psDelete)(psPtr->psHandle, key) == -1) {
+            if (psPtr->psDelete(psPtr->psHandle, key) == -1) {
                 return TCL_ERROR;
             }
         }
@@ -834,7 +835,7 @@ DeleteArray(Array *arrayPtr)
     }
     if (arrayPtr->psPtr) {
         PsStore *psPtr = arrayPtr->psPtr;
-        if ((*psPtr->psClose)(psPtr->psHandle) == -1) {
+        if (psPtr->psClose(psPtr->psHandle) == -1) {
             return TCL_ERROR;
         }
         ckfree((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
@@ -1263,7 +1264,7 @@ SvArrayObjCmd(
             if (ret != TCL_OK) {
                 if (arrayPtr->psPtr) {
                     PsStore *psPtr = arrayPtr->psPtr;
-                    char *err = (*psPtr->psError)(psPtr->psHandle);
+                    const char *err = psPtr->psError(psPtr->psHandle);
                     Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
                 }
                 goto cmdExit;
@@ -1318,7 +1319,7 @@ SvArrayObjCmd(
          */
 
         PsStore *psPtr;
-        STRLEN_TYPE len;
+        size_t len;
         char *psurl, *key = NULL, *val = NULL;
 
         if (objc < 4) {
@@ -1361,18 +1362,18 @@ SvArrayObjCmd(
             arrayPtr->psPtr = psPtr;
             arrayPtr->bindAddr = strcpy(ckalloc(len+1), psurl);
         }
-        if (!(*psPtr->psFirst)(psPtr->psHandle, &key, &val, &len)) {
+        if (!psPtr->psFirst(psPtr->psHandle, &key, &val, &len)) {
             do {
-                (*psPtr->psFree)(val); /* What a waste! */
+                psPtr->psFree(val); /* What a waste! */
                 AcquireContainer(arrayPtr, key, FLAGS_CREATEVAR);
-            } while (!(*psPtr->psNext)(psPtr->psHandle, &key, &val, &len));
+            } while (!psPtr->psNext(psPtr->psHandle, &key, &val, &len));
         }
 
     } else if (index == AUNBIND) {
         if (arrayPtr && arrayPtr->psPtr) {
             PsStore *psPtr = arrayPtr->psPtr;
-            if ((*psPtr->psClose)(psPtr->psHandle) == -1) {
-                char *err = (*psPtr->psError)(psPtr->psHandle);
+            if (psPtr->psClose(psPtr->psHandle) == -1) {
+                const char *err = psPtr->psError(psPtr->psHandle);
                 Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
                 ret = TCL_ERROR;
                 goto cmdExit;
@@ -1885,7 +1886,7 @@ SvPopObjCmd(
     if (DeleteContainer(svObj) != TCL_OK) {
         if (svObj->arrayPtr->psPtr) {
             PsStore *psPtr = svObj->arrayPtr->psPtr;
-            char *err = (*psPtr->psError)(psPtr->psHandle);
+            const char *err = psPtr->psError(psPtr->psHandle);
             Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
         }
         ret = TCL_ERROR;
@@ -1961,8 +1962,8 @@ SvMoveObjCmd(
         char *key = Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
         if (svObj->arrayPtr->psPtr) {
             PsStore *psPtr = svObj->arrayPtr->psPtr;
-            if ((*psPtr->psDelete)(psPtr->psHandle, key) == -1) {
-                char *err = (*psPtr->psError)(psPtr->psHandle);
+            if (psPtr->psDelete(psPtr->psHandle, key) == -1) {
+                const char *err = psPtr->psError(psPtr->psHandle);
                 Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
                 return TCL_ERROR;
             }

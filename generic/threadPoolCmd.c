@@ -1123,7 +1123,7 @@ TpoolWorker(clientData)
     int tout = 0;
     Tcl_Interp *interp;
     Tcl_Time waitTime, *idlePtr;
-    char *errMsg;
+    const char *errMsg;
 
     Tcl_MutexLock(&startMutex);
 
@@ -1146,7 +1146,7 @@ TpoolWorker(clientData)
 #endif
 
     if (rPtr->retcode == 1) {
-        errMsg = (char*)Tcl_GetString(Tcl_GetObjResult(interp));
+        errMsg = Tcl_GetString(Tcl_GetObjResult(interp));
         rPtr->result = strcpy(ckalloc(strlen(errMsg)+1), errMsg);
         Tcl_ConditionNotify(&tpoolPtr->cond);
         Tcl_MutexUnlock(&startMutex);
@@ -1161,7 +1161,7 @@ TpoolWorker(clientData)
         TpoolEval(interp, tpoolPtr->initScript, TCL_STRLEN, rPtr);
         if (rPtr->retcode != TCL_OK) {
             rPtr->retcode = 1;
-            errMsg = (char*)Tcl_GetString(Tcl_GetObjResult(interp));
+            errMsg = Tcl_GetString(Tcl_GetObjResult(interp));
             rPtr->result  = strcpy(ckalloc(strlen(errMsg)+1), errMsg);
             Tcl_ConditionNotify(&tpoolPtr->cond);
             Tcl_MutexUnlock(&startMutex);

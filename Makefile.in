@@ -17,6 +17,8 @@
 # have been added in a customized configure script.
 #========================================================================
 
+#SAMPLE_NEW_VAR	= @SAMPLE_NEW_VAR@
+
 #========================================================================
 # Nothing of the variables below this line should need to be changed.
 # Please check the TARGETS section below to make sure the make targets
@@ -70,7 +72,7 @@ exec_prefix	= @exec_prefix@
 bindir		= @bindir@
 libdir		= @libdir@
 includedir	= @includedir@
-datarootdir     = @datarootdir@
+datarootdir	= @datarootdir@
 datadir		= @datadir@
 mandir		= @mandir@
 
@@ -112,6 +114,8 @@ STLIB_LD	= @STLIB_LD@
 #TCL_DEFS	= @TCL_DEFS@
 TCL_BIN_DIR	= @TCL_BIN_DIR@
 TCL_SRC_DIR	= @TCL_SRC_DIR@
+#TK_BIN_DIR	= @TK_BIN_DIR@
+#TK_SRC_DIR	= @TK_SRC_DIR@
 
 # Not used, but retained for reference of what libs Tcl required
 #TCL_LIBS	= @TCL_LIBS@
@@ -124,19 +128,25 @@ TCL_SRC_DIR	= @TCL_SRC_DIR@
 #========================================================================
 
 EXTRA_PATH	= $(top_builddir):$(TCL_BIN_DIR)
+#EXTRA_PATH	= $(top_builddir):$(TCL_BIN_DIR):$(TK_BIN_DIR)
 TCLLIBPATH	= $(top_builddir)
-TCLSH_ENV	= TCL_LIBRARY=`@CYGPATH@ $(TCL_SRC_DIR)/library` \
-		  TCL_THREAD_LIBRARY=`@CYGPATH@ $(srcdir)/lib` \
+TCLSH_ENV	= TCL_LIBRARY=`@CYGPATH@ $(TCL_SRC_DIR)/library`
+PKG_ENV		= TCL_THREAD_LIBRARY=`@CYGPATH@ $(srcdir)/lib` \
 		  @LD_LIBRARY_PATH_VAR@="$(EXTRA_PATH):$(@LD_LIBRARY_PATH_VAR@)" \
 		  PATH="$(EXTRA_PATH):$(PATH)" \
 		  TCLLIBPATH="$(TCLLIBPATH) $(top_builddir)/../lib"
 
 TCLSH_PROG	= @TCLSH_PROG@
-TCLSH   	= $(TCLSH_ENV) $(TCLSH_PROG)
+TCLSH		= $(PKG_ENV) $(TCLSH_ENV) $(TCLSH_PROG)
+
+#WISH_ENV	= TK_LIBRARY=`@CYGPATH@ $(TK_SRC_DIR)/library`
+#WISH_PROG	= @WISH_PROG@
+#WISH		= $(PKG_ENV) $(TCLSH_ENV) $(WISH_ENV) $(WISH_PROG)
 
 SHARED_BUILD	= @SHARED_BUILD@
 
 INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@
+#INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@ @TK_INCLUDES@ @TK_XINCLUDES@
 
 PKG_CFLAGS	= @PKG_CFLAGS@
 
@@ -148,6 +158,7 @@ PKG_CFLAGS	= @PKG_CFLAGS@
 #DEFS		= $(TCL_DEFS) @DEFS@ $(PKG_CFLAGS)
 DEFS		= @DEFS@ $(PKG_CFLAGS)
 
+# Move pkgIndex.tcl to 'BINARIES' var if it is generated in the Makefile
 CONFIG_CLEAN_FILES = Makefile pkgIndex.tcl
 CLEANFILES	= @CLEANFILES@
 
@@ -157,13 +168,15 @@ AR		= @AR@
 CFLAGS		= @CFLAGS@
 COMPILE		= $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 
+.SUFFIXES: .c .$(OBJEXT)
+
 #========================================================================
 # Start of user-definable TARGETS section
 #========================================================================
 
 #========================================================================
 # TEA TARGETS.  Please note that the "libraries:" target refers to platform
-# independent files, and the "binaries:" target inclues executable programs and
+# independent files, and the "binaries:" target includes executable programs and
 # platform-dependent libraries.  Modify these targets so that they install
 # the various pieces of your package.  The make and install rules
 # for the BINARIES that you specified above have already been done.
@@ -181,6 +194,12 @@ all: binaries libraries doc
 binaries: $(BINARIES)
 
 libraries:
+
+#========================================================================
+# Your doc target should differentiate from doc builds (by the developer)
+# and doc installs (see install-doc), which just install the docs on the
+# end user machine when building from source.
+#========================================================================
 
 doc:
 
@@ -226,6 +245,16 @@ shell: binaries libraries
 gdb:
 	$(TCLSH_ENV) gdb $(TCLSH_PROG) $(SCRIPT)
 
+VALGRINDARGS =	--tool=memcheck --num-callers=8 --leak-resolution=high \
+		--leak-check=yes --show-reachable=yes -v
+
+valgrind: binaries libraries
+	$(TCLSH_ENV) valgrind $(VALGRINDARGS) $(TCLSH_PROG) \
+		`@CYGPATH@ $(srcdir)/tests/all.tcl` $(TESTFLAGS)
+
+valgrindshell: binaries libraries
+	$(TCLSH_ENV) valgrind $(VALGRINDARGS) $(TCLSH_PROG) $(SCRIPT)
+
 depend:
 
 #========================================================================
@@ -263,7 +292,7 @@ $(PKG_STUB_LIB_FILE): $(PKG_STUB_OBJECTS)
 # As necessary, add $(srcdir):$(srcdir)/compat:....
 #========================================================================
 
-VPATH = $(srcdir):$(srcdir)/generic:$(srcdir)/unix:$(srcdir)/win
+VPATH = $(srcdir):$(srcdir)/generic:$(srcdir)/unix:$(srcdir)/win:$(srcdir)/macosx
 
 .c.@OBJEXT@:
 	$(COMPILE) -c `@CYGPATH@ $<` -o $@
@@ -282,7 +311,7 @@ dist-clean:
 	rm -rf $(DIST_DIR) $(DIST_ROOT)/$(PKG_DIR).tar.*
 
 dist: dist-clean
-	mkdir -p $(DIST_DIR)
+	$(INSTALL_DATA_DIR) $(DIST_DIR)
 	cp -p $(srcdir)/ChangeLog $(srcdir)/README* $(srcdir)/license.terms \
 		$(srcdir)/aclocal.m4 $(srcdir)/naviserver.m4 $(srcdir)/configure \
         $(srcdir)/*.in \
@@ -290,30 +319,30 @@ dist: dist-clean
 	chmod 664 $(DIST_DIR)/Makefile.in $(DIST_DIR)/aclocal.m4
 	chmod 775 $(DIST_DIR)/configure $(DIST_DIR)/configure.in
 
-	mkdir $(DIST_DIR)/tclconfig
+	$(INSTALL_DATA_DIR) $(DIST_DIR)/tclconfig
 	cp $(srcdir)/tclconfig/install-sh $(srcdir)/tclconfig/tcl.m4 \
 		$(DIST_DIR)/tclconfig/
 	chmod 664 $(DIST_DIR)/tclconfig/tcl.m4
 	chmod +x $(DIST_DIR)/tclconfig/install-sh
 
-	mkdir $(DIST_DIR)/unix
+	$(INSTALL_DATA_DIR) $(DIST_DIR)/unix
 	cp $(srcdir)/unix/README $(srcdir)/unix/CONFIG \
 		$(srcdir)/unix/threadUnix.c $(DIST_DIR)/unix/
 
-	mkdir $(DIST_DIR)/win
+	$(INSTALL_DATA_DIR) $(DIST_DIR)/win
 	cp $(srcdir)/win/README.txt $(srcdir)/win/CONFIG $(srcdir)/win/thread.rc \
 		$(srcdir)/win/threadWin.c $(srcdir)/win/makefile.vc \
 		$(srcdir)/win/nmakehlp.c $(srcdir)/win/pkg.vc \
 		$(srcdir)/win/rules.vc   $(srcdir)/win/thread_win.dsw \
 		$(srcdir)/win/thread_win.dsp $(DIST_DIR)/win/
 
-	mkdir $(DIST_DIR)/tcl
+	$(INSTALL_DATA_DIR) $(DIST_DIR)/tcl
 	cp $(srcdir)/tcl/README $(DIST_DIR)/tcl/
 
 	list='tests doc doc/man doc/html generic lib tcl/cmdsrv tcl/phttpd tcl/tpool';\
 	for p in $$list; do \
 	    if test -d $(srcdir)/$$p ; then \
-		mkdir -p $(DIST_DIR)/$$p; \
+		$(INSTALL_DATA_DIR) $(DIST_DIR)/$$p; \
 		cp -p $(srcdir)/$$p/*.* $(DIST_DIR)/$$p/; \
 	    fi; \
 	done
@@ -354,8 +383,8 @@ install-lib-binaries: binaries
 	@$(INSTALL_DATA_DIR) $(DESTDIR)$(pkglibdir)
 	@list='$(lib_BINARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    echo " $(INSTALL_PROGRAM) $$p $(DESTDIR)$(pkglibdir)/$$p"; \
-	    $(INSTALL_PROGRAM) $$p $(DESTDIR)$(pkglibdir)/$$p; \
+	    echo " $(INSTALL_LIBRARY) $$p $(DESTDIR)$(pkglibdir)/$$p"; \
+	    $(INSTALL_LIBRARY) $$p $(DESTDIR)$(pkglibdir)/$$p; \
 	    stub=`echo $$p|sed -e "s/.*\(stub\).*/\1/"`; \
 	    if test "x$$stub" = "xstub"; then \
 		echo " $(RANLIB_STUB) $(DESTDIR)$(pkglibdir)/$$p"; \
@@ -403,8 +432,6 @@ install-bin-binaries: binaries
 	    $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/$$p; \
 	  fi; \
 	done
-
-.SUFFIXES: .c .$(OBJEXT)
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \

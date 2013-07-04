@@ -720,7 +720,7 @@ SvLsearchObjCmd (arg, interp, objc, objv)
 
         case LS_EXACT: {
             const char *bytes = Tcl_GetString(listv[i]);
-            if (length == listv[i]->length) {
+            if (length == (size_t)listv[i]->length) {
                 match = (memcmp(bytes, patBytes, length) == 0);
             }
             break;
