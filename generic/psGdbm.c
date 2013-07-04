@@ -32,7 +32,7 @@ static ps_geterr_proc ps_gdbm_geterr;
  * to the functions implementing the gdbm store.
  */
 
-PsStore GdbmStore = {
+const PsStore GdbmStore = {
     "gdbm",
     NULL,
     ps_gdbm_open,
@@ -84,15 +84,15 @@ Sv_RegisterGdbmStore(void)
  *-----------------------------------------------------------------------------
  */
 static ClientData
-ps_gdbm_open(path)
-    const char *path;
+ps_gdbm_open(
+    const char *path)
 {
     GDBM_FILE dbf;
     char *ext;
     Tcl_DString toext;
 
     Tcl_DStringInit(&toext);
-    ext = Tcl_UtfToExternalDString(NULL, (char*)path, strlen(path), &toext);
+    ext = Tcl_UtfToExternalDString(NULL, path, strlen(path), &toext);
     dbf = gdbm_open(ext, 512, GDBM_WRCREAT|GDBM_SYNC|GDBM_NOLOCK, 0666, NULL);
     Tcl_DStringFree(&toext);
 
@@ -115,8 +115,8 @@ ps_gdbm_open(path)
  *-----------------------------------------------------------------------------
  */
 static int
-ps_gdbm_close(handle)
-    ClientData handle;
+ps_gdbm_close(
+    ClientData handle)
 {
     gdbm_close((GDBM_FILE)handle);
 
@@ -140,11 +140,11 @@ ps_gdbm_close(handle)
  *-----------------------------------------------------------------------------
  */
 static int
-ps_gdbm_get(handle, key, dataptrptr, lenptr)
-     ClientData handle;
-     const char   *key;
-     char **dataptrptr;
-     int       *lenptr;
+ps_gdbm_get(
+     ClientData handle,
+     const char   *key,
+     char **dataptrptr,
+     size_t    *lenptr)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey;
@@ -180,11 +180,11 @@ ps_gdbm_get(handle, key, dataptrptr, lenptr)
  *-----------------------------------------------------------------------------
  */
 static int
-ps_gdbm_first(handle, keyptrptr, dataptrptr, lenptr)
-    ClientData  handle;
-    char   **keyptrptr;
-    char  **dataptrptr;
-    int        *lenptr;
+ps_gdbm_first(
+    ClientData  handle,
+    char   **keyptrptr,
+    char  **dataptrptr,
+    size_t     *lenptr)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey;
@@ -221,11 +221,11 @@ ps_gdbm_first(handle, keyptrptr, dataptrptr, lenptr)
  *
  *-----------------------------------------------------------------------------
  */
-static int ps_gdbm_next(handle, keyptrptr, dataptrptr, lenptr)
-    ClientData  handle;
-    char   **keyptrptr;
-    char  **dataptrptr;
-    int        *lenptr;
+static int ps_gdbm_next(
+    ClientData  handle,
+    char   **keyptrptr,
+    char  **dataptrptr,
+    size_t     *lenptr)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey, dnext;
@@ -269,11 +269,11 @@ static int ps_gdbm_next(handle, keyptrptr, dataptrptr, lenptr)
  *-----------------------------------------------------------------------------
  */
 static int
-ps_gdbm_put(handle, key, dataptr, len)
-    ClientData handle;
-    const char   *key;
-    char     *dataptr;
-    int           len;
+ps_gdbm_put(
+    ClientData handle,
+    const char   *key,
+    char     *dataptr,
+    size_t        len)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey;
@@ -311,9 +311,9 @@ ps_gdbm_put(handle, key, dataptr, len)
  *-----------------------------------------------------------------------------
  */
 static int
-ps_gdbm_delete(handle, key)
-    ClientData handle;
-    const char   *key;
+ps_gdbm_delete(
+    ClientData handle,
+    const char   *key)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum dkey;
@@ -346,8 +346,8 @@ ps_gdbm_delete(handle, key)
  *-----------------------------------------------------------------------------
  */
 static void
-ps_gdbm_free(data)
-    char   *data;
+ps_gdbm_free(
+    void   *data)
 {
     free(data);
 }
@@ -368,9 +368,9 @@ ps_gdbm_free(data)
  *
  *-----------------------------------------------------------------------------
  */
-static char*
-ps_gdbm_geterr(handle)
-    ClientData handle;
+static const char*
+ps_gdbm_geterr(
+    ClientData handle)
 {
    /*
     * The problem with gdbm interface is that it uses the global
