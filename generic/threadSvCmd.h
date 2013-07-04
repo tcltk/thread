@@ -83,15 +83,15 @@
 
 typedef ClientData (ps_open_proc)(const char*);
 
-typedef int (ps_get_proc)   (ClientData, const char*, char**, int*);
-typedef int (ps_put_proc)   (ClientData, const char*, char*, int);
-typedef int (ps_first_proc) (ClientData, char**, char**, int*);
-typedef int (ps_next_proc)  (ClientData, char**, char**, int*);
+typedef int (ps_get_proc)   (ClientData, const char*, char**, size_t*);
+typedef int (ps_put_proc)   (ClientData, const char*, char*, size_t);
+typedef int (ps_first_proc) (ClientData, char**, char**, size_t*);
+typedef int (ps_next_proc)  (ClientData, char**, char**, size_t*);
 typedef int (ps_delete_proc)(ClientData, const char*);
 typedef int (ps_close_proc) (ClientData);
-typedef void(ps_free_proc)  (char*);
+typedef void(ps_free_proc)  (void*);
 
-typedef char* (ps_geterr_proc)(ClientData);
+typedef const char* (ps_geterr_proc)(ClientData);
 
 /*
  * This structure maintains a bunch of pointers to functions implementing
@@ -99,7 +99,7 @@ typedef char* (ps_geterr_proc)(ClientData);
  */
 
 typedef struct PsStore {
-    char *type;                /* Type identifier of the persistent storage */
+    const char *type;          /* Type identifier of the persistent storage */
     ClientData psHandle;       /* Handle to the opened storage */
     ps_open_proc   *psOpen;    /* Function to open the persistent key store */
     ps_get_proc    *psGet;     /* Function to retrieve value bound to key */
@@ -197,7 +197,7 @@ MODULE_SCOPE void
 Sv_RegisterObjType(const Tcl_ObjType*, Tcl_DupInternalRepProc*);
 
 MODULE_SCOPE void
-Sv_RegisterPsStore(PsStore*);
+Sv_RegisterPsStore(const PsStore*);
 
 MODULE_SCOPE int
 Sv_GetContainer(Tcl_Interp*,int,Tcl_Obj*const objv[],Container**,int*,int);
