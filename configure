@@ -8489,7 +8489,7 @@ _ACEOF
 		else
 		    RC="rc"
 		    lflags="-nologo"
-    		    LINKBIN="link"
+		    LINKBIN="link"
 		    CFLAGS_DEBUG="-nologo -Z7 -Od -W3 -WX ${runtime}d"
 		    CFLAGS_OPTIMIZE="-nologo -O2 -W2 ${runtime}"
 		fi
@@ -9275,9 +9275,10 @@ fi
 	OpenBSD-*)
 	    arch=`arch -s`
 	    case "$arch" in
-	    m88k|vax)
+	    vax)
 		SHLIB_SUFFIX=""
 		SHARED_LIB_SUFFIX=""
+		LDFLAGS=""
 		;;
 	    *)
 		SHLIB_CFLAGS="-fPIC"
@@ -9290,53 +9291,17 @@ fi
 
 		LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
 		SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.so.${SHLIB_VERSION}'
+		LDFLAGS="-Wl,-export-dynamic"
 		;;
 	    esac
 	    case "$arch" in
-	    m88k|vax)
+	    vax)
 		CFLAGS_OPTIMIZE="-O1"
 		;;
 	    *)
 		CFLAGS_OPTIMIZE="-O2"
 		;;
 	    esac
-	    echo "$as_me:$LINENO: checking for ELF" >&5
-echo $ECHO_N "checking for ELF... $ECHO_C" >&6
-if test "${tcl_cv_ld_elf+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-
-		cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-
-#ifdef __ELF__
-	yes
-#endif
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "yes" >/dev/null 2>&1; then
-  tcl_cv_ld_elf=yes
-else
-  tcl_cv_ld_elf=no
-fi
-rm -f conftest*
-
-fi
-echo "$as_me:$LINENO: result: $tcl_cv_ld_elf" >&5
-echo "${ECHO_T}$tcl_cv_ld_elf" >&6
-	    if test $tcl_cv_ld_elf = yes; then
-
-		LDFLAGS=-Wl,-export-dynamic
-
-else
-  LDFLAGS=""
-fi
-
 	    if test "${TCL_THREADS}" = "1"; then
 
 		# On OpenBSD:	Compile with -pthread
@@ -9394,7 +9359,7 @@ fi
 fi
 
 	    # Version numbers are dot-stripped by system policy.
-	    TCL_TRIM_DOTS=`echo ${VERSION} | tr -d .`
+	    TCL_TRIM_DOTS=`echo ${PACKAGE_VERSION} | tr -d .`
 	    UNSHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.a'
 	    SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}\$\{DBGX\}.so.1'
 	    TCL_LIB_VERSIONS_OK=nodots
@@ -11457,7 +11422,7 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 fi
 rm -f conftest*
 
-	MAKE_STUB_LIB="\${STLIB_LD} -out:\$@ \$(PKG_STUB_OBJECTS)"
+	MAKE_STUB_LIB="\${STLIB_LD} -nodefaultlib -out:\$@ \$(PKG_STUB_OBJECTS)"
     else
 	MAKE_STATIC_LIB="\${STLIB_LD} \$@ \$(PKG_OBJECTS)"
 	MAKE_SHARED_LIB="\${SHLIB_LD} -o \$@ \$(PKG_OBJECTS) \${SHLIB_LD_LIBS}"
@@ -11480,13 +11445,19 @@ rm -f conftest*
 	if test "${SHARED_BUILD}" = "1" ; then
 	    # We force the unresolved linking of symbols that are really in
 	    # the private libraries of Tcl and Tk.
-	    SHLIB_LD_LIBS="${SHLIB_LD_LIBS} \"`${CYGPATH} ${TCL_BIN_DIR}/${TCL_STUB_LIB_FILE}`\""
 	    if test x"${TK_BIN_DIR}" != x ; then
 		SHLIB_LD_LIBS="${SHLIB_LD_LIBS} \"`${CYGPATH} ${TK_BIN_DIR}/${TK_STUB_LIB_FILE}`\""
+	    fi
+	    SHLIB_LD_LIBS="${SHLIB_LD_LIBS} \"`${CYGPATH} ${TCL_BIN_DIR}/${TCL_STUB_LIB_FILE}`\""
+	    if test "$GCC" = "yes"; then
+		SHLIB_LD_LIBS="${SHLIB_LD_LIBS} -static-libgcc"
 	    fi
 	    eval eval "PKG_LIB_FILE=${PACKAGE_NAME}${SHARED_LIB_SUFFIX}"
 	else
 	    eval eval "PKG_LIB_FILE=${PACKAGE_NAME}${UNSHARED_LIB_SUFFIX}"
+	    if test "$GCC" = "yes"; then
+		PKG_LIB_FILE=lib${PKG_LIB_FILE}
+	    fi
 	fi
 	# Some packages build their own stubs libraries
 	eval eval "PKG_STUB_LIB_FILE=${PACKAGE_NAME}stub${UNSHARED_LIB_SUFFIX}"
