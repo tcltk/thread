@@ -402,10 +402,10 @@ $<
 
 {$(WINDIR)}.rc{$(TMP_DIR)}.res:
 	$(rc32) -fo $@ -r -i "$(GENERICDIR)" $(TCL_INCLUDES) \
-		-D__WIN32__ \
-                -DCOMMAVERSION=$(DOTVERSION:.=,),0 \
-                -DDOTVERSION=\"$(DOTVERSION)\" \
-                -DVERSION=\"$(VERSION)$(SUFX)\" \
+		-D_WIN32 -D__WIN32__ \
+		-DCOMMAVERSION=$(DOTVERSION:.=,),0 \
+		-DDOTVERSION=\"$(DOTVERSION)\" \
+		-DVERSION=\"$(VERSION)$(SUFX)\" \
 		-DDEBUG=$(DEBUG) \
 		-DPACKAGE_MAJOR=$(PACKAGE_MAJOR) \
 		-DPACKAGE_MINOR=$(PACKAGE_MINOR) \
