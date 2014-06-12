@@ -43,7 +43,7 @@ the build instructions.
 #
 # 3)  Targets are:
 #	all       -- Builds everything.
-#       <project> -- Builds the project (eg: nmake sample)
+#	<project> -- Builds the project (eg: nmake sample)
 #	test      -- Builds and runs the test suite.
 #	install   -- Installs the built binaries and libraries to $(INSTALLDIR)
 #		     in an appropriate subdirectory.
@@ -86,7 +86,7 @@ the build instructions.
 #		memdbg   = Enables the debugging memory allocator.
 #		compdbg  = Enables byte compilation logging.
 #
-#	MACHINE=(IX86|IA64|AMD64|ALPHA)
+#	MACHINE=(ARM|AMD64|IA64|X86)
 #		Set the machine type used for the compiler, linker, and
 #		resource compiler.  This hook is needed to tell the tools
 #		when alternate platforms are requested.  IX86 is the default
@@ -143,8 +143,8 @@ Please `cd` to its location first.
 # information is used to generate the name of the package library and
 # it's install location.
 #
-# For example, the sample extension is  going to build sample04.dll and
-# would install it into $(INSTALLDIR)\lib\sample04
+# For example, the sample extension is  going to build sample05.dll and
+# would install it into $(INSTALLDIR)\lib\sample05
 #
 # You need to specify the object files that need to be linked into your
 # binary here.
@@ -184,8 +184,8 @@ PRJHEADERS =
 # Target names and paths ( shouldn't need changing )
 #-------------------------------------------------------------------------
 
-BINROOT		= .
-ROOT            = ..
+BINROOT		= $(MAKEDIR)
+ROOT            = $(MAKEDIR)\..
 
 PRJIMPLIB	= $(OUT_DIR)\$(PROJECT)$(VERSION)$(SUFX).lib
 PRJLIBNAME	= $(PROJECT)$(VERSION)$(SUFX).$(EXT)
@@ -221,16 +221,23 @@ cdebug	= $(OPTIMIZATIONS)
 !else
 cdebug	=
 !endif
-!else if "$(MACHINE)" == "IA64" #|| "$(MACHINE)" == "AMD64"
+!else if "$(MACHINE)" == "IA64"
 ### Warnings are too many, can't support warnings into errors.
 cdebug	= -Zi -Od $(DEBUGFLAGS)
 !else
 cdebug	= -Zi -W3 $(DEBUGFLAGS)
 !endif
 
+### Common compiler options that are architecture specific
+!if "$(MACHINE)" == "ARM"
+carch = -D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE
+!else
+carch =
+!endif
+
 ### Declarations common to all compiler options
 cwarn = $(WARNINGS) -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE
-cflags = -nologo -c $(COMPILERFLAGS) $(cwarn) -Fp$(TMP_DIR)^\
+cflags = -nologo -c $(COMPILERFLAGS) $(carch) $(cwarn) -Fp$(TMP_DIR)^\
 
 !if $(MSVCRT)
 !if $(DEBUG) && !$(UNCHECKED)
@@ -246,30 +253,29 @@ crt = -MT
 !endif
 !endif
 
-cflags = $(cflags) -DMODULE_SCOPE=extern
+cflags = $(cflags) -DMODULE_SCOPE=extern -DUSE_TCL_STUBS
 cflags = $(cflags)
-
-!if !$(STATIC_BUILD)
-cflags = $(cflags) -DUSE_TCL_STUBS
 !if defined(TKSTUBLIB)
 cflags = $(cflags) -DUSE_TK_STUBS
-!endif
 !endif
 
 INCLUDES	= $(TCL_INCLUDES) -I"$(WINDIR)" -I"$(GENERICDIR)"
 BASE_CFLAGS	= $(cflags) $(cdebug) $(crt) $(INCLUDES)
 CON_CFLAGS	= $(cflags) $(cdebug) $(crt) -DCONSOLE
 TCL_CFLAGS	= -DPACKAGE_NAME="\"$(PROJECT)\"" \
-                  -DPACKAGE_VERSION="\"$(DOTVERSION)\"" \
+		  -DPACKAGE_VERSION="\"$(DOTVERSION)\"" \
 		  -DBUILD_$(PROJECT) \
-                  $(BASE_CFLAGS) $(OPTDEFINES)
+		  $(BASE_CFLAGS) $(OPTDEFINES)
+
+### Stubs files should not be compiled with -GL
+STUB_CFLAGS     = $(cflags) $(cdebug:-GL=) #$(TK_DEFINES)
 
 #---------------------------------------------------------------------
 # Link flags
 #---------------------------------------------------------------------
 
 !if $(DEBUG)
-ldebug	= -debug -debugtype:cv
+ldebug	= -debug
 !if $(MSVCRT)
 ldebug = $(ldebug) -nodefaultlib:msvcrt
 !endif
@@ -318,9 +324,9 @@ baselibs   = $(baselibs) bufferoverflowU.lib
 # TclTest flags
 #---------------------------------------------------------------------
 
-!IF "$(TESTPAT)" != ""
+!if "$(TESTPAT)" != ""
 TESTFLAGS = $(TESTFLAGS) -file $(TESTPAT)
-!ENDIF
+!endif
 
 #---------------------------------------------------------------------
 # Project specific targets (EDIT)
@@ -340,13 +346,7 @@ test: setup $(PROJECT)
 !else
 	@set PATH=$(_TCLDIR)\win\$(BUILDDIRTOP);$(PATH)
 !endif
-!if "$(OS)" == "Windows_NT"  || "$(MSVCDIR)" == "IDE"
 	$(DEBUGGER) $(TCLSH) "$(ROOT)/tests/all.tcl" $(TESTFLAGS)
-!else
-        @echo Please wait while the tests are collected...
-        $(DEBUGGER) $(TCLSH) "$(ROOT)/tests/all.tcl" $(TESTFLAGS) > tests.log
-	type tests.log | more
-!endif
 
 shell: setup $(PROJECT)
 	@set VLERQ_LIBRARY=$(LIBDIR:\=/)
@@ -379,7 +379,7 @@ $**
 !endif
 
 $(PRJSTUBLIB): $(PRJSTUBOBJS)
-	$(lib32) -nologo -out:$@ $(PRJSTUBOBJS)
+	$(lib32) -nologo -nodefaultlib -out:$@ $(PRJSTUBOBJS)
 
 #---------------------------------------------------------------------
 # Implicit rules
@@ -402,10 +402,10 @@ $<
 
 {$(WINDIR)}.rc{$(TMP_DIR)}.res:
 	$(rc32) -fo $@ -r -i "$(GENERICDIR)" $(TCL_INCLUDES) \
-		-D__WIN32__ \
-                -DCOMMAVERSION=$(DOTVERSION:.=,),0 \
-                -DDOTVERSION=\"$(DOTVERSION)\" \
-                -DVERSION=\"$(VERSION)$(SUFX)\" \
+		-D_WIN32 -D__WIN32__ \
+		-DCOMMAVERSION=$(DOTVERSION:.=,),0 \
+		-DDOTVERSION=\"$(DOTVERSION)\" \
+		-DVERSION=\"$(VERSION)$(SUFX)\" \
 		-DDEBUG=$(DEBUG) \
 		-DPACKAGE_MAJOR=$(PACKAGE_MAJOR) \
 		-DPACKAGE_MINOR=$(PACKAGE_MINOR) \
