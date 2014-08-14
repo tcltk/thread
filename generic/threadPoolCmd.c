@@ -1557,19 +1557,6 @@ SetResult(interp, rPtr)
     Tcl_Interp *interp;
     TpoolResult *rPtr;
 {
-    if (rPtr->result) {
-        if (rPtr->result == threadEmptyResult) {
-            if (interp) {
-                Tcl_ResetResult(interp);
-            }
-        } else {
-            if (interp) {
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(rPtr->result,-1));
-            }
-            ckfree(rPtr->result);
-            rPtr->result = NULL;
-        }
-    }
     if (rPtr->retcode == TCL_ERROR) {
         if (rPtr->errorCode) {
             if (interp) {
@@ -1584,6 +1571,19 @@ SetResult(interp, rPtr)
             }
             ckfree(rPtr->errorInfo);
             rPtr->errorInfo = NULL;
+        }
+    }
+    if (rPtr->result) {
+        if (rPtr->result == threadEmptyResult) {
+            if (interp) {
+                Tcl_ResetResult(interp);
+            }
+        } else {
+            if (interp) {
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(rPtr->result,-1));
+            }
+            ckfree(rPtr->result);
+            rPtr->result = NULL;
         }
     }
 }
