@@ -9,6 +9,8 @@
 #ifndef _KEYLISTCMDS_H_
 #define _KEYLISTCMDS_H_
 
+#include "tclThreadInt.h"
+
 MODULE_SCOPE void Sv_RegisterKeylistCommands(void);
 MODULE_SCOPE void TclX_KeyedListInit(Tcl_Interp *interp);
 

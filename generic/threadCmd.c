@@ -21,6 +21,10 @@
 
 #include "tclThreadInt.h"
 
+#ifndef PACKAGE_VERSION
+#define PACKAGE_VERSION "2.7.1"
+#endif
+
 /*
  * Check if this is Tcl 8.5 or higher.  In that case, we will have the TIP
  * #143 APIs (i.e. interpreter resource limiting) available.
