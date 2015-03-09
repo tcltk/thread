@@ -21,6 +21,10 @@
 
 #include "tclThreadInt.h"
 
+#ifndef PACKAGE_VERSION
+#define PACKAGE_VERSION "2.7.1"
+#endif
+
 /*
  * Access to the list of threads and to the thread send results
  * (defined below) is guarded by this mutex.

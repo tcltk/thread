@@ -8258,9 +8258,7 @@ fi
     STLIB_LD='${AR} cr'
     LD_LIBRARY_PATH_VAR="LD_LIBRARY_PATH"
     if test "x$SHLIB_VERSION" = x; then
-  SHLIB_VERSION=""
-else
-  SHLIB_VERSION=".$SHLIB_VERSION"
+  SHLIB_VERSION="1.0"
 fi
 
     case $system in
@@ -9309,7 +9307,7 @@ fi
 fi
 
 		LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
-		SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.so${SHLIB_VERSION}'
+		SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.so.${SHLIB_VERSION}'
 		LDFLAGS="-Wl,-export-dynamic"
 		;;
 	    esac
@@ -11389,6 +11387,23 @@ echo "${ECHO_T}enabled $tcl_ok debugging" >&6
 
 cat >>confdefs.h <<\_ACEOF
 #define USE_TCL_STUBS 1
+_ACEOF
+
+
+#--------------------------------------------------------------------
+# Enable compile-time support for TIP #143 and TIP #285.  When using
+# a pre-Tcl 8.5 or 8.6 core, respectively, the actual functionality
+# will not be available at runtime.
+#--------------------------------------------------------------------
+
+
+cat >>confdefs.h <<\_ACEOF
+#define TCL_TIP143 1
+_ACEOF
+
+
+cat >>confdefs.h <<\_ACEOF
+#define TCL_TIP285 1
 _ACEOF
 
 

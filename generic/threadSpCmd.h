@@ -12,7 +12,7 @@
 #ifndef _SP_H_
 #define _SP_H_
 
-#include <tcl.h>
+#include "tclThreadInt.h"
 
 /*
  * The following structure defines a locking bucket. A locking

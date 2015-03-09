@@ -17,6 +17,8 @@
 #ifndef _KEYLIST_H_
 #define _KEYLIST_H_
 
+#include "tclThreadInt.h"
+
 /*
  * Keyed list object interface commands
  */

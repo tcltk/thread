@@ -1479,7 +1479,7 @@ SvUnsetObjCmd(
 
 static int
 SvNamesObjCmd(
-              ClientData arg,                     /* Pointer to object container. */
+              ClientData arg,                     /* != NULL if aolSpecial */
               Tcl_Interp *interp,                 /* Current interpreter. */
               STRLEN_TYPE objc,                   /* Number of arguments. */
               Tcl_Obj *const objv[])              /* Argument objects. */
@@ -1489,7 +1489,6 @@ SvNamesObjCmd(
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
     Tcl_Obj *resObj;
-    Container *svObj = (Container*)arg;
 
     if (objc > 2) {
         Tcl_WrongNumArgs(interp, 1, objv, "?pattern?");
@@ -1507,7 +1506,7 @@ SvNamesObjCmd(
         hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
         while (hPtr) {
             char *key = Tcl_GetHashKey(&bucketPtr->arrays, hPtr);
-            if ((!svObj->aolSpecial || (*key != '.')) /* Hide .<name> arrays for AOL*/ &&
+            if ((arg==NULL || (*key != '.')) /* Hide .<name> arrays for AOL*/ &&
                 (pattern == NULL || Tcl_StringMatch(key, pattern))) {
                 Tcl_ListObjAppendElement(interp, resObj,
                         Tcl_NewStringObj(key, -1));
