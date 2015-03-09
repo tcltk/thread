@@ -183,6 +183,15 @@ TEA_ENABLE_SYMBOLS
 AC_DEFINE(USE_TCL_STUBS, 1, [Use Tcl stubs])
 
 #--------------------------------------------------------------------
+# Enable compile-time support for TIP #143 and TIP #285.  When using
+# a pre-Tcl 8.5 or 8.6 core, respectively, the actual functionality
+# will not be available at runtime.
+#--------------------------------------------------------------------
+
+AC_DEFINE(TCL_TIP143, 1, [Enable TIP #143 support])
+AC_DEFINE(TCL_TIP285, 1, [Enable TIP #285 support])
+
+#--------------------------------------------------------------------
 # This macro generates a line to use when building a library.  It
 # depends on values set by the TEA_ENABLE_SHARED, TEA_ENABLE_SYMBOLS,
 # and TEA_LOAD_TCLCONFIG macros above.
