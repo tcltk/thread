@@ -90,6 +90,14 @@ MODULE_SCOPE int Tpool_Init(Tcl_Interp *interp);
         (a)->nextPtr->prevPtr = (a)->prevPtr
 
 /*
+ * Version macros
+ */
+
+#define TCL_MINIMUM_VERSION(major,minor) \
+  ((TCL_MAJOR_VERSION > (major)) || \
+    ((TCL_MAJOR_VERSION == (major)) && (TCL_MINOR_VERSION >= (minor))))
+
+/*
  * Utility macros
  */
 
