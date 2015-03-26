@@ -31,7 +31,7 @@
  */
 
 #ifndef TCL_TIP143
-# if (TCL_MAJOR_VERSION > 8) || (TCL_MINOR_VERSION > 4)
+# if TCL_MINIMUM_VERSION(8,5)
 #  define TCL_TIP143
 # endif
 #endif
@@ -42,9 +42,8 @@
  * stubs table.
  */
 
-#define haveInterpLimit (threadTclVersion>84)
-#if defined(TCL_TIP143) && (TCL_MAJOR_VERSION == 8) && \
-    (TCL_MINOR_VERSION < 5)
+#define haveInterpLimit (threadTclVersion>=85)
+#if defined(TCL_TIP143) && !TCL_MINIMUM_VERSION(8,5)
 # if defined(USE_TCL_STUBS)
 #  define Tcl_LimitExceeded ((int (*)(Tcl_Interp *)) \
      ((&(tclStubsPtr->tcl_PkgProvideEx))[524]))
@@ -58,9 +57,9 @@
  * #285 APIs (i.e. asynchronous script cancellation) available.
  */
 
-#define haveInterpCancel (threadTclVersion>85)
+#define haveInterpCancel (threadTclVersion>=86)
 #ifndef TCL_TIP285
-# if (TCL_MAJOR_VERSION > 8) || (TCL_MINOR_VERSION > 5)
+# if TCL_MINIMUM_VERSION(8,6)
 #  define TCL_TIP285
 # endif
 #endif
@@ -71,8 +70,7 @@
  * stubs table.
  */
 
-#if defined(TCL_TIP285) && (TCL_MAJOR_VERSION == 8) && \
-    (TCL_MINOR_VERSION < 6)
+#if defined(TCL_TIP285) && !TCL_MINIMUM_VERSION(8,6)
 # if defined(USE_TCL_STUBS)
 #  define TCL_CANCEL_UNWIND	0x100000
 #  define Tcl_CancelEval ((int (*)(Tcl_Interp *, Tcl_Obj *, ClientData, int)) \
