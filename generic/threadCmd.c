@@ -2835,18 +2835,6 @@ ThreadWait(Tcl_Interp *interp)
     while (canrun) {
 
         /*
-         * About to service another event.
-         * Wake-up eventual sleepers.
-
-        if (tsdPtr->maxEventsCount) {
-            Tcl_MutexLock(&threadMutex);
-            tsdPtr->eventsPending--;
-            Tcl_ConditionNotify(&tsdPtr->doOneEvent);
-            Tcl_MutexUnlock(&threadMutex);
-        }
-         */
-
-        /*
          * Attempt to process one event, blocking forever until an
          * event is actually received.  The event processed may cause
          * a script in progress to be canceled or exceed its limit;
@@ -3216,7 +3204,9 @@ ThreadEventProc(evPtr, mask)
         if (tsdPtr->maxEventsCount) {
             Tcl_MutexLock(&threadMutex);
             tsdPtr->eventsPending--;
-            Tcl_ConditionNotify(&tsdPtr->doOneEvent);
+	    if (tsdPtr->eventsPending <= tsdPtr->maxEventsCount) {
+		Tcl_ConditionNotify(&tsdPtr->doOneEvent);
+	    }
             Tcl_MutexUnlock(&threadMutex);
         }
 
@@ -3413,6 +3403,13 @@ ThreadSetOption(interp, thrId, option, value)
             Tcl_MutexUnlock(&threadMutex);
             return TCL_ERROR;
         }
+	if (tsdPtr->maxEventsCount == 0) {
+	    tsdPtr->eventsPending = 0;
+	}
+        if (tsdPtr->maxEventsCount == 0 ||
+               tsdPtr->eventsPending <= tsdPtr->maxEventsCount) {
+	    Tcl_ConditionNotify(&tsdPtr->doOneEvent);
+	}
     } else if (len > 2 && option[1] == 'u'
                && !strncmp(option,"-unwindonerror", len)) {
         int flag = 0;
