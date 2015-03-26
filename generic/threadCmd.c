@@ -2837,7 +2837,6 @@ ThreadWait(Tcl_Interp *interp)
         /*
          * About to service another event.
          * Wake-up eventual sleepers.
-         */
 
         if (tsdPtr->maxEventsCount) {
             Tcl_MutexLock(&threadMutex);
@@ -2845,6 +2844,7 @@ ThreadWait(Tcl_Interp *interp)
             Tcl_ConditionNotify(&tsdPtr->doOneEvent);
             Tcl_MutexUnlock(&threadMutex);
         }
+         */
 
         /*
          * Attempt to process one event, blocking forever until an
@@ -3212,6 +3212,13 @@ ThreadEventProc(evPtr, mask)
         }
         Tcl_MutexUnlock(&threadMutex);
     }
+
+        if (tsdPtr->maxEventsCount) {
+            Tcl_MutexLock(&threadMutex);
+            tsdPtr->eventsPending--;
+            Tcl_ConditionNotify(&tsdPtr->doOneEvent);
+            Tcl_MutexUnlock(&threadMutex);
+        }
 
     return 1;
 }
