@@ -166,7 +166,7 @@ typedef struct {
  */
 
 #ifndef TCL_TIP285
-# if (TCL_MAJOR_VERSION < 8) || ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 6))
+# if !TCL_MINIMUM_VERSION(8,6)
 #   define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
 # endif
 #endif
