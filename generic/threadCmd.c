@@ -267,6 +267,7 @@ static char *errorProcString;      /* Tcl script to run when reporting error */
 
 #define THREAD_SEND_WAIT 1<<1
 #define THREAD_SEND_HEAD 1<<2
+#define THREAD_SEND_CLBK 1<<3
 
 #ifdef BUILD_thread
 # undef  TCL_STORAGE_CLASS
@@ -2747,12 +2748,14 @@ ThreadSend(interp, thrId, send, clbk, flags)
     if ((flags & THREAD_SEND_WAIT) == 0) {
         /*
          * Might potentially spend some time here, until the
-         * worker thread clean's up it's queue a little bit.
+         * worker thread cleans up its queue a little bit.
          */
-        while (tsdPtr->maxEventsCount &&
-               tsdPtr->eventsPending > tsdPtr->maxEventsCount) {
-            Tcl_ConditionWait(&tsdPtr->doOneEvent, &threadMutex, NULL);
-        }
+	if ((flags & THREAD_SEND_CLBK) == 0) {
+            while (tsdPtr->maxEventsCount &&
+                   tsdPtr->eventsPending > tsdPtr->maxEventsCount) {
+                Tcl_ConditionWait(&tsdPtr->doOneEvent, &threadMutex, NULL);
+            }
+	}
         Tcl_MutexUnlock(&threadMutex);
         return TCL_OK;
     }
@@ -3096,7 +3099,7 @@ ThreadEventProc(evPtr, mask)
 
         if (clbkPtr && clbkPtr->threadId == thrId) {
             Tcl_Release((ClientData)interp);
-            /* Watch: this thread evaluates it's own callback. */
+            /* Watch: this thread evaluates its own callback. */
             interp = clbkPtr->interp;
             Tcl_Preserve((ClientData)interp);
         }
@@ -3159,7 +3162,7 @@ ThreadEventProc(evPtr, mask)
         }
 
         ThreadSetResult(interp, code, &clbkPtr->result);
-        ThreadSend(interp, clbkPtr->threadId, tmpPtr, NULL, 0);
+        ThreadSend(interp, clbkPtr->threadId, tmpPtr, NULL, THREAD_SEND_CLBK);
 
     } else if (code != TCL_OK) {
         /*
