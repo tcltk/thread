@@ -21,8 +21,13 @@
 
 #include "tclThreadInt.h"
 
+/*
+ * Provide package version in build contexts which do not provide
+ * -DPACKAGE_VERSION, like building a shell with the Thread object
+ * files built as part of that shell. Example: basekits.
+ */
 #ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION "2.7.1"
+#define PACKAGE_VERSION "2.7.2"
 #endif
 
 /*
