@@ -29,12 +29,32 @@
 #include "threadSvCmd.h"
 #include "tclXkeylist.h"
 
+#ifdef STATIC_BUILD
+#if TCL_MAJOR_VERSION >= 9
+/*
+ * Static build, Tcl >= 9, compile-time decision to disable T_ROT calls.
+ */
+#undef Tcl_RegisterObjType
+#define Tcl_RegisterObjType(typePtr)    (typePtr)->setFromAnyProc = NULL
+#else
+/*
+ * Static build, Tcl <= 9   --> T_ROT is directly linked, no stubs
+ * Nothing needs to be done
+ */
+#endif
+#else /* !STATIC_BUILD */
+/*
+ * Dynamic build. Assume building with stubs (xx) and make a run-time
+ * decision regarding T_ROT.
+ * (Ad xx): Should be checked. Without stubs we have to go like static.
+ */
 #undef Tcl_RegisterObjType
 #define Tcl_RegisterObjType(typePtr) if (threadTclVersion<90) { \
     ((void (*)(const Tcl_ObjType *))((&(tclStubsPtr->tcl_PkgProvideEx))[211]))(typePtr); \
 } else { \
     (typePtr)->setFromAnyProc = NULL; \
 }
+#endif /* eof STATIC_BUILD */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
