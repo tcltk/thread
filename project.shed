@@ -1,0 +1,34 @@
+
+  generated: {2014-11-25 16:13:58 UTC}
+  release: trunk
+  name: thread
+  description: {The Tcl Thread package}
+  uuid: 7bce708b4197acccd1db4644fdbe5ee249f3b5dd
+  class: tea
+  distribution/ {
+    official {
+      name: official
+      class: fossil
+      project-name: {Tcl package Thread source code}
+      project-code: 7bce708b4197acccd1db4644fdbe5ee249f3b5dd
+      release: trunk
+      url: http:///fossil/thread
+      project-short-name: thread
+    }
+  }
+  release/ {
+    trunk {
+      name: trunk
+      distribution: official
+      checkout: trunk
+      timestamp: {2014-11-25 16:13:58 UTC}
+    }
+  }
+  package/ {
+    {thread 2.7.1} {
+      name: thread
+      version: 2.7.1
+      class: binary
+      build: tea
+    }
+  }
