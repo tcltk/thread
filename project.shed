@@ -1,5 +1,5 @@
 
-  generated: {2014-11-25 16:13:58 UTC}
+  generated: {2015-09-26 02:44:59 UTC}
   release: trunk
   name: thread
   description: {The Tcl Thread package}
@@ -12,7 +12,7 @@
       project-name: {Tcl package Thread source code}
       project-code: 7bce708b4197acccd1db4644fdbe5ee249f3b5dd
       release: trunk
-      url: http:///fossil/thread
+      url: http://fossil.etoyoc.com/fossil/thread
       project-short-name: thread
     }
   }
@@ -21,13 +21,39 @@
       name: trunk
       distribution: official
       checkout: trunk
-      timestamp: {2014-11-25 16:13:58 UTC}
+      timestamp: {2015-09-26 02:44:59 UTC}
+    }
+  }
+  module/ {
+    lib {
+      name: lib
+      path: lib
+      class: tcl
+      sources: ttrace.tcl
+    }
+    generic {
+      name: generic
+      path: generic
+      class: binary
+      sources: {psGdbm.c tclXkeylist.c threadCmd.c threadNs.c threadPoolCmd.c threadSpCmd.c threadSvCmd.c threadSvKeylistCmd.c threadSvListCmd.c}
+    }
+    win {
+      name: win
+      path: win
+      class: binary
+      sources: {nmakehlp.c threadWin.c}
+    }
+    unix {
+      name: unix
+      path: unix
+      class: binary
+      sources: threadUnix.c
     }
   }
   package/ {
-    {thread 2.7.1} {
+    {thread 2.7.2} {
       name: thread
-      version: 2.7.1
+      version: 2.7.2
       class: binary
       build: tea
     }
