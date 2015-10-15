@@ -1,60 +1,151 @@
 
-  generated: {2015-09-26 02:44:59 UTC}
-  release: trunk
-  name: thread
-  description: {The Tcl Thread package}
-  uuid: 7bce708b4197acccd1db4644fdbe5ee249f3b5dd
-  class: tea
-  distribution/ {
-    official {
-      name: official
-      class: fossil
-      project-name: {Tcl package Thread source code}
-      project-code: 7bce708b4197acccd1db4644fdbe5ee249f3b5dd
-      release: trunk
-      url: http://fossil.etoyoc.com/fossil/thread
-      project-short-name: thread
-    }
+7bce708b4197acccd1db4644fdbe5ee249f3b5dd {
+  entity {
+    name: thread
+    shed_class: project
+    version: {}
+  }
+  meta {
+    class: generic
+    description: {The Tcl Thread package}
+    distribution: fossil
+    generated: {2015-10-06 10:32:03 UTC}
+    release: trunk
   }
   release/ {
-    trunk {
-      name: trunk
-      distribution: official
-      checkout: trunk
-      timestamp: {2015-09-26 02:44:59 UTC}
-    }
+    ccc83b2283498a2ec86d00bf8593e7de0cf8a456
   }
-  module/ {
-    lib {
-      name: lib
-      path: lib
-      class: tcl
-      sources: ttrace.tcl
-    }
-    generic {
-      name: generic
-      path: generic
-      class: binary
-      sources: {psGdbm.c tclXkeylist.c threadCmd.c threadNs.c threadPoolCmd.c threadSpCmd.c threadSvCmd.c threadSvKeylistCmd.c threadSvListCmd.c}
-    }
-    win {
-      name: win
-      path: win
-      class: binary
-      sources: {nmakehlp.c threadWin.c}
-    }
-    unix {
-      name: unix
-      path: unix
-      class: binary
-      sources: threadUnix.c
-    }
+  distribution/ {
+    e47b6a79a963c99b7de15a4817b3010fbb3dd693
   }
   package/ {
-    {thread 2.7.2} {
-      name: thread
-      version: 2.7.2
-      class: binary
-      build: tea
-    }
+    41c2f28a24688f0ad5c1431fbd22f1621b6b0d6e
   }
+  module/ {
+    6dbf64aeadfe9d6fb88c0d84562a98a4b33d374b
+    893421a5151dd42645a1437b6e41ed1943dc4ed6
+    cf5303e1f3f79bc837e9b1a18e5e2e3f4892c58c
+    037601b1d656568d18dd3aaaaa2c1bd760b8c16d
+    41b815e9db25ad951c6b7800c02cd3706468e263
+  }
+  file/ {
+    032fb91c412db8ae1a282ae54d353fe33e45ff6a
+  }
+}
+ccc83b2283498a2ec86d00bf8593e7de0cf8a456 {
+  entity {
+    name: trunk
+    shed_class: release
+    version: {}
+  }
+  meta {
+    checkout: trunk
+    class: generic
+    timestamp: {2015-10-06 10:32:03 UTC}
+  }
+}
+e47b6a79a963c99b7de15a4817b3010fbb3dd693 {
+  entity {
+    name: fossil
+    shed_class: distribution
+    version: {}
+  }
+  meta {
+    class: generic
+    format: fossil
+    project: 7bce708b4197acccd1db4644fdbe5ee249f3b5dd
+    project-name: {Tcl package Thread source code}
+    project-short-name: thread
+    release: trunk
+    url: http://fossil.etoyoc.com/fossil/thread
+  }
+}
+41c2f28a24688f0ad5c1431fbd22f1621b6b0d6e {
+  entity {
+    name: thread
+    shed_class: package
+    version: 2.7.2
+  }
+  meta {
+    build: tea
+    class: binary
+  }
+}
+6dbf64aeadfe9d6fb88c0d84562a98a4b33d374b {
+  entity {
+    name: lib
+    shed_class: module
+    version: {}
+  }
+  meta {
+    class: source
+    package-provide: {}
+    package-require: {}
+    path: lib
+  }
+}
+893421a5151dd42645a1437b6e41ed1943dc4ed6 {
+  entity {
+    name: tcl
+    shed_class: module
+    version: {}
+  }
+  meta {
+    class: source
+    package-provide: {}
+    package-require: {{Tcl 8.4} {Thread 2.5}}
+    path: tcl
+  }
+}
+cf5303e1f3f79bc837e9b1a18e5e2e3f4892c58c {
+  entity {
+    name: generic
+    shed_class: module
+    version: {}
+  }
+  meta {
+    class: source
+    package-provide: {}
+    package-require: {}
+    path: generic
+  }
+}
+037601b1d656568d18dd3aaaaa2c1bd760b8c16d {
+  entity {
+    name: win
+    shed_class: module
+    version: {}
+  }
+  meta {
+    class: source
+    package-provide: {}
+    package-require: {}
+    path: win
+  }
+}
+41b815e9db25ad951c6b7800c02cd3706468e263 {
+  entity {
+    name: unix
+    shed_class: module
+    version: {}
+  }
+  meta {
+    class: source
+    package-provide: {}
+    package-require: {}
+    path: unix
+  }
+}
+032fb91c412db8ae1a282ae54d353fe33e45ff6a {
+  entity {
+    name: ttrace.tcl
+    shed_class: file
+    version: {}
+  }
+  meta {
+    class: source
+    file: lib/ttrace.tcl
+    format: tcl
+    package-require: {}
+  }
+}
