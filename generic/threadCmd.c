@@ -20,6 +20,7 @@
  */
 
 #include "tclThreadInt.h"
+#include "threadUuid.h"
 
 /*
  * Provide package version in build contexts which do not provide
@@ -535,7 +536,8 @@ Thread_Init(interp)
         return status;
     }
 
-    return Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
+    return Tcl_PkgProvideEx(interp, "Thread", (threadTclVersion<87) ? PACKAGE_VERSION:
+	    PACKAGE_VERSION "+core.tcl.tk." STRINGIFY(THREAD_VERSION_UUID), NULL);
 }
 
 /*

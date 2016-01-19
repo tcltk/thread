@@ -145,7 +145,7 @@ TCLSH		= $(PKG_ENV) $(TCLSH_ENV) $(TCLSH_PROG)
 
 SHARED_BUILD	= @SHARED_BUILD@
 
-INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@
+INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@ -I.
 #INCLUDES	= @PKG_INCLUDES@ @TCL_INCLUDES@ @TK_INCLUDES@ @TK_XINCLUDES@
 
 PKG_CFLAGS	= @PKG_CFLAGS@
@@ -296,6 +296,12 @@ VPATH = $(srcdir):$(srcdir)/generic:$(srcdir)/unix:$(srcdir)/win:$(srcdir)/macos
 
 .c.@OBJEXT@:
 	$(COMPILE) -c `@CYGPATH@ $<` -o $@
+
+threadCmd.@OBJEXT@:	threadUuid.h
+
+threadUuid.h:	$(srcdir)/manifest.uuid
+	echo "#define THREAD_VERSION_UUID \\" >$@
+	cat $(srcdir)/manifest.uuid >>$@
 
 #========================================================================
 # Distribution creation
