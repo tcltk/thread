@@ -34,6 +34,10 @@ proc ThreadReap {} {
     llength [thread::names]
 }
 
+test thread-1.0 {package require Thread} {
+    lindex [split [package require Thread] +] 0
+} {2.7.3}
+
 test thread-2.0 {no global thread command} {
     info commands thread
 } {}

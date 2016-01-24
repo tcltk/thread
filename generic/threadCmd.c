@@ -28,7 +28,7 @@
  * files built as part of that shell. Example: basekits.
  */
 #ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION "2.7.2"
+#define PACKAGE_VERSION "2.7.3"
 #endif
 
 /*
@@ -150,6 +150,7 @@ static struct ThreadSpecificData *threadList = NULL;
 static char *threadEmptyResult = (char *)"";
 
 int threadTclVersion = 0;
+int threadSemVer = 0;
 
 /*
  * An instance of the following structure contains all information that is
@@ -435,7 +436,8 @@ static int
 ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
-    if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
+	const char *ver = Tcl_InitStubs(interp, "8.4", 0);
+    if (ver == NULL) {
 	if ((sizeof(size_t) != sizeof(int)) ||
 		!Tcl_InitStubs(interp, "8.4-", 0)) {
 	    return TCL_ERROR;
@@ -463,6 +465,7 @@ ThreadInit(interp)
 	}
 	Tcl_GetVersion(&major, &minor, NULL, NULL);
 	threadTclVersion = 10 * major + minor;
+	threadSemVer = strchr(ver, '+') != NULL;
 	Tcl_MutexUnlock(&threadMutex);
     }
 
@@ -526,18 +529,32 @@ ThreadInit(interp)
  *----------------------------------------------------------------------
  */
 
+static const char semver[] = PACKAGE_VERSION "+core."
+#ifndef NDEBUG
+	"debug."
+#endif
+#ifdef STATIC_BUILD
+	"static."
+#endif
+#ifdef TCL_CFG_PROFILED
+	"profiled."
+#endif
+#ifdef TCL_NO_DEPRECATED
+	"no-deprecated."
+#endif
+	STRINGIFY(THREAD_VERSION_UUID);
+
 DLLEXPORT int
 Thread_Init(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
     int status = ThreadInit(interp);
 
-    if (status != TCL_OK) {
-        return status;
+    if (status == TCL_OK) {
+	status = Tcl_PkgProvideEx(interp, "Thread",
+		threadSemVer ? semver : PACKAGE_VERSION, NULL);
     }
-
-    return Tcl_PkgProvideEx(interp, "Thread", (threadTclVersion<87) ? PACKAGE_VERSION:
-	    PACKAGE_VERSION "+core.tcl.tk." STRINGIFY(THREAD_VERSION_UUID), NULL);
+    return status;
 }
 
 /*
