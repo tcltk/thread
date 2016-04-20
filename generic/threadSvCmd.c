@@ -1318,7 +1318,9 @@ SvArrayObjCmd(
          */
 
         PsStore *psPtr;
+        Tcl_HashEntry *hPtr;
         size_t len;
+        int new;
         char *psurl, *key = NULL, *val = NULL;
 
         if (objc < 4) {
@@ -1345,7 +1347,7 @@ SvArrayObjCmd(
         }
         if (arrayPtr) {
             Tcl_HashSearch search;
-            Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
+            hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
             arrayPtr->psPtr = psPtr;
             arrayPtr->bindAddr = strcpy(ckalloc(len+1), psurl);
             while (hPtr) {
@@ -1363,8 +1365,10 @@ SvArrayObjCmd(
         }
         if (!psPtr->psFirst(psPtr->psHandle, &key, &val, &len)) {
             do {
-                psPtr->psFree(val); /* What a waste! */
-                AcquireContainer(arrayPtr, key, FLAGS_CREATEVAR);
+                Tcl_Obj * tclObj = Tcl_NewStringObj(val, len);
+                hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &new);
+                Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, tclObj));
+                psPtr->psFree(val);
             } while (!psPtr->psNext(psPtr->psHandle, &key, &val, &len));
         }
 
