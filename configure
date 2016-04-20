@@ -6916,7 +6916,7 @@ if test "${with_gdbm+set}" = set; then
 	with_gdbm=${withval}
 fi;
 
-    if test x"${with_gdbm}" != x; then
+    if test x"${with_gdbm}" != x -a "${with_gdbm}" != no; then
 
     echo "$as_me:$LINENO: checking for GNU gdbm library" >&5
 echo $ECHO_N "checking for GNU gdbm library... $ECHO_C" >&6
