@@ -500,11 +500,11 @@ As its counterpart, it returns no value to the caller\&.
 .SH "ARRAY COMMANDS"
 This command supports most of the options of the standard Tcl
 \fBarray\fR command\&. In addition to those, it allows binding
-a shared variable to some persisten storage databases\&. Currently
-the only persistent option supported is the famous GNU Gdbm
-database\&. This option has to be selected during the package
-compilation time\&. The implementation provides hooks for
-defining other persistency layers, if needed\&.
+a shared variable to some persisten storage databases\&. Currently the persistent
+options supported are the famous GNU Gdbm and LMDB\&. These options have to be
+selected during the package compilation time\&.
+The implementation provides hooks for defining other persistency layers, if
+needed\&.
 .TP
 \fBtsv::array set\fR \fIvarname\fR \fIlist\fR
 Does the same as standard Tcl \fBarray set\fR\&.
@@ -524,15 +524,12 @@ the \fIvarname\fR and sets new values from the list atomically\&.
 .TP
 \fBtsv::array bind\fR \fIvarname\fR \fIhandle\fR
 Binds the \fIvarname\fR to the persistent storage \fIhandle\fR\&.
-The format of the \fIhandle\fR is <handler>:<address>\&. For the built-in
-GNU Gdbm persistence layer, the format of the handle is "gdbm:<path>"
-where <path> is the path to the Gdbm database file\&.
+The format of the \fIhandle\fR is <handler>:<address>, where <handler> is
+"gdbm" for GNU Gdbm and "lmdb" for LMDB and <address> is the path to the
+database file\&.
 .TP
 \fBtsv::array unbind\fR \fIvarname\fR
-Unbinds the shared array \fIvarname\fR from its bound persistent storage\&. Note
-that destroying a bound array causes its value to be deleted from persistent
-storage as well, so calling \fBtsv::array unbind\fR is mandatory if data
-needs to be persisted\&.
+Unbinds the shared \fIarray\fR from its bound persistent storage\&.
 .TP
 \fBtsv::array isbound\fR \fIvarname\fR
 Returns true (1) if the shared \fIvarname\fR is bound to some

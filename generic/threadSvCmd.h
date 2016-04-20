@@ -89,7 +89,7 @@ typedef int (ps_first_proc) (ClientData, char**, char**, size_t*);
 typedef int (ps_next_proc)  (ClientData, char**, char**, size_t*);
 typedef int (ps_delete_proc)(ClientData, const char*);
 typedef int (ps_close_proc) (ClientData);
-typedef void(ps_free_proc)  (void*);
+typedef void(ps_free_proc)  (ClientData, void*);
 
 typedef const char* (ps_geterr_proc)(ClientData);
 
