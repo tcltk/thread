@@ -855,6 +855,7 @@ Optional Packages:
   --with-tcl              directory containing tcl configuration
                           (tclConfig.sh)
   --with-gdbm             link with optional GDBM support
+  --with-lmdb             link with optional LMDB support
   --with-naviserver       directory with NaviServer/AOLserver distribution
   --with-tclinclude       directory containing the public Tcl header files
   --with-celib=DIR        use Windows/CE support library from DIR
@@ -6980,6 +6981,80 @@ _ACEOF
 
 
 #--------------------------------------------------------------------
+# Check if building with optional lmdb package. This will declare
+# LMDB_CFLAGS and LMDB_LIBS variables.
+#--------------------------------------------------------------------
+
+
+
+# Check whether --with-lmdb or --without-lmdb was given.
+if test "${with_lmdb+set}" = set; then
+  withval="$with_lmdb"
+  with_lmdb=${withval}
+fi;
+
+    if test x"${with_gdbm}" != "x" -a "${with_gdbm}" != no; then
+        echo "$as_me:$LINENO: checking for LMDB library" >&5
+echo $ECHO_N "checking for LMDB library... $ECHO_C" >&6
+        if test "${ac_cv_c_lmdb+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+
+        if test x"${with_lmdb}" != x -a "${with_lmdb}" != "yes"; then
+            if test -f "${with_lmdb}/lmdb.h" -a x"`ls ${with_lmdb}/liblmdb* 2>/dev/null`" != x; then
+                ac_cv_c_lmdb=`(cd ${with_lmdb}; pwd)`
+                lincdir=$ac_cv_c_lmdb
+                llibdir=$ac_cv_c_lmdb
+                echo "$as_me:$LINENO: result: found in $llibdir" >&5
+echo "${ECHO_T}found in $llibdir" >&6
+            else
+                { { echo "$as_me:$LINENO: error: ${with_lmdb} directory doesn't contain lmdb library" >&5
+echo "$as_me: error: ${with_lmdb} directory doesn't contain lmdb library" >&2;}
+   { (exit 1); exit 1; }; }
+            fi
+        fi
+
+fi
+
+        if test x"${lincdir}" = x -o x"${llibdir}" = x; then
+            for i in \
+                    `ls -d ${exec_prefix}/lib 2>/dev/null`\
+                    `ls -d ${prefix}/lib 2>/dev/null`\
+                    `ls -d /usr/local/lib 2>/dev/null`\
+                    `ls -d /usr/lib 2>/dev/null` ; do
+                if test x"`ls $i/liblmdb* 2>/dev/null`" != x ; then
+                    llibdir=`(cd $i; pwd)`
+                    break
+                fi
+            done
+            for i in \
+                    `ls -d ${prefix}/include 2>/dev/null`\
+                    `ls -d /usr/local/include 2>/dev/null`\
+                    `ls -d /usr/include 2>/dev/null` ; do
+                if test -f "$i/lmdb.h" ; then
+                    lincdir=`(cd $i; pwd)`
+                    break
+                fi
+            done
+            if test x"$llibdir" = x -o x"$lincdir" = x ; then
+                { { echo "$as_me:$LINENO: error: none found" >&5
+echo "$as_me: error: none found" >&2;}
+   { (exit 1); exit 1; }; }
+            else
+                echo "$as_me:$LINENO: result: found in $llibdir, includes in $lincdir" >&5
+echo "${ECHO_T}found in $llibdir, includes in $lincdir" >&6
+                cat >>confdefs.h <<\_ACEOF
+#define HAVE_LMDB 1
+_ACEOF
+
+                LMDB_CFLAGS="-I\"$lincdir\""
+                LMDB_LIBS="-L\"$llibdir\" -llmdb"
+            fi
+        fi
+    fi
+
+
+#--------------------------------------------------------------------
 # Locate the NaviServer/AOLserver dir for compilation as NaviServer/AOLserver module.
 # This will declare NS_INCLUDES, NS_LIBS and define NS_AOLSERVER.
 #--------------------------------------------------------------------
@@ -7049,6 +7124,7 @@ _ACEOF
                  generic/threadSpCmd.c        \
                  generic/threadPoolCmd.c      \
                  generic/psGdbm.c             \
+                 generic/psLmdb.c             \
                  generic/threadSvListCmd.c    \
                  generic/threadSvKeylistCmd.c \
                  generic/tclXkeylist.c        \
@@ -7110,7 +7186,7 @@ echo "$as_me: error: could not find header file '${srcdir}/$i'" >&2;}
 
 
 
-    vars="${GDBM_LIBS} ${NS_LIBS}"
+    vars="${GDBM_LIBS} ${LMDB_LIBS} ${NS_LIBS}"
     for i in $vars; do
 	if test "${TEA_PLATFORM}" = "windows" -a "$GCC" = "yes" ; then
 	    # Convert foo.lib to -lfoo for GCC.  No-op if not *.lib
@@ -7121,7 +7197,7 @@ echo "$as_me: error: could not find header file '${srcdir}/$i'" >&2;}
 
 
 
-    PKG_CFLAGS="$PKG_CFLAGS ${GDBM_CFLAGS}"
+    PKG_CFLAGS="$PKG_CFLAGS ${GDBM_CFLAGS} ${LMDB_CFLAGS}"
 
 
 

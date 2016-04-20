@@ -347,8 +347,10 @@ ps_gdbm_delete(
  */
 static void
 ps_gdbm_free(
-    void   *data)
+    ClientData handle,
+    void        *data)
 {
+    (void)handle;
     free(data);
 }
 
