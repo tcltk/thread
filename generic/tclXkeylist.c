@@ -113,11 +113,11 @@ TclX_IsNullObj (objPtr)
     Tcl_Obj *objPtr;
 {
     if (objPtr->typePtr == NULL) {
-	return (objPtr->length == 0);
+        return (objPtr->length == 0);
     } else if (objPtr->typePtr == listType) {
-	int length;
-	Tcl_ListObjLength(NULL, objPtr, &length);
-	return (length == 0);
+        int length;
+        Tcl_ListObjLength(NULL, objPtr, &length);
+        return (length == 0);
     }
     (void)Tcl_GetString(objPtr);
     return (objPtr->length == 0);
@@ -893,9 +893,9 @@ TclX_KeyedListGet (interp, keylPtr, key, valuePtrPtr)
     int findIdx;
 
     if (keylPtr->typePtr != &keyedListType) {
-	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
-	    return TCL_ERROR;
-	}
+        if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
     }
     keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
     KEYL_REP_ASSERT (keylIntPtr);
@@ -952,9 +952,9 @@ TclX_KeyedListSet (interp, keylPtr, key, valuePtr)
     Tcl_Obj *newKeylPtr;
 
     if (keylPtr->typePtr != &keyedListType) {
-	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
-	    return TCL_ERROR;
-	}
+        if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
     }
     keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
     KEYL_REP_ASSERT (keylIntPtr);
@@ -1052,9 +1052,9 @@ TclX_KeyedListDelete (interp, keylPtr, key)
     int findIdx, status;
 
     if (keylPtr->typePtr != &keyedListType) {
-	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
-	    return TCL_ERROR;
-	}
+        if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
     }
     keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
 
@@ -1131,9 +1131,9 @@ TclX_KeyedListGetKeys (interp, keylPtr, key, listObjPtrPtr)
     int idx, findIdx;
 
     if (keylPtr->typePtr != &keyedListType) {
-	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
-	    return TCL_ERROR;
-	}
+        if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
     }
     keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
 
