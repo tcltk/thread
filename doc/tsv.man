@@ -189,11 +189,11 @@ As its counterpart, it returns no value to the caller.
 
 This command supports most of the options of the standard Tcl
 [cmd array] command. In addition to those, it allows binding
-a shared variable to some persisten storage databases. Currently 
-the only persistent option supported is the famous GNU Gdbm 
-database. This option has to be selected during the package 
-compilation time. The implementation provides hooks for 
-defining other persistency layers, if needed.
+a shared variable to some persisten storage databases. Currently the persistent
+options supported are the famous GNU Gdbm and LMDB. These options have to be
+selected during the package compilation time.
+The implementation provides hooks for defining other persistency layers, if
+needed.
 
 [list_begin definitions]
 
@@ -220,15 +220,12 @@ the [arg varname] and sets new values from the list atomically.
 
 [call [cmd {tsv::array bind}] [arg varname] [arg handle]]
 Binds the [arg varname] to the persistent storage [arg handle].
-The format of the [arg handle] is <handler>:<address>. For the built-in
-GNU Gdbm persistence layer, the format of the handle is "gdbm:<path>"
-where <path> is the path to the Gdbm database file.
+The format of the [arg handle] is <handler>:<address>, where <handler> is
+"gdbm" for GNU Gdbm and "lmdb" for LMDB and <address> is the path to the
+database file.
 
 [call [cmd {tsv::array unbind}] [arg varname]]
-Unbinds the shared array [arg varname] from its bound persistent storage. Note
-that destroying a bound array causes its value to be deleted from persistent
-storage as well, so calling [cmd {tsv::array unbind}] is mandatory if data
-needs to be persisted.
+Unbinds the shared [arg array] from its bound persistent storage.
 
 [call [cmd {tsv::array isbound}] [arg varname]]
 Returns true (1) if the shared [arg varname] is bound to some 

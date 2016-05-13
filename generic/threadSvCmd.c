@@ -19,6 +19,7 @@
 #include "threadSvListCmd.h"    /* Shared variants of list commands */
 #include "threadSvKeylistCmd.h" /* Shared variants of list commands */
 #include "psGdbm.h"             /* The gdbm persistent store implementation */
+#include "psLmdb.h"             /* The lmdb persistent store implementation */
 
 /*
  * Number of buckets to spread shared arrays into. Each bucket is
@@ -512,7 +513,7 @@ AcquireContainer(
             size_t len = 0;
             if (psPtr->psGet(psPtr->psHandle, key, &val, &len) == 0) {
                 tclObj = Tcl_NewStringObj(val, len);
-                psPtr->psFree(val);
+                psPtr->psFree(psPtr->psHandle, val);
             }
         }
         if (!(flags & FLAGS_CREATEVAR) && tclObj == NULL) {
@@ -1368,7 +1369,7 @@ SvArrayObjCmd(
                 Tcl_Obj * tclObj = Tcl_NewStringObj(val, len);
                 hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &new);
                 Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, tclObj));
-                psPtr->psFree(val);
+                psPtr->psFree(psPtr->psHandle, val);
             } while (!psPtr->psNext(psPtr->psHandle, &key, &val, &len));
         }
 
@@ -2208,11 +2209,14 @@ Sv_Init (interp)
                 Tcl_DecrRefCount(dummy);
             }
 
-#ifdef HAVE_GDBM
             /*
              * Register persistent store handlers
              */
+#ifdef HAVE_GDBM
             Sv_RegisterGdbmStore();
+#endif
+#ifdef HAVE_LMDB
+            Sv_RegisterLmdbStore();
 #endif
         }
         Tcl_MutexUnlock(&bucketsMutex);

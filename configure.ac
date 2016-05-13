@@ -76,6 +76,13 @@ TEA_SETUP_COMPILER
 TCLTHREAD_WITH_GDBM
 
 #--------------------------------------------------------------------
+# Check if building with optional lmdb package. This will declare
+# LMDB_CFLAGS and LMDB_LIBS variables.
+#--------------------------------------------------------------------
+
+TCLTHREAD_WITH_LMDB
+
+#--------------------------------------------------------------------
 # Locate the NaviServer/AOLserver dir for compilation as NaviServer/AOLserver module.
 # This will declare NS_INCLUDES, NS_LIBS and define NS_AOLSERVER.
 #--------------------------------------------------------------------
@@ -98,6 +105,7 @@ TEA_ADD_SOURCES([generic/threadNs.c           \
                  generic/threadSpCmd.c        \
                  generic/threadPoolCmd.c      \
                  generic/psGdbm.c             \
+                 generic/psLmdb.c             \
                  generic/threadSvListCmd.c    \
                  generic/threadSvKeylistCmd.c \
                  generic/tclXkeylist.c        \
@@ -105,8 +113,8 @@ TEA_ADD_SOURCES([generic/threadNs.c           \
 
 TEA_ADD_HEADERS([generic/tclThread.h])
 TEA_ADD_INCLUDES([${NS_INCLUDES}])
-TEA_ADD_LIBS([${GDBM_LIBS} ${NS_LIBS}])
-TEA_ADD_CFLAGS([${GDBM_CFLAGS}])
+TEA_ADD_LIBS([${GDBM_LIBS} ${LMDB_LIBS} ${NS_LIBS}])
+TEA_ADD_CFLAGS([${GDBM_CFLAGS} ${LMDB_CFLAGS}])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([lib/ttrace.tcl])
 
