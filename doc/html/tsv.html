@@ -294,11 +294,11 @@ As its counterpart, it returns no value to the caller.</p></dd>
 <div id="section4" class="doctools_section"><h2><a name="section4">ARRAY COMMANDS</a></h2>
 <p>This command supports most of the options of the standard Tcl
 <b class="cmd">array</b> command. In addition to those, it allows binding
-a shared variable to some persisten storage databases. Currently 
-the only persistent option supported is the famous GNU Gdbm 
-database. This option has to be selected during the package 
-compilation time. The implementation provides hooks for 
-defining other persistency layers, if needed.</p>
+a shared variable to some persisten storage databases. Currently the persistent
+options supported are the famous GNU Gdbm and LMDB. These options have to be
+selected during the package compilation time.
+The implementation provides hooks for defining other persistency layers, if
+needed.</p>
 <dl class="doctools_definitions">
 <dt><a name="22"><b class="cmd">tsv::array set</b> <i class="arg">varname</i> <i class="arg">list</i></a></dt>
 <dd><p>Does the same as standard Tcl <b class="cmd">array set</b>.</p></dd>
@@ -313,14 +313,11 @@ defining other persistency layers, if needed.</p>
 the <i class="arg">varname</i> and sets new values from the list atomically.</p></dd>
 <dt><a name="27"><b class="cmd">tsv::array bind</b> <i class="arg">varname</i> <i class="arg">handle</i></a></dt>
 <dd><p>Binds the <i class="arg">varname</i> to the persistent storage <i class="arg">handle</i>.
-The format of the <i class="arg">handle</i> is &lt;handler&gt;:&lt;address&gt;. For the built-in
-GNU Gdbm persistence layer, the format of the handle is &quot;gdbm:&lt;path&gt;&quot;
-where &lt;path&gt; is the path to the Gdbm database file.</p></dd>
+The format of the <i class="arg">handle</i> is &lt;handler&gt;:&lt;address&gt;, where &lt;handler&gt; is
+&quot;gdbm&quot; for GNU Gdbm and &quot;lmdb&quot; for LMDB and &lt;address&gt; is the path to the
+database file.</p></dd>
 <dt><a name="28"><b class="cmd">tsv::array unbind</b> <i class="arg">varname</i></a></dt>
-<dd><p>Unbinds the shared array <i class="arg">varname</i> from its bound persistent storage. Note
-that destroying a bound array causes its value to be deleted from persistent
-storage as well, so calling <b class="cmd">tsv::array unbind</b> is mandatory if data
-needs to be persisted.</p></dd>
+<dd><p>Unbinds the shared <i class="arg">array</i> from its bound persistent storage.</p></dd>
 <dt><a name="29"><b class="cmd">tsv::array isbound</b> <i class="arg">varname</i></a></dt>
 <dd><p>Returns true (1) if the shared <i class="arg">varname</i> is bound to some 
 persistent storage or zero (0) if not.</p></dd>
