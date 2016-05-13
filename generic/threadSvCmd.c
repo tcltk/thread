@@ -2020,8 +2020,8 @@ SvLockObjCmd(
      */
 
     if (objc < 3) {
-	Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
-	return TCL_ERROR;
+        Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
+        return TCL_ERROR;
     }
 
     arrayPtr  = LockArray(interp, Tcl_GetString(objv[1]), FLAGS_CREATEARRAY);
@@ -2189,7 +2189,7 @@ Sv_Init (interp)
         Tcl_MutexLock(&bucketsMutex);
         if (buckets == NULL) {
             buckets = (Bucket *)ckalloc(sizeof(Bucket) * NUMBUCKETS);
-	    Tcl_CreateExitHandler(SvFinalize, NULL);
+            Tcl_CreateExitHandler(SvFinalize, NULL);
 
             for (i = 0; i < NUMBUCKETS; ++i) {
                 bucketPtr = &buckets[i];
