@@ -1,3 +1,36 @@
+2016-05-13  Pietro Cerutti <gahr@gahr.ch>
+
+	* aclocal.m4: Add support for LMDB persistent storage [Tkt 9378bb6795]
+	* configure
+	* configure.ac
+	* doc/html/tsv.html
+	* doc/man/tsv.n
+	* doc/tsv.man
+	* generic/psGdbm.c
+	* generic/psLmdb.c
+	* generic/psLmdb.h
+	* generic/threadSvCmd.c
+	* generic/threadSvCmd.h
+	* tests/French.txt version
+	* tests/store-load.tcl
+	* tests/tsv.test
+
+	* generic/tclThreadInt.h: Use spaces for indentation everywhere
+	* generic/tclXkeylist.c
+	* generic/threadCmd.c
+	* generic/threadNs.c
+	* generic/threadSpCmd.c
+	* generic/threadSpCmd.h
+	* generic/threadSvCmd.c
+
+2016-04-20  Pietro Cerutti <gahr@gahr.ch>
+
+	* configure, aclocal.m4: Correctly handle --without-gdbm [Tkt f8ff429a39]
+	* doc/tsv.man: Document side-effect of [tsv::array unbind] [Tkt be135da5f9]
+	* doc/*.(html|n): Regenerate documentation [Tkt 41922d3bb7]
+	* generic/threadSvCmd.c: Avoid double query to persistent storage in
+	tsv::array bind [Tkt a135697d8c]
+
 2013-05-23  Jan Nijtmans  <nijtmans@users.sf.net>
 
 	* generic/threadSvKeylistCmd.c: Change a few internal variable
