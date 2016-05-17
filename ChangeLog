@@ -1,3 +1,7 @@
+2016-05-17  Pietro Cerutti <gahr@gahr.ch>
+
+	* generic/threadCmd.c: Fix -async and result trace [Tkt 84be1b5a73]
+
 2016-05-13  Pietro Cerutti <gahr@gahr.ch>
 
 	* aclocal.m4: Add support for LMDB persistent storage [Tkt 9378bb6795]
