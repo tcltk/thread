@@ -1632,6 +1632,7 @@ ThreadClbkSetVar(interp, clientData)
     const char *var = (const char *)clbkPtr->clientData;
     Tcl_Obj *valObj;
     ThreadEventResult *resultPtr = &clbkPtr->result;
+    int rc = TCL_OK;
 
     /*
      * Get the result of the posted command.
@@ -1639,6 +1640,8 @@ ThreadClbkSetVar(interp, clientData)
      */
 
     valObj = Tcl_NewStringObj(resultPtr->result, -1);
+    Tcl_IncrRefCount(valObj);
+
     if (resultPtr->result != threadEmptyResult) {
         ckfree(resultPtr->result);
     }
@@ -1649,7 +1652,8 @@ ThreadClbkSetVar(interp, clientData)
 
     if (Tcl_SetVar2Ex(interp, var, NULL, valObj,
                       TCL_GLOBAL_ONLY | TCL_LEAVE_ERR_MSG) == NULL) {
-        return TCL_ERROR;
+        rc = TCL_ERROR;
+        goto cleanup;
     }
 
     /*
@@ -1671,7 +1675,9 @@ ThreadClbkSetVar(interp, clientData)
         Tcl_BackgroundError(interp);
     }
 
-    return TCL_OK;
+cleanup:
+    Tcl_DecrRefCount(valObj);
+    return rc;
 }
 
 /*
