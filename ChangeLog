@@ -1,6 +1,9 @@
 2016-05-17  Pietro Cerutti <gahr@gahr.ch>
 
 	* generic/threadCmd.c: Fix -async and result trace [Tkt 84be1b5a73]
+	* doc/thread.man: Remove "id" arg from [thread::broadcast]'s manpage
+	* doc/man/thread.n: Regenerate documentation
+	* doc/html/thread.html
 
 2016-05-13  Pietro Cerutti <gahr@gahr.ch>
 

@@ -130,7 +130,7 @@
 <li><a href="#9"><b class="cmd">thread::names</b></a></li>
 <li><a href="#10"><b class="cmd">thread::exists</b> <i class="arg">id</i></a></li>
 <li><a href="#11"><b class="cmd">thread::send</b> <span class="opt">?-async?</span> <span class="opt">?-head?</span> <i class="arg">id</i> <i class="arg">script</i> <span class="opt">?varname?</span></a></li>
-<li><a href="#12"><b class="cmd">thread::broadcast</b> <i class="arg">id</i> <i class="arg">script</i></a></li>
+<li><a href="#12"><b class="cmd">thread::broadcast</b> <i class="arg">script</i></a></li>
 <li><a href="#13"><b class="cmd">thread::wait</b></a></li>
 <li><a href="#14"><b class="cmd">thread::eval</b> <span class="opt">?-lock mutex?</span> <i class="arg">arg</i> <span class="opt">?arg ...?</span></a></li>
 <li><a href="#15"><b class="cmd">thread::join</b> <i class="arg">id</i></a></li>
@@ -359,7 +359,7 @@ events pending in the event queue of the target thread.
 Using the optional <span class="opt">?-head?</span> switch, scripts posted to the thread's
 event queue can be placed on the head, instead on the tail of the queue,
 thus being executed in the LIFO fashion.</p></dd>
-<dt><a name="12"><b class="cmd">thread::broadcast</b> <i class="arg">id</i> <i class="arg">script</i></a></dt>
+<dt><a name="12"><b class="cmd">thread::broadcast</b> <i class="arg">script</i></a></dt>
 <dd><p>This command passes a <i class="arg">script</i> to all threads created by the
 package for execution. It does not wait for response from any of
 the threads.</p></dd>

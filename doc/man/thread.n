@@ -299,7 +299,7 @@ package require \fBThread  ?2\&.7?\fR
 .sp
 \fBthread::send\fR ?-async? ?-head? \fIid\fR \fIscript\fR ?varname?
 .sp
-\fBthread::broadcast\fR \fIid\fR \fIscript\fR
+\fBthread::broadcast\fR \fIscript\fR
 .sp
 \fBthread::wait\fR
 .sp
@@ -582,7 +582,7 @@ Using the optional ?-head? switch, scripts posted to the thread's
 event queue can be placed on the head, instead on the tail of the queue,
 thus being executed in the LIFO fashion\&.
 .TP
-\fBthread::broadcast\fR \fIid\fR \fIscript\fR
+\fBthread::broadcast\fR \fIscript\fR
 This command passes a \fIscript\fR to all threads created by the
 package for execution\&. It does not wait for response from any of
 the threads\&.
