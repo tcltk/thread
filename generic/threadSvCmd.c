@@ -21,6 +21,8 @@
 #include "psGdbm.h"             /* The gdbm persistent store implementation */
 #include "psLmdb.h"             /* The lmdb persistent store implementation */
 
+#define SV_FINALIZE
+
 /*
  * Number of buckets to spread shared arrays into. Each bucket is
  * associated with one mutex so locking a bucket locks all arrays
@@ -58,6 +60,11 @@ static char *Sv_tclEmptyStringRep = NULL;
 /*
  * Global variables used within this file.
  */
+
+#ifdef SV_FINALIZE
+static size_t     nofThreads;      /* Number of initialized threads */
+static Tcl_Mutex  nofThreadsMutex; /* Protects the nofThreads variable */
+#endif /* SV_FINALIZE */
 
 static Bucket*    buckets;      /* Array of buckets. */
 static Tcl_Mutex  bucketsMutex; /* Protects the array of buckets */
@@ -113,7 +120,6 @@ static int DeleteArray(Array*);
 static void SvAllocateContainers(Bucket*);
 static void SvRegisterStdCommands(void);
 
-#define SV_FINALIZE
 #ifdef SV_FINALIZE
 static void SvFinalizeContainers(Bucket*);
 static void SvFinalize(ClientData);
@@ -2130,6 +2136,20 @@ Sv_Init (interp)
     const Tcl_UniChar no[3] = {'n', 'o', 0} ;
     Tcl_Obj *obj;
 
+#ifdef SV_FINALIZE
+    /*
+     * Create exit handler for this thread
+     */
+    Tcl_CreateThreadExitHandler(SvFinalize, NULL);
+
+    /*
+     * Increment number of threads
+     */
+    Tcl_MutexLock(&nofThreadsMutex);
+    ++nofThreads;
+    Tcl_MutexUnlock(&nofThreadsMutex);
+#endif /* SV_FINALIZE */
+
     /*
      * Add keyed-list datatype
      */
@@ -2189,7 +2209,6 @@ Sv_Init (interp)
         Tcl_MutexLock(&bucketsMutex);
         if (buckets == NULL) {
             buckets = (Bucket *)ckalloc(sizeof(Bucket) * NUMBUCKETS);
-            Tcl_CreateExitHandler(SvFinalize, NULL);
 
             for (i = 0; i < NUMBUCKETS; ++i) {
                 bucketPtr = &buckets[i];
@@ -2260,6 +2279,18 @@ SvFinalize (ClientData clientData)
     Tcl_HashSearch search;
 
     /*
+     * Decrement number of threads. Proceed only if I was the last one. The
+     * mutex is unlocked at the end of this function, so new threads that might
+     * want to register in the meanwhile will find a clean environment when
+     * they eventually succeed acquiring nofThreadsMutex.
+     */
+    Tcl_MutexLock(&nofThreadsMutex);
+    if (nofThreads > 1)
+    {
+        goto done;
+    }
+
+    /*
      * Reclaim memory for shared arrays
      */
 
@@ -2319,6 +2350,10 @@ SvFinalize (ClientData clientData)
     }
 
     Tcl_MutexUnlock(&svMutex);
+
+done:
+    --nofThreads;
+    Tcl_MutexUnlock(&nofThreadsMutex);
 }
 #endif /* SV_FINALIZE */
 
