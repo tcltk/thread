@@ -1,3 +1,8 @@
+2016-05-18  Pietro Cerutti <gahr@gahr.ch>
+
+	* generic/threadSvCmd.c: Fix race condition in thread finalization routine
+	[Tkt 3532972fff]
+
 2016-05-17  Pietro Cerutti <gahr@gahr.ch>
 
 	* generic/threadCmd.c: Fix -async and result trace [Tkt 84be1b5a73]
