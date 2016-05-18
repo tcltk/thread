@@ -5,7 +5,7 @@ package require Thread
 
 # This test used to segfault before commit f4c95731c0.
 test tkt-84be1b5a73 {Ticket 84be1b5a73} -body {
-set t [thread::create]
+    set t [thread::create]
     set resultvar() {}
 
     trace add variable resultvar() write {
