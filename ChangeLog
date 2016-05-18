@@ -2,6 +2,7 @@
 
 	* generic/threadSvCmd.c: Fix race condition in thread finalization routine
 	[Tkt 3532972fff]
+	* tests/tkt-84be1b5a73.test: Add a test for [Tkt 84be1b5a73]
 
 2016-05-17  Pietro Cerutti <gahr@gahr.ch>
 
