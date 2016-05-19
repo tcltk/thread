@@ -147,6 +147,26 @@ test thread-7.0 {thread::exit} {
     set c
 } {666}
 
+test thread-7.1 {thread::exit - # args} {
+    set tid [thread::create]
+    catch {thread::send $tid {thread::exit 1 0}} msg
+    set msg
+} {wrong # args: should be "thread::exit ?status?"}
+
+test thread-7.2 {thread::exit - args} {
+    set tid [thread::create]
+    catch {thread::send $tid {thread::exit foo}} msg
+    set msg
+} {expected integer but got "foo"}
+
+test thread-7.3 {thread::exit - status} {
+    ThreadReap
+    set tid [thread::create -joinable {thread::exit 0}]
+    set c [thread::join $tid]
+    ThreadReap
+    set c
+} {0}
+
 test thread-8.0 {thread::exists - true} {
     ThreadReap
     set c [thread::exists [thread::create]]

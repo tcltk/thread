@@ -291,7 +291,7 @@ package require \fBThread  ?2\&.7?\fR
 .sp
 \fBthread::unwind\fR
 .sp
-\fBthread::exit\fR
+\fBthread::exit\fR ?status?
 .sp
 \fBthread::names\fR
 .sp
@@ -514,19 +514,20 @@ in the script, the thread will exit\&. The command returns empty result
 but may trigger Tcl error with the message "target thread died" in some
 situations\&.
 .TP
-\fBthread::exit\fR
+\fBthread::exit\fR ?status?
 Use of this command is deprecated in favour of more advanced thread
 reservation system implemented with \fBthread::preserve\fR and
 \fBthread::release\fR commands\&. Support for \fBthread::exit\fR
 command will dissapear in some future major release of the extension\&.
 .sp
-This command forces a thread stuck in the \fBthread::wait\fR
-command to unconditionaly exit\&. The execution of \fBthread::exit\fR
-command is guaranteed to leave the program memory in the unconsistent
-state, produce memory leaks and otherwise affect other subsytem(s)
-of the Tcl application in an unpredictable manner\&. The command
-returns empty result but may trigger Tcl error with the message
-"target thread died" in some situations\&.
+This command forces a thread stuck in the \fBthread::wait\fR command to
+unconditionaly exit\&. The thread's exit status defaults to 666 and can be
+specified using the optional \fIstatus\fR argument\&. The execution of
+\fBthread::exit\fR command is guaranteed to leave the program memory in the
+unconsistent state, produce memory leaks and otherwise affect other subsytem(s)
+of the Tcl application in an unpredictable manner\&. The command returns empty
+result but may trigger Tcl error with the message "target thread died" in some
+situations\&.
 .TP
 \fBthread::names\fR
 This command returns a list of thread IDs\&. These are only for
