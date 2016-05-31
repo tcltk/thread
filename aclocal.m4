@@ -86,7 +86,7 @@ AC_DEFUN(TCLTHREAD_WITH_LMDB, [
 	[  --with-lmdb             link with optional LMDB support],
 	with_lmdb=${withval})
 
-    if test x"${with_gdbm}" != "x" -a "${with_gdbm}" != no; then
+    if test x"${with_lmdb}" != "x" -a "${with_lmdb}" != no; then
         AC_MSG_CHECKING([for LMDB library])
         AC_CACHE_VAL(ac_cv_c_lmdb,[
         if test x"${with_lmdb}" != x -a "${with_lmdb}" != "yes"; then
