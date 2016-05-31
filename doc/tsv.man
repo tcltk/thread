@@ -114,6 +114,11 @@ created if it did not exists at the time of the first lock operation.
     }
 }]
 
+[call [cmd tsv::handlers]]
+
+Returns the names of all persistent storage handlers enabled at compile time.
+See [sectref {ARRAY COMMANDS}] for details.
+
 [list_end]
 
 [section {LIST COMMANDS}]
