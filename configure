@@ -6993,7 +6993,7 @@ if test "${with_lmdb+set}" = set; then
   with_lmdb=${withval}
 fi;
 
-    if test x"${with_gdbm}" != "x" -a "${with_gdbm}" != no; then
+    if test x"${with_lmdb}" != "x" -a "${with_lmdb}" != no; then
         echo "$as_me:$LINENO: checking for LMDB library" >&5
 echo $ECHO_N "checking for LMDB library... $ECHO_C" >&6
         if test "${ac_cv_c_lmdb+set}" = set; then
