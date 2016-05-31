@@ -299,6 +299,8 @@ package require \fBThread  ?2\&.7?\fR
 .sp
 \fBtsv::lock\fR \fIvarname\fR \fIarg\fR ?arg \&.\&.\&.?
 .sp
+\fBtsv::handlers\fR
+.sp
 \fBtsv::lappend\fR \fIvarname\fR \fIelement\fR \fIvalue\fR ?value \&.\&.\&.?
 .sp
 \fBtsv::linsert\fR \fIvarname\fR \fIelement\fR \fIindex\fR \fIvalue\fR ?value \&.\&.\&.?
@@ -442,6 +444,10 @@ created if it did not exists at the time of the first lock operation\&.
     }
 
 .CE
+.TP
+\fBtsv::handlers\fR
+Returns the names of all persistent storage handlers enabled at compile time\&.
+See \fBARRAY COMMANDS\fR for details\&.
 .PP
 .SH "LIST COMMANDS"
 Those command are similar to the equivalently named Tcl command\&. The difference
