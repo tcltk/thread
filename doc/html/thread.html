@@ -126,7 +126,7 @@
 <li><a href="#5"><b class="cmd">thread::errorproc</b> <span class="opt">?procname?</span></a></li>
 <li><a href="#6"><b class="cmd">thread::cancel</b> <span class="opt">?-unwind?</span> <i class="arg">id</i> <span class="opt">?result?</span></a></li>
 <li><a href="#7"><b class="cmd">thread::unwind</b></a></li>
-<li><a href="#8"><b class="cmd">thread::exit</b></a></li>
+<li><a href="#8"><b class="cmd">thread::exit</b> <span class="opt">?status?</span></a></li>
 <li><a href="#9"><b class="cmd">thread::names</b></a></li>
 <li><a href="#10"><b class="cmd">thread::exists</b> <i class="arg">id</i></a></li>
 <li><a href="#11"><b class="cmd">thread::send</b> <span class="opt">?-async?</span> <span class="opt">?-head?</span> <i class="arg">id</i> <i class="arg">script</i> <span class="opt">?varname?</span></a></li>
@@ -302,18 +302,19 @@ the script passed to newly created thread will continue from the
 in the script, the thread will exit. The command returns empty result
 but may trigger Tcl error with the message &quot;target thread died&quot; in some
 situations.</p></dd>
-<dt><a name="8"><b class="cmd">thread::exit</b></a></dt>
+<dt><a name="8"><b class="cmd">thread::exit</b> <span class="opt">?status?</span></a></dt>
 <dd><p>Use of this command is deprecated in favour of more advanced thread
 reservation system implemented with <b class="cmd">thread::preserve</b> and 
 <b class="cmd">thread::release</b> commands. Support for <b class="cmd">thread::exit</b> 
 command will dissapear in some future major release of the extension.</p>
-<p>This command forces a thread stuck in the <b class="cmd">thread::wait</b>
-command to unconditionaly exit. The execution of <b class="cmd">thread::exit</b>
-command is guaranteed to leave the program memory in the unconsistent
-state, produce memory leaks and otherwise affect other subsytem(s)
-of the Tcl application in an unpredictable manner. The command 
-returns empty result but may trigger Tcl error with the message
-&quot;target thread died&quot; in some situations.</p></dd>
+<p>This command forces a thread stuck in the <b class="cmd">thread::wait</b> command to
+unconditionaly exit. The thread's exit status defaults to 666 and can be
+specified using the optional <i class="arg">status</i> argument. The execution of
+<b class="cmd">thread::exit</b> command is guaranteed to leave the program memory in the
+unconsistent state, produce memory leaks and otherwise affect other subsytem(s)
+of the Tcl application in an unpredictable manner. The command returns empty
+result but may trigger Tcl error with the message &quot;target thread died&quot; in some
+situations.</p></dd>
 <dt><a name="9"><b class="cmd">thread::names</b></a></dt>
 <dd><p>This command returns a list of thread IDs. These are only for
 threads that have been created via <b class="cmd">thread::create</b> command.

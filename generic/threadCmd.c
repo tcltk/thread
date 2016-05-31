@@ -785,11 +785,24 @@ ThreadExitObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
+    int status = 666;
 
     Init(interp);
+
+    if (objc > 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "?status?");
+        return TCL_ERROR;
+    }
+
+    if (objc == 2) {
+        if (Tcl_GetIntFromObj(interp, objv[1], &status) != TCL_OK) {
+            return TCL_ERROR;
+        }
+    }
+
     ListRemove(NULL);
 
-    Tcl_ExitThread(666);
+    Tcl_ExitThread(status);
 
     return TCL_OK; /* NOT REACHED */
 }
