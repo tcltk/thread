@@ -1,3 +1,11 @@
+2016-05-31  Pietro Cerutti <gahr@gahr.ch>
+
+	* generic/threadCmd.c: Add status arg to [thread::exit] [Tkt 3407860fff]
+	* tests/thread.test
+	* doc/thread.man
+	* doc/man/thread.n
+	* doc/html/thread.html
+
 2016-05-18  Pietro Cerutti <gahr@gahr.ch>
 
 	* generic/threadSvCmd.c: Fix race condition in thread finalization routine
