@@ -24,6 +24,18 @@
 #define SV_FINALIZE
 
 /*
+ * Names of registered persistent storage handlers.
+ */
+static const char * handlers[] = {
+#ifdef HAVE_GDBM
+    "gdbm",
+#endif
+#ifdef HAVE_LMDB
+    "lmdb",
+#endif
+};
+
+/*
  * Number of buckets to spread shared arrays into. Each bucket is
  * associated with one mutex so locking a bucket locks all arrays
  * in that bucket as well. The number of buckets should be a prime.
@@ -91,6 +103,7 @@ static Tcl_ObjCmdProc SvGetObjCmd;
 static Tcl_ObjCmdProc SvArrayObjCmd;
 static Tcl_ObjCmdProc SvUnsetObjCmd;
 static Tcl_ObjCmdProc SvNamesObjCmd;
+static Tcl_ObjCmdProc SvHandlersObjCmd;
 
 /*
  * New commands added to
@@ -2066,6 +2079,47 @@ SvLockObjCmd(
 
     return ret;
 }
+
+/*
+ *-----------------------------------------------------------------------------
+ *
+ * SvHandlersObjCmd --
+ *
+ *    This procedure is invoked to process "tsv::handlers" Tcl command.
+ *    See the user documentation for details on what it does.
+ *
+ * Results:
+ *      A standard Tcl result.
+ *
+ * Side effects:
+ *      None.
+ *
+ *-----------------------------------------------------------------------------
+ */
+static int
+SvHandlersObjCmd(
+             ClientData arg,                     /* Not used. */
+             Tcl_Interp *interp,                 /* Current interpreter. */
+             int objc,                           /* Number of arguments. */
+             Tcl_Obj *const objv[])              /* Argument objects. */
+{
+    /*
+     * Syntax:
+     *
+     *     tsv::handlers
+     */
+
+    if (objc != 1) {
+        Tcl_WrongNumArgs(interp, 1, objv, NULL);
+        return TCL_ERROR;
+    }
+
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(
+                Tcl_Merge(sizeof(handlers)/sizeof(handlers[0]), handlers), -1));
+
+    return TCL_OK;
+}
+
 
 /*
  *-----------------------------------------------------------------------------
@@ -2091,19 +2145,20 @@ SvRegisterStdCommands(void)
     if (initialized == 0) {
         Tcl_MutexLock(&initMutex);
         if (initialized == 0) {
-            Sv_RegisterCommand("var",    SvObjObjCmd,    NULL, 1);
-            Sv_RegisterCommand("object", SvObjObjCmd,    NULL, 1);
-            Sv_RegisterCommand("set",    SvSetObjCmd,    NULL, 0);
-            Sv_RegisterCommand("unset",  SvUnsetObjCmd,  NULL, 0);
-            Sv_RegisterCommand("get",    SvGetObjCmd,    NULL, 0);
-            Sv_RegisterCommand("incr",   SvIncrObjCmd,   NULL, 0);
-            Sv_RegisterCommand("exists", SvExistsObjCmd, NULL, 0);
-            Sv_RegisterCommand("append", SvAppendObjCmd, NULL, 0);
-            Sv_RegisterCommand("array",  SvArrayObjCmd,  NULL, 0);
-            Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL, 0);
-            Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL, 0);
-            Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL, 0);
-            Sv_RegisterCommand("lock",   SvLockObjCmd,   NULL, 0);
+            Sv_RegisterCommand("var",      SvObjObjCmd,      NULL, 1);
+            Sv_RegisterCommand("object",   SvObjObjCmd,      NULL, 1);
+            Sv_RegisterCommand("set",      SvSetObjCmd,      NULL, 0);
+            Sv_RegisterCommand("unset",    SvUnsetObjCmd,    NULL, 0);
+            Sv_RegisterCommand("get",      SvGetObjCmd,      NULL, 0);
+            Sv_RegisterCommand("incr",     SvIncrObjCmd,     NULL, 0);
+            Sv_RegisterCommand("exists",   SvExistsObjCmd,   NULL, 0);
+            Sv_RegisterCommand("append",   SvAppendObjCmd,   NULL, 0);
+            Sv_RegisterCommand("array",    SvArrayObjCmd,    NULL, 0);
+            Sv_RegisterCommand("names",    SvNamesObjCmd,    NULL, 0);
+            Sv_RegisterCommand("pop",      SvPopObjCmd,      NULL, 0);
+            Sv_RegisterCommand("move",     SvMoveObjCmd,     NULL, 0);
+            Sv_RegisterCommand("lock",     SvLockObjCmd,     NULL, 0);
+            Sv_RegisterCommand("handlers", SvHandlersObjCmd, NULL, 0); 
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);

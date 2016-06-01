@@ -1,5 +1,13 @@
 2016-05-31  Pietro Cerutti <gahr@gahr.ch>
 
+	* generic/threadSvCmd.c: Implement [tsv::handlers] command [Tkt 72b8ee4c76]
+	* doc/html/tsv.html
+	* doc/man/tsv.n
+	* doc/tsv.man
+	* tests/tsv.test
+
+2016-05-31  Pietro Cerutti <gahr@gahr.ch>
+
 	* generic/threadCmd.c: Add status arg to [thread::exit] [Tkt 3407860fff]
 	* tests/thread.test
 	* doc/thread.man
