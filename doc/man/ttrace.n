@@ -1,7 +1,7 @@
 '\"
 '\" Generated from file '' by tcllib/doctools with format 'nroff'
 '\"
-.TH "ttrace" n 2\&.7  "Tcl Threading"
+.TH "ttrace" n 2\&.8  "Tcl Threading"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -275,7 +275,7 @@ ttrace \- Trace-based interpreter initialization
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
-package require \fBThread  ?2\&.7?\fR
+package require \fBThread  ?2\&.8?\fR
 .sp
 \fBttrace::eval\fR \fIarg\fR ?arg \&.\&.\&.?
 .sp
@@ -329,7 +329,7 @@ with the Tcl threading extension:
 
 
     % package require Ttrace
-    2\&.7\&.0
+    2\&.8\&.0
 
     % set t1 [thread::create {package require Ttrace; thread::wait}]
     tid0x1802800

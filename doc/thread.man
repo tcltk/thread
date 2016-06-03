@@ -1,9 +1,9 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin thread n 2.7]
+[manpage_begin thread n 2.8]
 [moddesc {Tcl Threading}]
 [titledesc {Extension for script access to Tcl threading}]
 [require Tcl 8.4]
-[require Thread [opt 2.7]]
+[require Thread [opt 2.8]]
 
 [description]
 The [package thread] extension creates threads that contain Tcl 

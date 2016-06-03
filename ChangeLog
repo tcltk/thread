@@ -1,5 +1,9 @@
 2016-06-03  Pietro Cerutti <gahr@gahr.ch>
 
+	* doc/*: Bump version to 2.8 in docs [Tkt b35544d2c8]
+
+2016-06-03  Pietro Cerutti <gahr@gahr.ch>
+
 	* generic/threadCmd.c: Add parenthesis to bit-shift macros [Tkt 957dbe231c]
 
 2016-05-31  Pietro Cerutti <gahr@gahr.ch>
