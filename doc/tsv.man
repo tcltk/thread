@@ -1,9 +1,9 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin tsv n 2.7]
+[manpage_begin tsv n 2.8]
 [moddesc {Tcl Threading}]
 [titledesc {Part of the Tcl threading extension allowing script level manipulation of data shared between threads.}]
 [require Tcl 8.4]
-[require Thread [opt 2.7]]
+[require Thread [opt 2.8]]
 
 [description]
 This section describes commands implementing thread shared variables.
