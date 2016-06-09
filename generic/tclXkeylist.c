@@ -29,12 +29,32 @@
 #include "threadSvCmd.h"
 #include "tclXkeylist.h"
 
+#ifdef STATIC_BUILD
+#if TCL_MAJOR_VERSION >= 9
+/*
+ * Static build, Tcl >= 9, compile-time decision to disable T_ROT calls.
+ */
+#undef Tcl_RegisterObjType
+#define Tcl_RegisterObjType(typePtr)    (typePtr)->setFromAnyProc = NULL
+#else
+/*
+ * Static build, Tcl <= 9   --> T_ROT is directly linked, no stubs
+ * Nothing needs to be done
+ */
+#endif
+#else /* !STATIC_BUILD */
+/*
+ * Dynamic build. Assume building with stubs (xx) and make a run-time
+ * decision regarding T_ROT.
+ * (Ad xx): Should be checked. Without stubs we have to go like static.
+ */
 #undef Tcl_RegisterObjType
 #define Tcl_RegisterObjType(typePtr) if (threadTclVersion<90) { \
     ((void (*)(const Tcl_ObjType *))((&(tclStubsPtr->tcl_PkgProvideEx))[211]))(typePtr); \
 } else { \
     (typePtr)->setFromAnyProc = NULL; \
 }
+#endif /* eof STATIC_BUILD */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -93,11 +113,11 @@ TclX_IsNullObj (objPtr)
     Tcl_Obj *objPtr;
 {
     if (objPtr->typePtr == NULL) {
-	return (objPtr->length == 0);
+        return (objPtr->length == 0);
     } else if (objPtr->typePtr == listType) {
-	int length;
-	Tcl_ListObjLength(NULL, objPtr, &length);
-	return (length == 0);
+        int length;
+        Tcl_ListObjLength(NULL, objPtr, &length);
+        return (length == 0);
     }
     (void)Tcl_GetString(objPtr);
     return (objPtr->length == 0);
@@ -873,9 +893,9 @@ TclX_KeyedListGet (interp, keylPtr, key, valuePtrPtr)
     int findIdx;
 
     if (keylPtr->typePtr != &keyedListType) {
-	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
-	    return TCL_ERROR;
-	}
+        if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
     }
     keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
     KEYL_REP_ASSERT (keylIntPtr);
@@ -932,9 +952,9 @@ TclX_KeyedListSet (interp, keylPtr, key, valuePtr)
     Tcl_Obj *newKeylPtr;
 
     if (keylPtr->typePtr != &keyedListType) {
-	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
-	    return TCL_ERROR;
-	}
+        if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
     }
     keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
     KEYL_REP_ASSERT (keylIntPtr);
@@ -1032,9 +1052,9 @@ TclX_KeyedListDelete (interp, keylPtr, key)
     int findIdx, status;
 
     if (keylPtr->typePtr != &keyedListType) {
-	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
-	    return TCL_ERROR;
-	}
+        if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
     }
     keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
 
@@ -1111,9 +1131,9 @@ TclX_KeyedListGetKeys (interp, keylPtr, key, listObjPtrPtr)
     int idx, findIdx;
 
     if (keylPtr->typePtr != &keyedListType) {
-	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
-	    return TCL_ERROR;
-	}
+        if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
+            return TCL_ERROR;
+        }
     }
     keylIntPtr = keylPtr->internalRep.twoPtrValue.ptr1;
 
