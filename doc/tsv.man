@@ -1,9 +1,9 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin tsv n 2.7]
+[manpage_begin tsv n 2.8]
 [moddesc {Tcl Threading}]
 [titledesc {Part of the Tcl threading extension allowing script level manipulation of data shared between threads.}]
 [require Tcl 8.4]
-[require Thread [opt 2.7]]
+[require Thread [opt 2.8]]
 
 [description]
 This section describes commands implementing thread shared variables.
@@ -114,6 +114,11 @@ created if it did not exists at the time of the first lock operation.
     }
 }]
 
+[call [cmd tsv::handlers]]
+
+Returns the names of all persistent storage handlers enabled at compile time.
+See [sectref {ARRAY COMMANDS}] for details.
+
 [list_end]
 
 [section {LIST COMMANDS}]
@@ -189,11 +194,11 @@ As its counterpart, it returns no value to the caller.
 
 This command supports most of the options of the standard Tcl
 [cmd array] command. In addition to those, it allows binding
-a shared variable to some persisten storage databases. Currently 
-the only persistent option supported is the famous GNU Gdbm 
-database. This option has to be selected during the package 
-compilation time. The implementation provides hooks for 
-defining other persistency layers, if needed.
+a shared variable to some persisten storage databases. Currently the persistent
+options supported are the famous GNU Gdbm and LMDB. These options have to be
+selected during the package compilation time.
+The implementation provides hooks for defining other persistency layers, if
+needed.
 
 [list_begin definitions]
 
@@ -220,9 +225,9 @@ the [arg varname] and sets new values from the list atomically.
 
 [call [cmd {tsv::array bind}] [arg varname] [arg handle]]
 Binds the [arg varname] to the persistent storage [arg handle].
-The format of the [arg handle] is <handler>:<address>. For the built-in
-GNU Gdbm persistence layer, the format of the handle is "gdbm:<path>"
-where <path> is the path to the Gdbm database file.
+The format of the [arg handle] is <handler>:<address>, where <handler> is
+"gdbm" for GNU Gdbm and "lmdb" for LMDB and <address> is the path to the
+database file.
 
 [call [cmd {tsv::array unbind}] [arg varname]]
 Unbinds the shared [arg array] from its bound persistent storage.
