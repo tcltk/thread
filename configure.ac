@@ -217,4 +217,4 @@ TEA_PROG_TCLSH
 # which require substituting th AC variables in.  Include these here.
 #--------------------------------------------------------------------
 
-AC_OUTPUT([Makefile pkgIndex.tcl practcl.rc:tclconfig/practcl.rc.in])
+AC_OUTPUT([Makefile pkgIndex.tcl config.tcl:tclconfig/config.tcl.in])
