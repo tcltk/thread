@@ -270,9 +270,9 @@ static char *errorProcString;      /* Tcl script to run when reporting error */
  * Definition of flags for ThreadSend.
  */
 
-#define THREAD_SEND_WAIT 1<<1
-#define THREAD_SEND_HEAD 1<<2
-#define THREAD_SEND_CLBK 1<<3
+#define THREAD_SEND_WAIT (1<<1)
+#define THREAD_SEND_HEAD (1<<2)
+#define THREAD_SEND_CLBK (1<<3)
 
 #ifdef BUILD_thread
 # undef  TCL_STORAGE_CLASS

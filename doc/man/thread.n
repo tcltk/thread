@@ -1,7 +1,7 @@
 '\"
 '\" Generated from file '' by tcllib/doctools with format 'nroff'
 '\"
-.TH "thread" n 2\&.7  "Tcl Threading"
+.TH "thread" n 2\&.8  "Tcl Threading"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -275,7 +275,7 @@ thread \- Extension for script access to Tcl threading
 .SH SYNOPSIS
 package require \fBTcl  8\&.4\fR
 .sp
-package require \fBThread  ?2\&.7?\fR
+package require \fBThread  ?2\&.8?\fR
 .sp
 \fBthread::create\fR ?-joinable? ?-preserved? ?script?
 .sp
