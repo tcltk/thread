@@ -1,9 +1,9 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin tpool n 2.7]
+[manpage_begin tpool n 2.8]
 [moddesc {Tcl Threading}]
 [titledesc {Part of the Tcl threading extension implementing pools of worker threads.}]
 [require Tcl 8.4]
-[require Thread [opt 2.7]]
+[require Thread [opt 2.8]]
 
 [description]
 This package creates and manages pools of worker threads. It allows you

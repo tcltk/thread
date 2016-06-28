@@ -846,7 +846,7 @@ SvLsetObjCmd (arg, interp, objc, objv)
     lPtr = svObj->tclObj;
     argc = objc - off - 1;
 
-    if (!SvLsetFlat(interp, lPtr, argc, (Tcl_Obj**)(objv+off),objv[objc-1])) {
+    if (!SvLsetFlat(interp, lPtr, argc, (Tcl_Obj**)objv+off,objv[objc-1])) {
         return TCL_ERROR;
     }
 

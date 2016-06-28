@@ -1,9 +1,9 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin thread n 2.7]
+[manpage_begin thread n 2.8]
 [moddesc {Tcl Threading}]
 [titledesc {Extension for script access to Tcl threading}]
 [require Tcl 8.4]
-[require Thread [opt 2.7]]
+[require Thread [opt 2.8]]
 
 [description]
 The [package thread] extension creates threads that contain Tcl 
@@ -199,20 +199,21 @@ but may trigger Tcl error with the message "target thread died" in some
 situations.
 
 
-[call [cmd thread::exit]]
+[call [cmd thread::exit] [opt status]]
 
 Use of this command is deprecated in favour of more advanced thread
 reservation system implemented with [cmd thread::preserve] and 
 [cmd thread::release] commands. Support for [cmd thread::exit] 
 command will dissapear in some future major release of the extension.
 [para]
-This command forces a thread stuck in the [cmd thread::wait]
-command to unconditionaly exit. The execution of [cmd thread::exit]
-command is guaranteed to leave the program memory in the unconsistent
-state, produce memory leaks and otherwise affect other subsytem(s)
-of the Tcl application in an unpredictable manner. The command 
-returns empty result but may trigger Tcl error with the message
-"target thread died" in some situations.
+This command forces a thread stuck in the [cmd thread::wait] command to
+unconditionaly exit. The thread's exit status defaults to 666 and can be
+specified using the optional [arg status] argument. The execution of
+[cmd thread::exit] command is guaranteed to leave the program memory in the
+unconsistent state, produce memory leaks and otherwise affect other subsytem(s)
+of the Tcl application in an unpredictable manner. The command returns empty
+result but may trigger Tcl error with the message "target thread died" in some
+situations.
 
 [call [cmd thread::names]]
 
@@ -276,7 +277,7 @@ event queue can be placed on the head, instead on the tail of the queue,
 thus being executed in the LIFO fashion.
 
 
-[call [cmd thread::broadcast] [arg id] [arg script]]
+[call [cmd thread::broadcast] [arg script]]
 
 This command passes a [arg script] to all threads created by the
 package for execution. It does not wait for response from any of

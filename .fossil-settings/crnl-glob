@@ -1,0 +1,5 @@
+win/thread-win.dsp
+win/thread-win.dsw
+win/makefile.vc
+win/pkg.vc
+win/rules.vc
