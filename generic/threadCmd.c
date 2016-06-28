@@ -21,8 +21,13 @@
 
 #include "tclThreadInt.h"
 
+/*
+ * Provide package version in build contexts which do not provide
+ * -DPACKAGE_VERSION, like building a shell with the Thread object
+ * files built as part of that shell. Example: basekits.
+ */
 #ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION "2.7.1"
+#define PACKAGE_VERSION "2.8.0"
 #endif
 
 /*
@@ -72,7 +77,7 @@
 
 #if defined(TCL_TIP285) && !TCL_MINIMUM_VERSION(8,6)
 # if defined(USE_TCL_STUBS)
-#  define TCL_CANCEL_UNWIND	0x100000
+#  define TCL_CANCEL_UNWIND 0x100000
 #  define Tcl_CancelEval ((int (*)(Tcl_Interp *, Tcl_Obj *, ClientData, int)) \
      ((&(tclStubsPtr->tcl_PkgProvideEx))[580]))
 #  define Tcl_Canceled ((int (*)(Tcl_Interp *, int)) \
@@ -265,8 +270,9 @@ static char *errorProcString;      /* Tcl script to run when reporting error */
  * Definition of flags for ThreadSend.
  */
 
-#define THREAD_SEND_WAIT 1<<1
-#define THREAD_SEND_HEAD 1<<2
+#define THREAD_SEND_WAIT (1<<1)
+#define THREAD_SEND_HEAD (1<<2)
+#define THREAD_SEND_CLBK (1<<3)
 
 #ifdef BUILD_thread
 # undef  TCL_STORAGE_CLASS
@@ -429,34 +435,34 @@ ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
     if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
-	if ((sizeof(size_t) != sizeof(int)) ||
-		!Tcl_InitStubs(interp, "8.4-", 0)) {
-	    return TCL_ERROR;
-	}
-	Tcl_ResetResult(interp);
+        if ((sizeof(size_t) != sizeof(int)) ||
+                !Tcl_InitStubs(interp, "8.4-", 0)) {
+            return TCL_ERROR;
+        }
+        Tcl_ResetResult(interp);
     }
 
     if (!threadTclVersion) {
 
-	/*
-	 * Check whether we are running threaded Tcl.
-	 * Get the current core version to decide whether to use
-	 * some lately introduced core features or to back-off.
-	 */
+        /*
+         * Check whether we are running threaded Tcl.
+         * Get the current core version to decide whether to use
+         * some lately introduced core features or to back-off.
+         */
 
-	int major, minor;
+        int major, minor;
 
-	Tcl_MutexLock(&threadMutex);
-	if (threadMutex == NULL){
-	    /* If threadMutex==NULL here, it means that Tcl_MutexLock() is
-	     * a dummy function, which is the case in unthreaded Tcl */
-	    const char *msg = "Tcl core wasn't compiled for threading";
-	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
-	    return TCL_ERROR;
-	}
-	Tcl_GetVersion(&major, &minor, NULL, NULL);
-	threadTclVersion = 10 * major + minor;
-	Tcl_MutexUnlock(&threadMutex);
+        Tcl_MutexLock(&threadMutex);
+        if (threadMutex == NULL){
+            /* If threadMutex==NULL here, it means that Tcl_MutexLock() is
+             * a dummy function, which is the case in unthreaded Tcl */
+            const char *msg = "Tcl core wasn't compiled for threading";
+            Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
+            return TCL_ERROR;
+        }
+        Tcl_GetVersion(&major, &minor, NULL, NULL);
+        threadTclVersion = 10 * major + minor;
+        Tcl_MutexUnlock(&threadMutex);
     }
 
     TCL_CMD(interp, THREAD_CMD_PREFIX"create",    ThreadCreateObjCmd);
@@ -707,11 +713,11 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
     if (objc > 1) {
         if (OPT_CMP(Tcl_GetString(objv[1]), "-wait")) {
             wait = 1;
-	    if (objc > 2) {
-        	if (ThreadGetId(interp, objv[2], &thrId) != TCL_OK) {
-		    return TCL_ERROR;
-        	}
-	    }
+            if (objc > 2) {
+                if (ThreadGetId(interp, objv[2], &thrId) != TCL_OK) {
+                    return TCL_ERROR;
+                }
+            }
         } else if (ThreadGetId(interp, objv[1], &thrId) != TCL_OK) {
             return TCL_ERROR;
         }
@@ -779,11 +785,24 @@ ThreadExitObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
+    int status = 666;
 
     Init(interp);
+
+    if (objc > 2) {
+        Tcl_WrongNumArgs(interp, 1, objv, "?status?");
+        return TCL_ERROR;
+    }
+
+    if (objc == 2) {
+        if (Tcl_GetIntFromObj(interp, objv[1], &status) != TCL_OK) {
+            return TCL_ERROR;
+        }
+    }
+
     ListRemove(NULL);
 
-    Tcl_ExitThread(666);
+    Tcl_ExitThread(status);
 
     return TCL_OK; /* NOT REACHED */
 }
@@ -909,7 +928,7 @@ ThreadNamesObjCmd(dummy, interp, objc, objv)
 static void
 threadSendFree(ClientData ptr)
 {
-	ckfree((char *)ptr);
+    ckfree((char *)ptr);
 }
 
 static int
@@ -1191,14 +1210,14 @@ ThreadErrorProcObjCmd(dummy, interp, objc, objv)
         proc = Tcl_GetString(objv[1]);
         len = objv[1]->length;
         if (len == 0) {
-	    errorThreadId = NULL;
+            errorThreadId = NULL;
             errorProcString = NULL;
         } else {
-	    errorThreadId = Tcl_GetCurrentThread();
+            errorThreadId = Tcl_GetCurrentThread();
             errorProcString = ckalloc(1+strlen(proc));
             strcpy(errorProcString, proc);
-	    Tcl_DeleteThreadExitHandler(ThreadFreeError, NULL);
-	    Tcl_CreateThreadExitHandler(ThreadFreeError, NULL);
+            Tcl_DeleteThreadExitHandler(ThreadFreeError, NULL);
+            Tcl_CreateThreadExitHandler(ThreadFreeError, NULL);
         }
     }
     Tcl_MutexUnlock(&threadMutex);
@@ -1212,8 +1231,8 @@ ThreadFreeError(clientData)
 {
     Tcl_MutexLock(&threadMutex);
     if (errorThreadId != Tcl_GetCurrentThread()) {
-	Tcl_MutexUnlock(&threadMutex);
-	return;
+        Tcl_MutexUnlock(&threadMutex);
+        return;
     }
     ckfree(errorProcString);
     errorThreadId = NULL;
@@ -1452,14 +1471,14 @@ ThreadExistsObjCmd(dummy, interp, objc, objv)
  *
  * ThreadConfigureObjCmd --
  *
- *	This procedure is invoked to process the Tcl "thread::configure"
+ *  This procedure is invoked to process the Tcl "thread::configure"
  *  command. See the user documentation for details on what it does.
  *
  * Results:
- *	A standard Tcl result.
+ *  A standard Tcl result.
  *
  * Side effects:
- *	None.
+ *  None.
  *----------------------------------------------------------------------
  */
 static int
@@ -1472,7 +1491,7 @@ ThreadConfigureObjCmd(dummy, interp, objc, objv)
     char *option, *value;
     Tcl_ThreadId thrId;         /* Id of the thread to configure */
     int i;                      /* Iterate over arg-value pairs. */
-    Tcl_DString ds;			    /* DString to hold result of
+    Tcl_DString ds;             /* DString to hold result of
                                  * calling GetThreadOption. */
 
     if (objc < 2 || (objc % 2 == 1 && objc != 3)) {
@@ -1626,6 +1645,7 @@ ThreadClbkSetVar(interp, clientData)
     const char *var = (const char *)clbkPtr->clientData;
     Tcl_Obj *valObj;
     ThreadEventResult *resultPtr = &clbkPtr->result;
+    int rc = TCL_OK;
 
     /*
      * Get the result of the posted command.
@@ -1633,6 +1653,8 @@ ThreadClbkSetVar(interp, clientData)
      */
 
     valObj = Tcl_NewStringObj(resultPtr->result, -1);
+    Tcl_IncrRefCount(valObj);
+
     if (resultPtr->result != threadEmptyResult) {
         ckfree(resultPtr->result);
     }
@@ -1643,7 +1665,8 @@ ThreadClbkSetVar(interp, clientData)
 
     if (Tcl_SetVar2Ex(interp, var, NULL, valObj,
                       TCL_GLOBAL_ONLY | TCL_LEAVE_ERR_MSG) == NULL) {
-        return TCL_ERROR;
+        rc = TCL_ERROR;
+        goto cleanup;
     }
 
     /*
@@ -1665,7 +1688,9 @@ ThreadClbkSetVar(interp, clientData)
         Tcl_BackgroundError(interp);
     }
 
-    return TCL_OK;
+cleanup:
+    Tcl_DecrRefCount(valObj);
+    return rc;
 }
 
 /*
@@ -2445,7 +2470,7 @@ ThreadTransfer(interp, thrId, chan)
         } else {
             Tcl_AppendResult(interp, "for reasons unknown", NULL);
         }
-	ckfree((char *)resultPtr);
+        ckfree((char *)resultPtr);
 
         return TCL_ERROR;
     }
@@ -2678,9 +2703,9 @@ ThreadSend(interp, thrId, send, clbk, flags)
     if (thrId == Tcl_GetCurrentThread()) {
         Tcl_MutexUnlock(&threadMutex);
         if ((flags & THREAD_SEND_WAIT)) {
-	    int code = (*send->execProc)(interp, (ClientData)send);
-	    ThreadFreeProc((ClientData)send);
-	    return code;
+            int code = (*send->execProc)(interp, (ClientData)send);
+            ThreadFreeProc((ClientData)send);
+            return code;
         } else {
             send->interp = interp;
             Tcl_Preserve((ClientData)send->interp);
@@ -2747,11 +2772,13 @@ ThreadSend(interp, thrId, send, clbk, flags)
     if ((flags & THREAD_SEND_WAIT) == 0) {
         /*
          * Might potentially spend some time here, until the
-         * worker thread clean's up it's queue a little bit.
+         * worker thread cleans up its queue a little bit.
          */
-        while (tsdPtr->maxEventsCount &&
-               tsdPtr->eventsPending > tsdPtr->maxEventsCount) {
-            Tcl_ConditionWait(&tsdPtr->doOneEvent, &threadMutex, NULL);
+        if ((flags & THREAD_SEND_CLBK) == 0) {
+            while (tsdPtr->maxEventsCount &&
+                   tsdPtr->eventsPending > tsdPtr->maxEventsCount) {
+                Tcl_ConditionWait(&tsdPtr->doOneEvent, &threadMutex, NULL);
+            }
         }
         Tcl_MutexUnlock(&threadMutex);
         return TCL_OK;
@@ -2906,7 +2933,7 @@ ThreadWait(Tcl_Interp *interp)
 
         errorInfo = Tcl_GetVar2(tsdPtr->interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         if (errorInfo == NULL) {
-        	errorInfo = Tcl_GetString(Tcl_GetObjResult(tsdPtr->interp));
+            errorInfo = Tcl_GetString(Tcl_GetObjResult(tsdPtr->interp));
         }
 
         ThreadGetHandle(Tcl_GetCurrentThread(), buf);
@@ -3096,7 +3123,7 @@ ThreadEventProc(evPtr, mask)
 
         if (clbkPtr && clbkPtr->threadId == thrId) {
             Tcl_Release((ClientData)interp);
-            /* Watch: this thread evaluates it's own callback. */
+            /* Watch: this thread evaluates its own callback. */
             interp = clbkPtr->interp;
             Tcl_Preserve((ClientData)interp);
         }
@@ -3159,7 +3186,7 @@ ThreadEventProc(evPtr, mask)
         }
 
         ThreadSetResult(interp, code, &clbkPtr->result);
-        ThreadSend(interp, clbkPtr->threadId, tmpPtr, NULL, 0);
+        ThreadSend(interp, clbkPtr->threadId, tmpPtr, NULL, THREAD_SEND_CLBK);
 
     } else if (code != TCL_OK) {
         /*
