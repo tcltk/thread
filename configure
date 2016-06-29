@@ -671,6 +671,8 @@ TCL_SRC_DIR
 TCL_BIN_DIR
 TCL_PATCH_LEVEL
 TCL_VERSION
+CONFIG_CLEAN_FILES
+LN_S
 PKG_CFLAGS
 PKG_LIBS
 PKG_INCLUDES
@@ -2297,6 +2299,24 @@ $as_echo "$as_me: configuring ${PACKAGE_NAME} ${PACKAGE_VERSION}" >&6;}
 
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ln -s works" >&5
+$as_echo_n "checking whether ln -s works... " >&6; }
+LN_S=$as_ln_s
+if test "$LN_S" = "ln -s"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no, using $LN_S" >&5
+$as_echo "no, using $LN_S" >&6; }
+fi
+
+CONFIG_CLEAN_FILES=
+if test ! -d $srcdir/tclconfig ; then
+    if test -d $srcdir/../tclconfig ; then
+        $LN_S $srcdir/../tclconfig tclconfig
+        CONFIG_CLEAN_FILES=tclconfig
+    fi
+fi
 
 ac_aux_dir=
 for ac_dir in tclconfig "$srcdir"/tclconfig; do
@@ -10212,3 +10232,4 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
+s
