@@ -226,4 +226,3 @@ TEA_PROG_TCLSH
 #--------------------------------------------------------------------
 
 AC_OUTPUT([Makefile pkgIndex.tcl config.tcl:tclconfig/config.tcl.in])
-s
