@@ -2158,7 +2158,7 @@ SvRegisterStdCommands(void)
             Sv_RegisterCommand("pop",      SvPopObjCmd,      NULL, 0);
             Sv_RegisterCommand("move",     SvMoveObjCmd,     NULL, 0);
             Sv_RegisterCommand("lock",     SvLockObjCmd,     NULL, 0);
-            Sv_RegisterCommand("handlers", SvHandlersObjCmd, NULL, 0); 
+            Sv_RegisterCommand("handlers", SvHandlersObjCmd, NULL, 0);
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);

@@ -162,26 +162,26 @@
 </div>
 <div id="section1" class="doctools_section"><h2><a name="section1">Description</a></h2>
 <p>This section describes commands implementing thread shared variables.
-A thread shared variable is very similar to a Tcl array but in 
+A thread shared variable is very similar to a Tcl array but in
 contrast to a Tcl array it is created in shared memory and can
 be accessed from many threads at the same time. Important feature of
 thread shared variable is that each access to the variable is internaly
-protected by a mutex so script programmer does not have to take care 
+protected by a mutex so script programmer does not have to take care
 about locking the variable himself.</p>
-<p>Thread shared variables are not bound to any thread explicitly. That 
+<p>Thread shared variables are not bound to any thread explicitly. That
 means that when a thread which created any of thread shared variables
 exits, the variable and associated memory is not unset/reclaimed.
-User has to explicitly unset the variable to reclaim the memory 
+User has to explicitly unset the variable to reclaim the memory
 consumed by the variable.</p>
 </div>
 <div id="section2" class="doctools_section"><h2><a name="section2">ELEMENT COMMANDS</a></h2>
 <dl class="doctools_definitions">
 <dt><a name="1"><b class="cmd">tsv::names</b> <span class="opt">?pattern?</span></a></dt>
-<dd><p>Returns names of shared variables matching optional <span class="opt">?pattern?</span> 
+<dd><p>Returns names of shared variables matching optional <span class="opt">?pattern?</span>
 or all known variables if pattern is ommited.</p></dd>
 <dt><a name="2"><b class="cmd">tsv::object</b> <i class="arg">varname</i> <i class="arg">element</i></a></dt>
 <dd><p>Creates object accessor command for the <i class="arg">element</i> in the
-shared variable <i class="arg">varname</i>. Using this command, one can apply most 
+shared variable <i class="arg">varname</i>. Using this command, one can apply most
 of the other shared variable commands as method functions of
 the element object command. The object command is automatically
 deleted when the element which this command is pointing to is unset.</p>
@@ -193,18 +193,18 @@ deleted when the element which this command is pointing to is unset.</p>
 </pre>
 </dd>
 <dt><a name="3"><b class="cmd">tsv::set</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?value?</span></a></dt>
-<dd><p>Sets the value of the <i class="arg">element</i> in the shared variable <i class="arg">varname</i> 
+<dd><p>Sets the value of the <i class="arg">element</i> in the shared variable <i class="arg">varname</i>
 to <i class="arg">value</i> and returns the value to caller. The <i class="arg">value</i>
-may be ommited, in which case the command will return the current 
+may be ommited, in which case the command will return the current
 value of the element. If the element cannot be found, error is triggered.</p></dd>
 <dt><a name="4"><b class="cmd">tsv::get</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?namedvar?</span></a></dt>
 <dd><p>Retrieves the value of the <i class="arg">element</i> from the shared variable <i class="arg">varname</i>.
 If the optional argument <i class="arg">namedvar</i> is given, the value is
-stored in the named variable. Return value of the command depends 
+stored in the named variable. Return value of the command depends
 of the existence of the optional argument <i class="arg">namedvar</i>.
-If the argument is ommited and the requested element cannot be found 
-in the shared array, the command triggers error. If, however, the 
-optional argument is given on the command line, the command returns 
+If the argument is ommited and the requested element cannot be found
+in the shared array, the command triggers error. If, however, the
+optional argument is given on the command line, the command returns
 true (1) if the element is found or false (0) if the element is not found.</p></dd>
 <dt><a name="5"><b class="cmd">tsv::unset</b> <i class="arg">varname</i> <span class="opt">?element?</span></a></dt>
 <dd><p>Unsets the <i class="arg">element</i> from the shared variable <i class="arg">varname</i>.
@@ -221,11 +221,11 @@ shared variable <i class="arg">varname</i>. This effectively performs an get/uns
 sequence of operations but all in one atomic step.</p></dd>
 <dt><a name="9"><b class="cmd">tsv::incr</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?count?</span></a></dt>
 <dd><p>Similar to standard Tcl <b class="cmd">incr</b> command but increments the value
-of the <i class="arg">element</i> in shared variaboe <i class="arg">varname</i> instead of 
+of the <i class="arg">element</i> in shared variaboe <i class="arg">varname</i> instead of
 the Tcl variable.</p></dd>
 <dt><a name="10"><b class="cmd">tsv::append</b> <i class="arg">varname</i> <i class="arg">element</i> <i class="arg">value</i> <span class="opt">?value ...?</span></a></dt>
 <dd><p>Similar to standard Tcl <b class="cmd">append</b> command but appends one or more
-values to the <i class="arg">element</i> in shared variable <i class="arg">varname</i> instead of the 
+values to the <i class="arg">element</i> in shared variable <i class="arg">varname</i> instead of the
 Tcl variable.</p></dd>
 <dt><a name="11"><b class="cmd">tsv::lock</b> <i class="arg">varname</i> <i class="arg">arg</i> <span class="opt">?arg ...?</span></a></dt>
 <dd><p>This command concatenates passed arguments and evaluates the
@@ -255,19 +255,19 @@ is that they operate on elements of shared arrays.</p>
 <dl class="doctools_definitions">
 <dt><a name="13"><b class="cmd">tsv::lappend</b> <i class="arg">varname</i> <i class="arg">element</i> <i class="arg">value</i> <span class="opt">?value ...?</span></a></dt>
 <dd><p>Similar to standard Tcl <b class="cmd">lappend</b> command but appends one
-or more values to the <i class="arg">element</i> in shared variable <i class="arg">varname</i> 
+or more values to the <i class="arg">element</i> in shared variable <i class="arg">varname</i>
 instead of the Tcl variable.</p></dd>
 <dt><a name="14"><b class="cmd">tsv::linsert</b> <i class="arg">varname</i> <i class="arg">element</i> <i class="arg">index</i> <i class="arg">value</i> <span class="opt">?value ...?</span></a></dt>
 <dd><p>Similar to standard Tcl <b class="cmd">linsert</b> command but inserts one
-or more values at the <i class="arg">index</i> list position in the 
+or more values at the <i class="arg">index</i> list position in the
 <i class="arg">element</i> in the shared variable <i class="arg">varname</i> instead of the Tcl variable.</p></dd>
 <dt><a name="15"><b class="cmd">tsv::lreplace</b> <i class="arg">varname</i> <i class="arg">element</i> <i class="arg">first</i> <i class="arg">last</i> <span class="opt">?value ...?</span></a></dt>
 <dd><p>Similar to standard Tcl <b class="cmd">lreplace</b> command but replaces one
-or more values between the <i class="arg">first</i> and <i class="arg">last</i> position 
-in the <i class="arg">element</i> of the shared variable <i class="arg">varname</i> instead of 
+or more values between the <i class="arg">first</i> and <i class="arg">last</i> position
+in the <i class="arg">element</i> of the shared variable <i class="arg">varname</i> instead of
 the Tcl variable.</p></dd>
 <dt><a name="16"><b class="cmd">tsv::llength</b> <i class="arg">varname</i> <i class="arg">element</i></a></dt>
-<dd><p>Similar to standard Tcl <b class="cmd">llength</b> command but returns length 
+<dd><p>Similar to standard Tcl <b class="cmd">llength</b> command but returns length
 of the <i class="arg">element</i> in the shared variable <i class="arg">varname</i> instead of the Tcl
 variable.</p></dd>
 <dt><a name="17"><b class="cmd">tsv::lindex</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?index?</span></a></dt>
@@ -287,8 +287,8 @@ in the shared variable <i class="arg">varname</i> instead of the Tcl variable.</
 <dt><a name="21"><b class="cmd">tsv::lpop</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?index?</span></a></dt>
 <dd><p>Similar to the standard Tcl <b class="cmd">lindex</b> command but in addition to
 returning, it also splices the value out of the <i class="arg">element</i>
-from the shared variable <i class="arg">varname</i> in one atomic operation. 
-In contrast to the Tcl <b class="cmd">lindex</b> command, this command returns 
+from the shared variable <i class="arg">varname</i> in one atomic operation.
+In contrast to the Tcl <b class="cmd">lindex</b> command, this command returns
 no value to the caller.</p></dd>
 <dt><a name="22"><b class="cmd">tsv::lpush</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?index?</span></a></dt>
 <dd><p>This command performes the opposite of the <b class="cmd">tsv::lpop</b> command.
@@ -323,7 +323,7 @@ database file.</p></dd>
 <dt><a name="29"><b class="cmd">tsv::array unbind</b> <i class="arg">varname</i></a></dt>
 <dd><p>Unbinds the shared <i class="arg">array</i> from its bound persistent storage.</p></dd>
 <dt><a name="30"><b class="cmd">tsv::array isbound</b> <i class="arg">varname</i></a></dt>
-<dd><p>Returns true (1) if the shared <i class="arg">varname</i> is bound to some 
+<dd><p>Returns true (1) if the shared <i class="arg">varname</i> is bound to some
 persistent storage or zero (0) if not.</p></dd>
 </dl>
 </div>
@@ -331,25 +331,25 @@ persistent storage or zero (0) if not.</p></dd>
 <p>Keyed list commands are borrowed from the TclX package. Keyed lists provide
 a structured data type built upon standard Tcl lists. This is a functionality
 similar to structs in the C programming language.</p>
-<p>A keyed list is a list in which each element contains a key and value 
+<p>A keyed list is a list in which each element contains a key and value
 pair. These element pairs are stored as lists themselves, where the key
-is the first element of the list, and the value is the second. The 
+is the first element of the list, and the value is the second. The
 key-value pairs are referred to as fields.  This is an example of a
 keyed list:</p>
 <pre class="doctools_example">
     {{NAME  {Frank  Zappa}} {JOB {musician and composer}}}
 </pre>
-<p>Fields may contain subfields; `.' is the separator character. Subfields 
-are actually fields  where the value is another keyed list. Thus the 
-following list has the top level fields ID and NAME, and subfields 
+<p>Fields may contain subfields; `.' is the separator character. Subfields
+are actually fields  where the value is another keyed list. Thus the
+following list has the top level fields ID and NAME, and subfields
 NAME.FIRST and NAME.LAST:</p>
 <pre class="doctools_example">
     {ID 106} {NAME {{FIRST Frank} {LAST Zappa}}}
 </pre>
 <p>There is no limit to the recursive depth of subfields,
 allowing one to build complex data structures. Keyed lists are constructed
-and accessed via a number of commands. All  keyed  list management 
-commands take the name of the variable containing the keyed list as an 
+and accessed via a number of commands. All  keyed  list management
+commands take the name of the variable containing the keyed list as an
 argument (i.e. passed by reference), rather than passing the list directly.</p>
 <dl class="doctools_definitions">
 <dt><a name="31"><b class="cmd">tsv::keyldel</b> <i class="arg">varname</i> <i class="arg">keylist</i> <i class="arg">key</i></a></dt>
@@ -359,25 +359,25 @@ This removes both the key and the value from the keyed list.</p></dd>
 <dt><a name="32"><b class="cmd">tsv::keylget</b> <i class="arg">varname</i> <i class="arg">keylist</i> <i class="arg">key</i> <span class="opt">?retvar?</span></a></dt>
 <dd><p>Return the value associated with <i class="arg">key</i> from the keyed list <i class="arg">keylist</i>
 in the shared variable <i class="arg">varname</i>.
-If the optional <i class="arg">retvar</i> is not specified, then the value will be 
-returned as the result of the command. In this case, if key is not found 
+If the optional <i class="arg">retvar</i> is not specified, then the value will be
+returned as the result of the command. In this case, if key is not found
 in the list, an error will result.</p>
-<p>If <i class="arg">retvar</i> is specified and <i class="arg">key</i> is in the list, then the value 
+<p>If <i class="arg">retvar</i> is specified and <i class="arg">key</i> is in the list, then the value
 is returned in the variable <i class="arg">retvar</i> and the command returns 1 if the
-key was present within the list. If <i class="arg">key</i> isn't in the list, the 
+key was present within the list. If <i class="arg">key</i> isn't in the list, the
 command will return 0, and <i class="arg">retvar</i> will be left unchanged. If {} is
 specified for <i class="arg">retvar</i>, the value is not returned, allowing the Tcl
 programmer to determine if a <i class="arg">key</i> is present in a keyed list without
 setting a variable as a side-effect.</p></dd>
 <dt><a name="33"><b class="cmd">tsv::keylkeys</b> <i class="arg">varname</i> <i class="arg">keylist</i> <span class="opt">?key?</span></a></dt>
-<dd><p>Return  the a list of the keys in the keyed list <i class="arg">keylist</i> in the 
-shared variable <i class="arg">varname</i>. If <i class="arg">key</i> is specified, then it is 
+<dd><p>Return  the a list of the keys in the keyed list <i class="arg">keylist</i> in the
+shared variable <i class="arg">varname</i>. If <i class="arg">key</i> is specified, then it is
 the name of a key field who's subfield keys are to be retrieved.</p></dd>
 <dt><a name="34"><b class="cmd">tsv::keylset</b> <i class="arg">varname</i> <i class="arg">keylist</i> <i class="arg">key</i> <i class="arg">value</i> <span class="opt">?key value..?</span></a></dt>
 <dd><p>Set the value associated with <i class="arg">key</i>, in the keyed list <i class="arg">keylist</i>
-to <i class="arg">value</i>. If the <i class="arg">keylist</i> does not exists, it is created. 
+to <i class="arg">value</i>. If the <i class="arg">keylist</i> does not exists, it is created.
 If <i class="arg">key</i> is not currently in the list, it will be added. If it already
-exists, <i class="arg">value</i> replaces the existing value. Multiple keywords and 
+exists, <i class="arg">value</i> replaces the existing value. Multiple keywords and
 values may be specified, if desired.</p></dd>
 </dl>
 </div>
@@ -386,17 +386,17 @@ values may be specified, if desired.</p></dd>
 convenient access to data shared between different threads.
 Internally, the data is stored in Tcl objects and all package commands
 operate on internal data representation, thus minimizing shimmering and
-improving performance. Special care has been taken to assure that all 
+improving performance. Special care has been taken to assure that all
 object data is properly locked and deep-copied when moving objects between
 threads.</p>
-<p>Due to the internal design of the Tcl core, there is no provision of full 
+<p>Due to the internal design of the Tcl core, there is no provision of full
 integration of shared variables within the Tcl syntax, unfortunately. All
 access to shared data must be performed with the supplied package commands.
-Also, variable traces are not supported. But even so, benefits of easy, 
+Also, variable traces are not supported. But even so, benefits of easy,
 simple and safe shared data manipulation outweights imposed limitations.</p>
 </div>
 <div id="section7" class="doctools_section"><h2><a name="section7">CREDITS</a></h2>
-<p>Thread shared variables are inspired by the nsv interface found in 
+<p>Thread shared variables are inspired by the nsv interface found in
 AOLserver, a highly scalable Web server from America Online.</p>
 </div>
 <div id="see-also" class="doctools_section"><h2><a name="see-also">See Also</a></h2>

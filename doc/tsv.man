@@ -7,17 +7,17 @@
 
 [description]
 This section describes commands implementing thread shared variables.
-A thread shared variable is very similar to a Tcl array but in 
+A thread shared variable is very similar to a Tcl array but in
 contrast to a Tcl array it is created in shared memory and can
 be accessed from many threads at the same time. Important feature of
 thread shared variable is that each access to the variable is internaly
-protected by a mutex so script programmer does not have to take care 
+protected by a mutex so script programmer does not have to take care
 about locking the variable himself.
 [para]
-Thread shared variables are not bound to any thread explicitly. That 
+Thread shared variables are not bound to any thread explicitly. That
 means that when a thread which created any of thread shared variables
 exits, the variable and associated memory is not unset/reclaimed.
-User has to explicitly unset the variable to reclaim the memory 
+User has to explicitly unset the variable to reclaim the memory
 consumed by the variable.
 
 [section {ELEMENT COMMANDS}]
@@ -26,13 +26,13 @@ consumed by the variable.
 
 [call [cmd tsv::names] [opt pattern]]
 
-Returns names of shared variables matching optional [opt pattern] 
+Returns names of shared variables matching optional [opt pattern]
 or all known variables if pattern is ommited.
 
 [call [cmd tsv::object] [arg varname] [arg element]]
 
 Creates object accessor command for the [arg element] in the
-shared variable [arg varname]. Using this command, one can apply most 
+shared variable [arg varname]. Using this command, one can apply most
 of the other shared variable commands as method functions of
 the element object command. The object command is automatically
 deleted when the element which this command is pointing to is unset.
@@ -46,20 +46,20 @@ deleted when the element which this command is pointing to is unset.
 
 [call [cmd tsv::set] [arg varname] [arg element] [opt value]]
 
-Sets the value of the [arg element] in the shared variable [arg varname] 
+Sets the value of the [arg element] in the shared variable [arg varname]
 to [arg value] and returns the value to caller. The [arg value]
-may be ommited, in which case the command will return the current 
+may be ommited, in which case the command will return the current
 value of the element. If the element cannot be found, error is triggered.
 
 [call [cmd tsv::get] [arg varname] [arg element] [opt namedvar]]
 
 Retrieves the value of the [arg element] from the shared variable [arg varname].
 If the optional argument [arg namedvar] is given, the value is
-stored in the named variable. Return value of the command depends 
+stored in the named variable. Return value of the command depends
 of the existence of the optional argument [arg namedvar].
-If the argument is ommited and the requested element cannot be found 
-in the shared array, the command triggers error. If, however, the 
-optional argument is given on the command line, the command returns 
+If the argument is ommited and the requested element cannot be found
+in the shared array, the command triggers error. If, however, the
+optional argument is given on the command line, the command returns
 true (1) if the element is found or false (0) if the element is not found.
 
 [call [cmd tsv::unset] [arg varname] [opt element]]
@@ -86,13 +86,13 @@ sequence of operations but all in one atomic step.
 [call [cmd tsv::incr] [arg varname] [arg element] [opt count]]
 
 Similar to standard Tcl [cmd incr] command but increments the value
-of the [arg element] in shared variaboe [arg varname] instead of 
+of the [arg element] in shared variaboe [arg varname] instead of
 the Tcl variable.
 
 [call [cmd tsv::append] [arg varname] [arg element] [arg value] [opt {value ...}]]
 
 Similar to standard Tcl [cmd append] command but appends one or more
-values to the [arg element] in shared variable [arg varname] instead of the 
+values to the [arg element] in shared variable [arg varname] instead of the
 Tcl variable.
 
 [call [cmd tsv::lock] [arg varname] [arg arg] [opt {arg ...}]]
@@ -131,25 +131,25 @@ is that they operate on elements of shared arrays.
 [call [cmd tsv::lappend] [arg varname] [arg element] [arg value] [opt {value ...}]]
 
 Similar to standard Tcl [cmd lappend] command but appends one
-or more values to the [arg element] in shared variable [arg varname] 
+or more values to the [arg element] in shared variable [arg varname]
 instead of the Tcl variable.
 
 [call [cmd tsv::linsert] [arg varname] [arg element] [arg index] [arg value] [opt {value ...}]]
 
 Similar to standard Tcl [cmd linsert] command but inserts one
-or more values at the [arg index] list position in the 
+or more values at the [arg index] list position in the
 [arg element] in the shared variable [arg varname] instead of the Tcl variable.
 
 [call [cmd tsv::lreplace] [arg varname] [arg element] [arg first] [arg last] [opt {value ...}]]
 
 Similar to standard Tcl [cmd lreplace] command but replaces one
-or more values between the [arg first] and [arg last] position 
-in the [arg element] of the shared variable [arg varname] instead of 
+or more values between the [arg first] and [arg last] position
+in the [arg element] of the shared variable [arg varname] instead of
 the Tcl variable.
 
 [call [cmd tsv::llength] [arg varname] [arg element]]
 
-Similar to standard Tcl [cmd llength] command but returns length 
+Similar to standard Tcl [cmd llength] command but returns length
 of the [arg element] in the shared variable [arg varname] instead of the Tcl
 variable.
 
@@ -179,8 +179,8 @@ in the shared variable [arg varname] instead of the Tcl variable.
 
 Similar to the standard Tcl [cmd lindex] command but in addition to
 returning, it also splices the value out of the [arg element]
-from the shared variable [arg varname] in one atomic operation. 
-In contrast to the Tcl [cmd lindex] command, this command returns 
+from the shared variable [arg varname] in one atomic operation.
+In contrast to the Tcl [cmd lindex] command, this command returns
 no value to the caller.
 
 [call [cmd tsv::lpush] [arg varname] [arg element] [opt index]]
@@ -233,7 +233,7 @@ database file.
 Unbinds the shared [arg array] from its bound persistent storage.
 
 [call [cmd {tsv::array isbound}] [arg varname]]
-Returns true (1) if the shared [arg varname] is bound to some 
+Returns true (1) if the shared [arg varname] is bound to some
 persistent storage or zero (0) if not.
 
 
@@ -245,9 +245,9 @@ Keyed list commands are borrowed from the TclX package. Keyed lists provide
 a structured data type built upon standard Tcl lists. This is a functionality
 similar to structs in the C programming language.
 [para]
-A keyed list is a list in which each element contains a key and value 
+A keyed list is a list in which each element contains a key and value
 pair. These element pairs are stored as lists themselves, where the key
-is the first element of the list, and the value is the second. The 
+is the first element of the list, and the value is the second. The
 key-value pairs are referred to as fields.  This is an example of a
 keyed list:
 
@@ -255,9 +255,9 @@ keyed list:
     {{NAME  {Frank  Zappa}} {JOB {musician and composer}}}
 }]
 
-Fields may contain subfields; `.' is the separator character. Subfields 
-are actually fields  where the value is another keyed list. Thus the 
-following list has the top level fields ID and NAME, and subfields 
+Fields may contain subfields; `.' is the separator character. Subfields
+are actually fields  where the value is another keyed list. Thus the
+following list has the top level fields ID and NAME, and subfields
 NAME.FIRST and NAME.LAST:
 
 [example {
@@ -266,8 +266,8 @@ NAME.FIRST and NAME.LAST:
 
 There is no limit to the recursive depth of subfields,
 allowing one to build complex data structures. Keyed lists are constructed
-and accessed via a number of commands. All  keyed  list management 
-commands take the name of the variable containing the keyed list as an 
+and accessed via a number of commands. All  keyed  list management
+commands take the name of the variable containing the keyed list as an
 argument (i.e. passed by reference), rather than passing the list directly.
 
 [list_begin definitions]
@@ -282,29 +282,29 @@ This removes both the key and the value from the keyed list.
 
 Return the value associated with [arg key] from the keyed list [arg keylist]
 in the shared variable [arg varname].
-If the optional [arg retvar] is not specified, then the value will be 
-returned as the result of the command. In this case, if key is not found 
+If the optional [arg retvar] is not specified, then the value will be
+returned as the result of the command. In this case, if key is not found
 in the list, an error will result.
 [para]
-If [arg retvar] is specified and [arg key] is in the list, then the value 
+If [arg retvar] is specified and [arg key] is in the list, then the value
 is returned in the variable [arg retvar] and the command returns 1 if the
-key was present within the list. If [arg key] isn't in the list, the 
+key was present within the list. If [arg key] isn't in the list, the
 command will return 0, and [arg retvar] will be left unchanged. If {} is
 specified for [arg retvar], the value is not returned, allowing the Tcl
 programmer to determine if a [arg key] is present in a keyed list without
 setting a variable as a side-effect.
 
 [call [cmd tsv::keylkeys] [arg varname] [arg keylist] [opt key]]
-Return  the a list of the keys in the keyed list [arg keylist] in the 
-shared variable [arg varname]. If [arg key] is specified, then it is 
+Return  the a list of the keys in the keyed list [arg keylist] in the
+shared variable [arg varname]. If [arg key] is specified, then it is
 the name of a key field who's subfield keys are to be retrieved.
 
 
 [call [cmd tsv::keylset] [arg varname] [arg keylist] [arg key] [arg value] [opt {key value..}]]
 Set the value associated with [arg key], in the keyed list [arg keylist]
-to [arg value]. If the [arg keylist] does not exists, it is created. 
+to [arg value]. If the [arg keylist] does not exists, it is created.
 If [arg key] is not currently in the list, it will be added. If it already
-exists, [arg value] replaces the existing value. Multiple keywords and 
+exists, [arg value] replaces the existing value. Multiple keywords and
 values may be specified, if desired.
 
 [list_end]
@@ -315,18 +315,18 @@ The current implementation of thread shared variables allows for easy and
 convenient access to data shared between different threads.
 Internally, the data is stored in Tcl objects and all package commands
 operate on internal data representation, thus minimizing shimmering and
-improving performance. Special care has been taken to assure that all 
+improving performance. Special care has been taken to assure that all
 object data is properly locked and deep-copied when moving objects between
 threads.
 [para]
-Due to the internal design of the Tcl core, there is no provision of full 
+Due to the internal design of the Tcl core, there is no provision of full
 integration of shared variables within the Tcl syntax, unfortunately. All
 access to shared data must be performed with the supplied package commands.
-Also, variable traces are not supported. But even so, benefits of easy, 
+Also, variable traces are not supported. But even so, benefits of easy,
 simple and safe shared data manipulation outweights imposed limitations.
 
 [section CREDITS]
-Thread shared variables are inspired by the nsv interface found in 
+Thread shared variables are inspired by the nsv interface found in
 AOLserver, a highly scalable Web server from America Online.
 
 [see_also tpool ttrace thread]
