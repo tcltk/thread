@@ -492,7 +492,7 @@ test thread-17.2 {thread::transfer - target thread dying} {chanTransfer} {
 
 test thread-17.3 {thread::transfer - clearing of fileevents} {chanTransfer} {
     proc _HandleIt_ {} {
-        global gotEvents tid file    
+        global gotEvents tid file
         if {$gotEvents == 0} {
             thread::transfer $tid $file
             # From now on no events should be delivered anymore,
@@ -1014,8 +1014,8 @@ test thread-20.14 {thread::mutex - write-lock write-locked mutex} {
 test thread-20.15 {thread::mutex - read-lock write-locked mutex} {
     set rwmutex [thread::rwmutex create]
     thread::rwmutex wlock $rwmutex
-    set x [catch {thread::rwmutex rlock $rwmutex} msg]  
-    thread::rwmutex unlock $rwmutex 
+    set x [catch {thread::rwmutex rlock $rwmutex} msg]
+    thread::rwmutex unlock $rwmutex
     thread::rwmutex destroy $rwmutex
     list $x $msg
 } {1 {read-locking already write-locked mutex from the same thread}}
