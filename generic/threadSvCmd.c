@@ -24,18 +24,6 @@
 #define SV_FINALIZE
 
 /*
- * Names of registered persistent storage handlers.
- */
-static const char * handlers[] = {
-#ifdef HAVE_GDBM
-    "gdbm",
-#endif
-#ifdef HAVE_LMDB
-    "lmdb",
-#endif
-};
-
-/*
  * Number of buckets to spread shared arrays into. Each bucket is
  * associated with one mutex so locking a bucket locks all arrays
  * in that bucket as well. The number of buckets should be a prime.
@@ -2103,6 +2091,8 @@ SvHandlersObjCmd(
              int objc,                           /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
 {
+    PsStore *tmpPtr = NULL;
+
     /*
      * Syntax:
      *
@@ -2114,8 +2104,12 @@ SvHandlersObjCmd(
         return TCL_ERROR;
     }
 
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(
-                Tcl_Merge(sizeof(handlers)/sizeof(handlers[0]), handlers), -1));
+    Tcl_ResetResult(interp);
+    Tcl_MutexLock(&svMutex);
+    for (tmpPtr = psStore; tmpPtr; tmpPtr = tmpPtr->nextPtr) {
+        Tcl_AppendElement(interp, tmpPtr->type);
+    }
+    Tcl_MutexUnlock(&svMutex);
 
     return TCL_OK;
 }
