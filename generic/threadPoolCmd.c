@@ -364,6 +364,14 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
         }
     }
 
+    /*
+     * We expect exactly two arguments remaining after options
+     */
+    if (objc - ii != 2)
+    {
+        goto usage;
+    }
+
     tpoolName = Tcl_GetString(objv[ii]);
     script    = Tcl_GetString(objv[ii+1]);
     len = objv[ii+1]->length;
