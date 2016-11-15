@@ -27,7 +27,7 @@
  * files built as part of that shell. Example: basekits.
  */
 #ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION "2.8.0"
+#define PACKAGE_VERSION "2.8.1"
 #endif
 
 /*
