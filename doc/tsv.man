@@ -10,7 +10,7 @@ This section describes commands implementing thread shared variables.
 A thread shared variable is very similar to a Tcl array but in
 contrast to a Tcl array it is created in shared memory and can
 be accessed from many threads at the same time. Important feature of
-thread shared variable is that each access to the variable is internaly
+thread shared variable is that each access to the variable is internally
 protected by a mutex so script programmer does not have to take care
 about locking the variable himself.
 [para]
@@ -27,7 +27,7 @@ consumed by the variable.
 [call [cmd tsv::names] [opt pattern]]
 
 Returns names of shared variables matching optional [opt pattern]
-or all known variables if pattern is ommited.
+or all known variables if pattern is omitted.
 
 [call [cmd tsv::object] [arg varname] [arg element]]
 
@@ -48,7 +48,7 @@ deleted when the element which this command is pointing to is unset.
 
 Sets the value of the [arg element] in the shared variable [arg varname]
 to [arg value] and returns the value to caller. The [arg value]
-may be ommited, in which case the command will return the current
+may be omitted, in which case the command will return the current
 value of the element. If the element cannot be found, error is triggered.
 
 [call [cmd tsv::get] [arg varname] [arg element] [opt namedvar]]
@@ -57,7 +57,7 @@ Retrieves the value of the [arg element] from the shared variable [arg varname].
 If the optional argument [arg namedvar] is given, the value is
 stored in the named variable. Return value of the command depends
 of the existence of the optional argument [arg namedvar].
-If the argument is ommited and the requested element cannot be found
+If the argument is omitted and the requested element cannot be found
 in the shared array, the command triggers error. If, however, the
 optional argument is given on the command line, the command returns
 true (1) if the element is found or false (0) if the element is not found.
@@ -69,7 +69,7 @@ If the optional element is not given, it deletes the variable.
 
 [call [cmd tsv::exists] [arg varname] [arg element]]
 
-Checks wether the [arg element] exists in the shared variable [arg varname]
+Checks whether the [arg element] exists in the shared variable [arg varname]
 and returns true (1) if it does or false (0) if it doesn't.
 
 [call [cmd tsv::pop] [arg varname] [arg element]]
@@ -86,7 +86,7 @@ sequence of operations but all in one atomic step.
 [call [cmd tsv::incr] [arg varname] [arg element] [opt count]]
 
 Similar to standard Tcl [cmd incr] command but increments the value
-of the [arg element] in shared variaboe [arg varname] instead of
+of the [arg element] in shared variable [arg varname] instead of
 the Tcl variable.
 
 [call [cmd tsv::append] [arg varname] [arg element] [arg value] [opt {value ...}]]
@@ -185,7 +185,7 @@ no value to the caller.
 
 [call [cmd tsv::lpush] [arg varname] [arg element] [opt index]]
 
-This command performes the opposite of the [cmd tsv::lpop] command.
+This command performs the opposite of the [cmd tsv::lpop] command.
 As its counterpart, it returns no value to the caller.
 
 [list_end]
@@ -194,7 +194,7 @@ As its counterpart, it returns no value to the caller.
 
 This command supports most of the options of the standard Tcl
 [cmd array] command. In addition to those, it allows binding
-a shared variable to some persisten storage databases. Currently the persistent
+a shared variable to some persistent storage databases. Currently the persistent
 options supported are the famous GNU Gdbm and LMDB. These options have to be
 selected during the package compilation time.
 The implementation provides hooks for defining other persistency layers, if
@@ -297,7 +297,7 @@ setting a variable as a side-effect.
 [call [cmd tsv::keylkeys] [arg varname] [arg keylist] [opt key]]
 Return  the a list of the keys in the keyed list [arg keylist] in the
 shared variable [arg varname]. If [arg key] is specified, then it is
-the name of a key field who's subfield keys are to be retrieved.
+the name of a key field whose subfield keys are to be retrieved.
 
 
 [call [cmd tsv::keylset] [arg varname] [arg keylist] [arg key] [arg value] [opt {key value..}]]
@@ -323,7 +323,7 @@ Due to the internal design of the Tcl core, there is no provision of full
 integration of shared variables within the Tcl syntax, unfortunately. All
 access to shared data must be performed with the supplied package commands.
 Also, variable traces are not supported. But even so, benefits of easy,
-simple and safe shared data manipulation outweights imposed limitations.
+simple and safe shared data manipulation outweighs imposed limitations.
 
 [section CREDITS]
 Thread shared variables are inspired by the nsv interface found in

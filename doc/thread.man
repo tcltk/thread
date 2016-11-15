@@ -10,7 +10,7 @@ The [package thread] extension creates threads that contain Tcl
 interpreters, and it lets you send scripts to those threads for
 evaluation.
 
-Additionaly, it provides script-level access to basic thread
+Additionally, it provides script-level access to basic thread
 synchronization primitives, like mutexes and condition variables.
 
 [section COMMANDS]
@@ -61,7 +61,7 @@ and if its internal reference count drops to zero, the thread is
 marked for exit. This kicks the thread out of the event loop
 servicing and the thread continues to execute commands passed in
 the [option script] argument, following the [cmd thread::wait]
-command. If this was the last command in the script, as usualy the
+command. If this was the last command in the script, as usually the
 case, the thread will exit.
 
 [para]
@@ -96,7 +96,7 @@ i.e. it is unreserved. This counter gets incremented by a call to
 [cmd thread::preserve] and decremented by a call to [cmd thread::release]
 command. These two commands implement simple but effective thread
 reservation system and offer predictable and controllable thread
-termination capabilities. It is however possible to create initialy
+termination capabilities. It is however possible to create initially
 preserved threads by using flag [option -preserved] of the
 [cmd thread::create] command. Threads created with this flag have the
 initial value of the reference counter of 1 (one), and are thus
@@ -189,7 +189,7 @@ message string; otherwise, a default error message string will be used.
 Use of this command is deprecated in favour of more advanced thread
 reservation system implemented with [cmd thread::preserve] and
 [cmd thread::release] commands. Support for [cmd thread::unwind]
-command will dissapear in some future major release of the extension.
+command will disappear in some future major release of the extension.
 [para]
 This command stops a prior [cmd thread::wait] command. Execution of
 the script passed to newly created thread will continue from the
@@ -204,13 +204,13 @@ situations.
 Use of this command is deprecated in favour of more advanced thread
 reservation system implemented with [cmd thread::preserve] and
 [cmd thread::release] commands. Support for [cmd thread::exit]
-command will dissapear in some future major release of the extension.
+command will disappear in some future major release of the extension.
 [para]
 This command forces a thread stuck in the [cmd thread::wait] command to
-unconditionaly exit. The thread's exit status defaults to 666 and can be
+unconditionally exit. The thread's exit status defaults to 666 and can be
 specified using the optional [arg status] argument. The execution of
 [cmd thread::exit] command is guaranteed to leave the program memory in the
-unconsistent state, produce memory leaks and otherwise affect other subsytem(s)
+inconsistent state, produce memory leaks and otherwise affect other subsystem(s)
 of the Tcl application in an unpredictable manner. The command returns empty
 result but may trigger Tcl error with the message "target thread died" in some
 situations.
@@ -245,7 +245,7 @@ command, like [cmd update], [cmd vwait], etc.
 
 Optional [option varname] specifies name of the variable to store
 the result of the [arg script]. Without the [option -async] flag,
-the command returns the evaluation code, similarily to the standard
+the command returns the evaluation code, similarly to the standard
 Tcl [cmd catch] command. If, however, the [option -async] flag is
 specified, the command returns immediately and caller can later
 [cmd vwait] on [opt varname] to get the result of the passed [arg script]
@@ -394,7 +394,7 @@ Restrictions: same as for transferring shared channels with the
 This attaches the previously detached [arg channel] in the
 current thread/interpreter. For already existing channels,
 the command does nothing, i.e. it is not an error to attach the
-same channel more than once. The first operation will actualy
+same channel more than once. The first operation will actually
 perform the operation, while all subsequent operation will just
 do nothing. Command throws error if the [arg channel] cannot be
 found in the list of detached channels and/or in the current
@@ -457,7 +457,7 @@ Attempt to unlock the already unlocked mutex will throw Tcl error.
 This command creates many-readers/single-writer mutexes. Reader/writer
 mutexes allow you to serialize access to a shared resource more optimally.
 In situations where a shared resource gets mostly read and seldom modified,
-you might gain some performace by using reader/writer mutexes instead of
+you might gain some performance by using reader/writer mutexes instead of
 exclusive or recursive mutexes.
 [para]
 For reading the resource, thread should obtain a read lock on the resource.
@@ -512,8 +512,8 @@ This command provides script-level access to condition variables.
 A condition variable creates a safe environment for the program
 to test some condition, sleep on it when false and be awakened
 when it might have become true. A condition variable is always
-used in the conjuction with an exclusive mutex. If you attempt
-to use other type of mutex in conjuction with the condition
+used in the conjunction with an exclusive mutex. If you attempt
+to use other type of mutex in conjunction with the condition
 variable, a Tcl error will be thrown.
 
 [para]
