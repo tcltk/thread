@@ -631,7 +631,7 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
     TpoolResult *rPtr;
 
     /*
-     * Syntax: tpool::wait tpoolId jobIdList ?listVar?
+     * Syntax: tpool::cancel tpoolId jobIdList ?listVar?
      */
 
     if (objc < 3 || objc > 4) {

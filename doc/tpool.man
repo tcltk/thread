@@ -34,7 +34,7 @@ During threadpool creation, the implementation will create somany
 worker threads upfront and will keep at least number of them alive
 during the lifetime of the threadpool instance.
 Default value of this parameter is 0 (zero). which means that a newly
-threadpool will have no worker threads initialy. All worker threads
+threadpool will have no worker threads initially. All worker threads
 will be started on demand by callers running [cmd tpool::post] command
 and posting jobs to the job queue.
 
@@ -79,7 +79,7 @@ Default value for this option is unspecified, hence, the Tcl interpreter of
 the worker thread will contain just the initial set of Tcl commands.
 
 [opt_def -exitcmd [arg script]]
-Sets a Tcl script run when the idle worker thread exits. This is normaly
+Sets a Tcl script run when the idle worker thread exits. This is normally
 used to cleanup the state of the worker thread, release reserved resources,
 cleanup memory and such.
 Default value for this option is unspecified, thus no Tcl script will run

@@ -7,7 +7,7 @@
 
 [description]
 This package creates a framework for on-demand replication of the
-interpreter state accross threads in an multithreading application.
+interpreter state across threads in an multithreading application.
 It relies on the mechanics of Tcl command tracing and the Tcl
 [cmd unknown] command and mechanism.
 [para]
@@ -65,7 +65,7 @@ This is the most important user-level command of the package as
 it wraps most of the commands described below. This greatly
 simplifies things, because user need to learn just this (one)
 command in order to effectively use the package. Other commands,
-as desribed below, are included mostly for the sake of completeness.
+as described below, are included mostly for the sake of completeness.
 
 [call [cmd ttrace::enable]]
 
@@ -91,7 +91,7 @@ the most recent trace epoch.
 
 [call [cmd ttrace::getscript]]
 
-Returns a synthetized Tcl script which may be sourced in any interpreter.
+Returns a synthesized Tcl script which may be sourced in any interpreter.
 This script sets the stage for the Tcl [cmd unknown] command so it can
 load traced resources from the in-memory database. Normally, this command
 is automatically invoked by other higher-level commands like
@@ -102,8 +102,8 @@ is automatically invoked by other higher-level commands like
 [section {CALLBACK COMMANDS}]
 A word upfront: the package already includes callbacks for tracing
 following Tcl commands: [cmd proc], [cmd namespace], [cmd variable],
-[cmd load], and [cmd rename]. Additionaly, a set of callbacks for
-tracing resources (object, clasess) for the XOTcl v1.3.8+, an
+[cmd load], and [cmd rename]. Additionally, a set of callbacks for
+tracing resources (object, classes) for the XOTcl v1.3.8+, an
 OO-extension to Tcl, is also provided.
 This gives a solid base for solving most of the real-life needs and
 serves as an example for people wanting to customize the package
@@ -213,7 +213,7 @@ threads/interpreters in the process.
 Immediate benefit of such approach is the much smaller memory footprint
 of the application and much faster thread creation. By not actually
 loading all necessary procedures (and other resources) in every thread
-at the thread initialization time, but by deffering this to the time the
+at the thread initialization time, but by deferring this to the time the
 resource is actually referenced, significant improvements in both
 memory consumption and thread initialization time can be achieved. Some
 tests have shown that memory footprint of an multithreading Tcl application
