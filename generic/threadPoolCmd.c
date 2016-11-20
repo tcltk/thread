@@ -1659,8 +1659,8 @@ TpoolRelease(tpoolPtr)
      * Signal and wait for all workers to die.
      */
 
-    tpoolPtr->tearDown = 1;
     Tcl_MutexLock(&tpoolPtr->mutex);
+    tpoolPtr->tearDown = 1;
     while (tpoolPtr->numWorkers > 0) {
         PushWaiter(tpoolPtr);
         Tcl_ConditionNotify(&tpoolPtr->cond);
