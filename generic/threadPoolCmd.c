@@ -1236,8 +1236,8 @@ TpoolWorker(clientData)
         }
         Tcl_MutexUnlock(&tpoolPtr->mutex);
         TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
-        Tcl_MutexLock(&tpoolPtr->mutex);
         ckfree(rPtr->script);
+        Tcl_MutexLock(&tpoolPtr->mutex);
         if (!rPtr->detached) {
             int new;
             Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone,
