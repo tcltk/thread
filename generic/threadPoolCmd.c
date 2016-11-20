@@ -1243,6 +1243,7 @@ TpoolWorker(clientData)
             Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone,
                                                  (void *)(size_t)rPtr->jobId, &new),
                              (ClientData)rPtr);
+            SignalWaiter(tpoolPtr);
         } else {
             ckfree((char*)rPtr);
         }
