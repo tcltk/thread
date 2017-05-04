@@ -9,7 +9,7 @@
 #
 # Usage:
 #    phttpd::create port
-# 
+#
 #    port         Tcp port where the server listens
 #
 # Example:
@@ -20,7 +20,7 @@
 #    % vwait forever
 #
 #    Starts the server on the port 5000. Also, look at the Httpd array
-#    definition in the "uhttpd" namespace declaration to find out 
+#    definition in the "uhttpd" namespace declaration to find out
 #    about other options you may put on the command line.
 #
 #    You can use: http://localhost:5000/monitor URL to test the
@@ -74,7 +74,7 @@ proc uhttpd::create {port args} {
 
     # @c Start the server by listening for connections on the desired port.
 
-    variable Httpd 
+    variable Httpd
     set arglen [llength $args]
 
     if {$arglen} {
@@ -97,21 +97,21 @@ proc uhttpd::create {port args} {
 }
 
 proc uhttpd::respond {s status contype data {length 0}} {
-    
+
     puts $s "HTTP/1.0 $status"
     puts $s "Date: [Date]"
     puts $s "Content-Type: $contype"
 
     if {$length} {
-        puts $s "Content-Length: $length" 
+        puts $s "Content-Length: $length"
     } else {
         puts $s "Content-Length: [string length $data]"
     }
 
     puts $s ""
-    puts $s $data 
+    puts $s $data
 }
-	
+
 proc uhttpd::Accept {newsock ipaddr port} {
 
     # @c Accept a new connection from the client.
@@ -258,7 +258,7 @@ proc uhttpd::ContentType {path} {
 
     set type "text/plain"
     catch {set type $MimeTypes([file extension $path])}
-    
+
     return $type
 }
 
@@ -306,7 +306,7 @@ proc uhttpd::Date {{seconds 0}} {
 }
 
 proc uhttpd::Log {reason format args} {
-    
+
     # @c Log an httpd transaction.
 
     set messg [eval format [list $format] $args]
@@ -363,7 +363,7 @@ proc uhttpd::CgiMap {data} {
 proc uhttpd::QueryMap {query} {
 
     # @c Decode url-encoded query into key/value pairs
-    
+
     set res [list]
 
     regsub -all {[&=]} $query { }    query
