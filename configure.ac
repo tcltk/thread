@@ -17,7 +17,7 @@ dnl	to configure the system for the local environment.
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
-AC_INIT([thread], [2.8.0])
+AC_INIT([thread], [2.8.1])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -25,7 +25,7 @@ AC_INIT([thread], [2.8.0])
 # as well as PKG_LIB_FILE and PKG_STUB_LIB_FILE.
 #--------------------------------------------------------------------
 
-TEA_INIT([3.9])
+TEA_INIT([3.10])
 
 AC_CONFIG_AUX_DIR(tclconfig)
 

@@ -47,16 +47,16 @@ the F7 key to build the extension under the control of the MSVC IDE.
 II. Building optional support libraries
 =======================================
 
-As of 2.6 release, this extension supports persistent shared 
-variables. To use this functionality, you might need to download 
-and compile some other supporting libraries. Currently, there is 
+As of 2.6 release, this extension supports persistent shared
+variables. To use this functionality, you might need to download
+and compile some other supporting libraries. Currently, there is
 a simple implementation of shared variable persistency built atop
 of popular GNU Gdbm package. You can obtain the latest version of
 the Gdbm from: http://www.gnu.org/software/gdbm/gdbm.html.
 
 For the impatient, there are Windows ports of GNU Gdbm found on
-various places on the Internet. The easiest way to start is to go 
+various places on the Internet. The easiest way to start is to go
 to the GnuWin32 project: http://sourceforge.net/projects/gnuwin32
-and fetch yourself a compiled GNU Gdbm DLL. 
+and fetch yourself a compiled GNU Gdbm DLL.
 
 -EOF-
