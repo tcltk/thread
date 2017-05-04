@@ -375,8 +375,8 @@ ThreadInit(interp)
      */
     const char *ver = (sizeof(size_t) == sizeof(int))? "8.6-": "9.0";
 
-    if (!((Tcl_InitStubs)(interp, ver, (int)sizeof(size_t),
-	    TCL_VERSION, TCL_STUB_MAGIC))) {
+    if (!((Tcl_InitStubs)(interp, ver, (TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16),
+	    TCL_STUB_MAGIC))) {
 	return TCL_ERROR;
     }
 
