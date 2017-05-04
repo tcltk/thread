@@ -1,3 +1,73 @@
+2016-06-03  Pietro Cerutti <gahr@gahr.ch>
+
+	* doc/*: Bump version to 2.8 in docs [Tkt b35544d2c8]
+
+2016-06-03  Pietro Cerutti <gahr@gahr.ch>
+
+	* generic/threadCmd.c: Add parenthesis to bit-shift macros [Tkt 957dbe231c]
+
+2016-05-31  Pietro Cerutti <gahr@gahr.ch>
+
+	* generic/threadSvCmd.c: Implement [tsv::handlers] command [Tkt 72b8ee4c76]
+	* doc/html/tsv.html
+	* doc/man/tsv.n
+	* doc/tsv.man
+	* tests/tsv.test
+
+2016-05-31  Pietro Cerutti <gahr@gahr.ch>
+
+	* generic/threadCmd.c: Add status arg to [thread::exit] [Tkt 3407860fff]
+	* tests/thread.test
+	* doc/thread.man
+	* doc/man/thread.n
+	* doc/html/thread.html
+
+2016-05-18  Pietro Cerutti <gahr@gahr.ch>
+
+	* generic/threadSvCmd.c: Fix race condition in thread finalization routine
+	[Tkt 3532972fff]
+	* tests/tkt-84be1b5a73.test: Add a test for [Tkt 84be1b5a73]
+
+2016-05-17  Pietro Cerutti <gahr@gahr.ch>
+
+	* generic/threadCmd.c: Fix -async and result trace [Tkt 84be1b5a73]
+	* doc/thread.man: Remove "id" arg from [thread::broadcast]'s manpage
+	* doc/man/thread.n: Regenerate documentation
+	* doc/html/thread.html
+
+2016-05-13  Pietro Cerutti <gahr@gahr.ch>
+
+	* aclocal.m4: Add support for LMDB persistent storage [Tkt 9378bb6795]
+	* configure
+	* configure.ac
+	* doc/html/tsv.html
+	* doc/man/tsv.n
+	* doc/tsv.man
+	* generic/psGdbm.c
+	* generic/psLmdb.c
+	* generic/psLmdb.h
+	* generic/threadSvCmd.c
+	* generic/threadSvCmd.h
+	* tests/French.txt version
+	* tests/store-load.tcl
+	* tests/tsv.test
+
+	* generic/tclThreadInt.h: Use spaces for indentation everywhere
+	* generic/tclXkeylist.c
+	* generic/threadCmd.c
+	* generic/threadNs.c
+	* generic/threadSpCmd.c
+	* generic/threadSpCmd.h
+	* generic/threadSvCmd.c
+
+2016-04-20  Pietro Cerutti <gahr@gahr.ch>
+
+	* configure, aclocal.m4: Correctly handle --without-gdbm [Tkt f8ff429a39]
+	* doc/tsv.man: Document side-effect of [tsv::array unbind] [Tkt be135da5f9]
+	* doc/*.(html|n): Regenerate documentation [Tkt 41922d3bb7]
+	* generic/threadSvCmd.c: Avoid double query to persistent storage in
+	tsv::array bind [Tkt a135697d8c]
+
 2013-05-23  Jan Nijtmans  <nijtmans@users.sf.net>
 
 	* generic/threadSvKeylistCmd.c: Change a few internal variable

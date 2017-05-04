@@ -3,10 +3,10 @@
 #
 # Simple socket command server. Supports many simultaneous sessions.
 # Works in thread mode with each new connection receiving a new thread.
-#  
+#
 # Usage:
 #    cmdsrv::create port ?-idletime value? ?-initcmd cmd?
-# 
+#
 #    port         Tcp port where the server listens
 #    -idletime    # of sec to idle before tearing down socket (def: 300 sec)
 #    -initcmd     script to initialize new worker thread (def: empty)
@@ -18,7 +18,7 @@
 #    % cmdsrv::create 5000 -idletime 60
 #    % vwait forever
 #
-#    Starts the server on the port 5000, sets idle timer to 1 minute. 
+#    Starts the server on the port 5000, sets idle timer to 1 minute.
 #    You can now use "telnet" utility to connect.
 #
 # Copyright (c) 2002 by Zoran Vasiljevic.
@@ -66,7 +66,7 @@ proc cmdsrv::create {port args} {
         -idletime 300000
         -initcmd  {source cmdsrv.tcl}
     }
-    
+
     #
     # Override with user-supplied data
     #
@@ -86,7 +86,7 @@ proc cmdsrv::create {port args} {
     # the actual accept with a helper after/idle callback.
     # This is a workaround for a well-known Tcl bug.
     #
-    
+
     socket -server [namespace current]::_Accept -myaddr 127.0.0.1 $port
 }
 
@@ -133,23 +133,23 @@ proc cmdsrv::_Accept {s ipaddr port} {
 proc cmdsrv::Accept {s ipaddr port} {
 
     variable data
-    
+
     #
     # Configure socket for sane operation
     #
-    
+
     fconfigure $s -blocking 0 -buffering none -translation {auto crlf}
-    
+
     #
     # Emit the prompt
     #
-    
+
     puts -nonewline $s "% "
 
     #
     # Create worker thread and transfer socket ownership
     #
- 
+
     set tid [thread::create [append data(-initcmd) \n thread::wait]]
     thread::transfer $tid $s ; # This flushes the socket as well
 
@@ -168,9 +168,9 @@ proc cmdsrv::Accept {s ipaddr port} {
 #
 # cmdsrv::Read --
 #
-#	Event loop procedure to read data from socket and collect the 
+#	Event loop procedure to read data from socket and collect the
 #   command to execute. If the command read from socket is complete
-#   it executes the command are prints the result back. 
+#   it executes the command are prints the result back.
 #
 # Arguments:
 #   s      incoming socket
@@ -201,7 +201,7 @@ proc cmdsrv::Read {s} {
         }
         return [StartIdleTimer $s]
     }
-    
+
     #
     # Construct command line to eval
     #
@@ -233,7 +233,7 @@ proc cmdsrv::Read {s} {
 # cmdsrv::SockDone --
 #
 #	Tears down the thread and closes the socket if the remote peer has
-#   closed his side of the comm channel. 
+#   closed his side of the comm channel.
 #
 # Arguments:
 #   s      incoming socket
@@ -254,7 +254,7 @@ proc cmdsrv::SockDone {s} {
 #
 # cmdsrv::StopIdleTimer --
 #
-#	Cancel the connection idle timer. 
+#	Cancel the connection idle timer.
 #
 # Arguments:
 #   s      incoming socket
@@ -279,7 +279,7 @@ proc cmdsrv::StopIdleTimer {s} {
 #
 # cmdsrv::StartIdleTimer --
 #
-#	Initiates the connection idle timer. 
+#	Initiates the connection idle timer.
 #
 # Arguments:
 #   s      incoming socket

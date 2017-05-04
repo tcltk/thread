@@ -19,6 +19,9 @@
 #include "threadSvListCmd.h"    /* Shared variants of list commands */
 #include "threadSvKeylistCmd.h" /* Shared variants of list commands */
 #include "psGdbm.h"             /* The gdbm persistent store implementation */
+#include "psLmdb.h"             /* The lmdb persistent store implementation */
+
+#define SV_FINALIZE
 
 /*
  * Number of buckets to spread shared arrays into. Each bucket is
@@ -58,6 +61,11 @@ static char *Sv_tclEmptyStringRep = NULL;
  * Global variables used within this file.
  */
 
+#ifdef SV_FINALIZE
+static size_t     nofThreads;      /* Number of initialized threads */
+static Tcl_Mutex  nofThreadsMutex; /* Protects the nofThreads variable */
+#endif /* SV_FINALIZE */
+
 static Bucket*    buckets;      /* Array of buckets. */
 static Tcl_Mutex  bucketsMutex; /* Protects the array of buckets */
 
@@ -83,6 +91,7 @@ static Tcl_ObjCmdProc SvGetObjCmd;
 static Tcl_ObjCmdProc SvArrayObjCmd;
 static Tcl_ObjCmdProc SvUnsetObjCmd;
 static Tcl_ObjCmdProc SvNamesObjCmd;
+static Tcl_ObjCmdProc SvHandlersObjCmd;
 
 /*
  * New commands added to
@@ -112,7 +121,6 @@ static int DeleteArray(Array*);
 static void SvAllocateContainers(Bucket*);
 static void SvRegisterStdCommands(void);
 
-#define SV_FINALIZE
 #ifdef SV_FINALIZE
 static void SvFinalizeContainers(Bucket*);
 static void SvFinalize(ClientData);
@@ -512,7 +520,7 @@ AcquireContainer(
             size_t len = 0;
             if (psPtr->psGet(psPtr->psHandle, key, &val, &len) == 0) {
                 tclObj = Tcl_NewStringObj(val, len);
-                psPtr->psFree(val);
+                psPtr->psFree(psPtr->psHandle, val);
             }
         }
         if (!(flags & FLAGS_CREATEVAR) && tclObj == NULL) {
@@ -1319,7 +1327,9 @@ SvArrayObjCmd(
          */
 
         PsStore *psPtr;
+        Tcl_HashEntry *hPtr;
         size_t len;
+        int new;
         char *psurl, *key = NULL, *val = NULL;
 
         if (objc < 4) {
@@ -1346,7 +1356,7 @@ SvArrayObjCmd(
         }
         if (arrayPtr) {
             Tcl_HashSearch search;
-            Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
+            hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
             arrayPtr->psPtr = psPtr;
             arrayPtr->bindAddr = strcpy(ckalloc(len+1), psurl);
             while (hPtr) {
@@ -1364,8 +1374,10 @@ SvArrayObjCmd(
         }
         if (!psPtr->psFirst(psPtr->psHandle, &key, &val, &len)) {
             do {
-                psPtr->psFree(val); /* What a waste! */
-                AcquireContainer(arrayPtr, key, FLAGS_CREATEVAR);
+                Tcl_Obj * tclObj = Tcl_NewStringObj(val, len);
+                hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &new);
+                Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, tclObj));
+                psPtr->psFree(psPtr->psHandle, val);
             } while (!psPtr->psNext(psPtr->psHandle, &key, &val, &len));
         }
 
@@ -2016,8 +2028,8 @@ SvLockObjCmd(
      */
 
     if (objc < 3) {
-	Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
-	return TCL_ERROR;
+        Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
+        return TCL_ERROR;
     }
 
     arrayPtr  = LockArray(interp, Tcl_GetString(objv[1]), FLAGS_CREATEARRAY);
@@ -2056,6 +2068,53 @@ SvLockObjCmd(
 
     return ret;
 }
+
+/*
+ *-----------------------------------------------------------------------------
+ *
+ * SvHandlersObjCmd --
+ *
+ *    This procedure is invoked to process "tsv::handlers" Tcl command.
+ *    See the user documentation for details on what it does.
+ *
+ * Results:
+ *      A standard Tcl result.
+ *
+ * Side effects:
+ *      None.
+ *
+ *-----------------------------------------------------------------------------
+ */
+static int
+SvHandlersObjCmd(
+             ClientData arg,                     /* Not used. */
+             Tcl_Interp *interp,                 /* Current interpreter. */
+             int objc,                           /* Number of arguments. */
+             Tcl_Obj *const objv[])              /* Argument objects. */
+{
+    PsStore *tmpPtr = NULL;
+
+    /*
+     * Syntax:
+     *
+     *     tsv::handlers
+     */
+
+    if (objc != 1) {
+        Tcl_WrongNumArgs(interp, 1, objv, NULL);
+        return TCL_ERROR;
+    }
+
+    Tcl_ResetResult(interp);
+    Tcl_MutexLock(&svMutex);
+    for (tmpPtr = psStore; tmpPtr; tmpPtr = tmpPtr->nextPtr) {
+        Tcl_AppendElement(interp, tmpPtr->type);
+    }
+    Tcl_MutexUnlock(&svMutex);
+
+    return TCL_OK;
+}
+
 
 /*
  *-----------------------------------------------------------------------------
@@ -2081,19 +2140,20 @@ SvRegisterStdCommands(void)
     if (initialized == 0) {
         Tcl_MutexLock(&initMutex);
         if (initialized == 0) {
-            Sv_RegisterCommand("var",    SvObjObjCmd,    NULL, 1);
-            Sv_RegisterCommand("object", SvObjObjCmd,    NULL, 1);
-            Sv_RegisterCommand("set",    SvSetObjCmd,    NULL, 0);
-            Sv_RegisterCommand("unset",  SvUnsetObjCmd,  NULL, 0);
-            Sv_RegisterCommand("get",    SvGetObjCmd,    NULL, 0);
-            Sv_RegisterCommand("incr",   SvIncrObjCmd,   NULL, 0);
-            Sv_RegisterCommand("exists", SvExistsObjCmd, NULL, 0);
-            Sv_RegisterCommand("append", SvAppendObjCmd, NULL, 0);
-            Sv_RegisterCommand("array",  SvArrayObjCmd,  NULL, 0);
-            Sv_RegisterCommand("names",  SvNamesObjCmd,  NULL, 0);
-            Sv_RegisterCommand("pop",    SvPopObjCmd,    NULL, 0);
-            Sv_RegisterCommand("move",   SvMoveObjCmd,   NULL, 0);
-            Sv_RegisterCommand("lock",   SvLockObjCmd,   NULL, 0);
+            Sv_RegisterCommand("var",      SvObjObjCmd,      NULL, 1);
+            Sv_RegisterCommand("object",   SvObjObjCmd,      NULL, 1);
+            Sv_RegisterCommand("set",      SvSetObjCmd,      NULL, 0);
+            Sv_RegisterCommand("unset",    SvUnsetObjCmd,    NULL, 0);
+            Sv_RegisterCommand("get",      SvGetObjCmd,      NULL, 0);
+            Sv_RegisterCommand("incr",     SvIncrObjCmd,     NULL, 0);
+            Sv_RegisterCommand("exists",   SvExistsObjCmd,   NULL, 0);
+            Sv_RegisterCommand("append",   SvAppendObjCmd,   NULL, 0);
+            Sv_RegisterCommand("array",    SvArrayObjCmd,    NULL, 0);
+            Sv_RegisterCommand("names",    SvNamesObjCmd,    NULL, 0);
+            Sv_RegisterCommand("pop",      SvPopObjCmd,      NULL, 0);
+            Sv_RegisterCommand("move",     SvMoveObjCmd,     NULL, 0);
+            Sv_RegisterCommand("lock",     SvLockObjCmd,     NULL, 0);
+            Sv_RegisterCommand("handlers", SvHandlersObjCmd, NULL, 0);
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);
@@ -2125,6 +2185,20 @@ Sv_Init (interp)
     SvCmdInfo *cmdPtr;
     const Tcl_UniChar no[3] = {'n', 'o', 0} ;
     Tcl_Obj *obj;
+
+#ifdef SV_FINALIZE
+    /*
+     * Create exit handler for this thread
+     */
+    Tcl_CreateThreadExitHandler(SvFinalize, NULL);
+
+    /*
+     * Increment number of threads
+     */
+    Tcl_MutexLock(&nofThreadsMutex);
+    ++nofThreads;
+    Tcl_MutexUnlock(&nofThreadsMutex);
+#endif /* SV_FINALIZE */
 
     /*
      * Add keyed-list datatype
@@ -2185,7 +2259,6 @@ Sv_Init (interp)
         Tcl_MutexLock(&bucketsMutex);
         if (buckets == NULL) {
             buckets = (Bucket *)ckalloc(sizeof(Bucket) * NUMBUCKETS);
-	    Tcl_CreateExitHandler(SvFinalize, NULL);
 
             for (i = 0; i < NUMBUCKETS; ++i) {
                 bucketPtr = &buckets[i];
@@ -2205,11 +2278,14 @@ Sv_Init (interp)
                 Tcl_DecrRefCount(dummy);
             }
 
-#ifdef HAVE_GDBM
             /*
              * Register persistent store handlers
              */
+#ifdef HAVE_GDBM
             Sv_RegisterGdbmStore();
+#endif
+#ifdef HAVE_LMDB
+            Sv_RegisterLmdbStore();
 #endif
         }
         Tcl_MutexUnlock(&bucketsMutex);
@@ -2251,6 +2327,18 @@ SvFinalize (ClientData clientData)
 
     Tcl_HashEntry *hashPtr;
     Tcl_HashSearch search;
+
+    /*
+     * Decrement number of threads. Proceed only if I was the last one. The
+     * mutex is unlocked at the end of this function, so new threads that might
+     * want to register in the meanwhile will find a clean environment when
+     * they eventually succeed acquiring nofThreadsMutex.
+     */
+    Tcl_MutexLock(&nofThreadsMutex);
+    if (nofThreads > 1)
+    {
+        goto done;
+    }
 
     /*
      * Reclaim memory for shared arrays
@@ -2312,6 +2400,10 @@ SvFinalize (ClientData clientData)
     }
 
     Tcl_MutexUnlock(&svMutex);
+
+done:
+    --nofThreads;
+    Tcl_MutexUnlock(&nofThreadsMutex);
 }
 #endif /* SV_FINALIZE */
 

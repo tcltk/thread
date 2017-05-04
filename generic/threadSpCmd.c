@@ -96,7 +96,7 @@ static int        initOnce;    /* Flag for initializing tables below */
 static Tcl_Mutex  initMutex;   /* Controls initialization of primitives */
 static SpBucket  muxBuckets[NUMSPBUCKETS];  /* Maps mutex names/handles */
 static SpBucket  varBuckets[NUMSPBUCKETS];  /* Maps condition variable
-					     * names/handles */
+                                             * names/handles */
 
 /*
  * Functions implementing Tcl commands
@@ -1243,7 +1243,7 @@ SpMutexFinalize(SpMutex *mutexPtr)
 static int
 SpCondvWait(SpCondv *condvPtr, SpMutex *mutexPtr, int msec)
 {
-	Sp_AnyMutex **lock = &mutexPtr->lock;
+    Sp_AnyMutex **lock = &mutexPtr->lock;
     Sp_ExclusiveMutex_ *emPtr = *(Sp_ExclusiveMutex_**)lock;
     Tcl_Time waitTime, *wt = NULL;
     Tcl_ThreadId threadId = Tcl_GetCurrentThread();
@@ -1544,27 +1544,27 @@ Sp_RecursiveMutexLock(Sp_RecursiveMutex *muxPtr)
          * We are already holding the mutex
          * so just count one more lock.
          */
-    	rmPtr->lockcount++;
+        rmPtr->lockcount++;
     } else {
-    	if (rmPtr->owner == (Tcl_ThreadId)0) {
+        if (rmPtr->owner == (Tcl_ThreadId)0) {
             /*
              * Nobody holds the mutex, we do now.
              */
-    		rmPtr->owner = thisThread;
-    		rmPtr->lockcount = 1;
-    	} else {
+            rmPtr->owner = thisThread;
+            rmPtr->lockcount = 1;
+        } else {
             /*
              * Somebody else holds the mutex; wait.
              */
-    		while (1) {
+            while (1) {
                 Tcl_ConditionWait(&rmPtr->cond, &rmPtr->lock, NULL);
-    			if (rmPtr->owner == (Tcl_ThreadId)0) {
-    				rmPtr->owner = thisThread;
-    				rmPtr->lockcount = 1;
-    				break;
-    			}
-    		}
-    	}
+                if (rmPtr->owner == (Tcl_ThreadId)0) {
+                    rmPtr->owner = thisThread;
+                    rmPtr->lockcount = 1;
+                    break;
+                }
+            }
+        }
     }
 
     Tcl_MutexUnlock(&rmPtr->lock);

@@ -34,9 +34,9 @@
 
 #ifndef MODULE_SCOPE
 #   ifdef __cplusplus
-#	define MODULE_SCOPE extern "C"
+#       define MODULE_SCOPE extern "C"
 #   else
-#	define MODULE_SCOPE extern
+#       define MODULE_SCOPE extern
 #   endif
 #endif
 
