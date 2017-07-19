@@ -420,11 +420,14 @@ WARNINGS		    = $(WARNINGS) -Wp64
 !endif
 !endif
 
+
+LINKERFLAGS = $(LINKERFLAGS) $(ADDLINKOPTS)
+
 #----------------------------------------------------------
 # Set our defines now armed with our options.
 #----------------------------------------------------------
 
-OPTDEFINES	= -DTCL_CFGVAL_ENCODING=$(CFG_ENCODING) -DSTDC_HEADERS
+OPTDEFINES	= -DTCL_CFGVAL_ENCODING=$(CFG_ENCODING) -DSTDC_HEADERS $(ADDOPTDEFINES)
 
 !if $(TCL_MEM_DEBUG)
 OPTDEFINES	= $(OPTDEFINES) -DTCL_MEM_DEBUG
