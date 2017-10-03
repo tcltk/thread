@@ -10,7 +10,7 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# Copyright (c) 2001-2002 David Gravereaux.
+# Copyright (c) 2001-2003 David Gravereaux.
 # Copyright (c) 2003-2008 Patrick Thoyts
 #------------------------------------------------------------------------------
 
@@ -36,7 +36,6 @@ _INSTALLDIR	= $(INSTALLDIR:/=\)
 # "delete all" method.
 #----------------------------------------------------------
 
-!if "$(OS)" == "Windows_NT"
 RMDIR	= rmdir /S /Q
 ERRNULL  = 2>NUL
 !if ![ver | find "4.0" > nul]
@@ -45,13 +44,6 @@ COPY	= copy >NUL
 !else
 CPY	= xcopy /i /y >NUL
 COPY	= copy /y >NUL
-!endif
-!else # "$(OS)" != "Windows_NT"
-CPY	= xcopy /i >_JUNK.OUT # On Win98 NUL does not work here.
-COPY	= copy >_JUNK.OUT # On Win98 NUL does not work here.
-RMDIR	= deltree /Y
-NULL    = \NUL # Used in testing directory existence
-ERRNULL = >NUL # Win9x shell cannot redirect stderr
 !endif
 MKDIR   = mkdir
 
@@ -162,7 +154,7 @@ DEBUGFLAGS     = $(DEBUGFLAGS) -RTC1
 DEBUGFLAGS     = $(DEBUGFLAGS) -GZ
 !endif
 
-COMPILERFLAGS  =-W3
+COMPILERFLAGS  =-W3 /DUNICODE /D_UNICODE /D_ATL_XP_TARGETING
 
 # In v13 -GL and -YX are incompatible.
 !if [nmakehlp -c -YX]
@@ -189,19 +181,6 @@ COMPILERFLAGS   = $(COMPILERFLAGS) -QIA64_Bx
 !else
 !message *** Compiler does not have 'B-stepping errata workarounds'
 !endif
-!endif
-
-!if "$(MACHINE)" == "IX86"
-### test for -align:4096, when align:512 will do.
-!if [nmakehlp -l -opt:nowin98]
-!message *** Linker has 'Win98 alignment problem'
-ALIGN98_HACK	= 1
-!else
-!message *** Linker does not have 'Win98 alignment problem'
-ALIGN98_HACK	= 0
-!endif
-!else
-ALIGN98_HACK	= 0
 !endif
 
 LINKERFLAGS     =
