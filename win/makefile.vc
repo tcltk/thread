@@ -152,18 +152,15 @@ Please `cd` to its location first.
 #-------------------------------------------------------------------------
 
 PROJECT = thread
+PRJ_RCFILE = thread.rc
+LIBDIR          = $(ROOT)\lib
+DOCDIR          = $(ROOT)\doc\html
 
-# Uncomment the following line if this is a Tk extension.
-#PROJECT_REQUIRES_TK=1
-!include "rules.vc"
+PRJ_DEFINES = -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS
+PRJ_DEFINES = $(PRJ_DEFINES) -DTCL_TIP143 -DTCL_TIP285
+!include "rules-ext.vc"
 
-!include "pkg.vc"
-
-DOTVERSION      = $(PACKAGE_VERSION:"=) #"
-VERSION         = $(PACKAGE_MAJOR)$(PACKAGE_MINOR)
-STUBPREFIX      = $(PROJECT)stub
-
-DLLOBJS = \
+PRJ_OBJS = \
 	$(TMP_DIR)\threadNs.obj \
 	$(TMP_DIR)\threadCmd.obj \
 	$(TMP_DIR)\threadSvCmd.obj \
@@ -173,143 +170,10 @@ DLLOBJS = \
 	$(TMP_DIR)\threadSvListCmd.obj \
 	$(TMP_DIR)\threadSvKeylistCmd.obj \
 	$(TMP_DIR)\tclXkeylist.obj \
-	$(TMP_DIR)\threadWin.obj \
-!if !$(STATIC_BUILD)
-	$(TMP_DIR)\thread.res
-!endif
+	$(TMP_DIR)\threadWin.obj
 
-PRJHEADERS =
-
-#-------------------------------------------------------------------------
-# Target names and paths ( shouldn't need changing )
-#-------------------------------------------------------------------------
-
-BINROOT		= $(MAKEDIR)
-ROOT            = $(MAKEDIR)\..
-
-PRJIMPLIB	= $(OUT_DIR)\$(PROJECT)$(VERSION)$(SUFX).lib
-PRJLIBNAME	= $(PROJECT)$(VERSION)$(SUFX).$(EXT)
-PRJLIB		= $(OUT_DIR)\$(PRJLIBNAME)
-
-PRJSTUBLIBNAME	= $(STUBPREFIX)$(VERSION).lib
-PRJSTUBLIB	= $(OUT_DIR)\$(PRJSTUBLIBNAME)
-
-### Make sure we use backslash only.
-PRJ_INSTALL_DIR         = $(_INSTALLDIR)\$(PROJECT)$(DOTVERSION)
-LIB_INSTALL_DIR		= $(PRJ_INSTALL_DIR)
-BIN_INSTALL_DIR		= $(PRJ_INSTALL_DIR)
-DOC_INSTALL_DIR		= $(PRJ_INSTALL_DIR)
-SCRIPT_INSTALL_DIR	= $(PRJ_INSTALL_DIR)
-INCLUDE_INSTALL_DIR	= $(_TCLDIR)\include
-
-### The following paths CANNOT have spaces in them.
-GENERICDIR	= $(ROOT)\generic
-WINDIR		= $(ROOT)\win
-LIBDIR          = $(ROOT)\lib
-DOCDIR		= $(ROOT)\doc
-TOOLSDIR	= $(ROOT)\tools
-COMPATDIR	= $(ROOT)\compat
-
-#---------------------------------------------------------------------
-# Compile flags
-#---------------------------------------------------------------------
-
-!if !$(DEBUG)
-!if $(OPTIMIZING)
-### This cranks the optimization level to maximize speed
-cdebug	= $(OPTIMIZATIONS)
-!else
-cdebug	=
-!endif
-!else if "$(MACHINE)" == "IA64"
-### Warnings are too many, can't support warnings into errors.
-cdebug	= -Zi -Od $(DEBUGFLAGS)
-!else
-cdebug	= -Zi -W3 $(DEBUGFLAGS)
-!endif
-
-### Common compiler options that are architecture specific
 !if "$(MACHINE)" == "ARM"
-carch = -D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE
-!else
-carch =
-!endif
-
-### Declarations common to all compiler options
-cwarn = $(WARNINGS) -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE
-cflags = -nologo -c $(COMPILERFLAGS) $(carch) $(cwarn) -Fp$(TMP_DIR)^\
-
-!if $(MSVCRT)
-!if $(DEBUG) && !$(UNCHECKED)
-crt = -MDd
-!else
-crt = -MD
-!endif
-!else
-!if $(DEBUG) && !$(UNCHECKED)
-crt = -MTd
-!else
-crt = -MT
-!endif
-!endif
-
-cflags = $(cflags) -DMODULE_SCOPE=extern -DUSE_TCL_STUBS
-cflags = $(cflags) -DTCL_TIP143 -DTCL_TIP285
-!if defined(TKSTUBLIB)
-cflags = $(cflags) -DUSE_TK_STUBS
-!endif
-
-INCLUDES	= $(TCL_INCLUDES) -I"$(WINDIR)" -I"$(GENERICDIR)"
-BASE_CFLAGS	= $(cflags) $(cdebug) $(crt) $(INCLUDES)
-CON_CFLAGS	= $(cflags) $(cdebug) $(crt) -DCONSOLE
-TCL_CFLAGS	= -DPACKAGE_NAME="\"$(PROJECT)\"" \
-		  -DPACKAGE_VERSION="\"$(DOTVERSION)\"" \
-		  -DBUILD_$(PROJECT) \
-		  $(BASE_CFLAGS) $(OPTDEFINES)
-
-### Stubs files should not be compiled with -GL
-STUB_CFLAGS     = $(cflags) $(cdebug:-GL=) #$(TK_DEFINES)
-
-#---------------------------------------------------------------------
-# Link flags
-#---------------------------------------------------------------------
-
-!if $(DEBUG)
-ldebug	= -debug
-!if $(MSVCRT)
-ldebug = $(ldebug) -nodefaultlib:msvcrt
-!endif
-!else
-ldebug	= -release -opt:ref -opt:icf,3
-!endif
-
-### Declarations common to all linker options
-lflags	= -nologo -machine:$(MACHINE) $(LINKERFLAGS) $(ldebug)
-
-!if $(PROFILE)
-lflags	= $(lflags) -profile
-!endif
-
-!if $(LOIMPACT)
-lflags	= $(lflags) -ws:aggressive
-!endif
-
-dlllflags = $(lflags) -dll
-conlflags = $(lflags) -subsystem:console
-guilflags = $(lflags) -subsystem:windows
-!if !$(STATIC_BUILD)
-baselibs  = $(TCLSTUBLIB)
-!if defined(TKSTUBLIB)
-baselibs  = $(baselibs) $(TKSTUBLIB)
-!endif
-!endif
-
-# Avoid 'unresolved external symbol __security_cookie' errors.
-# c.f. http://support.microsoft.com/?id=894573
-!if "$(MACHINE)" == "IA64" || "$(MACHINE)" == "AMD64"
-!if $(VCVERSION) > 1399 && $(VCVERSION) < 1500
-baselibs   = $(baselibs) bufferoverflowU.lib
-!endif
+PRJ_DEFINES = $(PRJ_DEFINES) -D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE
 !endif
 
 #---------------------------------------------------------------------
@@ -320,14 +184,10 @@ baselibs   = $(baselibs) bufferoverflowU.lib
 TESTFLAGS = $(TESTFLAGS) -file $(TESTPAT)
 !endif
 
-#---------------------------------------------------------------------
-# Project specific targets (EDIT)
-#---------------------------------------------------------------------
+!include "$(_RULESDIR)\targets.vc"
 
-all:	    setup $(PROJECT)
-$(PROJECT): setup pkgIndex $(PRJLIB)
-install:    install-binaries install-libraries install-docs
-pkgIndex:   $(OUT_DIR)\pkgIndex.tcl
+install:    default-install-html
+pkgindex:   default-pkgindex-tea
 
 test: setup $(PROJECT)
 	@set TCL_LIBRARY=$(TCL_LIBRARY:\=/)
@@ -352,75 +212,11 @@ shell: setup $(PROJECT)
 !endif
 	$(DEBUGGER) $(TCLSH) $(SCRIPT)
 
-setup:
-	@if not exist $(OUT_DIR)\nul mkdir $(OUT_DIR)
-	@if not exist $(TMP_DIR)\nul mkdir $(TMP_DIR)
-
-$(PRJLIB): $(DLLOBJS)
-!if $(STATIC_BUILD)
-	$(lib32) -nologo -out:$@ @<<
-$**
-<<
-!else
-	$(link32) $(dlllflags) -out:$@ $(baselibs) @<<
-$**
-<<
-	$(_VC_MANIFEST_EMBED_DLL)
-	-@del $*.exp
-!endif
-
-$(PRJSTUBLIB): $(PRJSTUBOBJS)
-	$(lib32) -nologo -nodefaultlib -out:$@ $(PRJSTUBOBJS)
-
-#---------------------------------------------------------------------
-# Implicit rules
-#---------------------------------------------------------------------
-
-{$(WINDIR)}.c{$(TMP_DIR)}.obj::
-    $(cc32) $(TCL_CFLAGS) -DBUILD_$(PROJECT) -Fo$(TMP_DIR)\ @<<
-$<
-<<
-
-{$(GENERICDIR)}.c{$(TMP_DIR)}.obj::
-    $(cc32) $(TCL_CFLAGS) -DBUILD_$(PROJECT) -Fo$(TMP_DIR)\ @<<
-$<
-<<
-
-{$(COMPATDIR)}.c{$(TMP_DIR)}.obj::
-    $(cc32) $(TCL_CFLAGS) -DBUILD_$(PROJECT) -Fo$(TMP_DIR)\ @<<
-$<
-<<
-
-{$(WINDIR)}.rc{$(TMP_DIR)}.res:
-	$(rc32) -fo $@ -r -i "$(GENERICDIR)" $(TCL_INCLUDES) \
-		-D_WIN32 -D__WIN32__ \
-		-DCOMMAVERSION=$(DOTVERSION:.=,),0 \
-		-DDOTVERSION=\"$(DOTVERSION)\" \
-		-DVERSION=\"$(VERSION)$(SUFX)\" \
-		-DDEBUG=$(DEBUG) \
-		-DPACKAGE_MAJOR=$(PACKAGE_MAJOR) \
-		-DPACKAGE_MINOR=$(PACKAGE_MINOR) \
-		-DPACKAGE_VERSION=\"$(PACKAGE_VERSION)\" \
-!if $(DEBUG)
-	-d DEBUG \
-!endif
-!if $(TCL_THREADS)
-	-d TCL_THREADS \
-!endif
-!if $(STATIC_BUILD)
-	-d STATIC_BUILD \
-!endif
-	$<
-
-.SUFFIXES:
-.SUFFIXES:.c .rc
-
 #-------------------------------------------------------------------------
 # Explicit dependency rules
 #
 #-------------------------------------------------------------------------
 
-#{$(WINDIR)}.c{$(TMP_DIR)}.obj ::
 $(GENERICDIR)\psGdbm.c: $(GENERICDIR)\psGdbm.h
 $(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\tclThreadInt.h
 $(GENERICDIR)\threadSvCmd.c : $(GENERICDIR)\tclThreadInt.h
@@ -428,51 +224,3 @@ $(GENERICDIR)\threadPoolCmd.c : $(GENERICDIR)\tclThreadInt.h
 $(GENERICDIR)\threadSvListCmd.c : $(GENERICDIR)\tclThreadInt.h
 $(GENERICDIR)\threadSvKeylistCmd.c : $(GENERICDIR)\tclThreadInt.h
 
-.PHONY: $(OUT_DIR)\pkgIndex.tcl
-
-$(OUT_DIR)\pkgIndex.tcl: $(ROOT)\pkgIndex.tcl.in
-	@nmakehlp -s << $** > $@
-@PACKAGE_NAME@       thread
-@PACKAGE_VERSION@    $(DOTVERSION)
-@PKG_LIB_FILE@       $(PRJLIBNAME)
-<<
-
-#---------------------------------------------------------------------
-# Installation. (EDIT)
-#
-# You may need to modify this section to reflect the final distribution
-# of your files and possibly to generate documentation.
-#
-#---------------------------------------------------------------------
-
-install-binaries:
-	@echo Installing binaries to '$(SCRIPT_INSTALL_DIR)'
-	@if not exist "$(SCRIPT_INSTALL_DIR)" mkdir "$(SCRIPT_INSTALL_DIR)"
-	@$(CPY) $(PRJLIB) "$(SCRIPT_INSTALL_DIR)" >NUL
-
-install-libraries:
-	@echo Installing library files to '$(SCRIPT_INSTALL_DIR)'
-	@if exist $(LIBDIR) $(CPY) $(LIBDIR)\*.tcl "$(SCRIPT_INSTALL_DIR)"
-	@$(CPY) $(OUT_DIR)\pkgIndex.tcl "$(SCRIPT_INSTALL_DIR)"
-
-install-docs:
-	@echo Installing documentation files to '$(DOC_INSTALL_DIR)'
-	@if exist $(DOCDIR)\man $(CPY) $(DOCDIR)\man\*.n "$(DOC_INSTALL_DIR)"
-
-#---------------------------------------------------------------------
-# Clean up
-#---------------------------------------------------------------------
-
-clean:
-	@if exist $(TMP_DIR)\nul $(RMDIR) $(TMP_DIR)
-	@if exist $(WINDIR)\version.vc del $(WINDIR)\version.vc
-	@if exist $(WINDIR)\vercl.i del $(WINDIR)\vercl.i
-	@if exist $(WINDIR)\vercl.x del $(WINDIR)\vercl.x
-	@if exist $(WINDIR)\_junk.pch del $(WINDIR)\_junk.pch
-
-realclean: clean
-	@if exist $(OUT_DIR)\nul $(RMDIR) $(OUT_DIR)
-
-distclean: realclean
-	@if exist $(WINDIR)\nmakehlp.exe del $(WINDIR)\nmakehlp.exe
-	@if exist $(WINDIR)\nmakehlp.obj del $(WINDIR)\nmakehlp.obj
