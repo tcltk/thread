@@ -28,6 +28,7 @@
 #include "tclThreadInt.h"
 #include "threadSvCmd.h"
 #include "tclXkeylist.h"
+#include <stdarg.h>
 
 #ifdef STATIC_BUILD
 #if TCL_MAJOR_VERSION >= 9
