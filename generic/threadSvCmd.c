@@ -47,6 +47,7 @@ static const Tcl_ObjType* booleanObjTypePtr;
 static const Tcl_ObjType* byteArrayObjTypePtr;
 static const Tcl_ObjType* doubleObjTypePtr;
 static const Tcl_ObjType* intObjTypePtr;
+static const Tcl_ObjType* wideIntObjTypePtr;
 static const Tcl_ObjType* stringObjTypePtr;
 
 /*
@@ -1013,6 +1014,7 @@ Sv_DuplicateObj(objPtr)
                 || objPtr->typePtr == byteArrayObjTypePtr  \
                 || objPtr->typePtr == doubleObjTypePtr     \
                 || objPtr->typePtr == intObjTypePtr        \
+                || objPtr->typePtr == wideIntObjTypePtr    \
                 || objPtr->typePtr == stringObjTypePtr) {
                /*
                 * Cover all "safe" obj types (see header comment)
@@ -2247,6 +2249,10 @@ Sv_Init (interp)
 
     obj = Tcl_NewIntObj(0);
     intObjTypePtr       = obj->typePtr;
+    Tcl_DecrRefCount(obj);
+
+    obj = Tcl_NewWideIntObj(((Tcl_WideInt)1)<<35);
+    wideIntObjTypePtr       = obj->typePtr;
     Tcl_DecrRefCount(obj);
 
     /*
