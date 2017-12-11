@@ -33,16 +33,21 @@ from Micro$oft.
 
 To build the extension invoke the following command:
 
-    nmake -f makefile.vc TCLDIR=<path>
+    nmake -f makefile.vc INSTALLDIR=<path-to-installed-tcl>
 
-You would need to give the <path> of the Tcl distribution where
-tcl.h and other needed Tcl files are located.
-Please look into the makefile.vc file for more information.
+INSTALLDIR is the path of the Tcl distribution where
+tcl.h and other needed Tcl files are installed.
+To build against a Tcl source build instead,
+
+    nmake -f makefile.vc TCLDIR=<path-to-tcl-sources>
+
+Please look into the makefile.vc file for more options etc.
 
 Alternatively, you can open the extension workspace and project files
 (thread_win.dsw and thread_win.dsp) from within the MSVC++ and press
 the F7 key to build the extension under the control of the MSVC IDE.
-
+NOTE: it is likely that the .dsw and .dsp files are out of date. At
+least Visual Studio 2017 was not able to open those files.
 
 II. Building optional support libraries
 =======================================
