@@ -46,10 +46,6 @@ PRJ_OBJS = \
 	$(TMP_DIR)\tclXkeylist.obj \
 	$(TMP_DIR)\threadWin.obj
 
-!if "$(MACHINE)" == "ARM"
-PRJ_DEFINES = $(PRJ_DEFINES) -D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE
-!endif
-
 !include "$(_RULESDIR)\targets.vc"
 
 install:    default-install-docs-html
