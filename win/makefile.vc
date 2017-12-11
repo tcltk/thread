@@ -24,7 +24,7 @@
 #------------------------------------------------------------------------------
 
 PROJECT = thread
-PRJ_RCFILE = thread.rc
+RCFILE = thread.rc
 DOCDIR          = $(ROOT)\doc\html
 
 PRJ_DEFINES = -D _CRT_SECURE_NO_DEPRECATE -D _CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS
