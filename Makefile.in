@@ -332,6 +332,7 @@ dist: dist-clean
 	cp $(srcdir)/win/README.txt $(srcdir)/win/CONFIG $(srcdir)/win/thread.rc \
 		$(srcdir)/win/threadWin.c $(srcdir)/win/makefile.vc \
 		$(srcdir)/win/nmakehlp.c $(srcdir)/win/pkg.vc \
+		$(srcdir)/win/targets.vc $(srcdir)/win/rules-ext.vc \
 		$(srcdir)/win/rules.vc   $(srcdir)/win/thread_win.dsw \
 		$(srcdir)/win/thread_win.dsp $(DIST_DIR)/win/
 
