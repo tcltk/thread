@@ -86,7 +86,7 @@ pkgincludedir	= $(includedir)/$(PKG_DIR)
 top_builddir	= .
 
 INSTALL_OPTIONS	=
-INSTALL		= @INSTALL@ ${INSTALL_OPTIONS}
+INSTALL		= @INSTALL@ $(INSTALL_OPTIONS)
 INSTALL_DATA_DIR = @INSTALL_DATA_DIR@
 INSTALL_DATA	= @INSTALL_DATA@
 INSTALL_PROGRAM	= @INSTALL_PROGRAM@
@@ -230,13 +230,12 @@ install-doc: doc
 	@echo "Installing documentation in $(DESTDIR)$(mandir)"
 	@list='$(srcdir)/doc/man/*.n'; for i in $$list; do \
 	    echo "Installing $$i"; \
-	    rm -f $(DESTDIR)$(mandir)/mann/`basename $$i`; \
 	    $(INSTALL_DATA) $$i $(DESTDIR)$(mandir)/mann ; \
 	done
 
 test: binaries libraries
 	$(TCLSH) `@CYGPATH@ $(srcdir)/tests/all.tcl` $(TESTFLAGS) \
-		-load "package ifneeded ${PACKAGE_NAME} ${PACKAGE_VERSION} \
+		-load "package ifneeded $(PACKAGE_NAME) $(PACKAGE_VERSION) \
 			[list load `@CYGPATH@ $(PKG_LIB_FILE)` $(PACKAGE_NAME)]"
 
 shell: binaries libraries
@@ -307,42 +306,50 @@ COMPRESS	= tar zcvf $(PKG_DIR).tar.gz $(PKG_DIR)
 DIST_ROOT	= /tmp/dist
 DIST_DIR	= $(DIST_ROOT)/$(PKG_DIR)
 
+DIST_INSTALL_DATA	= CPPROG='cp -p' $(INSTALL) -m 644
+DIST_INSTALL_SCRIPT	= CPPROG='cp -p' $(INSTALL) -m 755
+
 dist-clean:
 	rm -rf $(DIST_DIR) $(DIST_ROOT)/$(PKG_DIR).tar.*
 
 dist: dist-clean
 	$(INSTALL_DATA_DIR) $(DIST_DIR)
-	cp -p $(srcdir)/ChangeLog $(srcdir)/README* $(srcdir)/license.terms \
-	$(srcdir)/aclocal.m4 $(srcdir)/naviserver.m4 $(srcdir)/configure \
-        $(srcdir)/*.in $(srcdir)/configure.ac $(DIST_DIR)/
-	chmod 664 $(DIST_DIR)/Makefile.in $(DIST_DIR)/aclocal.m4
-	chmod 775 $(DIST_DIR)/configure $(DIST_DIR)/configure.ac
+	$(DIST_INSTALL_DATA) $(srcdir)/license.terms \
+		$(srcdir)/ChangeLog $(srcdir)/README \
+		$(srcdir)/aclocal.m4 $(srcdir)/configure.ac \
+		$(srcdir)/Makefile.in $(srcdir)/pkgIndex.tcl.in \
+		$(srcdir)/naviserver.m4 \
+		$(DIST_DIR)/
+	$(DIST_INSTALL_SCRIPT) $(srcdir)/configure $(DIST_DIR)/
 
 	$(INSTALL_DATA_DIR) $(DIST_DIR)/tclconfig
-	cp $(srcdir)/tclconfig/install-sh $(srcdir)/tclconfig/tcl.m4 \
+	$(DIST_INSTALL_DATA) $(srcdir)/tclconfig/README.txt \
+		$(srcdir)/tclconfig/tcl.m4 $(srcdir)/tclconfig/install-sh \
 		$(DIST_DIR)/tclconfig/
-	chmod 664 $(DIST_DIR)/tclconfig/tcl.m4
-	chmod +x $(DIST_DIR)/tclconfig/install-sh
 
 	$(INSTALL_DATA_DIR) $(DIST_DIR)/unix
-	cp $(srcdir)/unix/README $(srcdir)/unix/CONFIG \
-		$(srcdir)/unix/threadUnix.c $(DIST_DIR)/unix/
+	$(DIST_INSTALL_DATA) $(srcdir)/unix/README $(srcdir)/unix/CONFIG \
+		$(srcdir)/unix/threadUnix.c \
+		$(DIST_DIR)/unix/
 
 	$(INSTALL_DATA_DIR) $(DIST_DIR)/win
-	cp $(srcdir)/win/README.txt $(srcdir)/win/CONFIG $(srcdir)/win/thread.rc \
+	$(DIST_INSTALL_DATA) \
+		$(srcdir)/win/README.txt $(srcdir)/win/CONFIG $(srcdir)/win/thread.rc \
 		$(srcdir)/win/threadWin.c $(srcdir)/win/makefile.vc \
 		$(srcdir)/win/nmakehlp.c $(srcdir)/win/pkg.vc \
-		$(srcdir)/win/rules.vc   $(srcdir)/win/thread_win.dsw \
-		$(srcdir)/win/thread_win.dsp $(DIST_DIR)/win/
+		$(srcdir)/win/targets.vc $(srcdir)/win/rules-ext.vc \
+		$(srcdir)/win/rules.vc $(srcdir)/win/thread_win.dsw \
+		$(srcdir)/win/thread_win.dsp \
+		$(DIST_DIR)/win/
 
 	$(INSTALL_DATA_DIR) $(DIST_DIR)/tcl
-	cp $(srcdir)/tcl/README $(DIST_DIR)/tcl/
+	$(DIST_INSTALL_DATA) $(srcdir)/tcl/README $(DIST_DIR)/tcl/
 
 	list='tests doc doc/man doc/html generic lib tcl/cmdsrv tcl/phttpd tcl/tpool';\
 	for p in $$list; do \
 	    if test -d $(srcdir)/$$p ; then \
 		$(INSTALL_DATA_DIR) $(DIST_DIR)/$$p; \
-		cp -p $(srcdir)/$$p/*.* $(DIST_DIR)/$$p/; \
+		$(DIST_INSTALL_DATA) $(srcdir)/$$p/*.* $(DIST_DIR)/$$p/; \
 	    fi; \
 	done
 
