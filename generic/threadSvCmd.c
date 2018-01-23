@@ -47,6 +47,7 @@ static const Tcl_ObjType* booleanObjTypePtr;
 static const Tcl_ObjType* byteArrayObjTypePtr;
 static const Tcl_ObjType* doubleObjTypePtr;
 static const Tcl_ObjType* intObjTypePtr;
+static const Tcl_ObjType* wideIntObjTypePtr;
 static const Tcl_ObjType* stringObjTypePtr;
 
 /*
@@ -116,7 +117,7 @@ static Array* LockArray(Tcl_Interp*, const char*, int);
 static int ReleaseContainer(Tcl_Interp*, Container*, int);
 static int DeleteContainer(Container*);
 static int FlushArray(Array*);
-static int DeleteArray(Array*);
+static int DeleteArray(Tcl_Interp *, Array*);
 
 static void SvAllocateContainers(Bucket*);
 static void SvRegisterStdCommands(void);
@@ -836,20 +837,37 @@ CreateArray(
  */
 
 static int
-DeleteArray(Array *arrayPtr)
+UnbindArray(Tcl_Interp *interp, Array *arrayPtr)
+{
+    PsStore *psPtr = arrayPtr->psPtr;
+    if (arrayPtr->bindAddr) {
+        ckfree(arrayPtr->bindAddr);
+        arrayPtr->bindAddr = NULL;
+    }
+    if (psPtr) {
+        if (psPtr->psClose(psPtr->psHandle) == -1) {
+            if (interp) {
+                const char *err = psPtr->psError(psPtr->psHandle);
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, -1));
+            }
+            return TCL_ERROR;
+        }
+        ckfree((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
+        arrayPtr->psPtr = NULL;
+    }
+    return TCL_OK;
+}
+
+static int
+DeleteArray(Tcl_Interp *interp, Array *arrayPtr)
 {
     if (FlushArray(arrayPtr) == -1) {
         return TCL_ERROR;
     }
     if (arrayPtr->psPtr) {
-        PsStore *psPtr = arrayPtr->psPtr;
-        if (psPtr->psClose(psPtr->psHandle) == -1) {
+        if (UnbindArray(interp, arrayPtr) != TCL_OK) {
             return TCL_ERROR;
-        }
-        ckfree((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
-    }
-    if (arrayPtr->bindAddr) {
-        ckfree(arrayPtr->bindAddr);
+        };
     }
     if (arrayPtr->entryPtr) {
         Tcl_DeleteHashEntry(arrayPtr->entryPtr);
@@ -996,6 +1014,7 @@ Sv_DuplicateObj(objPtr)
                 || objPtr->typePtr == byteArrayObjTypePtr  \
                 || objPtr->typePtr == doubleObjTypePtr     \
                 || objPtr->typePtr == intObjTypePtr        \
+                || objPtr->typePtr == wideIntObjTypePtr    \
                 || objPtr->typePtr == stringObjTypePtr) {
                /*
                 * Cover all "safe" obj types (see header comment)
@@ -1381,17 +1400,12 @@ SvArrayObjCmd(
         }
 
     } else if (index == AUNBIND) {
-        if (arrayPtr && arrayPtr->psPtr) {
-            PsStore *psPtr = arrayPtr->psPtr;
-            if (psPtr->psClose(psPtr->psHandle) == -1) {
-                const char *err = psPtr->psError(psPtr->psHandle);
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, -1));
-                ret = TCL_ERROR;
-                goto cmdExit;
-            }
-            ckfree((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
-        } else {
+        if (!arrayPtr || !arrayPtr->psPtr) {
             Tcl_AppendResult(interp, "shared variable is not bound", NULL);
+            ret = TCL_ERROR;
+            goto cmdExit;
+        }
+        if (UnbindArray(interp, arrayPtr) != TCL_OK) {
             ret = TCL_ERROR;
             goto cmdExit;
         }
@@ -1446,7 +1460,7 @@ SvUnsetObjCmd(
     }
     if (objc == 2) {
         UnlockArray(arrayPtr);
-        if (DeleteArray(arrayPtr) != TCL_OK) {
+        if (DeleteArray(interp, arrayPtr) != TCL_OK) {
             return TCL_ERROR;
         }
     } else {
@@ -2237,6 +2251,10 @@ Sv_Init (interp)
     intObjTypePtr       = obj->typePtr;
     Tcl_DecrRefCount(obj);
 
+    obj = Tcl_NewWideIntObj(((Tcl_WideInt)1)<<35);
+    wideIntObjTypePtr       = obj->typePtr;
+    Tcl_DecrRefCount(obj);
+
     /*
      * Plug-in registered commands in current interpreter
      */
@@ -2352,7 +2370,10 @@ SvFinalize (ClientData clientData)
                 while (hashPtr != NULL) {
                     Array *arrayPtr = (Array*)Tcl_GetHashValue(hashPtr);
                     UnlockArray(arrayPtr);
-                    DeleteArray(arrayPtr);
+                    /* unbind array before delete (avoid flush of persistent storage) */
+                    UnbindArray(NULL, arrayPtr);
+                    /* flush, delete etc. */
+                    DeleteArray(NULL, arrayPtr);
                     hashPtr = Tcl_NextHashEntry(&search);
                 }
                 if (bucketPtr->lock) {
