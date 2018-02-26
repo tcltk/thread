@@ -123,18 +123,4 @@ typedef struct {
     char *server;
 } NsThreadInterpData;
 
-/* 8.5, 8.4, or less - Emulate access to the error-line information
- * This is TIP 336, unrelated to 285 (async cancellation).  When doing
- * a static link of the thread package (use case: basekits, tclkits,
- * ...)  and the core Tcl is < 8.6 we cannot use TCL_TIP285 to get
- * things done, because USE_TCL_STUBS is not set for static builds,
- * causing the check in threadCmd.c to bomb.
- */
-
-#ifndef TCL_TIP285
-# if (TCL_MAJOR_VERSION < 8) || ((TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 6))
-#   define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
-# endif
-#endif
-
 #endif /* _TCL_THREAD_INT_H_ */
