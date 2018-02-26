@@ -15,9 +15,9 @@
  * of this file, and for a DISCLAIMER OF ALL WARRANTIES.
  */
 
-#include "../generic/tclThread.h"
 #include <windows.h>
 #include <process.h>
+#include "../generic/tclThread.h"
 
 #if 0
 /* only Windows 2000 (XP, too??) has this function */
