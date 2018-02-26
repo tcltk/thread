@@ -137,38 +137,41 @@ typedef struct {
     int errorLine;
 } tclInterpType;
 
-#if defined(TCL_TIP285)
+#if defined(TCL_TIP285) && defined(USE_TCL_STUBS)
 # undef Tcl_GetErrorLine
-# if defined(USE_TCL_STUBS)
-#   define Tcl_GetErrorLine(interp) ((threadTclVersion>85)? \
+# define Tcl_GetErrorLine(interp) ((threadTclVersion>85)? \
     ((int (*)(Tcl_Interp *))((&(tclStubsPtr->tcl_PkgProvideEx))[605]))(interp): \
     (((tclInterpType *)(interp))->errorLine))
-#   undef Tcl_AddErrorInfo
-#   define Tcl_AddErrorInfo(interp, msg) ((threadTclVersion>85)? \
+/* TIP #270 */
+# undef Tcl_AddErrorInfo
+# define Tcl_AddErrorInfo(interp, msg) ((threadTclVersion>85)? \
     ((void (*)(Tcl_Interp *, Tcl_Obj *))((&(tclStubsPtr->tcl_PkgProvideEx))[574]))(interp, Tcl_NewStringObj(msg, -1)): \
     ((void (*)(Tcl_Interp *, const char *))((&(tclStubsPtr->tcl_PkgProvideEx))[66]))(interp, msg))
-#   undef Tcl_BackgroundError
-#   define Tcl_BackgroundError(interp) ((threadTclVersion>85)? \
+/* TIP #337 */
+# undef Tcl_BackgroundError
+# define Tcl_BackgroundError(interp) ((threadTclVersion>85)? \
     ((void (*)(Tcl_Interp *, int))((&(tclStubsPtr->tcl_PkgProvideEx))[609]))(interp, TCL_ERROR): \
     ((void (*)(Tcl_Interp *))((&(tclStubsPtr->tcl_PkgProvideEx))[76]))(interp))
-# else
-#   define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
-# endif
+#elif !TCL_MINIMUM_VERSION(8,6)
+  /* 8.5, 8.4, or less - Emulate access to the error-line information */
+# define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
 #endif
 
-
-/* 8.5, 8.4, or less - Emulate access to the error-line information
- * This is TIP 336, unrelated to 285 (async cancellation).  When doing
- * a static link of the thread package (use case: basekits, tclkits,
- * ...)  and the core Tcl is < 8.6 we cannot use TCL_TIP285 to get
- * things done, because USE_TCL_STUBS is not set for static builds,
- * causing the check in threadCmd.c to bomb.
+/* When running on Tcl >= 8.7, make sure that Thread still runs when Tcl is compiled
+ * with -DTCL_NO_DEPRECATED=1. Stub entries for Tcl_SetIntObj/Tcl_NewIntObj are NULL then.
+ * Just use Tcl_SetWideIntObj/Tcl_NewWideIntObj in stead. We don't simply want to use
+ * Tcl_SetWideIntObj/Tcl_NewWideIntObj always, since extensions might not expect to
+ * get an actual "wideInt".
  */
-
-#ifndef TCL_TIP285
-# if !TCL_MINIMUM_VERSION(8,6)
-#   define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
-# endif
+#if defined(USE_TCL_STUBS)
+# undef Tcl_SetIntObj
+# define Tcl_SetIntObj(objPtr, value) ((threadTclVersion>86)? \
+  ((void (*)(Tcl_Obj *, Tcl_WideInt))((&(tclStubsPtr->tcl_PkgProvideEx))[489]))(objPtr, (int)(value)): \
+  ((void (*)(Tcl_Obj *, int))((&(tclStubsPtr->tcl_PkgProvideEx))[61]))(objPtr, value))
+# undef Tcl_NewIntObj
+# define Tcl_NewIntObj(value) ((threadTclVersion>86)? \
+  ((Tcl_Obj * (*)(Tcl_WideInt))((&(tclStubsPtr->tcl_PkgProvideEx))[488]))((int)(value)): \
+  ((Tcl_Obj * (*)(int))((&(tclStubsPtr->tcl_PkgProvideEx))[52]))(value))
 #endif
 
 #endif /* _TCL_THREAD_INT_H_ */
