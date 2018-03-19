@@ -38,7 +38,7 @@ foreach backend $backends {
     } -body {
         tsv::array names b
     } -cleanup {
-       cleanup 
+       cleanup
     } -result {}
 
     test tsv-$backend-1.2 {tsv::set} \

@@ -28,6 +28,7 @@
 #include "tclThreadInt.h"
 #include "threadSvCmd.h"
 #include "tclXkeylist.h"
+#include <stdarg.h>
 
 #ifdef STATIC_BUILD
 #if TCL_MAJOR_VERSION >= 9
@@ -75,9 +76,6 @@
 # define TclX_Assert(expr)
 #endif
 
-#define TRUE  1
-#define FALSE 0
-
 /*
  * Macro that behaves like strdup, only uses ckalloc.  Also macro that does the
  * same with a string that might contain zero bytes,
@@ -105,7 +103,7 @@ static const Tcl_ObjType *listType;
  * Parameters:
  *   o objPtr - Object to check.
  * Returns:
- *   True if NULL, FALSE if not.
+ *   1 if NULL, 0 if not.
  *-----------------------------------------------------------------------------
  */
 static int
@@ -363,9 +361,9 @@ ValidateKeyedList (keylIntPtr)
     TclX_Assert (keylIntPtr->arraySize >= 0);
     TclX_Assert (keylIntPtr->numEntries >= 0);
     TclX_Assert ((keylIntPtr->arraySize > 0) ?
-                 (keylIntPtr->entries != NULL) : TRUE);
+                 (keylIntPtr->entries != NULL) : 1);
     TclX_Assert ((keylIntPtr->numEntries > 0) ?
-                 (keylIntPtr->entries != NULL) : TRUE);
+                 (keylIntPtr->entries != NULL) : 1);
 
     for (idx = 0; idx < keylIntPtr->numEntries; idx++) {
         keylEntry_t *entryPtr = &(keylIntPtr->entries [idx]);
@@ -386,7 +384,7 @@ ValidateKeyedList (keylIntPtr)
  *   o interp - Used to return error messages.
  *   o key - Key string to check.
  *   o keyLen - Length of the string, used to check for binary data.
- *   o isPath - TRUE if this is a key path, FALSE if its a simple key and
+ *   o isPath - 1 if this is a key path, 0 if its a simple key and
  *     thus "." is illegal.
  * Returns:
  *    TCL_OK or TCL_ERROR.
@@ -635,7 +633,7 @@ ObjToKeyedListEntry (interp, objPtr, entryPtr)
     }
 
     key = Tcl_GetString(objv[0]);
-    if (ValidateKey(interp, key, objv[0]->length, FALSE) == TCL_ERROR) {
+    if (ValidateKey(interp, key, objv[0]->length, 0) == TCL_ERROR) {
         return TCL_ERROR;
     }
 
@@ -1209,7 +1207,7 @@ Tcl_KeylgetObjCmd (clientData, interp, objc, objv)
      * Handle retrieving a value for a specified key.
      */
     key = Tcl_GetString(objv[2]);
-    if (ValidateKey(interp, key, objv[2]->length, TRUE) == TCL_ERROR) {
+    if (ValidateKey(interp, key, objv[2]->length, 1) == TCL_ERROR) {
         return TCL_ERROR;
     }
 
@@ -1228,7 +1226,7 @@ Tcl_KeylgetObjCmd (clientData, interp, objc, objv)
             return TCL_ERROR;
         } else {
             Tcl_ResetResult(interp);
-            Tcl_SetBooleanObj (Tcl_GetObjResult (interp), FALSE);
+            Tcl_SetIntObj(Tcl_GetObjResult (interp), 0);
             return TCL_OK;
         }
     }
@@ -1250,7 +1248,7 @@ Tcl_KeylgetObjCmd (clientData, interp, objc, objv)
             return TCL_ERROR;
     }
     Tcl_ResetResult(interp);
-    Tcl_SetBooleanObj (Tcl_GetObjResult (interp), TRUE);
+    Tcl_SetIntObj(Tcl_GetObjResult (interp), 1);
     return TCL_OK;
 }
 
@@ -1295,7 +1293,7 @@ Tcl_KeylsetObjCmd (clientData, interp, objc, objv)
 
     for (idx = 2; idx < objc; idx += 2) {
         key = Tcl_GetString(objv[idx]);
-        if (ValidateKey(interp, key, objv[idx]->length, TRUE) == TCL_ERROR) {
+        if (ValidateKey(interp, key, objv[idx]->length, 1) == TCL_ERROR) {
             goto errorExit;
         }
         if (TclX_KeyedListSet (interp, keylVarPtr, key, objv [idx+1]) != TCL_OK) {
@@ -1361,7 +1359,7 @@ Tcl_KeyldelObjCmd (clientData, interp, objc, objv)
 
     for (idx = 2; idx < objc; idx++) {
         key = Tcl_GetString(objv[idx]);
-        if (ValidateKey(interp, key, objv[idx]->length, TRUE) == TCL_ERROR) {
+        if (ValidateKey(interp, key, objv[idx]->length, 1) == TCL_ERROR) {
             return TCL_ERROR;
         }
 
@@ -1413,7 +1411,7 @@ Tcl_KeylkeysObjCmd (clientData, interp, objc, objv)
         key = NULL;
     } else {
         key = Tcl_GetString(objv[2]);
-        if (ValidateKey(interp, key, objv[2]->length, TRUE) == TCL_ERROR) {
+        if (ValidateKey(interp, key, objv[2]->length, 1) == TCL_ERROR) {
             return TCL_ERROR;
         }
     }

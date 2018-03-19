@@ -27,7 +27,7 @@
  * files built as part of that shell. Example: basekits.
  */
 #ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION "2.8.0"
+#define PACKAGE_VERSION "2.9a1"
 #endif
 
 /*
@@ -435,8 +435,14 @@ ThreadInit(interp)
     Tcl_Interp *interp; /* The current Tcl interpreter */
 {
     if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
-        if ((sizeof(size_t) != sizeof(int)) ||
-                !Tcl_InitStubs(interp, "8.4-", 0)) {
+        if ((sizeof(size_t) != sizeof(int))
+#if TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 7 && defined(TCL_NO_DEPRECATED)
+                /* As long as Tcl 8.7 is not final, this allows the Thread extension */
+                /* to be loadable on Tcl 9.0, provided it is compiled against Tcl 8.7+ headers */
+                || !(Tcl_InitStubs)(interp, "8.4-",
+                (TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16), TCL_STUB_MAGIC)
+#endif
+            ) {
             return TCL_ERROR;
         }
         Tcl_ResetResult(interp);

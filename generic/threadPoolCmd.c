@@ -364,6 +364,14 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
         }
     }
 
+    /*
+     * We expect exactly two arguments remaining after options
+     */
+    if (objc - ii != 2)
+    {
+        goto usage;
+    }
+
     tpoolName = Tcl_GetString(objv[ii]);
     script    = Tcl_GetString(objv[ii+1]);
     len = objv[ii+1]->length;
@@ -623,7 +631,7 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
     TpoolResult *rPtr;
 
     /*
-     * Syntax: tpool::wait tpoolId jobIdList ?listVar?
+     * Syntax: tpool::cancel tpoolId jobIdList ?listVar?
      */
 
     if (objc < 3 || objc > 4) {
@@ -1228,13 +1236,14 @@ TpoolWorker(clientData)
         }
         Tcl_MutexUnlock(&tpoolPtr->mutex);
         TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
-        Tcl_MutexLock(&tpoolPtr->mutex);
         ckfree(rPtr->script);
+        Tcl_MutexLock(&tpoolPtr->mutex);
         if (!rPtr->detached) {
             int new;
             Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone,
                                                  (void *)(size_t)rPtr->jobId, &new),
                              (ClientData)rPtr);
+            SignalWaiter(tpoolPtr);
         } else {
             ckfree((char*)rPtr);
         }
@@ -1651,8 +1660,8 @@ TpoolRelease(tpoolPtr)
      * Signal and wait for all workers to die.
      */
 
-    tpoolPtr->tearDown = 1;
     Tcl_MutexLock(&tpoolPtr->mutex);
+    tpoolPtr->tearDown = 1;
     while (tpoolPtr->numWorkers > 0) {
         PushWaiter(tpoolPtr);
         Tcl_ConditionNotify(&tpoolPtr->cond);

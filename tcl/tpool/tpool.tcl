@@ -2,20 +2,20 @@
 # tpool.tcl --
 #
 # Tcl implementation of a threadpool paradigm in pure Tcl using
-# the Tcl threading extension 2.5 (or higher). 
+# the Tcl threading extension 2.5 (or higher).
 #
 # This file is for example purposes only. The efficient C-level
 # threadpool implementation is already a part of the threading
 # extension starting with 2.5 version. Both implementations have
-# the same Tcl API so both can be used interchangeably. Goal of 
+# the same Tcl API so both can be used interchangeably. Goal of
 # this implementation is to serve as an example of using the Tcl
 # extension to implement some very common threading paradigms.
 #
 # Beware: with time, as improvements are made to the C-level
 # implementation, this Tcl one might lag behind.
 # Please consider this code as a working example only.
-# 
-# 
+#
+#
 #
 # Copyright (c) 2002 by Zoran Vasiljevic.
 #
@@ -66,7 +66,7 @@ namespace eval tpool {
 #   Might create many new threads if "-minworkers" option is > 0.
 #
 # Results:
-#   The id of the newly created thread pool. This id must be used 
+#   The id of the newly created thread pool. This id must be used
 #   in all other tpool::* commands.
 #
 
@@ -167,7 +167,7 @@ proc tpool::names {} {
 #   Submits the new job to the thread pool. The caller might pass
 #   the job in two modes: synchronous and asynchronous.
 #   For the synchronous mode, the pool implementation will retain
-#   the result of the passed script until the caller collects it 
+#   the result of the passed script until the caller collects it
 #   using the "thread::get" command.
 #   For the asynchronous mode, the result of the script is ignored.
 #
@@ -176,7 +176,7 @@ proc tpool::names {} {
 #          tpool::post ?-detached? tpid script
 #
 #          -detached  flag to turn the async operation (ignore result)
-#          tpid       the id of the thread pool 
+#          tpid       the id of the thread pool
 #          script     script to pass to the worker thread for execution
 #
 # Side Effects:
@@ -194,7 +194,7 @@ proc tpool::post {args} {
     #
     # Parse command arguments.
     #
-    
+
     set ns [namespace current]
     set usage "wrong \# args: should be \"[lindex [info level 1] 0]\
                ?-detached? tpoolId script\""
@@ -209,14 +209,14 @@ proc tpool::post {args} {
         }
         set detached 1
         set tpid [lindex $args 1]
-        set cmd  [lindex $args 2]            
+        set cmd  [lindex $args 2]
     } else {
         error $usage
     }
 
     #
     # Find idle (or create new) worker thread. This is relatively
-    # a complex issue, since we must honour the limits about number 
+    # a complex issue, since we must honour the limits about number
     # of allowed worker threads imposed to us by the caller.
     #
 
@@ -463,11 +463,11 @@ proc tpool::Timer {tpid} {
 
     tsv::lock $tpid {
         if {[tsv::set $tpid  numworkers] > [tsv::set $tpid -minworkers]} {
-            
+
             #
             # We have more workers than needed, so kill this one.
             # We first splice ourselves from the list of active
-            # workers, adjust the number of workers and release 
+            # workers, adjust the number of workers and release
             # this thread, which may exit eventually.
             #
 
@@ -513,7 +513,7 @@ proc tpool::Run {tpid jid cmd} {
     if {$afterevent != ""} {
         after cancel $afterevent
     }
-    
+
     #
     # Evaluate passed command and build the result list.
     #
@@ -529,7 +529,7 @@ proc tpool::Run {tpid jid cmd} {
     # Check to see if any caller is waiting to be serviced.
     # If yes, kick it out of the waiting state.
     #
-    
+
     set ns [namespace current]
 
     tsv::lock $tpid {
@@ -543,7 +543,7 @@ proc tpool::Run {tpid jid cmd} {
     }
 
     #
-    # Release the thread. If this turns out to be 
+    # Release the thread. If this turns out to be
     # the last refcount held, don't bother to do
     # any more work, since thread will soon exit.
     #
