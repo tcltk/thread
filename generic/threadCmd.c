@@ -989,6 +989,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     len = objv[ii]->length;
     if (++ii < objc) {
         var = objv[ii];
+        Tcl_GetString(var);
         vlen = objv[ii]->length;
     }
     if (var && (flags & THREAD_SEND_WAIT) == 0) {
