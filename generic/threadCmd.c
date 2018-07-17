@@ -992,7 +992,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     }
     if (var && (flags & THREAD_SEND_WAIT) == 0) {
         const char *varName = Tcl_GetString(var);
-        size_t vsize = objv[ii]->length + 1;
+        size_t vsize = var->length + 1;
 
         if (thrId == Tcl_GetCurrentThread()) {
             /*
