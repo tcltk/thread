@@ -1,5 +1,5 @@
 
-<html><head>
+<!DOCTYPE html><html><head>
 <title>tsv - Tcl Threading</title>
 <style type="text/css"><!--
     HTML {
@@ -92,9 +92,9 @@
     }
 --></style>
 </head>
-<! -- Generated from file '' by tcllib/doctools with format 'html'
+<!-- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- tsv.n
+<!-- tsv.n
    -->
 <body><div class="doctools">
 <h1 class="doctools_title">tsv(n) 2.8  &quot;Tcl Threading&quot;</h1>
@@ -165,7 +165,7 @@
 A thread shared variable is very similar to a Tcl array but in
 contrast to a Tcl array it is created in shared memory and can
 be accessed from many threads at the same time. Important feature of
-thread shared variable is that each access to the variable is internaly
+thread shared variable is that each access to the variable is internally
 protected by a mutex so script programmer does not have to take care
 about locking the variable himself.</p>
 <p>Thread shared variables are not bound to any thread explicitly. That
@@ -178,7 +178,7 @@ consumed by the variable.</p>
 <dl class="doctools_definitions">
 <dt><a name="1"><b class="cmd">tsv::names</b> <span class="opt">?pattern?</span></a></dt>
 <dd><p>Returns names of shared variables matching optional <span class="opt">?pattern?</span>
-or all known variables if pattern is ommited.</p></dd>
+or all known variables if pattern is omitted.</p></dd>
 <dt><a name="2"><b class="cmd">tsv::object</b> <i class="arg">varname</i> <i class="arg">element</i></a></dt>
 <dd><p>Creates object accessor command for the <i class="arg">element</i> in the
 shared variable <i class="arg">varname</i>. Using this command, one can apply most
@@ -195,14 +195,14 @@ deleted when the element which this command is pointing to is unset.</p>
 <dt><a name="3"><b class="cmd">tsv::set</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?value?</span></a></dt>
 <dd><p>Sets the value of the <i class="arg">element</i> in the shared variable <i class="arg">varname</i>
 to <i class="arg">value</i> and returns the value to caller. The <i class="arg">value</i>
-may be ommited, in which case the command will return the current
+may be omitted, in which case the command will return the current
 value of the element. If the element cannot be found, error is triggered.</p></dd>
 <dt><a name="4"><b class="cmd">tsv::get</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?namedvar?</span></a></dt>
 <dd><p>Retrieves the value of the <i class="arg">element</i> from the shared variable <i class="arg">varname</i>.
 If the optional argument <i class="arg">namedvar</i> is given, the value is
 stored in the named variable. Return value of the command depends
 of the existence of the optional argument <i class="arg">namedvar</i>.
-If the argument is ommited and the requested element cannot be found
+If the argument is omitted and the requested element cannot be found
 in the shared array, the command triggers error. If, however, the
 optional argument is given on the command line, the command returns
 true (1) if the element is found or false (0) if the element is not found.</p></dd>
@@ -210,7 +210,7 @@ true (1) if the element is found or false (0) if the element is not found.</p></
 <dd><p>Unsets the <i class="arg">element</i> from the shared variable <i class="arg">varname</i>.
 If the optional element is not given, it deletes the variable.</p></dd>
 <dt><a name="6"><b class="cmd">tsv::exists</b> <i class="arg">varname</i> <i class="arg">element</i></a></dt>
-<dd><p>Checks wether the <i class="arg">element</i> exists in the shared variable <i class="arg">varname</i>
+<dd><p>Checks whether the <i class="arg">element</i> exists in the shared variable <i class="arg">varname</i>
 and returns true (1) if it does or false (0) if it doesn't.</p></dd>
 <dt><a name="7"><b class="cmd">tsv::pop</b> <i class="arg">varname</i> <i class="arg">element</i></a></dt>
 <dd><p>Returns value of the <i class="arg">element</i> in the shared variable <i class="arg">varname</i>
@@ -221,7 +221,7 @@ shared variable <i class="arg">varname</i>. This effectively performs an get/uns
 sequence of operations but all in one atomic step.</p></dd>
 <dt><a name="9"><b class="cmd">tsv::incr</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?count?</span></a></dt>
 <dd><p>Similar to standard Tcl <b class="cmd">incr</b> command but increments the value
-of the <i class="arg">element</i> in shared variaboe <i class="arg">varname</i> instead of
+of the <i class="arg">element</i> in shared variable <i class="arg">varname</i> instead of
 the Tcl variable.</p></dd>
 <dt><a name="10"><b class="cmd">tsv::append</b> <i class="arg">varname</i> <i class="arg">element</i> <i class="arg">value</i> <span class="opt">?value ...?</span></a></dt>
 <dd><p>Similar to standard Tcl <b class="cmd">append</b> command but appends one or more
@@ -291,14 +291,14 @@ from the shared variable <i class="arg">varname</i> in one atomic operation.
 In contrast to the Tcl <b class="cmd">lindex</b> command, this command returns
 no value to the caller.</p></dd>
 <dt><a name="22"><b class="cmd">tsv::lpush</b> <i class="arg">varname</i> <i class="arg">element</i> <span class="opt">?index?</span></a></dt>
-<dd><p>This command performes the opposite of the <b class="cmd">tsv::lpop</b> command.
+<dd><p>This command performs the opposite of the <b class="cmd">tsv::lpop</b> command.
 As its counterpart, it returns no value to the caller.</p></dd>
 </dl>
 </div>
 <div id="section4" class="doctools_section"><h2><a name="section4">ARRAY COMMANDS</a></h2>
 <p>This command supports most of the options of the standard Tcl
 <b class="cmd">array</b> command. In addition to those, it allows binding
-a shared variable to some persisten storage databases. Currently the persistent
+a shared variable to some persistent storage databases. Currently the persistent
 options supported are the famous GNU Gdbm and LMDB. These options have to be
 selected during the package compilation time.
 The implementation provides hooks for defining other persistency layers, if
@@ -372,7 +372,7 @@ setting a variable as a side-effect.</p></dd>
 <dt><a name="33"><b class="cmd">tsv::keylkeys</b> <i class="arg">varname</i> <i class="arg">keylist</i> <span class="opt">?key?</span></a></dt>
 <dd><p>Return  the a list of the keys in the keyed list <i class="arg">keylist</i> in the
 shared variable <i class="arg">varname</i>. If <i class="arg">key</i> is specified, then it is
-the name of a key field who's subfield keys are to be retrieved.</p></dd>
+the name of a key field whose subfield keys are to be retrieved.</p></dd>
 <dt><a name="34"><b class="cmd">tsv::keylset</b> <i class="arg">varname</i> <i class="arg">keylist</i> <i class="arg">key</i> <i class="arg">value</i> <span class="opt">?key value..?</span></a></dt>
 <dd><p>Set the value associated with <i class="arg">key</i>, in the keyed list <i class="arg">keylist</i>
 to <i class="arg">value</i>. If the <i class="arg">keylist</i> does not exists, it is created.
@@ -393,7 +393,7 @@ threads.</p>
 integration of shared variables within the Tcl syntax, unfortunately. All
 access to shared data must be performed with the supplied package commands.
 Also, variable traces are not supported. But even so, benefits of easy,
-simple and safe shared data manipulation outweights imposed limitations.</p>
+simple and safe shared data manipulation outweighs imposed limitations.</p>
 </div>
 <div id="section7" class="doctools_section"><h2><a name="section7">CREDITS</a></h2>
 <p>Thread shared variables are inspired by the nsv interface found in

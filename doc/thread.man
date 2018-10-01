@@ -328,21 +328,16 @@ supported are: [option -eventmark] and [option -unwindonerror].
 
 [para]
 
-The [option -eventmark] option, when set, limits the number of
-asynchronously posted scripts to the thread event loop.
-The [cmd {thread::send -async}] command will block until the number
-of pending scripts in the event loop does not drop below the value
-configured with [option -eventmark]. Default value for the
-[option -eventmark] is 0 (zero) which effectively disables the checking,
-i.e. allows for unlimited number of posted scripts.
+When [option -eventmark] is provided with a value greater than 0 (zero), that
+value is the maximum number of asynchronously posted scripts that may be
+pending for the thread.  [cmd {thread::send -async}] blocks until the number of
+pending scripts in the event loop drops below the [option -eventmark] value.
 
 [para]
 
-The [option -unwindonerror] option, when set, causes the
-target thread to unwind if the result of the script processing
-resulted in error. Default value for the [option -unwindonerror]
-is 0 (false), i.e. thread continues to process scripts after one
-of the posted scripts fails.
+When [option -unwindonerror] is provided with a value of true, an error result
+in a script causes the thread to unwind, making it unavailable to evaluate
+additional scripts.
 
 
 [call [cmd thread::transfer] [arg id] [arg channel]]

@@ -351,7 +351,7 @@ This section describes commands implementing thread shared variables\&.
 A thread shared variable is very similar to a Tcl array but in
 contrast to a Tcl array it is created in shared memory and can
 be accessed from many threads at the same time\&. Important feature of
-thread shared variable is that each access to the variable is internaly
+thread shared variable is that each access to the variable is internally
 protected by a mutex so script programmer does not have to take care
 about locking the variable himself\&.
 .PP
@@ -364,7 +364,7 @@ consumed by the variable\&.
 .TP
 \fBtsv::names\fR ?pattern?
 Returns names of shared variables matching optional ?pattern?
-or all known variables if pattern is ommited\&.
+or all known variables if pattern is omitted\&.
 .TP
 \fBtsv::object\fR \fIvarname\fR \fIelement\fR
 Creates object accessor command for the \fIelement\fR in the
@@ -385,7 +385,7 @@ deleted when the element which this command is pointing to is unset\&.
 \fBtsv::set\fR \fIvarname\fR \fIelement\fR ?value?
 Sets the value of the \fIelement\fR in the shared variable \fIvarname\fR
 to \fIvalue\fR and returns the value to caller\&. The \fIvalue\fR
-may be ommited, in which case the command will return the current
+may be omitted, in which case the command will return the current
 value of the element\&. If the element cannot be found, error is triggered\&.
 .TP
 \fBtsv::get\fR \fIvarname\fR \fIelement\fR ?namedvar?
@@ -393,7 +393,7 @@ Retrieves the value of the \fIelement\fR from the shared variable \fIvarname\fR\
 If the optional argument \fInamedvar\fR is given, the value is
 stored in the named variable\&. Return value of the command depends
 of the existence of the optional argument \fInamedvar\fR\&.
-If the argument is ommited and the requested element cannot be found
+If the argument is omitted and the requested element cannot be found
 in the shared array, the command triggers error\&. If, however, the
 optional argument is given on the command line, the command returns
 true (1) if the element is found or false (0) if the element is not found\&.
@@ -403,7 +403,7 @@ Unsets the \fIelement\fR from the shared variable \fIvarname\fR\&.
 If the optional element is not given, it deletes the variable\&.
 .TP
 \fBtsv::exists\fR \fIvarname\fR \fIelement\fR
-Checks wether the \fIelement\fR exists in the shared variable \fIvarname\fR
+Checks whether the \fIelement\fR exists in the shared variable \fIvarname\fR
 and returns true (1) if it does or false (0) if it doesn't\&.
 .TP
 \fBtsv::pop\fR \fIvarname\fR \fIelement\fR
@@ -417,7 +417,7 @@ sequence of operations but all in one atomic step\&.
 .TP
 \fBtsv::incr\fR \fIvarname\fR \fIelement\fR ?count?
 Similar to standard Tcl \fBincr\fR command but increments the value
-of the \fIelement\fR in shared variaboe \fIvarname\fR instead of
+of the \fIelement\fR in shared variable \fIvarname\fR instead of
 the Tcl variable\&.
 .TP
 \fBtsv::append\fR \fIvarname\fR \fIelement\fR \fIvalue\fR ?value \&.\&.\&.?
@@ -500,13 +500,13 @@ In contrast to the Tcl \fBlindex\fR command, this command returns
 no value to the caller\&.
 .TP
 \fBtsv::lpush\fR \fIvarname\fR \fIelement\fR ?index?
-This command performes the opposite of the \fBtsv::lpop\fR command\&.
+This command performs the opposite of the \fBtsv::lpop\fR command\&.
 As its counterpart, it returns no value to the caller\&.
 .PP
 .SH "ARRAY COMMANDS"
 This command supports most of the options of the standard Tcl
 \fBarray\fR command\&. In addition to those, it allows binding
-a shared variable to some persisten storage databases\&. Currently the persistent
+a shared variable to some persistent storage databases\&. Currently the persistent
 options supported are the famous GNU Gdbm and LMDB\&. These options have to be
 selected during the package compilation time\&.
 The implementation provides hooks for defining other persistency layers, if
@@ -596,7 +596,7 @@ setting a variable as a side-effect\&.
 \fBtsv::keylkeys\fR \fIvarname\fR \fIkeylist\fR ?key?
 Return  the a list of the keys in the keyed list \fIkeylist\fR in the
 shared variable \fIvarname\fR\&. If \fIkey\fR is specified, then it is
-the name of a key field who's subfield keys are to be retrieved\&.
+the name of a key field whose subfield keys are to be retrieved\&.
 .TP
 \fBtsv::keylset\fR \fIvarname\fR \fIkeylist\fR \fIkey\fR \fIvalue\fR ?key value\&.\&.?
 Set the value associated with \fIkey\fR, in the keyed list \fIkeylist\fR
@@ -618,7 +618,7 @@ Due to the internal design of the Tcl core, there is no provision of full
 integration of shared variables within the Tcl syntax, unfortunately\&. All
 access to shared data must be performed with the supplied package commands\&.
 Also, variable traces are not supported\&. But even so, benefits of easy,
-simple and safe shared data manipulation outweights imposed limitations\&.
+simple and safe shared data manipulation outweighs imposed limitations\&.
 .SH CREDITS
 Thread shared variables are inspired by the nsv interface found in
 AOLserver, a highly scalable Web server from America Online\&.

@@ -253,12 +253,29 @@ test thread-11.6 {thread::send - asynchronous send} {
 
 test thread-11.7 {thread::send - async send with event-loop wait} {
     ThreadReap
+    set res {}
     set tid [thread::create]
     thread::send -async $tid {set x 5} five
     vwait five
+    lappend res $five; set five {}
+    thread::send -async $tid {set x 5} [binary format cccc 0x66 0x69 0x76 0x65]; # five as byte array without str-rep.
+    vwait five
+    lappend res $five; set five {}
     ThreadReap
-    set five
-} {5}
+    set res
+} {5 5}
+
+test thread-11.7.1 {thread::send - sync send with var} {
+    ThreadReap
+    set res {}
+    set tid [thread::create]
+    thread::send $tid {set x 5} five
+    lappend res $five; set five {}
+    thread::send $tid {set x 5} [binary format cccc 0x66 0x69 0x76 0x65]; # five as byte array without str-rep.
+    lappend res $five; set five {}
+    ThreadReap
+    set res
+} {5 5}
 
 test thread-11.8 {thread::send - send to self directly} {
     thread::send [thread::id] {set x 5} five
