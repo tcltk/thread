@@ -1,5 +1,5 @@
 
-<html><head>
+<!DOCTYPE html><html><head>
 <title>ttrace - Tcl Threading</title>
 <style type="text/css"><!--
     HTML {
@@ -92,9 +92,9 @@
     }
 --></style>
 </head>
-<! -- Generated from file '' by tcllib/doctools with format 'html'
+<!-- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- ttrace.n
+<!-- ttrace.n
    -->
 <body><div class="doctools">
 <h1 class="doctools_title">ttrace(n) 2.8  &quot;Tcl Threading&quot;</h1>
@@ -142,7 +142,7 @@
 </div>
 <div id="section1" class="doctools_section"><h2><a name="section1">Description</a></h2>
 <p>This package creates a framework for on-demand replication of the
-interpreter state accross threads in an multithreading application.
+interpreter state across threads in an multithreading application.
 It relies on the mechanics of Tcl command tracing and the Tcl
 <b class="cmd">unknown</b> command and mechanism.</p>
 <p>The package requires Tcl threading extension but can be alternatively
@@ -186,7 +186,7 @@ resulted in Tcl error, no state propagation takes place.</p>
 it wraps most of the commands described below. This greatly
 simplifies things, because user need to learn just this (one)
 command in order to effectively use the package. Other commands,
-as desribed below, are included mostly for the sake of completeness.</p></dd>
+as described below, are included mostly for the sake of completeness.</p></dd>
 <dt><a name="2"><b class="cmd">ttrace::enable</b></a></dt>
 <dd><p>Activates all registered callbacks in the framework
 and starts a new trace epoch. The trace epoch encapsulates all
@@ -202,7 +202,7 @@ It effectively brings Tcl interpreter to its pristine state.</p></dd>
 trace <span class="opt">?epoch?</span>. If the optional <span class="opt">?epoch?</span> is not given, it takes
 the most recent trace epoch.</p></dd>
 <dt><a name="6"><b class="cmd">ttrace::getscript</b></a></dt>
-<dd><p>Returns a synthetized Tcl script which may be sourced in any interpreter.
+<dd><p>Returns a synthesized Tcl script which may be sourced in any interpreter.
 This script sets the stage for the Tcl <b class="cmd">unknown</b> command so it can
 load traced resources from the in-memory database. Normally, this command
 is automatically invoked by other higher-level commands like
@@ -212,8 +212,8 @@ is automatically invoked by other higher-level commands like
 <div id="section3" class="doctools_section"><h2><a name="section3">CALLBACK COMMANDS</a></h2>
 <p>A word upfront: the package already includes callbacks for tracing
 following Tcl commands: <b class="cmd">proc</b>, <b class="cmd">namespace</b>, <b class="cmd">variable</b>,
-<b class="cmd">load</b>, and <b class="cmd">rename</b>. Additionaly, a set of callbacks for
-tracing resources (object, clasess) for the XOTcl v1.3.8+, an
+<b class="cmd">load</b>, and <b class="cmd">rename</b>. Additionally, a set of callbacks for
+tracing resources (object, classes) for the XOTcl v1.3.8+, an
 OO-extension to Tcl, is also provided.
 This gives a solid base for solving most of the real-life needs and
 serves as an example for people wanting to customize the package
@@ -293,7 +293,7 @@ threads/interpreters in the process.</p>
 <p>Immediate benefit of such approach is the much smaller memory footprint
 of the application and much faster thread creation. By not actually
 loading all necessary procedures (and other resources) in every thread
-at the thread initialization time, but by deffering this to the time the
+at the thread initialization time, but by deferring this to the time the
 resource is actually referenced, significant improvements in both
 memory consumption and thread initialization time can be achieved. Some
 tests have shown that memory footprint of an multithreading Tcl application

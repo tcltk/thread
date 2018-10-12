@@ -863,7 +863,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     STRLEN_TYPE objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    size_t len, vlen = 0;
+    size_t size;
     int ret, ii = 0, flags = 0;
     Tcl_ThreadId thrId;
     const char *script, *arg;
@@ -905,12 +905,14 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     }
 
     script = Tcl_GetString(objv[ii]);
-    len = objv[ii]->length;
+    size = objv[ii]->length+1;
     if (++ii < objc) {
         var = objv[ii];
-        vlen = objv[ii]->length;
     }
     if (var && (flags & THREAD_SEND_WAIT) == 0) {
+        const char *varName = Tcl_GetString(var);
+        size_t vsize = var->length + 1;
+
         if (thrId == Tcl_GetCurrentThread()) {
             /*
              * FIXME: Do something for callbacks to self
@@ -930,7 +932,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
         clbkPtr->freeProc   = threadSendFree;
         clbkPtr->interp     = interp;
         clbkPtr->threadId   = Tcl_GetCurrentThread();
-        clbkPtr->clientData = (ClientData)strcpy(ckalloc(1+vlen), Tcl_GetString(var));
+        clbkPtr->clientData = (ClientData)memcpy(ckalloc(vsize), varName, vsize);
     }
 
     /*
@@ -941,7 +943,7 @@ ThreadSendObjCmd(dummy, interp, objc, objv)
     sendPtr->interp     = NULL; /* Signal to use thread main interp */
     sendPtr->execProc   = ThreadSendEval;
     sendPtr->freeProc   = threadSendFree;
-    sendPtr->clientData = (ClientData)strcpy(ckalloc(1+len), script);
+    sendPtr->clientData = (ClientData)memcpy(ckalloc(size), script, size);
 
     ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, flags);
 
@@ -992,7 +994,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ii, nthreads;
-    size_t len;
+    size_t size;
     const char *script;
     Tcl_ThreadId *thrIdArray;
     ThreadSendData *sendPtr, job;
@@ -1005,7 +1007,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
     }
 
     script = Tcl_GetString(objv[1]);
-    len = objv[1]->length;
+    size = objv[1]->length + 1;
 
     /*
      * Get the list of known threads. Note that this one may
@@ -1044,7 +1046,7 @@ ThreadBroadcastObjCmd(dummy, interp, objc, objv)
         }
         sendPtr  = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
         *sendPtr = job;
-        sendPtr->clientData = (ClientData)strcpy(ckalloc(1+len), script);
+        sendPtr->clientData = (ClientData)memcpy(ckalloc(size), script, size);
         ThreadSend(interp, thrIdArray[ii], sendPtr, NULL, THREAD_SEND_HEAD);
     }
 
@@ -3163,7 +3165,7 @@ ThreadSetResult(interp, code, resultPtr)
     int code;
     ThreadEventResult *resultPtr;
 {
-    size_t reslen;
+    size_t size;
     const char *errorCode, *errorInfo, *result;
 
     if (interp == NULL) {
@@ -3171,14 +3173,14 @@ ThreadSetResult(interp, code, resultPtr)
         errorInfo = "";
         errorCode = "THREAD";
         result    = "no target interp!";
-        reslen    = strlen(result);
-        resultPtr->result = (reslen) ?
-            strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
+        size    = strlen(result);
+        resultPtr->result = (size) ?
+            memcpy(ckalloc(1+size), result, 1+size) : threadEmptyResult;
     } else {
         result = Tcl_GetString(Tcl_GetObjResult(interp));
-        reslen = Tcl_GetObjResult(interp)->length;
-        resultPtr->result = (reslen) ?
-            strcpy(ckalloc(1+reslen), result) : threadEmptyResult;
+        size = Tcl_GetObjResult(interp)->length;
+        resultPtr->result = (size) ?
+            memcpy(ckalloc(1+size), result, 1+size) : threadEmptyResult;
         if (code == TCL_ERROR) {
             errorCode = Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
             errorInfo = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
@@ -3191,14 +3193,14 @@ ThreadSetResult(interp, code, resultPtr)
     resultPtr->code = code;
 
     if (errorCode != NULL) {
-        resultPtr->errorCode = ckalloc(1+strlen(errorCode));
-        strcpy(resultPtr->errorCode, errorCode);
+        size = strlen(errorCode) + 1;
+        resultPtr->errorCode = memcpy(ckalloc(size), errorCode, size);
     } else {
         resultPtr->errorCode = NULL;
     }
     if (errorInfo != NULL) {
-        resultPtr->errorInfo = ckalloc(1+strlen(errorInfo));
-        strcpy(resultPtr->errorInfo, errorInfo);
+        size = strlen(errorInfo) + 1;
+        resultPtr->errorInfo = memcpy(ckalloc(size), errorInfo, size);
     } else {
         resultPtr->errorInfo = NULL;
     }
@@ -3450,8 +3452,8 @@ TransferEventProc(evPtr, mask)
         Tcl_MutexLock(&threadMutex);
         resultPtr->resultCode = code;
         if (msg != NULL) {
-            resultPtr->resultMsg = (char*)ckalloc(1+strlen (msg));
-            strcpy (resultPtr->resultMsg, msg);
+            size_t size = strlen(msg)+1;
+            resultPtr->resultMsg = memcpy(ckalloc(size), msg, size);
         }
         Tcl_ConditionNotify(&resultPtr->done);
         Tcl_MutexUnlock(&threadMutex);

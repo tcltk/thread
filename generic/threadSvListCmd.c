@@ -37,12 +37,11 @@ static Tcl_ObjCmdProc SvLsearchObjCmd;   /* lsearch     */
 static Tcl_ObjCmdProc SvLsetObjCmd;      /* lset        */
 
 /*
- * These two are copied verbatim from the tclUtil.c
+ * This is copied verbatim from the tclUtil.c
  * since not found in the public stubs table.
- * I was just too lazy to rewrite them from scratch.
+ * I was just too lazy to rewrite it from scratch.
  */
 
-static int SvCheckBadOctal(Tcl_Interp*, const char *);
 static int SvGetIntForIndex(Tcl_Interp*,  Tcl_Obj *, int, int*);
 
 /*
@@ -919,56 +918,6 @@ DupListObjShared(srcPtr, copyPtr)
 /*
  *-----------------------------------------------------------------------------
  *
- * SvCheckBadOctal --
- *
- *  Exact copy from the TclCheckBadOctal found in tclUtil.c
- *  since this is not in the stubs table.
- *
- *-----------------------------------------------------------------------------
- */
-
-static int
-SvCheckBadOctal(interp, value)
-    Tcl_Interp *interp;     /* Interpreter to use for error reporting.
-                             * If NULL, then no error message is left
-                             * after errors. */
-    const char *value;      /* String to check. */
-{
-    register const char *p = value;
-
-    /*
-     * A frequent mistake is invalid octal values due to an unwanted
-     * leading zero. Try to generate a meaningful error message.
-     */
-
-    while (isspace((unsigned char)(*p))) { /* INTL: ISO space. */
-        p++;
-    }
-    if (*p == '+' || *p == '-') {
-        p++;
-    }
-    if (*p == '0') {
-        while (isdigit((unsigned char)(*p))) { /* INTL: digit. */
-            p++;
-        }
-        while (isspace((unsigned char)(*p))) { /* INTL: ISO space. */
-            p++;
-        }
-        if (*p == '\0') {
-            /* Reached end of string */
-            if (interp != NULL) {
-                Tcl_AppendResult(interp, " (looks like invalid octal number)",
-                        (char *) NULL);
-            }
-            return 1;
-        }
-    }
-    return 0;
-}
-
-/*
- *-----------------------------------------------------------------------------
- *
  * SvGetIntForIndex --
  *
  *  Exact copy from the TclGetIntForIndex found in tclUtil.c
@@ -1020,7 +969,6 @@ SvGetIntForIndex(interp, objPtr, endValue, indexPtr)
             Tcl_ResetResult(interp);
             Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "bad index \"",
                     bytes, "\": must be integer or end?-integer?",(char*)NULL);
-            SvCheckBadOctal(interp, bytes);
         }
         return TCL_ERROR;
     }

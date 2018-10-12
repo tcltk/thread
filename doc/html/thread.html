@@ -1,5 +1,5 @@
 
-<html><head>
+<!DOCTYPE html><html><head>
 <title>thread - Tcl Threading</title>
 <style type="text/css"><!--
     HTML {
@@ -92,9 +92,9 @@
     }
 --></style>
 </head>
-<! -- Generated from file '' by tcllib/doctools with format 'html'
+<!-- Generated from file '' by tcllib/doctools with format 'html'
    -->
-<! -- thread.n
+<!-- thread.n
    -->
 <body><div class="doctools">
 <h1 class="doctools_title">thread(n) 2.8  &quot;Tcl Threading&quot;</h1>
@@ -161,7 +161,7 @@
 <p>The <b class="package">thread</b> extension creates threads that contain Tcl
 interpreters, and it lets you send scripts to those threads for
 evaluation.
-Additionaly, it provides script-level access to basic thread
+Additionally, it provides script-level access to basic thread
 synchronization primitives, like mutexes and condition variables.</p>
 </div>
 <div id="section2" class="doctools_section"><h2><a name="section2">COMMANDS</a></h2>
@@ -197,7 +197,7 @@ and if its internal reference count drops to zero, the thread is
 marked for exit. This kicks the thread out of the event loop
 servicing and the thread continues to execute commands passed in
 the <b class="option">script</b> argument, following the <b class="cmd">thread::wait</b>
-command. If this was the last command in the script, as usualy the
+command. If this was the last command in the script, as usually the
 case, the thread will exit.</p>
 <p>It is possible to create a situation in which it may be impossible
 to terminate the thread, for example by putting some endless loop
@@ -224,7 +224,7 @@ i.e. it is unreserved. This counter gets incremented by a call to
 <b class="cmd">thread::preserve</b> and decremented by a call to <b class="cmd">thread::release</b>
 command. These two commands implement simple but effective thread
 reservation system and offer predictable and controllable thread
-termination capabilities. It is however possible to create initialy
+termination capabilities. It is however possible to create initially
 preserved threads by using flag <b class="option">-preserved</b> of the
 <b class="cmd">thread::create</b> command. Threads created with this flag have the
 initial value of the reference counter of 1 (one), and are thus
@@ -295,7 +295,7 @@ message string; otherwise, a default error message string will be used.</p></dd>
 <dd><p>Use of this command is deprecated in favour of more advanced thread
 reservation system implemented with <b class="cmd">thread::preserve</b> and
 <b class="cmd">thread::release</b> commands. Support for <b class="cmd">thread::unwind</b>
-command will dissapear in some future major release of the extension.</p>
+command will disappear in some future major release of the extension.</p>
 <p>This command stops a prior <b class="cmd">thread::wait</b> command. Execution of
 the script passed to newly created thread will continue from the
 <b class="cmd">thread::wait</b> command. If <b class="cmd">thread::wait</b> was the last command
@@ -306,12 +306,12 @@ situations.</p></dd>
 <dd><p>Use of this command is deprecated in favour of more advanced thread
 reservation system implemented with <b class="cmd">thread::preserve</b> and
 <b class="cmd">thread::release</b> commands. Support for <b class="cmd">thread::exit</b>
-command will dissapear in some future major release of the extension.</p>
+command will disappear in some future major release of the extension.</p>
 <p>This command forces a thread stuck in the <b class="cmd">thread::wait</b> command to
-unconditionaly exit. The thread's exit status defaults to 666 and can be
+unconditionally exit. The thread's exit status defaults to 666 and can be
 specified using the optional <i class="arg">status</i> argument. The execution of
 <b class="cmd">thread::exit</b> command is guaranteed to leave the program memory in the
-unconsistent state, produce memory leaks and otherwise affect other subsytem(s)
+inconsistent state, produce memory leaks and otherwise affect other subsystem(s)
 of the Tcl application in an unpredictable manner. The command returns empty
 result but may trigger Tcl error with the message &quot;target thread died&quot; in some
 situations.</p></dd>
@@ -335,7 +335,7 @@ explicitly by calling <b class="cmd">thread::wait</b> or any other relevant Tcl/
 command, like <b class="cmd">update</b>, <b class="cmd">vwait</b>, etc.</p>
 <p>Optional <b class="option">varname</b> specifies name of the variable to store
 the result of the <i class="arg">script</i>. Without the <b class="option">-async</b> flag,
-the command returns the evaluation code, similarily to the standard
+the command returns the evaluation code, similarly to the standard
 Tcl <b class="cmd">catch</b> command. If, however, the <b class="option">-async</b> flag is
 specified, the command returns immediately and caller can later
 <b class="cmd">vwait</b> on <span class="opt">?varname?</span> to get the result of the passed <i class="arg">script</i></p>
@@ -397,18 +397,13 @@ should not be used any more.</p></dd>
 ID <i class="arg">id</i> in the similar way as the standard Tcl command
 <b class="cmd">fconfigure</b> configures some Tcl channel options. Options currently
 supported are: <b class="option">-eventmark</b> and <b class="option">-unwindonerror</b>.</p>
-<p>The <b class="option">-eventmark</b> option, when set, limits the number of
-asynchronously posted scripts to the thread event loop.
-The <b class="cmd">thread::send -async</b> command will block until the number
-of pending scripts in the event loop does not drop below the value
-configured with <b class="option">-eventmark</b>. Default value for the
-<b class="option">-eventmark</b> is 0 (zero) which effectively disables the checking,
-i.e. allows for unlimited number of posted scripts.</p>
-<p>The <b class="option">-unwindonerror</b> option, when set, causes the
-target thread to unwind if the result of the script processing
-resulted in error. Default value for the <b class="option">-unwindonerror</b>
-is 0 (false), i.e. thread continues to process scripts after one
-of the posted scripts fails.</p></dd>
+<p>When <b class="option">-eventmark</b> is provided with a value greater than 0 (zero), that
+value is the maximum number of asynchronously posted scripts that may be
+pending for the thread.  <b class="cmd">thread::send -async</b> blocks until the number of
+pending scripts in the event loop drops below the <b class="option">-eventmark</b> value.</p>
+<p>When <b class="option">-unwindonerror</b> is provided with a value of true, an error result
+in a script causes the thread to unwind, making it unavailable to evaluate
+additional scripts.</p></dd>
 <dt><a name="17"><b class="cmd">thread::transfer</b> <i class="arg">id</i> <i class="arg">channel</i></a></dt>
 <dd><p>This moves the specified <i class="arg">channel</i> from the current thread
 and interpreter to the main interpreter of the thread with the
@@ -450,7 +445,7 @@ Restrictions: same as for transferring shared channels with the
 <dd><p>This attaches the previously detached <i class="arg">channel</i> in the
 current thread/interpreter. For already existing channels,
 the command does nothing, i.e. it is not an error to attach the
-same channel more than once. The first operation will actualy
+same channel more than once. The first operation will actually
 perform the operation, while all subsequent operation will just
 do nothing. Command throws error if the <i class="arg">channel</i> cannot be
 found in the list of detached channels and/or in the current
@@ -493,7 +488,7 @@ Attempt to unlock the already unlocked mutex will throw Tcl error.</p></dd>
 <dd><p>This command creates many-readers/single-writer mutexes. Reader/writer
 mutexes allow you to serialize access to a shared resource more optimally.
 In situations where a shared resource gets mostly read and seldom modified,
-you might gain some performace by using reader/writer mutexes instead of
+you might gain some performance by using reader/writer mutexes instead of
 exclusive or recursive mutexes.</p>
 <p>For reading the resource, thread should obtain a read lock on the resource.
 Read lock is non-exclusive, meaning that more than one thread can
@@ -528,8 +523,8 @@ Attempt to unlock already unlocked <i class="arg">mutex</i> will throw Tcl error
 A condition variable creates a safe environment for the program
 to test some condition, sleep on it when false and be awakened
 when it might have become true. A condition variable is always
-used in the conjuction with an exclusive mutex. If you attempt
-to use other type of mutex in conjuction with the condition
+used in the conjunction with an exclusive mutex. If you attempt
+to use other type of mutex in conjunction with the condition
 variable, a Tcl error will be thrown.</p>
 <p>The command supports following subcommands and options:</p>
 <dl class="doctools_definitions">
