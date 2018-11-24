@@ -124,12 +124,12 @@ static void SvRegisterStdCommands(void);
 
 #ifdef SV_FINALIZE
 static void SvFinalizeContainers(Bucket*);
-static void SvFinalize(ClientData);
+static void SvFinalize(void *);
 #endif /* SV_FINALIZE */
 
 static PsStore* GetPsStore(const char *handle);
 
-static int SvObjDispatchObjCmd(ClientData arg,
+static int SvObjDispatchObjCmd(void *arg,
             Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]);
 
 /*
@@ -157,7 +157,7 @@ Sv_RegisterCommand(
 {
     int len = strlen(cmdName) + strlen(TSV_CMD_PREFIX) + 1;
     int len2 = strlen(cmdName) + strlen(TSV_CMD2_PREFIX) + 1;
-    SvCmdInfo *newCmd = (SvCmdInfo*)ckalloc(sizeof(SvCmdInfo) + len + len2);
+    SvCmdInfo *newCmd = Tcl_Alloc(sizeof(SvCmdInfo) + len + len2);
 
     /*
      * Setup new command structure
@@ -224,7 +224,7 @@ Sv_RegisterObjType(
                    const Tcl_ObjType *typePtr,               /* Type of object to register */
                    Tcl_DupInternalRepProc *dupProc)    /* Custom object duplicator */
 {
-    RegType *newType = (RegType*)ckalloc(sizeof(RegType));
+    RegType *newType = Tcl_Alloc(sizeof(RegType));
 
     /*
      * Setup new type structure
@@ -263,7 +263,7 @@ void
 Sv_RegisterPsStore(const PsStore *psStorePtr)
 {
 
-    PsStore *psPtr = (PsStore*)ckalloc(sizeof(PsStore));
+    PsStore *psPtr = Tcl_Alloc(sizeof(PsStore));
 
     *psPtr = *psStorePtr;
 
@@ -350,7 +350,7 @@ Sv_GetContainer(
         LOCK_CONTAINER(*retObj);
         if (Tcl_FindHashEntry(handles, (char*)(*retObj)) == NULL) {
             UNLOCK_CONTAINER(*retObj);
-            Tcl_SetObjResult(interp, Tcl_NewStringObj("key has been deleted", TCL_STRLEN));
+            Tcl_SetObjResult(interp, Tcl_NewStringObj("key has been deleted", TCL_AUTO_LENGTH));
             return TCL_BREAK;
         }
         *offset = 2; /* Consumed two arguments: object, cmd */
@@ -404,7 +404,7 @@ Sv_PutContainer(
  *
  * Side effects;
  *      Memory gets allocated. Caller should free the return value of this
- *      function using ckfree().
+ *      function using Tcl_Free().
  *
  *-----------------------------------------------------------------------------
  */
@@ -471,7 +471,7 @@ GetPsStore(const char *handle)
         if (strcmp(tmpPtr->type, type) == 0) {
             tmpPtr->psHandle = tmpPtr->psOpen(addr);
             if (tmpPtr->psHandle) {
-                psPtr = (PsStore*)ckalloc(sizeof(PsStore));
+                psPtr = Tcl_Alloc(sizeof(PsStore));
                 *psPtr = *tmpPtr;
                 psPtr->nextPtr = NULL;
             }
@@ -575,7 +575,7 @@ ReleaseContainer(
             len = svObj->tclObj->length;
             if (psPtr->psPut(psPtr->psHandle, key, val, len) == -1) {
                 const char *err = psPtr->psError(psPtr->psHandle);
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_AUTO_LENGTH));
                 return TCL_ERROR;
             }
         }
@@ -808,7 +808,7 @@ CreateArray(
         return (Array*)Tcl_GetHashValue(hPtr);
     }
 
-    arrayPtr = (Array*)ckalloc(sizeof(Array));
+    arrayPtr = Tcl_Alloc(sizeof(Array));
     arrayPtr->bucketPtr = bucketPtr;
     arrayPtr->entryPtr  = hPtr;
     arrayPtr->psPtr     = NULL;
@@ -841,7 +841,7 @@ UnbindArray(Tcl_Interp *interp, Array *arrayPtr)
 {
     PsStore *psPtr = arrayPtr->psPtr;
     if (arrayPtr->bindAddr) {
-        ckfree(arrayPtr->bindAddr);
+        Tcl_Free(arrayPtr->bindAddr);
         arrayPtr->bindAddr = NULL;
     }
     if (psPtr) {
@@ -852,7 +852,7 @@ UnbindArray(Tcl_Interp *interp, Array *arrayPtr)
             }
             return TCL_ERROR;
         }
-        ckfree((char*)arrayPtr->psPtr), arrayPtr->psPtr = NULL;
+        Tcl_Free(arrayPtr->psPtr), arrayPtr->psPtr = NULL;
         arrayPtr->psPtr = NULL;
     }
     return TCL_OK;
@@ -874,7 +874,7 @@ DeleteArray(Tcl_Interp *interp, Array *arrayPtr)
     }
 
     Tcl_DeleteHashTable(&arrayPtr->vars);
-    ckfree((char*)arrayPtr);
+    Tcl_Free(arrayPtr);
 
     return TCL_OK;
 }
@@ -906,7 +906,7 @@ SvAllocateContainers(Bucket *bucketPtr)
     register Container *prevPtr = NULL, *objPtr = NULL;
     register int i;
 
-    basePtr = (char*)ckalloc(bytesToAlloc);
+    basePtr = Tcl_Alloc(bytesToAlloc);
     memset(basePtr, 0, bytesToAlloc);
 
     objPtr = (Container*)basePtr;
@@ -945,7 +945,7 @@ SvFinalizeContainers(Bucket *bucketPtr)
     while (objPtr) {
         if (objPtr->chunkAddr == (char*)objPtr) {
             tmpPtr = objPtr->nextPtr;
-            ckfree((char*)objPtr);
+            Tcl_Free(objPtr);
             objPtr = tmpPtr;
         } else {
             objPtr = objPtr->nextPtr;
@@ -1057,7 +1057,7 @@ Sv_DuplicateObj(objPtr)
         dupPtr->bytes = NULL;
     } else if (objPtr->bytes != Sv_tclEmptyStringRep) {
         /* A copy of TclInitStringRep macro */
-        dupPtr->bytes = (char*)ckalloc((unsigned)objPtr->length + 1);
+        dupPtr->bytes = Tcl_Alloc((unsigned)objPtr->length + 1);
         if (objPtr->length > 0) {
             memcpy((void*)dupPtr->bytes,(void*)objPtr->bytes,
                    (unsigned)objPtr->length);
@@ -1088,7 +1088,7 @@ Sv_DuplicateObj(objPtr)
 
 static int
 SvObjDispatchObjCmd(
-                    ClientData arg,                     /* Pointer to object container. */
+                    void *arg,                     /* Pointer to object container. */
                     Tcl_Interp *interp,                 /* Current interpreter. */
                     int objc,                           /* Number of arguments. */
                     Tcl_Obj *const objv[])              /* Argument objects. */
@@ -1138,9 +1138,9 @@ SvObjDispatchObjCmd(
 
 static int
 SvObjObjCmd(
-            ClientData arg,                     /* != NULL if aolSpecial */
+            void *arg,                     /* != NULL if aolSpecial */
             Tcl_Interp *interp,                 /* Current interpreter. */
-            STRLEN_TYPE objc,                   /* Number of arguments. */
+            int objc,                   /* Number of arguments. */
             Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int new, off, ret, flg;
@@ -1183,9 +1183,9 @@ SvObjObjCmd(
 
     sprintf(buf, "::%p", (int*)svObj);
     svObj->aolSpecial = (arg != NULL);
-    Tcl_CreateObjCommand(interp, buf, (ClientData)SvObjDispatchObjCmd, (ClientData)svObj, NULL);
+    Tcl_CreateObjCommand(interp, buf, SvObjDispatchObjCmd, svObj, NULL);
     Tcl_ResetResult(interp);
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, TCL_STRLEN));
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, TCL_AUTO_LENGTH));
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 }
@@ -1209,13 +1209,13 @@ SvObjObjCmd(
 
 static int
 SvArrayObjCmd(
-              ClientData arg,                     /* Pointer to object container. */
+              void *arg,                     /* Pointer to object container. */
               Tcl_Interp *interp,                 /* Current interpreter. */
-              STRLEN_TYPE objc,                   /* Number of arguments. */
+              int objc,                   /* Number of arguments. */
               Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int i, argx = 0, index, ret = TCL_OK;
-    STRLEN_TYPE lobjc = 0;
+    int lobjc = 0;
     const char *arrayName = NULL;
     Array *arrayPtr = NULL;
     Tcl_Obj **lobjv = NULL;
@@ -1292,7 +1292,7 @@ SvArrayObjCmd(
                 if (arrayPtr->psPtr) {
                     PsStore *psPtr = arrayPtr->psPtr;
                     const char *err = psPtr->psError(psPtr->psHandle);
-                    Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
+                    Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_AUTO_LENGTH));
                 }
                 goto cmdExit;
             }
@@ -1319,7 +1319,7 @@ SvArrayObjCmd(
                 char *key = Tcl_GetHashKey(&arrayPtr->vars, hPtr);
                 if (pattern == NULL || Tcl_StringMatch(key, pattern)) {
                     Tcl_ListObjAppendElement(interp, resObj,
-                            Tcl_NewStringObj(key, TCL_STRLEN));
+                            Tcl_NewStringObj(key, TCL_AUTO_LENGTH));
                     if (index == AGET) {
                         elObj = (Container*)Tcl_GetHashValue(hPtr);
                         Tcl_ListObjAppendElement(interp, resObj,
@@ -1377,7 +1377,7 @@ SvArrayObjCmd(
             Tcl_HashSearch search;
             hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
             arrayPtr->psPtr = psPtr;
-            arrayPtr->bindAddr = strcpy(ckalloc(len+1), psurl);
+            arrayPtr->bindAddr = strcpy(Tcl_Alloc(len+1), psurl);
             while (hPtr) {
                 svObj = Tcl_GetHashValue(hPtr);
                 if (ReleaseContainer(interp, svObj, SV_CHANGED) != TCL_OK) {
@@ -1389,7 +1389,7 @@ SvArrayObjCmd(
         } else {
             arrayPtr = LockArray(interp, arrayName, FLAGS_CREATEARRAY);
             arrayPtr->psPtr = psPtr;
-            arrayPtr->bindAddr = strcpy(ckalloc(len+1), psurl);
+            arrayPtr->bindAddr = strcpy(Tcl_Alloc(len+1), psurl);
         }
         if (!psPtr->psFirst(psPtr->psHandle, &key, &val, &len)) {
             do {
@@ -1439,9 +1439,9 @@ SvArrayObjCmd(
 
 static int
 SvUnsetObjCmd(
-              ClientData dummy,                   /* Not used. */
+              void *dummy,                   /* Not used. */
               Tcl_Interp *interp,                 /* Current interpreter. */
-              STRLEN_TYPE objc,                   /* Number of arguments. */
+              int objc,                   /* Number of arguments. */
               Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ii;
@@ -1505,9 +1505,9 @@ SvUnsetObjCmd(
 
 static int
 SvNamesObjCmd(
-              ClientData arg,                     /* != NULL if aolSpecial */
+              void *arg,                     /* != NULL if aolSpecial */
               Tcl_Interp *interp,                 /* Current interpreter. */
-              STRLEN_TYPE objc,                   /* Number of arguments. */
+              int objc,                   /* Number of arguments. */
               Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int i;
@@ -1566,9 +1566,9 @@ SvNamesObjCmd(
 
 static int
 SvGetObjCmd(
-            ClientData arg,                     /* Pointer to object container. */
+            void *arg,                     /* Pointer to object container. */
             Tcl_Interp *interp,                 /* Current interpreter. */
-            STRLEN_TYPE objc,                   /* Number of arguments. */
+            int objc,                   /* Number of arguments. */
             Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int off, ret;
@@ -1631,9 +1631,9 @@ SvGetObjCmd(
 
 static int
 SvExistsObjCmd(
-               ClientData arg,                     /* Pointer to object container. */
+               void *arg,                     /* Pointer to object container. */
                Tcl_Interp *interp,                 /* Current interpreter. */
-               STRLEN_TYPE objc,                   /* Number of arguments. */
+               int objc,                   /* Number of arguments. */
                Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int off, ret;
@@ -1678,9 +1678,9 @@ SvExistsObjCmd(
 
 static int
 SvSetObjCmd(
-            ClientData arg,                     /* Pointer to object container */
+            void *arg,                     /* Pointer to object container */
             Tcl_Interp *interp,                 /* Current interpreter. */
-            STRLEN_TYPE objc,                   /* Number of arguments. */
+            int objc,                   /* Number of arguments. */
             Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret, off, flg, mode;
@@ -1745,9 +1745,9 @@ SvSetObjCmd(
 
 static int
 SvIncrObjCmd(
-             ClientData arg,                     /* Pointer to object container */
+             void *arg,                     /* Pointer to object container */
              Tcl_Interp *interp,                 /* Current interpreter. */
-             STRLEN_TYPE objc,                   /* Number of arguments. */
+             int objc,                   /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int off, ret, flg, new = 0;
@@ -1818,9 +1818,9 @@ SvIncrObjCmd(
 
 static int
 SvAppendObjCmd(
-               ClientData arg,                     /* Pointer to object container */
+               void *arg,                     /* Pointer to object container */
                Tcl_Interp *interp,                 /* Current interpreter. */
-               STRLEN_TYPE objc,                   /* Number of arguments. */
+               int objc,                   /* Number of arguments. */
                Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int i, off, flg, ret;
@@ -1872,9 +1872,9 @@ SvAppendObjCmd(
 
 static int
 SvPopObjCmd(
-            ClientData arg,                     /* Pointer to object container */
+            void *arg,                     /* Pointer to object container */
             Tcl_Interp *interp,                 /* Current interpreter. */
-            STRLEN_TYPE objc,                   /* Number of arguments. */
+            int objc,                   /* Number of arguments. */
             Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret, off;
@@ -1912,7 +1912,7 @@ SvPopObjCmd(
         if (svObj->arrayPtr->psPtr) {
             PsStore *psPtr = svObj->arrayPtr->psPtr;
             const char *err = psPtr->psError(psPtr->psHandle);
-            Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
+            Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_AUTO_LENGTH));
         }
         ret = TCL_ERROR;
         goto cmd_exit;
@@ -1955,9 +1955,9 @@ SvPopObjCmd(
 
 static int
 SvMoveObjCmd(
-             ClientData arg,                     /* Pointer to object container. */
+             void *arg,                     /* Pointer to object container. */
              Tcl_Interp *interp,                 /* Current interpreter. */
-             STRLEN_TYPE objc,                   /* Number of arguments. */
+             int objc,                   /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret, off, new;
@@ -1989,7 +1989,7 @@ SvMoveObjCmd(
             PsStore *psPtr = svObj->arrayPtr->psPtr;
             if (psPtr->psDelete(psPtr->psHandle, key) == -1) {
                 const char *err = psPtr->psError(psPtr->psHandle);
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_STRLEN));
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_AUTO_LENGTH));
                 return TCL_ERROR;
             }
         }
@@ -2025,9 +2025,9 @@ SvMoveObjCmd(
 
 static int
 SvLockObjCmd(
-             ClientData dummy,                   /* Not used. */
+             void *dummy,                   /* Not used. */
              Tcl_Interp *interp,                 /* Current interpreter. */
-             STRLEN_TYPE objc,                   /* Number of arguments. */
+             int objc,                   /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret;
@@ -2070,7 +2070,7 @@ SvLockObjCmd(
         /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
          * See Tcl bug #3562640 */
         sprintf(msg, "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
-        Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_STRLEN));
+        Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_AUTO_LENGTH));
     }
 
     /*
@@ -2101,7 +2101,7 @@ SvLockObjCmd(
  */
 static int
 SvHandlersObjCmd(
-             ClientData arg,                     /* Not used. */
+             void *arg,                     /* Not used. */
              Tcl_Interp *interp,                 /* Current interpreter. */
              int objc,                           /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
@@ -2262,10 +2262,10 @@ Sv_Init (interp)
 
     for (cmdPtr = svCmdInfo; cmdPtr; cmdPtr = cmdPtr->nextPtr) {
         Tcl_CreateObjCommand(interp, cmdPtr->cmdName, cmdPtr->objProcPtr,
-                (ClientData)0, (Tcl_CmdDeleteProc*)0);
+                NULL, NULL);
 #ifdef NS_AOLSERVER
         Tcl_CreateObjCommand(interp, cmdPtr->cmdName2, cmdPtr->objProcPtr,
-                (ClientData)(size_t)cmdPtr->aolSpecial, (Tcl_CmdDeleteProc*)0);
+                (void *)(size_t)cmdPtr->aolSpecial, NULL);
 #endif
     }
 
@@ -2276,7 +2276,7 @@ Sv_Init (interp)
     if (buckets == NULL) {
         Tcl_MutexLock(&bucketsMutex);
         if (buckets == NULL) {
-            buckets = (Bucket *)ckalloc(sizeof(Bucket) * NUMBUCKETS);
+            buckets = Tcl_Alloc(sizeof(Bucket) * NUMBUCKETS);
 
             for (i = 0; i < NUMBUCKETS; ++i) {
                 bucketPtr = &buckets[i];
@@ -2337,7 +2337,7 @@ Sv_Init (interp)
  */
 
 static void
-SvFinalize (ClientData clientData)
+SvFinalize (void *clientData)
 {
     register int i;
     SvCmdInfo *cmdPtr;
@@ -2384,7 +2384,7 @@ SvFinalize (ClientData clientData)
                 Tcl_DeleteHashTable(&bucketPtr->handles);
                 Tcl_DeleteHashTable(&bucketPtr->arrays);
             }
-            ckfree((char *)buckets), buckets = NULL;
+            Tcl_Free(buckets), buckets = NULL;
         }
         buckets = NULL;
         Tcl_MutexUnlock(&bucketsMutex);
@@ -2400,7 +2400,7 @@ SvFinalize (ClientData clientData)
         cmdPtr = svCmdInfo;
         while (cmdPtr) {
             SvCmdInfo *tmpPtr = cmdPtr->nextPtr;
-            ckfree((char*)cmdPtr);
+            Tcl_Free(cmdPtr);
             cmdPtr = tmpPtr;
         }
         svCmdInfo = NULL;
@@ -2414,7 +2414,7 @@ SvFinalize (ClientData clientData)
         regPtr = regType;
         while (regPtr) {
             RegType *tmpPtr = regPtr->nextPtr;
-            ckfree((char*)regPtr);
+            Tcl_Free(regPtr);
             regPtr = tmpPtr;
         }
         regType = NULL;

@@ -62,7 +62,7 @@ typedef struct TpoolResult {
     int detached;                   /* Result is to be ignored */
     Tcl_WideInt jobId;              /* The job id of the current job */
     char *script;                   /* Script to evaluate in worker thread */
-    STRLEN_TYPE scriptLen;          /* Length of the script */
+    size_t scriptLen;               /* Length of the script */
     int retcode;                    /* Tcl return code of the current job */
     char *result;                   /* Tcl result of the current job */
     char *errorCode;                /* On error: content of the errorCode */
@@ -121,7 +121,7 @@ static int
 CreateWorker(Tcl_Interp *interp, ThreadPool *tpoolPtr);
 
 static Tcl_ThreadCreateType
-TpoolWorker(ClientData clientData);
+TpoolWorker(void *clientData);
 
 static int
 RunStopEvent(Tcl_Event *evPtr, int mask);
@@ -142,7 +142,7 @@ static void
 SignalWaiter(ThreadPool *tpoolPtr);
 
 static int
-TpoolEval(Tcl_Interp *interp, char *script, STRLEN_TYPE scriptLen,
+TpoolEval(Tcl_Interp *interp, char *script, size_t scriptLen,
                             TpoolResult *rPtr);
 static void
 SetResult(Tcl_Interp *interp, TpoolResult *rPtr);
@@ -154,10 +154,10 @@ static ThreadPool*
 GetTpoolUnl(const char *tpoolName);
 
 static void
-ThrExitHandler(ClientData clientData);
+ThrExitHandler(void *clientData);
 
 static void
-AppExitHandler(ClientData clientData);
+AppExitHandler(void *clientData);
 
 static int
 TpoolReserve(ThreadPool *tpoolPtr);
@@ -194,9 +194,9 @@ InitWaiter(void);
 
 static int
 TpoolCreateObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ii, minw, maxw, idle;
@@ -239,10 +239,10 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
             }
         } else if (OPT_CMP(opt, "-initcmd")) {
             const char *val = Tcl_GetString(objv[ii+1]);
-            cmd  = strcpy(ckalloc(objv[ii+1]->length+1), val);
+            cmd  = strcpy(Tcl_Alloc(objv[ii+1]->length+1), val);
         } else if (OPT_CMP(opt, "-exitcmd")) {
             const char *val = Tcl_GetString(objv[ii+1]);
-            exs  = strcpy(ckalloc(objv[ii+1]->length+1), val);
+            exs  = strcpy(Tcl_Alloc(objv[ii+1]->length+1), val);
         } else {
             goto usage;
         }
@@ -266,7 +266,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
      * Allocate and initialize thread pool structure
      */
 
-    tpoolPtr = (ThreadPool*)ckalloc(sizeof(ThreadPool));
+    tpoolPtr = Tcl_Alloc(sizeof(ThreadPool));
     memset(tpoolPtr, 0, sizeof(ThreadPool));
 
     tpoolPtr->minWorkers  = minw;
@@ -299,7 +299,7 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
     Tcl_MutexUnlock(&tpoolPtr->mutex);
 
     sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, TCL_STRLEN));
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, TCL_AUTO_LENGTH));
 
     return TCL_OK;
 
@@ -330,9 +330,9 @@ TpoolCreateObjCmd(dummy, interp, objc, objv)
 
 static int
 TpoolPostObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     Tcl_WideInt jobId = 0;
@@ -456,7 +456,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
      * Create new job ticket and put it on the list.
      */
 
-    rPtr = (TpoolResult*)ckalloc(sizeof(TpoolResult));
+    rPtr = Tcl_Alloc(sizeof(TpoolResult));
     memset(rPtr, 0, sizeof(TpoolResult));
 
     if (detached == 0) {
@@ -464,7 +464,7 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
         rPtr->jobId = jobId;
     }
 
-    rPtr->script    = strcpy(ckalloc(len+1), script);
+    rPtr->script    = strcpy(Tcl_Alloc(len+1), script);
     rPtr->scriptLen = len;
     rPtr->detached  = detached;
     rPtr->threadId  = Tcl_GetCurrentThread();
@@ -502,13 +502,13 @@ TpoolPostObjCmd(dummy, interp, objc, objv)
  */
 static int
 TpoolWaitObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ii, done;
-    STRLEN_TYPE wObjc;
+    int wObjc;
     Tcl_WideInt jobId;
     char *tpoolName;
     Tcl_Obj *listVar = NULL;
@@ -618,13 +618,13 @@ TpoolWaitObjCmd(dummy, interp, objc, objv)
  */
 static int
 TpoolCancelObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ii;
-    STRLEN_TYPE wObjc;
+    int wObjc;
     Tcl_WideInt jobId;
     char *tpoolName;
     Tcl_Obj *listVar = NULL;
@@ -676,8 +676,8 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
                     tpoolPtr->workTail = rPtr->prevPtr;
                 }
                 SetResult(NULL, rPtr); /* Just to free the result */
-                ckfree(rPtr->script);
-                ckfree((char*)rPtr);
+                Tcl_Free(rPtr->script);
+                Tcl_Free(rPtr);
                 Tcl_ListObjAppendElement(interp, doneList, wObjv[ii]);
                 break;
             }
@@ -715,9 +715,9 @@ TpoolCancelObjCmd(dummy, interp, objc, objv)
  */
 static int
 TpoolGetObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ret;
@@ -780,7 +780,7 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
 
     ret = rPtr->retcode;
     SetResult(interp, rPtr);
-    ckfree((char*)rPtr);
+    Tcl_Free(rPtr);
 
     if (resVar) {
         Tcl_ObjSetVar2(interp, resVar, NULL, Tcl_GetObjResult(interp), 0);
@@ -810,9 +810,9 @@ TpoolGetObjCmd(dummy, interp, objc, objv)
 
 static int
 TpoolReserveObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ret;
@@ -865,9 +865,9 @@ TpoolReserveObjCmd(dummy, interp, objc, objv)
 
 static int
 TpoolReleaseObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int ret;
@@ -920,9 +920,9 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
 
 static int
 TpoolSuspendObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     char *tpoolName;
@@ -970,9 +970,9 @@ TpoolSuspendObjCmd(dummy, interp, objc, objv)
 
 static int
 TpoolResumeObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     char *tpoolName;
@@ -1020,9 +1020,9 @@ TpoolResumeObjCmd(dummy, interp, objc, objv)
 
 static int
 TpoolNamesObjCmd(dummy, interp, objc, objv)
-    ClientData  dummy;          /* Not used. */
+    void *dummy;          /* Not used. */
     Tcl_Interp *interp;         /* Current interpreter. */
-    STRLEN_TYPE objc;           /* Number of arguments. */
+    int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     ThreadPool *tpoolPtr;
@@ -1032,7 +1032,7 @@ TpoolNamesObjCmd(dummy, interp, objc, objv)
     for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
         char buf[32];
         sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
-        Tcl_ListObjAppendElement(interp, listObj, Tcl_NewStringObj(buf, TCL_STRLEN));
+        Tcl_ListObjAppendElement(interp, listObj, Tcl_NewStringObj(buf, TCL_AUTO_LENGTH));
     }
     Tcl_MutexUnlock(&listMutex);
     Tcl_SetObjResult(interp, listObj);
@@ -1080,9 +1080,9 @@ CreateWorker(interp, tpoolPtr)
      */
 
     Tcl_MutexLock(&startMutex);
-    if (Tcl_CreateThread(&id, TpoolWorker, (ClientData)&result,
+    if (Tcl_CreateThread(&id, TpoolWorker, &result,
                          TCL_THREAD_STACK_DEFAULT, 0) != TCL_OK) {
-    	Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_STRLEN));
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_AUTO_LENGTH));
         Tcl_MutexUnlock(&startMutex);
         return TCL_ERROR;
     }
@@ -1123,9 +1123,9 @@ CreateWorker(interp, tpoolPtr)
 
 static Tcl_ThreadCreateType
 TpoolWorker(clientData)
-    ClientData clientData;
+    void *clientData;
 {
-    TpoolResult          *rPtr = (TpoolResult*)clientData;
+    TpoolResult          *rPtr = clientData;
     ThreadPool       *tpoolPtr = rPtr->tpoolPtr;
 
     int tout = 0;
@@ -1155,7 +1155,7 @@ TpoolWorker(clientData)
 
     if (rPtr->retcode == 1) {
         errMsg = Tcl_GetString(Tcl_GetObjResult(interp));
-        rPtr->result = strcpy(ckalloc(strlen(errMsg)+1), errMsg);
+        rPtr->result = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
         Tcl_ConditionNotify(&tpoolPtr->cond);
         Tcl_MutexUnlock(&startMutex);
         goto out;
@@ -1166,11 +1166,11 @@ TpoolWorker(clientData)
      */
 
     if (tpoolPtr->initScript) {
-        TpoolEval(interp, tpoolPtr->initScript, TCL_STRLEN, rPtr);
+        TpoolEval(interp, tpoolPtr->initScript, TCL_AUTO_LENGTH, rPtr);
         if (rPtr->retcode != TCL_OK) {
             rPtr->retcode = 1;
             errMsg = Tcl_GetString(Tcl_GetObjResult(interp));
-            rPtr->result  = strcpy(ckalloc(strlen(errMsg)+1), errMsg);
+            rPtr->result  = strcpy(Tcl_Alloc(strlen(errMsg)+1), errMsg);
             Tcl_ConditionNotify(&tpoolPtr->cond);
             Tcl_MutexUnlock(&startMutex);
             goto out;
@@ -1238,16 +1238,16 @@ TpoolWorker(clientData)
         }
         Tcl_MutexUnlock(&tpoolPtr->mutex);
         TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
-        ckfree(rPtr->script);
+        Tcl_Free(rPtr->script);
         Tcl_MutexLock(&tpoolPtr->mutex);
         if (!rPtr->detached) {
             int new;
             Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone,
                                                  (void *)(size_t)rPtr->jobId, &new),
-                             (ClientData)rPtr);
+                             rPtr);
             SignalWaiter(tpoolPtr);
         } else {
-            ckfree((char*)rPtr);
+            Tcl_Free(rPtr);
         }
     }
 
@@ -1256,7 +1256,7 @@ TpoolWorker(clientData)
      */
 
     if (tpoolPtr->exitScript) {
-        TpoolEval(interp, tpoolPtr->exitScript, TCL_STRLEN, NULL);
+        TpoolEval(interp, tpoolPtr->exitScript, TCL_AUTO_LENGTH, NULL);
     }
 
     tpoolPtr->numWorkers--;
@@ -1510,7 +1510,7 @@ static int
 TpoolEval(interp, script, scriptLen, rPtr)
     Tcl_Interp *interp;
     char *script;
-    STRLEN_TYPE scriptLen;
+    size_t scriptLen;
     TpoolResult *rPtr;
 {
     int ret;
@@ -1527,11 +1527,11 @@ TpoolEval(interp, script, scriptLen, rPtr)
         errorCode = Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
         errorInfo = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
         if (errorCode != NULL) {
-            rPtr->errorCode = ckalloc(1 + strlen(errorCode));
+            rPtr->errorCode = Tcl_Alloc(1 + strlen(errorCode));
             strcpy(rPtr->errorCode, errorCode);
         }
         if (errorInfo != NULL) {
-            rPtr->errorInfo = ckalloc(1 + strlen(errorInfo));
+            rPtr->errorInfo = Tcl_Alloc(1 + strlen(errorInfo));
             strcpy(rPtr->errorInfo, errorInfo);
         }
     }
@@ -1542,7 +1542,7 @@ TpoolEval(interp, script, scriptLen, rPtr)
     if (reslen == 0) {
         rPtr->result = threadEmptyResult;
     } else {
-        rPtr->result = strcpy(ckalloc(1 + reslen), result);
+        rPtr->result = strcpy(Tcl_Alloc(1 + reslen), result);
     }
 
     return ret;
@@ -1571,16 +1571,16 @@ SetResult(interp, rPtr)
     if (rPtr->retcode == TCL_ERROR) {
         if (rPtr->errorCode) {
             if (interp) {
-                Tcl_SetObjErrorCode(interp,Tcl_NewStringObj(rPtr->errorCode, TCL_STRLEN));
+                Tcl_SetObjErrorCode(interp,Tcl_NewStringObj(rPtr->errorCode, TCL_AUTO_LENGTH));
             }
-            ckfree(rPtr->errorCode);
+            Tcl_Free(rPtr->errorCode);
             rPtr->errorCode = NULL;
         }
         if (rPtr->errorInfo) {
             if (interp) {
-            	Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(rPtr->errorInfo, TCL_STRLEN));
+            	Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(rPtr->errorInfo, TCL_AUTO_LENGTH));
             }
-            ckfree(rPtr->errorInfo);
+            Tcl_Free(rPtr->errorInfo);
             rPtr->errorInfo = NULL;
         }
     }
@@ -1591,9 +1591,9 @@ SetResult(interp, rPtr)
             }
         } else {
             if (interp) {
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(rPtr->result, TCL_STRLEN));
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(rPtr->result, TCL_AUTO_LENGTH));
             }
-            ckfree(rPtr->result);
+            Tcl_Free(rPtr->result);
             rPtr->result = NULL;
         }
     }
@@ -1681,10 +1681,10 @@ TpoolRelease(tpoolPtr)
      */
 
     if (tpoolPtr->initScript) {
-        ckfree(tpoolPtr->initScript);
+        Tcl_Free(tpoolPtr->initScript);
     }
     if (tpoolPtr->exitScript) {
-        ckfree(tpoolPtr->exitScript);
+        Tcl_Free(tpoolPtr->exitScript);
     }
 
     /*
@@ -1695,17 +1695,17 @@ TpoolRelease(tpoolPtr)
     while (hPtr != NULL) {
         rPtr = (TpoolResult*)Tcl_GetHashValue(hPtr);
         if (rPtr->result && rPtr->result != threadEmptyResult) {
-            ckfree(rPtr->result);
+            Tcl_Free(rPtr->result);
         }
         if (rPtr->retcode == TCL_ERROR) {
             if (rPtr->errorInfo) {
-                ckfree(rPtr->errorInfo);
+                Tcl_Free(rPtr->errorInfo);
             }
             if (rPtr->errorCode) {
-                ckfree(rPtr->errorCode);
+                Tcl_Free(rPtr->errorCode);
             }
         }
-        ckfree((char*)rPtr);
+        Tcl_Free(rPtr);
         Tcl_DeleteHashEntry(hPtr);
         hPtr = Tcl_NextHashEntry(&search);
     }
@@ -1716,12 +1716,12 @@ TpoolRelease(tpoolPtr)
      */
 
     for (rPtr = tpoolPtr->workHead; rPtr; rPtr = rPtr->nextPtr) {
-        ckfree(rPtr->script);
-        ckfree((char*)rPtr);
+        Tcl_Free(rPtr->script);
+        Tcl_Free(rPtr);
     }
     Tcl_MutexFinalize(&tpoolPtr->mutex);
     Tcl_ConditionFinalize(&tpoolPtr->cond);
-    ckfree((char*)tpoolPtr);
+    Tcl_Free(tpoolPtr);
 
     return 0;
 }
@@ -1805,7 +1805,7 @@ SignalWaiter(tpoolPtr)
         return;
     }
 
-    evPtr = (Tcl_Event*)ckalloc(sizeof(Tcl_Event));
+    evPtr = Tcl_Alloc(sizeof(Tcl_Event));
     evPtr->proc = RunStopEvent;
 
     Tcl_ThreadQueueEvent(waitPtr->threadId,(Tcl_Event*)evPtr,TCL_QUEUE_TAIL);
@@ -1833,11 +1833,11 @@ InitWaiter ()
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     if (tsdPtr->waitPtr == NULL) {
-        tsdPtr->waitPtr = (TpoolWaiter*)ckalloc(sizeof(TpoolWaiter));
+        tsdPtr->waitPtr = Tcl_Alloc(sizeof(TpoolWaiter));
         tsdPtr->waitPtr->prevPtr  = NULL;
         tsdPtr->waitPtr->nextPtr  = NULL;
         tsdPtr->waitPtr->threadId = Tcl_GetCurrentThread();
-        Tcl_CreateThreadExitHandler(ThrExitHandler, (ClientData)tsdPtr);
+        Tcl_CreateThreadExitHandler(ThrExitHandler, tsdPtr);
     }
 }
 
@@ -1858,11 +1858,11 @@ InitWaiter ()
  */
 static void
 ThrExitHandler(clientData)
-    ClientData clientData;
+    void *clientData;
 {
-    ThreadSpecificData *tsdPtr = (ThreadSpecificData *)clientData;
+    ThreadSpecificData *tsdPtr = clientData;
 
-    ckfree((char*)tsdPtr->waitPtr);
+    Tcl_Free(tsdPtr->waitPtr);
 }
 
 /*
@@ -1882,7 +1882,7 @@ ThrExitHandler(clientData)
  */
 static void
 AppExitHandler(clientData)
-    ClientData clientData;
+    void *clientData;
 {
     ThreadPool *tpoolPtr;
 
@@ -1933,7 +1933,7 @@ Tpool_Init (interp)
     if (initialized == 0) {
         Tcl_MutexLock(&listMutex);
         if (initialized == 0) {
-            Tcl_CreateExitHandler(AppExitHandler, (ClientData)-1);
+            Tcl_CreateExitHandler(AppExitHandler, (void *)-1);
             initialized = 1;
         }
         Tcl_MutexUnlock(&listMutex);

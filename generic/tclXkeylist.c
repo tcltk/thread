@@ -49,15 +49,15 @@
 #endif
 
 /*
- * Macro that behaves like strdup, only uses ckalloc.  Also macro that does the
+ * Macro that behaves like strdup, only uses Tcl_Alloc.  Also macro that does the
  * same with a string that might contain zero bytes,
  */
 
 #define ckstrdup(sourceStr) \
-  (strcpy (ckalloc (strlen (sourceStr) + 1), sourceStr))
+  strcpy (Tcl_Alloc(strlen (sourceStr) + 1), sourceStr)
 
 #define ckbinstrdup(sourceStr, length) \
-  ((char *) memcpy (ckalloc (length + 1), sourceStr, length + 1))
+  memcpy(Tcl_Alloc(length + 1), sourceStr, length + 1)
 
 /*
  * Used to return argument messages by most commands.
@@ -280,27 +280,27 @@ static void
 UpdateStringOfKeyedList(Tcl_Obj *keylPtr);
 
 static int
-Tcl_KeylgetObjCmd(ClientData   clientData,
+Tcl_KeylgetObjCmd(void *       clientData,
                                Tcl_Interp  *interp,
-                               STRLEN_TYPE  objc,
+                               int  objc,
                                Tcl_Obj     *const objv[]);
 
 static int
-Tcl_KeylsetObjCmd(ClientData   clientData,
+Tcl_KeylsetObjCmd(void *       clientData,
                                Tcl_Interp  *interp,
-                               STRLEN_TYPE  objc,
+                               int  objc,
                                Tcl_Obj     *const objv[]);
 
 static int
-Tcl_KeyldelObjCmd(ClientData   clientData,
+Tcl_KeyldelObjCmd(void *       clientData,
                                Tcl_Interp  *interp,
-                               STRLEN_TYPE  objc,
+                               int  objc,
                                Tcl_Obj     *const objv[]);
 
 static int
-Tcl_KeylkeysObjCmd(ClientData   clientData,
+Tcl_KeylkeysObjCmd(void *       clientData,
                                 Tcl_Interp  *interp,
-                                STRLEN_TYPE  objc,
+                                int  objc,
                                 Tcl_Obj     *const objv[]);
 
 /*
@@ -412,7 +412,7 @@ AllocKeyedListIntRep ()
 {
     keylIntObj_t *keylIntPtr;
 
-    keylIntPtr = (keylIntObj_t *) ckalloc (sizeof (keylIntObj_t));
+    keylIntPtr = Tcl_Alloc(sizeof(keylIntObj_t));
 
     keylIntPtr->arraySize = 0;
     keylIntPtr->numEntries = 0;
@@ -436,12 +436,12 @@ FreeKeyedListData (keylIntPtr)
     int idx;
 
     for (idx = 0; idx < keylIntPtr->numEntries ; idx++) {
-        ckfree (keylIntPtr->entries [idx].key);
-        Tcl_DecrRefCount (keylIntPtr->entries [idx].valuePtr);
+        Tcl_Free(keylIntPtr->entries[idx].key);
+        Tcl_DecrRefCount (keylIntPtr->entries[idx].valuePtr);
     }
     if (keylIntPtr->entries != NULL)
-        ckfree ((char *) keylIntPtr->entries);
-    ckfree ((char *) keylIntPtr);
+        Tcl_Free(keylIntPtr->entries);
+    Tcl_Free(keylIntPtr);
 }
 
 /*-----------------------------------------------------------------------------
@@ -466,12 +466,12 @@ EnsureKeyedListSpace (keylIntPtr, newNumEntries)
         int newSize = keylIntPtr->arraySize + newNumEntries +
             KEYEDLIST_ARRAY_INCR_SIZE;
         if (keylIntPtr->entries == NULL) {
-            keylIntPtr->entries = (keylEntry_t *)
-                ckalloc (newSize * sizeof (keylEntry_t));
+            keylIntPtr->entries =
+                Tcl_Alloc(newSize * sizeof(keylEntry_t));
         } else {
-            keylIntPtr->entries = (keylEntry_t *)
-                ckrealloc ((void *) keylIntPtr->entries,
-                           newSize * sizeof (keylEntry_t));
+            keylIntPtr->entries =
+                Tcl_Realloc(keylIntPtr->entries,
+                           newSize * sizeof(keylEntry_t));
         }
         keylIntPtr->arraySize = newSize;
     }
@@ -495,7 +495,7 @@ DeleteKeyedListEntry (keylIntPtr, entryIdx)
 {
     int idx;
 
-    ckfree (keylIntPtr->entries [entryIdx].key);
+    Tcl_Free(keylIntPtr->entries [entryIdx].key);
     Tcl_DecrRefCount (keylIntPtr->entries [entryIdx].valuePtr);
 
     for (idx = entryIdx; idx < keylIntPtr->numEntries - 1; idx++)
@@ -581,7 +581,7 @@ ObjToKeyedListEntry (interp, objPtr, entryPtr)
     Tcl_Obj     *objPtr;
     keylEntry_t *entryPtr;
 {
-    STRLEN_TYPE objc;
+    int objc;
     Tcl_Obj **objv;
     const char *key;
 
@@ -652,11 +652,11 @@ DupKeyedListInternalRep (srcPtr, copyPtr)
 
     KEYL_REP_ASSERT (srcIntPtr);
 
-    copyIntPtr = (keylIntObj_t *) ckalloc (sizeof (keylIntObj_t));
+    copyIntPtr = Tcl_Alloc(sizeof(keylIntObj_t));
     copyIntPtr->arraySize = srcIntPtr->arraySize;
     copyIntPtr->numEntries = srcIntPtr->numEntries;
-    copyIntPtr->entries = (keylEntry_t *)
-        ckalloc (copyIntPtr->arraySize * sizeof (keylEntry_t));
+    copyIntPtr->entries =
+        Tcl_Alloc(copyIntPtr->arraySize * sizeof(keylEntry_t));
 
     for (idx = 0; idx < srcIntPtr->numEntries ; idx++) {
         copyIntPtr->entries [idx].key =
@@ -694,11 +694,11 @@ DupKeyedListInternalRepShared (srcPtr, copyPtr)
 
     KEYL_REP_ASSERT (srcIntPtr);
 
-    copyIntPtr = (keylIntObj_t *) ckalloc (sizeof (keylIntObj_t));
+    copyIntPtr = Tcl_Alloc(sizeof(keylIntObj_t));
     copyIntPtr->arraySize = srcIntPtr->arraySize;
     copyIntPtr->numEntries = srcIntPtr->numEntries;
-    copyIntPtr->entries = (keylEntry_t *)
-        ckalloc (copyIntPtr->arraySize * sizeof (keylEntry_t));
+    copyIntPtr->entries =
+        Tcl_Alloc(copyIntPtr->arraySize * sizeof(keylEntry_t));
 
     for (idx = 0; idx < srcIntPtr->numEntries ; idx++) {
         copyIntPtr->entries [idx].key =
@@ -731,7 +731,7 @@ SetKeyedListFromAny (interp, objPtr)
 {
     keylIntObj_t *keylIntPtr;
     int idx;
-    STRLEN_TYPE objc;
+    int objc;
     Tcl_Obj **objv;
 
     if (Tcl_ListObjGetElements (interp, objPtr, &objc, &objv) != TCL_OK)
@@ -788,7 +788,7 @@ UpdateStringOfKeyedList (keylPtr)
      */
     if (keylIntPtr->numEntries > UPDATE_STATIC_SIZE) {
         listObjv =
-            (Tcl_Obj **) ckalloc (keylIntPtr->numEntries * sizeof (Tcl_Obj *));
+            Tcl_Alloc(keylIntPtr->numEntries * sizeof(Tcl_Obj *));
     } else {
         listObjv = staticListObjv;
     }
@@ -813,7 +813,7 @@ UpdateStringOfKeyedList (keylPtr)
 
     Tcl_DecrRefCount (tmpListObj);
     if (listObjv != staticListObjv)
-        ckfree ((void*) listObjv);
+        Tcl_Free(listObjv);
 }
 
 /*-----------------------------------------------------------------------------
@@ -942,11 +942,11 @@ TclX_KeyedListSet (interp, keylPtr, key, valuePtr)
             findIdx = keylIntPtr->numEntries;
             keylIntPtr->numEntries++;
         } else {
-            ckfree (keylIntPtr->entries [findIdx].key);
+            Tcl_Free(keylIntPtr->entries [findIdx].key);
             Tcl_DecrRefCount (keylIntPtr->entries [findIdx].valuePtr);
         }
         keylIntPtr->entries [findIdx].key =
-            (char *) ckalloc (keyLen + 1);
+            Tcl_Alloc(keyLen + 1);
         strncpy (keylIntPtr->entries [findIdx].key, key, keyLen);
         keylIntPtr->entries [findIdx].key [keyLen] = '\0';
         keylIntPtr->entries [findIdx].valuePtr = valuePtr;
@@ -985,7 +985,7 @@ TclX_KeyedListSet (interp, keylPtr, key, valuePtr)
         EnsureKeyedListSpace (keylIntPtr, 1);
         findIdx = keylIntPtr->numEntries++;
         keylIntPtr->entries [findIdx].key =
-            (char *) ckalloc (keyLen + 1);
+            Tcl_Alloc(keyLen + 1);
         strncpy (keylIntPtr->entries [findIdx].key, key, keyLen);
         keylIntPtr->entries [findIdx].key [keyLen] = '\0';
         keylIntPtr->entries [findIdx].valuePtr = newKeylPtr;
@@ -1152,9 +1152,9 @@ TclX_KeyedListGetKeys (interp, keylPtr, key, listObjPtrPtr)
  */
 static int
 Tcl_KeylgetObjCmd (clientData, interp, objc, objv)
-    ClientData   clientData;
+    void *clientData;
     Tcl_Interp  *interp;
-    STRLEN_TYPE  objc;
+    int  objc;
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylPtr, *valuePtr;
@@ -1233,9 +1233,9 @@ Tcl_KeylgetObjCmd (clientData, interp, objc, objv)
  */
 static int
 Tcl_KeylsetObjCmd (clientData, interp, objc, objv)
-    ClientData   clientData;
+    void *clientData;
     Tcl_Interp  *interp;
-    STRLEN_TYPE  objc;
+    int  objc;
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylVarPtr, *newVarObj;
@@ -1296,9 +1296,9 @@ Tcl_KeylsetObjCmd (clientData, interp, objc, objv)
  */
 static int
 Tcl_KeyldelObjCmd (clientData, interp, objc, objv)
-    ClientData   clientData;
+    void *clientData;
     Tcl_Interp  *interp;
-    STRLEN_TYPE  objc;
+    int  objc;
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylVarPtr, *keylPtr;
@@ -1358,9 +1358,9 @@ Tcl_KeyldelObjCmd (clientData, interp, objc, objv)
  */
 static int
 Tcl_KeylkeysObjCmd (clientData, interp, objc, objv)
-    ClientData   clientData;
+    void *clientData;
     Tcl_Interp  *interp;
-    STRLEN_TYPE  objc;
+    int  objc;
     Tcl_Obj     *const objv[];
 {
     Tcl_Obj *keylPtr, *listObjPtr;
@@ -1427,25 +1427,25 @@ TclX_KeyedListInit (interp)
     Tcl_CreateObjCommand (interp,
                           "keylget",
                           Tcl_KeylgetObjCmd,
-                          (ClientData) NULL,
+                          NULL,
                           (Tcl_CmdDeleteProc*) NULL);
 
     Tcl_CreateObjCommand (interp,
                           "keylset",
                           Tcl_KeylsetObjCmd,
-                          (ClientData) NULL,
+                          NULL,
                           (Tcl_CmdDeleteProc*) NULL);
 
     Tcl_CreateObjCommand (interp,
                           "keyldel",
                           Tcl_KeyldelObjCmd,
-                          (ClientData) NULL,
+                          NULL,
                           (Tcl_CmdDeleteProc*) NULL);
 
     Tcl_CreateObjCommand (interp,
                           "keylkeys",
                           Tcl_KeylkeysObjCmd,
-                          (ClientData) NULL,
+                          NULL,
                           (Tcl_CmdDeleteProc*) NULL);
     }
 }

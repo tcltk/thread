@@ -150,7 +150,7 @@ Sv_RegisterLmdbStore(void)
  *
  *-----------------------------------------------------------------------------
  */
-static ClientData
+static void *
 ps_lmdb_open(
     const char *path)
 {
@@ -159,7 +159,7 @@ ps_lmdb_open(
     char *ext;
     Tcl_DString toext;
 
-    ctx = ckalloc(sizeof(*ctx));
+    ctx = Tcl_Alloc(sizeof(*ctx));
     if (ctx == NULL)
     {
         return NULL;
@@ -173,7 +173,7 @@ ps_lmdb_open(
     ctx->err = mdb_env_create(&ctx->env);
     if (ctx->err)
     {
-        ckfree(ctx);
+        Tcl_Free(ctx);
         return NULL;
     }
 
@@ -184,11 +184,11 @@ ps_lmdb_open(
 
     if (ctx->err)
     {
-        ckfree(ctx);
+    	Tcl_Free(ctx);
         return NULL;
     }
 
-    return (ClientData)ctx;
+    return ctx;
 }
 
 /*
@@ -208,7 +208,7 @@ ps_lmdb_open(
  */
 static int
 ps_lmdb_close(
-    ClientData handle)
+    void *handle)
 {
     LmdbCtx ctx = (LmdbCtx)handle;
     if (ctx->cur)
@@ -221,7 +221,7 @@ ps_lmdb_close(
     }
 
     mdb_env_close(ctx->env);
-    ckfree(ctx);
+    Tcl_Free(ctx);
 
     return 0;
 }
@@ -244,7 +244,7 @@ ps_lmdb_close(
  */
 static int
 ps_lmdb_get(
-     ClientData  handle,
+     void *handle,
      const char *keyptr,
      char  **dataptrptr,
      size_t     *lenptr)
@@ -299,7 +299,7 @@ ps_lmdb_get(
  */
 static int
 ps_lmdb_first(
-    ClientData  handle,
+    void *handle,
     char   **keyptrptr,
     char  **dataptrptr,
     size_t     *lenptr)
@@ -352,7 +352,7 @@ ps_lmdb_first(
  *-----------------------------------------------------------------------------
  */
 static int ps_lmdb_next(
-    ClientData  handle,
+    void *handle,
     char   **keyptrptr,
     char  **dataptrptr,
     size_t     *lenptr)
@@ -395,7 +395,7 @@ static int ps_lmdb_next(
  */
 static int
 ps_lmdb_put(
-    ClientData  handle,
+    void *handle,
     const char *keyptr,
     char      *dataptr,
     size_t         len)
@@ -447,7 +447,7 @@ ps_lmdb_put(
  */
 static int
 ps_lmdb_delete(
-    ClientData  handle,
+    void *handle,
     const char *keyptr)
 {
     LmdbCtx ctx = (LmdbCtx)handle;
@@ -497,7 +497,7 @@ ps_lmdb_delete(
  */
 static void
 ps_lmdb_free(
-    ClientData handle,
+    void *handle,
     void        *data)
 {
     LmdbCtx ctx = (LmdbCtx)handle;
@@ -527,7 +527,7 @@ ps_lmdb_free(
  */
 static const char*
 ps_lmdb_geterr(
-    ClientData handle)
+    void *handle)
 {
     LmdbCtx ctx = (LmdbCtx)handle;
     return mdb_strerror(ctx->err);

@@ -82,17 +82,17 @@
  * persistent storage for shared variable arrays.
  */
 
-typedef ClientData (ps_open_proc)(const char*);
+typedef void *(ps_open_proc)(const char*);
 
-typedef int (ps_get_proc)   (ClientData, const char*, char**, size_t*);
-typedef int (ps_put_proc)   (ClientData, const char*, char*, size_t);
-typedef int (ps_first_proc) (ClientData, char**, char**, size_t*);
-typedef int (ps_next_proc)  (ClientData, char**, char**, size_t*);
-typedef int (ps_delete_proc)(ClientData, const char*);
-typedef int (ps_close_proc) (ClientData);
-typedef void(ps_free_proc)  (ClientData, void*);
+typedef int (ps_get_proc)   (void *, const char*, char**, size_t*);
+typedef int (ps_put_proc)   (void *, const char*, char*, size_t);
+typedef int (ps_first_proc) (void *, char**, char**, size_t*);
+typedef int (ps_next_proc)  (void *, char**, char**, size_t*);
+typedef int (ps_delete_proc)(void *, const char*);
+typedef int (ps_close_proc) (void *);
+typedef void(ps_free_proc)  (void *, void*);
 
-typedef const char* (ps_geterr_proc)(ClientData);
+typedef const char* (ps_geterr_proc)(void *);
 
 /*
  * This structure maintains a bunch of pointers to functions implementing
@@ -101,7 +101,7 @@ typedef const char* (ps_geterr_proc)(ClientData);
 
 typedef struct PsStore {
     const char *type;          /* Type identifier of the persistent storage */
-    ClientData psHandle;       /* Handle to the opened storage */
+    void *psHandle;            /* Handle to the opened storage */
     ps_open_proc   *psOpen;    /* Function to open the persistent key store */
     ps_get_proc    *psGet;     /* Function to retrieve value bound to key */
     ps_put_proc    *psPut;     /* Function to store user key and value */

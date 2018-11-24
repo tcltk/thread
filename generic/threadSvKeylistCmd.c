@@ -98,9 +98,9 @@ Sv_RegisterKeylistCommands(void)
 
 static int
 SvKeylsetObjCmd(arg, interp, objc, objv)
-    ClientData arg;                     /* Not used. */
+    void *arg;                     /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    STRLEN_TYPE objc;                   /* Number of arguments. */
+    int objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int i, off, ret, flg;
@@ -157,9 +157,9 @@ SvKeylsetObjCmd(arg, interp, objc, objv)
 
 static int
 SvKeylgetObjCmd(arg, interp, objc, objv)
-    ClientData arg;                     /* Not used. */
+    void *arg;                     /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    STRLEN_TYPE objc;                   /* Number of arguments. */
+    int objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, flg, off;
@@ -245,9 +245,9 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
 
 static int
 SvKeyldelObjCmd(arg, interp, objc, objv)
-    ClientData arg;                     /* Not used. */
+    void *arg;                     /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    STRLEN_TYPE objc;                   /* Number of arguments. */
+    int objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int i, off, ret;
@@ -304,9 +304,9 @@ SvKeyldelObjCmd(arg, interp, objc, objv)
 
 static int
 SvKeylkeysObjCmd(arg, interp, objc, objv)
-    ClientData arg;                     /* Not used. */
+    void *arg;                     /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    STRLEN_TYPE objc;                   /* Number of arguments. */
+    int objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, off;

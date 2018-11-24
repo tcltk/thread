@@ -43,7 +43,7 @@ NsThread_Init (Tcl_Interp *interp, void *cd)
                 Tcl_GetString(Tcl_GetObjResult(interp)));
         return TCL_ERROR;
     }
-    Tcl_SetAssocData(interp, "thread:nsd", NULL, (ClientData)md);
+    Tcl_SetAssocData(interp, "thread:nsd", NULL, md);
 
     return TCL_OK;
 }

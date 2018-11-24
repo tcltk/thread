@@ -20,13 +20,6 @@
 #include <string.h> /* For memset and friends */
 #include <stdarg.h> /* For va_list */
 
-#ifdef TCL_STRLEN
-# define STRLEN_TYPE size_t
-#else
-# define TCL_STRLEN (-1)
-# define STRLEN_TYPE int
-#endif
-
 /*
  * Used to tag functions that are only to be visible within the module being
  * built and not outside it (where this is supported by the linker).
@@ -102,7 +95,7 @@ MODULE_SCOPE int Tpool_Init(Tcl_Interp *interp);
  */
 
 #define TCL_CMD(a,b,c) \
-  if (Tcl_CreateObjCommand((a),(b),(c),(ClientData)NULL, NULL) == NULL) \
+  if (Tcl_CreateObjCommand((a),(b),(c),NULL, NULL) == NULL) \
     return TCL_ERROR
 
 #define OPT_CMP(a,b) \

@@ -177,9 +177,9 @@ static int       AnyMutexIsLocked  (Sp_AnyMutex *mPtr, Tcl_ThreadId);
 
 static int
 ThreadMutexObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
+    void *dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    STRLEN_TYPE objc;                   /* Number of arguments. */
+    int objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int opt, ret;
@@ -244,7 +244,7 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
          * Create the requested mutex
          */
 
-        mutexPtr = (SpMutex*)ckalloc(sizeof(SpMutex));
+        mutexPtr = Tcl_Alloc(sizeof(SpMutex));
         mutexPtr->type   = type;
         mutexPtr->bucket = NULL;
         mutexPtr->hentry = NULL;
@@ -353,9 +353,9 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
 
 static int
 ThreadRWMutexObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
+    void *dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    STRLEN_TYPE objc;                   /* Number of arguments. */
+    int objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int opt, ret;
@@ -401,7 +401,7 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
             Tcl_WrongNumArgs(interp, 1, objv, "create");
             return TCL_ERROR;
         }
-        mutexPtr = (SpMutex*)ckalloc(sizeof(SpMutex));
+        mutexPtr = Tcl_Alloc(sizeof(SpMutex));
         mutexPtr->type   = WMUTEXID;
         mutexPtr->refcnt = 0;
         mutexPtr->bucket = NULL;
@@ -517,9 +517,9 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
 
 static int
 ThreadCondObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
+    void *dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    STRLEN_TYPE objc;                   /* Number of arguments. */
+    int objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int opt, ret, timeMsec = 0;
@@ -563,7 +563,7 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
             Tcl_WrongNumArgs(interp, 1, objv, "create");
             return TCL_ERROR;
         }
-        condvPtr = (SpCondv*)ckalloc(sizeof(SpCondv));
+        condvPtr = Tcl_Alloc(sizeof(SpCondv));
         condvPtr->refcnt = 0;
         condvPtr->bucket = NULL;
         condvPtr->hentry = NULL;
@@ -685,9 +685,9 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
 
 static int
 ThreadEvalObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
+    void *dummy;                   /* Not used. */
     Tcl_Interp *interp;                 /* Current interpreter. */
-    STRLEN_TYPE objc;                   /* Number of arguments. */
+    int objc;                   /* Number of arguments. */
     Tcl_Obj *const objv[];              /* Argument objects. */
 {
     int ret, optx, internal;
@@ -772,7 +772,7 @@ ThreadEvalObjCmd(dummy, interp, objc, objv)
         /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
          * See Tcl bug #3562640 */
         sprintf(msg, "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
-        Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_STRLEN));
+        Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_AUTO_LENGTH));
     }
 
     /*
@@ -936,7 +936,7 @@ AddAnyItem(int type, const char *handle, size_t len, SpItem *itemPtr)
     Tcl_MutexLock(&bucketPtr->lock);
 
     hashEntryPtr = Tcl_CreateHashEntry(&bucketPtr->handles, handle, &new);
-    Tcl_SetHashValue(hashEntryPtr, (ClientData)itemPtr);
+    Tcl_SetHashValue(hashEntryPtr, itemPtr);
 
     itemPtr->refcnt = 0;
     itemPtr->bucket = bucketPtr;
@@ -1015,7 +1015,7 @@ RemoveMutex(const char *name, size_t len)
     }
     PutMutex(mutexPtr);
     RemoveAnyItem(SP_MUTEX, name, len);
-    ckfree((char*)mutexPtr);
+    Tcl_Free(mutexPtr);
 
     return 1;
 }
@@ -1051,7 +1051,7 @@ RemoveCondv(const char *name, size_t len)
     }
     PutCondv(condvPtr);
     RemoveAnyItem(SP_CONDV, name, len);
-    ckfree((char*)condvPtr);
+    Tcl_Free(condvPtr);
 
     return 1;
 }
@@ -1360,11 +1360,10 @@ Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *muxPtr)
      * Allocate the mutex structure on first access
      */
 
-    if (*muxPtr == (Sp_ExclusiveMutex_*)0) {
+    if (*muxPtr == NULL) {
         Tcl_MutexLock(&initMutex);
-        if (*muxPtr == (Sp_ExclusiveMutex_*)0) {
-            *muxPtr = (Sp_ExclusiveMutex_*)
-                ckalloc(sizeof(Sp_ExclusiveMutex_));
+        if (*muxPtr == NULL) {
+            *muxPtr = Tcl_Alloc(sizeof(Sp_ExclusiveMutex_));
             memset(*muxPtr, 0, sizeof(Sp_ExclusiveMutex_));
         }
         Tcl_MutexUnlock(&initMutex);
@@ -1496,7 +1495,7 @@ Sp_ExclusiveMutexFinalize(Sp_ExclusiveMutex *muxPtr)
         if (emPtr->mutex) {
             Tcl_MutexFinalize(&emPtr->mutex);
         }
-        ckfree((char*)*muxPtr);
+        Tcl_Free(*muxPtr);
     }
 }
 
@@ -1529,8 +1528,8 @@ Sp_RecursiveMutexLock(Sp_RecursiveMutex *muxPtr)
     if (*muxPtr == (Sp_RecursiveMutex_*)0) {
         Tcl_MutexLock(&initMutex);
         if (*muxPtr == (Sp_RecursiveMutex_*)0) {
-            *muxPtr = (Sp_RecursiveMutex_*)
-                ckalloc(sizeof(Sp_RecursiveMutex_));
+            *muxPtr =
+                Tcl_Alloc(sizeof(Sp_RecursiveMutex_));
             memset(*muxPtr, 0, sizeof(Sp_RecursiveMutex_));
         }
         Tcl_MutexUnlock(&initMutex);
@@ -1667,7 +1666,7 @@ Sp_RecursiveMutexFinalize(Sp_RecursiveMutex *muxPtr)
         if (rmPtr->cond) {
             Tcl_ConditionFinalize(&rmPtr->cond);
         }
-        ckfree((char*)*muxPtr);
+        Tcl_Free(*muxPtr);
     }
 }
 
@@ -1701,8 +1700,8 @@ Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *muxPtr)
     if (*muxPtr == (Sp_ReadWriteMutex_*)0) {
         Tcl_MutexLock(&initMutex);
         if (*muxPtr == (Sp_ReadWriteMutex_*)0) {
-            *muxPtr = (Sp_ReadWriteMutex_*)
-                ckalloc(sizeof(Sp_ReadWriteMutex_));
+            *muxPtr =
+                Tcl_Alloc(sizeof(Sp_ReadWriteMutex_));
             memset(*muxPtr, 0, sizeof(Sp_ReadWriteMutex_));
         }
         Tcl_MutexUnlock(&initMutex);
@@ -1756,8 +1755,8 @@ Sp_ReadWriteMutexWLock(Sp_ReadWriteMutex *muxPtr)
     if (*muxPtr == (Sp_ReadWriteMutex_*)0) {
         Tcl_MutexLock(&initMutex);
         if (*muxPtr == (Sp_ReadWriteMutex_*)0) {
-            *muxPtr = (Sp_ReadWriteMutex_*)
-                ckalloc(sizeof(Sp_ReadWriteMutex_));
+            *muxPtr =
+                Tcl_Alloc(sizeof(Sp_ReadWriteMutex_));
             memset(*muxPtr, 0, sizeof(Sp_ReadWriteMutex_));
         }
         Tcl_MutexUnlock(&initMutex);
@@ -1880,7 +1879,7 @@ Sp_ReadWriteMutexFinalize(Sp_ReadWriteMutex *muxPtr)
         if (rwPtr->wcond) {
             Tcl_ConditionFinalize(&rwPtr->wcond);
         }
-        ckfree((char*)*muxPtr);
+        Tcl_Free(*muxPtr);
     }
 }
 
