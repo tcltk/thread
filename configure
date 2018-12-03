@@ -5625,18 +5625,6 @@ $as_echo "$as_me: WARNING:
     that IS thread-enabled.  It is recommended to use --enable-threads." >&2;}
 	    fi
 	    ;;
-	*)
-	    if test "${TCL_THREADS}" = "1"; then
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING:
-    --enable-threads requested, but building against a Tcl that is NOT
-    thread-enabled.  This is an OK configuration that will also run in
-    a thread-enabled core." >&5
-$as_echo "$as_me: WARNING:
-    --enable-threads requested, but building against a Tcl that is NOT
-    thread-enabled.  This is an OK configuration that will also run in
-    a thread-enabled core." >&2;}
-	    fi
-	    ;;
     esac
 
 

@@ -1197,5 +1197,20 @@ test thread-21.16 {thread::cond - delete waited variable} {
     list $c1 $c2 $r1 $r2
 } {1 0 {condition variable is in use} {}}
 
+test thread-22.1  {thread::send -command} {
+    ThreadReap
+    after 0 [list ::apply [list {} {
+        set tid [thread::create]
+        thread::send -command $tid {lindex hello} [list ::apply [list args {
+            variable result
+            set result $args
+        } [namespace current]]]
+    } [namespace current]]]
+    vwait [namespace current]::result
+    ThreadReap
+    set result
+} hello 
+
+
 removeFile dummyForTransfer
 ::tcltest::cleanupTests
