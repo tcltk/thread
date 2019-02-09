@@ -148,9 +148,9 @@ typedef struct {
     ((void (*)(Tcl_Interp *, Tcl_Obj *))((&(tclStubsPtr->tcl_PkgProvideEx))[574]))(interp, Tcl_NewStringObj(msg, -1)): \
     ((void (*)(Tcl_Interp *, const char *))((&(tclStubsPtr->tcl_PkgProvideEx))[66]))(interp, msg))
 /* TIP #337 */
-# undef Tcl_BackgroundError
-# define Tcl_BackgroundError(interp) ((threadTclVersion>85)? \
-    ((void (*)(Tcl_Interp *, int))((&(tclStubsPtr->tcl_PkgProvideEx))[609]))(interp, TCL_ERROR): \
+# undef Tcl_BackgroundException
+# define Tcl_BackgroundException(interp, result) ((threadTclVersion>85)? \
+    ((void (*)(Tcl_Interp *, int))((&(tclStubsPtr->tcl_PkgProvideEx))[609]))(interp, result): \
     ((void (*)(Tcl_Interp *))((&(tclStubsPtr->tcl_PkgProvideEx))[76]))(interp))
 #elif !TCL_MINIMUM_VERSION(8,6)
   /* 8.5, 8.4, or less - Emulate access to the error-line information */
