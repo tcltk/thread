@@ -55,7 +55,7 @@ typedef struct ThreadSpecificData {
     Tcl_Condition doOneEvent;             /* Signalled just before running
                                              an event from the event loop */
     int flags;                            /* One of the ThreadFlags below */
-    int refCount;                         /* Used for thread reservation */
+    size_t refCount;                      /* Used for thread reservation */
     int eventsPending;                    /* # of unprocessed events */
     int maxEventsCount;                   /* Maximum # of pending events */
     struct ThreadEventResult  *result;
@@ -1759,7 +1759,8 @@ NewThread(clientData)
     ThreadCtrl *ctrlPtr = clientData;
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
     Tcl_Interp *interp;
-    int result = TCL_OK, scriptLen;
+    int result = TCL_OK;
+    size_t scriptLen;
     char *evalScript;
 
     /*
@@ -3250,7 +3251,7 @@ ThreadGetOption(interp, thrId, option, dsPtr)
     char *option;
     Tcl_DString *dsPtr;
 {
-    int len;
+    size_t len;
     ThreadSpecificData *tsdPtr = NULL;
 
     /*
@@ -3342,7 +3343,7 @@ ThreadSetOption(interp, thrId, option, value)
     char *option;
     char *value;
 {
-    int len = strlen(option);
+    size_t len = strlen(option);
     ThreadSpecificData *tsdPtr = NULL;
 
     Tcl_MutexLock(&threadMutex);

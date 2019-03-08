@@ -155,8 +155,8 @@ Sv_RegisterCommand(
                    Tcl_CmdDeleteProc *delProc,         /* Command delete procedure */
                    int aolSpecial)
 {
-    int len = strlen(cmdName) + strlen(TSV_CMD_PREFIX) + 1;
-    int len2 = strlen(cmdName) + strlen(TSV_CMD2_PREFIX) + 1;
+    size_t len = strlen(cmdName) + strlen(TSV_CMD_PREFIX) + 1;
+    size_t len2 = strlen(cmdName) + strlen(TSV_CMD2_PREFIX) + 1;
     SvCmdInfo *newCmd = Tcl_Alloc(sizeof(SvCmdInfo) + len + len2);
 
     /*

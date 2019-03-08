@@ -37,7 +37,7 @@ typedef struct ThreadPool {
     int maxWorkers;                 /* Maximum number of worker threads */
     int numWorkers;                 /* Current number of worker threads */
     int idleWorkers;                /* Number of idle workers */
-    int refCount;                   /* Reference counter for reserve/release */
+    size_t refCount;                /* Reference counter for reserve/release */
     Tcl_Mutex mutex;                /* Pool mutex */
     Tcl_Condition cond;             /* Pool condition variable */
     Tcl_HashTable jobsDone;         /* Stores processed job results */
@@ -162,7 +162,7 @@ AppExitHandler(void *clientData);
 static int
 TpoolReserve(ThreadPool *tpoolPtr);
 
-static int
+static size_t
 TpoolRelease(ThreadPool *tpoolPtr);
 
 static void
@@ -870,7 +870,7 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
     int objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int ret;
+    size_t ret;
     char *tpoolName;
     ThreadPool *tpoolPtr;
 
@@ -896,7 +896,7 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
 
     ret = TpoolRelease(tpoolPtr);
     Tcl_MutexUnlock(&listMutex);
-    Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
+    Tcl_SetObjResult(interp, Tcl_NewWideIntObj(ret));
 
     return TCL_OK;
 }
@@ -1638,7 +1638,7 @@ TpoolReserve(tpoolPtr)
  *
  *----------------------------------------------------------------------
  */
-static int
+static size_t
 TpoolRelease(tpoolPtr)
     ThreadPool *tpoolPtr;
 {
@@ -1647,7 +1647,7 @@ TpoolRelease(tpoolPtr)
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
 
-    if (--tpoolPtr->refCount > 0) {
+    if (tpoolPtr->refCount-- > 1) {
         return tpoolPtr->refCount;
     }
 
