@@ -285,7 +285,7 @@ DeleteKeyedListEntry(keylIntObj_t *keylIntPtr,
 static int
 FindKeyedListEntry(keylIntObj_t *keylIntPtr,
                                 const char   *key,
-                                int          *keyLenPtr,
+                                size_t       *keyLenPtr,
                                 const char   **nextSubKeyPtr);
 
 static int
@@ -552,11 +552,12 @@ static int
 FindKeyedListEntry (keylIntPtr, key, keyLenPtr, nextSubKeyPtr)
     keylIntObj_t *keylIntPtr;
     const char   *key;
-    int          *keyLenPtr;
+    size_t       *keyLenPtr;
     const char   **nextSubKeyPtr;
 {
     char *keySeparPtr;
-    int keyLen, findIdx;
+    size_t keyLen;
+    int findIdx;
 
     keySeparPtr = strchr (key, '.');
     if (keySeparPtr != NULL) {
@@ -946,7 +947,8 @@ TclX_KeyedListSet (interp, keylPtr, key, valuePtr)
 {
     keylIntObj_t *keylIntPtr;
     const char *nextSubKey;
-    int findIdx, keyLen, status;
+    int findIdx, status;
+    size_t keyLen;
     Tcl_Obj *newKeylPtr;
 
     if (keylPtr->typePtr != &keyedListType) {

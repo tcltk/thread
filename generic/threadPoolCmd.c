@@ -37,7 +37,7 @@ typedef struct ThreadPool {
     int maxWorkers;                 /* Maximum number of worker threads */
     int numWorkers;                 /* Current number of worker threads */
     int idleWorkers;                /* Number of idle workers */
-    int refCount;                   /* Reference counter for reserve/release */
+    size_t refCount;                /* Reference counter for reserve/release */
     Tcl_Mutex mutex;                /* Pool mutex */
     Tcl_Condition cond;             /* Pool condition variable */
     Tcl_HashTable jobsDone;         /* Stores processed job results */
@@ -62,7 +62,7 @@ typedef struct TpoolResult {
     int detached;                   /* Result is to be ignored */
     Tcl_WideInt jobId;              /* The job id of the current job */
     char *script;                   /* Script to evaluate in worker thread */
-    int scriptLen;                  /* Length of the script */
+    size_t scriptLen;               /* Length of the script */
     int retcode;                    /* Tcl return code of the current job */
     char *result;                   /* Tcl result of the current job */
     char *errorCode;                /* On error: content of the errorCode */
@@ -142,7 +142,7 @@ static void
 SignalWaiter(ThreadPool *tpoolPtr);
 
 static int
-TpoolEval(Tcl_Interp *interp, char *script, int scriptLen,
+TpoolEval(Tcl_Interp *interp, char *script, size_t scriptLen,
                             TpoolResult *rPtr);
 static void
 SetResult(Tcl_Interp *interp, TpoolResult *rPtr);
@@ -162,7 +162,7 @@ AppExitHandler(ClientData clientData);
 static int
 TpoolReserve(ThreadPool *tpoolPtr);
 
-static int
+static size_t
 TpoolRelease(ThreadPool *tpoolPtr);
 
 static void
@@ -868,7 +868,7 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
     int         objc;           /* Number of arguments. */
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
-    int ret;
+    size_t ret;
     char *tpoolName;
     ThreadPool *tpoolPtr;
 
@@ -894,7 +894,7 @@ TpoolReleaseObjCmd(dummy, interp, objc, objv)
 
     ret = TpoolRelease(tpoolPtr);
     Tcl_MutexUnlock(&listMutex);
-    Tcl_SetObjResult(interp, Tcl_NewIntObj(ret));
+    Tcl_SetObjResult(interp, Tcl_NewWideIntObj(ret));
 
     return TCL_OK;
 }
@@ -1508,7 +1508,7 @@ static int
 TpoolEval(interp, script, scriptLen, rPtr)
     Tcl_Interp *interp;
     char *script;
-    int scriptLen;
+    size_t scriptLen;
     TpoolResult *rPtr;
 {
     int ret;
@@ -1636,7 +1636,7 @@ TpoolReserve(tpoolPtr)
  *
  *----------------------------------------------------------------------
  */
-static int
+static size_t
 TpoolRelease(tpoolPtr)
     ThreadPool *tpoolPtr;
 {
@@ -1645,7 +1645,7 @@ TpoolRelease(tpoolPtr)
     Tcl_HashEntry *hPtr;
     Tcl_HashSearch search;
 
-    if (--tpoolPtr->refCount > 0) {
+    if (tpoolPtr->refCount-- > 1) {
         return tpoolPtr->refCount;
     }
 
