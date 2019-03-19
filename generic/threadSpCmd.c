@@ -1197,7 +1197,7 @@ SpMutexFinalize(SpMutex *mutexPtr)
 {
     Sp_AnyMutex **lockPtr = &mutexPtr->lock;
 
-    if (AnyMutexIsLocked((Sp_AnyMutex*)mutexPtr->lock, (Tcl_ThreadId)0)) {
+    if (AnyMutexIsLocked((Sp_AnyMutex*)mutexPtr->lock, NULL)) {
         return 0;
     }
 
@@ -1265,7 +1265,7 @@ SpCondvWait(SpCondv *condvPtr, SpMutex *mutexPtr, int msec)
 
     condvPtr->mutex = mutexPtr;
 
-    emPtr->owner = (Tcl_ThreadId)0;
+    emPtr->owner = NULL;
     emPtr->lockcount = 0;
 
     Tcl_ConditionWait(&condvPtr->cond, &emPtr->mutex, wt);
@@ -1417,7 +1417,7 @@ Sp_ExclusiveMutexLock(Sp_ExclusiveMutex *muxPtr)
 int
 Sp_ExclusiveMutexIsLocked(Sp_ExclusiveMutex *muxPtr)
 {
-    return AnyMutexIsLocked((Sp_AnyMutex*)*muxPtr, (Tcl_ThreadId)0);
+    return AnyMutexIsLocked((Sp_AnyMutex*)*muxPtr, NULL);
 }
 
 /*
@@ -1453,7 +1453,7 @@ Sp_ExclusiveMutexUnlock(Sp_ExclusiveMutex *muxPtr)
         Tcl_MutexUnlock(&emPtr->lock);
         return 0; /* Not locked */
     }
-    emPtr->owner = (Tcl_ThreadId)0;
+    emPtr->owner = NULL;
     emPtr->lockcount = 0;
     Tcl_MutexUnlock(&emPtr->lock);
 
@@ -1545,7 +1545,7 @@ Sp_RecursiveMutexLock(Sp_RecursiveMutex *muxPtr)
          */
         rmPtr->lockcount++;
     } else {
-        if (rmPtr->owner == (Tcl_ThreadId)0) {
+        if (rmPtr->owner == NULL) {
             /*
              * Nobody holds the mutex, we do now.
              */
@@ -1557,7 +1557,7 @@ Sp_RecursiveMutexLock(Sp_RecursiveMutex *muxPtr)
              */
             while (1) {
                 Tcl_ConditionWait(&rmPtr->cond, &rmPtr->lock, NULL);
-                if (rmPtr->owner == (Tcl_ThreadId)0) {
+                if (rmPtr->owner == NULL) {
                     rmPtr->owner = thisThread;
                     rmPtr->lockcount = 1;
                     break;
@@ -1591,7 +1591,7 @@ Sp_RecursiveMutexLock(Sp_RecursiveMutex *muxPtr)
 int
 Sp_RecursiveMutexIsLocked(Sp_RecursiveMutex *muxPtr)
 {
-    return AnyMutexIsLocked((Sp_AnyMutex*)*muxPtr, (Tcl_ThreadId)0);
+    return AnyMutexIsLocked((Sp_AnyMutex*)*muxPtr, NULL);
 }
 
 /*
@@ -1628,7 +1628,7 @@ Sp_RecursiveMutexUnlock(Sp_RecursiveMutex *muxPtr)
     }
     if (--rmPtr->lockcount <= 0) {
         rmPtr->lockcount = 0;
-        rmPtr->owner = (Tcl_ThreadId)0;
+        rmPtr->owner = NULL;
         if (rmPtr->cond) {
             Tcl_ConditionNotify(&rmPtr->cond);
         }
@@ -1719,7 +1719,7 @@ Sp_ReadWriteMutexRLock(Sp_ReadWriteMutex *muxPtr)
         rwPtr->numrd--;
     }
     rwPtr->lockcount++;
-    rwPtr->owner = (Tcl_ThreadId)0; /* Many threads can read-lock */
+    rwPtr->owner = NULL; /* Many threads can read-lock */
     Tcl_MutexUnlock(&rwPtr->lock);
 
     return 1;
@@ -1800,7 +1800,7 @@ Sp_ReadWriteMutexWLock(Sp_ReadWriteMutex *muxPtr)
 int
 Sp_ReadWriteMutexIsLocked(Sp_ReadWriteMutex *muxPtr)
 {
-    return AnyMutexIsLocked((Sp_AnyMutex*)*muxPtr, (Tcl_ThreadId)0);
+    return AnyMutexIsLocked((Sp_AnyMutex*)*muxPtr, NULL);
 }
 
 /*
@@ -1835,7 +1835,7 @@ Sp_ReadWriteMutexUnlock(Sp_ReadWriteMutex *muxPtr)
     }
     if (--rwPtr->lockcount <= 0) {
         rwPtr->lockcount = 0;
-        rwPtr->owner = (Tcl_ThreadId)0;
+        rwPtr->owner = NULL;
     }
     if (rwPtr->numwr) {
         Tcl_ConditionNotify(&rwPtr->wcond);
@@ -1909,7 +1909,7 @@ AnyMutexIsLocked(Sp_AnyMutex *mPtr, Tcl_ThreadId threadId)
     if (mPtr != NULL) {
         Tcl_MutexLock(&mPtr->lock);
         locked = mPtr->lockcount != 0;
-        if (locked && threadId != (Tcl_ThreadId)0) {
+        if (locked && threadId != NULL) {
             locked = mPtr->owner == threadId;
         }
         Tcl_MutexUnlock(&mPtr->lock);

@@ -17,7 +17,7 @@
 #  ADDLINKOPTS - addition link options
 # E.g.
 #   nmake -nologo -f makefile.vc TCLDIR=%TCLDIR% ... ADDOPTDEFINES="-I%LMDBDIR%" ADDLINKOPTS="%LMDBDIR%\Release\lmdb.lib"
-# 
+#
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #

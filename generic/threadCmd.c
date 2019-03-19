@@ -628,7 +628,7 @@ ThreadReleaseObjCmd(dummy, interp, objc, objv)
     Tcl_Obj    *const objv[];   /* Argument objects. */
 {
     int wait = 0;
-    Tcl_ThreadId thrId = (Tcl_ThreadId)0;
+    Tcl_ThreadId thrId = NULL;
 
     Init(interp);
 
@@ -2512,8 +2512,8 @@ ThreadDetach(interp, chan)
      * memory leak.
      */
 
-    resultPtr->srcThreadId = (Tcl_ThreadId)0;
-    resultPtr->dstThreadId = (Tcl_ThreadId)0;
+    resultPtr->srcThreadId = NULL;
+    resultPtr->dstThreadId = NULL;
     resultPtr->eventPtr    = evPtr;
 
     Tcl_MutexLock(&threadMutex);
@@ -2929,7 +2929,7 @@ ThreadReserve(interp, thrId, operation, wait)
      * Check the given thread
      */
 
-    if (thrId == (Tcl_ThreadId)0) {
+    if (thrId == NULL) {
         tsdPtr = TCL_TSD_INIT(&dataKey);
     } else {
         tsdPtr = ThreadExistsInner(thrId);
