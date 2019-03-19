@@ -2196,7 +2196,6 @@ Sv_Init (interp)
     int i;
     Bucket *bucketPtr;
     SvCmdInfo *cmdPtr;
-    const Tcl_UniChar no[3] = {'n', 'o', 0} ;
     Tcl_Obj *obj;
 
 #ifdef SV_FINALIZE
@@ -2233,13 +2232,12 @@ Sv_Init (interp)
      * in custom object duplicator function.
      */
 
-    obj = Tcl_NewUnicodeObj(no, -1);
-    stringObjTypePtr = obj->typePtr;
+    obj = Tcl_NewStringObj("no", -1);
     Tcl_GetBooleanFromObj(NULL, obj, &i);
     booleanObjTypePtr   = obj->typePtr;
-    Tcl_DecrRefCount(obj);
-
-    obj = Tcl_NewByteArrayObj((unsigned char *)no, 2);
+    Tcl_GetCharLength(obj);
+    stringObjTypePtr = obj->typePtr;
+    Tcl_GetByteArrayFromObj(obj, &i);
     byteArrayObjTypePtr = obj->typePtr;
     Tcl_DecrRefCount(obj);
 
