@@ -1209,7 +1209,7 @@ test thread-22.1  {thread::send -command} {
     vwait [namespace current]::result
     ThreadReap
     set result
-} hello 
+} hello
 
 
 removeFile dummyForTransfer
