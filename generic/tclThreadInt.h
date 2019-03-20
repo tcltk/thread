@@ -183,6 +183,10 @@ typedef struct {
 # define Tcl_NewIntObj(value) ((threadTclVersion>86)? \
   ((Tcl_Obj * (*)(Tcl_WideInt))((&(tclStubsPtr->tcl_PkgProvideEx))[488]))((int)(value)): \
   ((Tcl_Obj * (*)(int))((&(tclStubsPtr->tcl_PkgProvideEx))[52]))(value))
+# undef Tcl_GetUnicodeFromObj
+# define Tcl_GetUnicodeFromObj(obj,len) ((((&(tclStubsPtr->tcl_PkgProvideEx))[378]) != ((&(tclStubsPtr->tcl_PkgProvideEx))[434])) ? \
+  ((void (*)(Tcl_Obj *, int *))((&(tclStubsPtr->tcl_PkgProvideEx))[434]))((obj),(len)): \
+  ((void (*)(Tcl_Obj *, int *))((&(tclStubsPtr->tcl_PkgProvideEx))[646]))((obj),(len)))
 #endif
 
 #endif /* _TCL_THREAD_INT_H_ */
