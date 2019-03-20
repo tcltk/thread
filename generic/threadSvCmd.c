@@ -2236,7 +2236,7 @@ Sv_Init (interp)
     obj = Tcl_NewStringObj("no", -1);
     Tcl_GetBooleanFromObj(NULL, obj, &i);
     booleanObjTypePtr   = obj->typePtr;
-    Tcl_GetCharLength(obj);
+    Tcl_GetUnicodeFromObj(obj, &i);
     stringObjTypePtr = obj->typePtr;
     Tcl_GetByteArrayFromObj(obj, &i);
     byteArrayObjTypePtr = obj->typePtr;
