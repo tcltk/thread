@@ -1316,7 +1316,7 @@ SvArrayObjCmd(
             Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
             while (hPtr) {
                 char *key = Tcl_GetHashKey(&arrayPtr->vars, hPtr);
-                if (pattern == NULL || Tcl_StringMatch(key, pattern)) {
+                if (pattern == NULL || Tcl_StringCaseMatch(key, pattern, 0)) {
                     Tcl_ListObjAppendElement(interp, resObj,
                             Tcl_NewStringObj(key, -1));
                     if (index == AGET) {
@@ -1532,7 +1532,7 @@ SvNamesObjCmd(
         while (hPtr) {
             char *key = Tcl_GetHashKey(&bucketPtr->arrays, hPtr);
             if ((arg==NULL || (*key != '.')) /* Hide .<name> arrays for AOL*/ &&
-                (pattern == NULL || Tcl_StringMatch(key, pattern))) {
+                (pattern == NULL || Tcl_StringCaseMatch(key, pattern, 0))) {
                 Tcl_ListObjAppendElement(interp, resObj,
                         Tcl_NewStringObj(key, -1));
             }
