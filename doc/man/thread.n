@@ -362,8 +362,10 @@ and sending scripts to threads for evaluation\&.
 This command creates a thread that contains a Tcl interpreter\&.
 The Tcl interpreter either evaluates the optional \fBscript\fR, if
 specified, or it waits in the event loop for scripts that arrive via
-the \fBthread::send\fR command\&. The result, if any, of the
-optional \fBscript\fR is never returned to the caller\&.
+the \fBthread::send\fR command\&. Both of them would take place simultaneously
+with the return of command \fBthread::create\fR to the caller thread\&.
+Neither the caller is waiting for the finishing of optional \fBscript\fR,
+nor the result, if any, of the \fBscript\fR is returned to the caller\&.
 The result of \fBthread::create\fR is the ID of the thread\&. This is
 the opaque handle which identifies the newly created thread for
 all other package commands\&. The handle of the thread goes out of scope
