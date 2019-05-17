@@ -43,12 +43,12 @@
  * Those are referenced read-only, thus no mutex protection.
  */
 
-static const Tcl_ObjType* booleanObjTypePtr;
-static const Tcl_ObjType* byteArrayObjTypePtr;
-static const Tcl_ObjType* doubleObjTypePtr;
-static const Tcl_ObjType* intObjTypePtr;
-static const Tcl_ObjType* wideIntObjTypePtr;
-static const Tcl_ObjType* stringObjTypePtr;
+static const Tcl_ObjType* booleanObjTypePtr = 0;
+static const Tcl_ObjType* byteArrayObjTypePtr = 0;
+static const Tcl_ObjType* doubleObjTypePtr = 0;
+static const Tcl_ObjType* intObjTypePtr = 0;
+static const Tcl_ObjType* wideIntObjTypePtr = 0;
+static const Tcl_ObjType* stringObjTypePtr = 0;
 
 /*
  * In order to be fully stub enabled, a small
@@ -964,7 +964,7 @@ SvFinalizeContainers(Bucket *bucketPtr)
  *  a proper object copy, i.e. w/o hidden references to original object
  *  elements or a plain string object, i.e one w/o internal representation.
  *
- *  Decision about wether to produce a real duplicate or a string object
+ *  Decision about whether to produce a real duplicate or a string object
  *  is done as follows:
  *
  *     1) Scalar Tcl object types are properly copied by default;
@@ -2235,8 +2235,14 @@ Sv_Init (interp)
     obj = Tcl_NewStringObj("no", -1);
     Tcl_GetBooleanFromObj(NULL, obj, &i);
     booleanObjTypePtr   = obj->typePtr;
-    Tcl_GetUnicodeFromObj(obj, &i);
-    stringObjTypePtr = obj->typePtr;
+
+#ifdef USE_TCL_STUBS
+    if (Tcl_GetUnicodeFromObj)
+#endif
+    {
+	Tcl_GetUnicodeFromObj(obj, &i);
+	stringObjTypePtr = obj->typePtr;
+    }
     Tcl_GetByteArrayFromObj(obj, &i);
     byteArrayObjTypePtr = obj->typePtr;
     Tcl_DecrRefCount(obj);
