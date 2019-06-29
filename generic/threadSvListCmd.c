@@ -37,14 +37,6 @@ static Tcl_ObjCmdProc SvLsearchObjCmd;   /* lsearch     */
 static Tcl_ObjCmdProc SvLsetObjCmd;      /* lset        */
 
 /*
- * This is copied verbatim from the tclUtil.c
- * since not found in the public stubs table.
- * I was just too lazy to rewrite it from scratch.
- */
-
-static int SvGetIntForIndex(Tcl_Interp*,  Tcl_Obj *, int, int*);
-
-/*
  * Inefficient list duplicator function which,
  * however, produces deep list copies, unlike
  * the original, which just makes shallow copies.
@@ -139,8 +131,8 @@ SvLpopObjCmd (arg, interp, objc, objv)
     int objc;
     Tcl_Obj *const objv[];
 {
-    int ret, off, index = 0, iarg = 0;
-    int llen;
+    int ret, off, llen, iarg = 0;
+    size_t index = 0;
     Tcl_Obj *elPtr = NULL;
     Container *svObj = (Container*)arg;
 
@@ -166,7 +158,7 @@ SvLpopObjCmd (arg, interp, objc, objv)
         goto cmd_err;
     }
     if (iarg) {
-        ret = SvGetIntForIndex(interp, objv[iarg], llen-1, &index);
+        ret = Tcl_GetIntForIndex(interp, objv[iarg], llen-1, &index);
         if (ret != TCL_OK) {
             goto cmd_err;
         }
@@ -219,8 +211,8 @@ SvLpushObjCmd (arg, interp, objc, objv)
     int objc;
     Tcl_Obj *const objv[];
 {
-    int off, ret, flg, index = 0;
-    int llen;
+    int off, ret, flg, llen;
+    size_t index = 0;
     Tcl_Obj *args[1];
     Container *svObj = (Container*)arg;
 
@@ -244,7 +236,7 @@ SvLpushObjCmd (arg, interp, objc, objv)
         goto cmd_err;
     }
     if ((objc - off) == 2) {
-        ret = SvGetIntForIndex(interp, objv[off+1], llen, &index);
+        ret = Tcl_GetIntForIndex(interp, objv[off+1], llen, &index);
         if (ret != TCL_OK) {
             goto cmd_err;
         }
@@ -354,7 +346,8 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
 {
     const char *firstArg;
     size_t argLen;
-    int ret, off, llen, first, last, ndel, nargs, i, j;
+    int ret, off, llen, ndel, nargs, i, j;
+    size_t first, last;
     Tcl_Obj **args = NULL;
     Container *svObj = (Container*)arg;
 
@@ -376,11 +369,11 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    ret = SvGetIntForIndex(interp, objv[off], llen-1, &first);
+    ret = Tcl_GetIntForIndex(interp, objv[off], llen-1, &first);
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    ret = SvGetIntForIndex(interp, objv[off+1], llen-1, &last);
+    ret = Tcl_GetIntForIndex(interp, objv[off+1], llen-1, &last);
     if (ret != TCL_OK) {
         goto cmd_err;
     }
@@ -451,8 +444,8 @@ SvLrangeObjCmd (arg, interp, objc, objv)
     int objc;
     Tcl_Obj *const objv[];
 {
-    int ret, off, first, last, nargs, i, j;
-    int llen;
+    int ret, off, llen, nargs, i, j;
+    size_t first, last;
     Tcl_Obj **elPtrs, **args;
     Container *svObj = (Container*)arg;
 
@@ -474,11 +467,11 @@ SvLrangeObjCmd (arg, interp, objc, objv)
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    ret = SvGetIntForIndex(interp, objv[off], llen-1, &first);
+    ret = Tcl_GetIntForIndex(interp, objv[off], llen-1, &first);
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    ret = SvGetIntForIndex(interp, objv[off+1], llen-1, &last);
+    ret = Tcl_GetIntForIndex(interp, objv[off+1], llen-1, &last);
     if (ret != TCL_OK) {
         goto cmd_err;
     }
@@ -533,8 +526,8 @@ SvLinsertObjCmd (arg, interp, objc, objv)
     int objc;
     Tcl_Obj *const objv[];
 {
-    int off, ret, flg, nargs, index = 0, i, j;
-    int llen;
+    int off, ret, flg, llen, nargs, i, j;
+    size_t index = 0;
     Tcl_Obj **args;
     Container *svObj = (Container*)arg;
 
@@ -557,7 +550,7 @@ SvLinsertObjCmd (arg, interp, objc, objv)
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    ret = SvGetIntForIndex(interp, objv[off], llen, &index);
+    ret = Tcl_GetIntForIndex(interp, objv[off], llen, &index);
     if (ret != TCL_OK) {
         goto cmd_err;
     }
@@ -613,8 +606,7 @@ SvLlengthObjCmd (arg, interp, objc, objv)
     int objc;
     Tcl_Obj *const objv[];
 {
-    int off, ret;
-    int llen;
+    int llen, off, ret;
     Container *svObj = (Container*)arg;
 
     /*
@@ -770,8 +762,8 @@ SvLindexObjCmd (arg, interp, objc, objv)
     Tcl_Obj *const objv[];
 {
     Tcl_Obj **elPtrs;
-    int ret, off, index;
-    int llen;
+    int ret, off, llen;
+    size_t index;
     Container *svObj = (Container*)arg;
 
     /*
@@ -792,7 +784,7 @@ SvLindexObjCmd (arg, interp, objc, objv)
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    ret = SvGetIntForIndex(interp, objv[off], llen-1, &index);
+    ret = Tcl_GetIntForIndex(interp, objv[off], llen-1, &index);
     if (ret != TCL_OK) {
         goto cmd_err;
     }
@@ -916,66 +908,6 @@ DupListObjShared(srcPtr, copyPtr)
 }
 
 /*
- *-----------------------------------------------------------------------------
- *
- * SvGetIntForIndex --
- *
- *  Exact copy from the TclGetIntForIndex found in tclUtil.c
- *  since this is not in the stubs table.
- *
- *-----------------------------------------------------------------------------
- */
-
-static int
-SvGetIntForIndex(interp, objPtr, endValue, indexPtr)
-    Tcl_Interp *interp;     /* Interpreter to use for error reporting.
-                             * If NULL, then no error message is left
-                             * after errors. */
-    Tcl_Obj *objPtr;        /* Points to an object containing either
-                             * "end" or an integer. */
-    int endValue;           /* The value to be stored at "indexPtr" if
-                             * "objPtr" holds "end". */
-    int *indexPtr;          /* Location filled in with an integer
-                             * representing an index. */
-{
-    const char *bytes;
-    size_t length;
-    int offset;
-
-    bytes = Tcl_GetString(objPtr);
-    length = objPtr->length;
-
-    if ((*bytes != 'e')
-        || (strncmp(bytes, "end",((length > 3) ? 3 : length)) != 0)) {
-        if (Tcl_GetIntFromObj(NULL, objPtr, &offset) != TCL_OK) {
-            goto intforindex_error;
-        }
-        *indexPtr = offset;
-        return TCL_OK;
-    }
-    if (length <= 3) {
-        *indexPtr = endValue;
-    } else if (bytes[3] == '-') {
-        /*
-         * This is our limited string expression evaluator
-         */
-        if (Tcl_GetInt(interp, bytes+3, &offset) != TCL_OK) {
-            return TCL_ERROR;
-        }
-        *indexPtr = endValue + offset;
-    } else {
-  intforindex_error:
-        if (interp != NULL) {
-            Tcl_ResetResult(interp);
-            Tcl_AppendStringsToObj(Tcl_GetObjResult(interp), "bad index \"",
-                    bytes, "\": must be integer or end?-integer?",(char*)NULL);
-        }
-        return TCL_ERROR;
-    }
-    return TCL_OK;
-}
-
-/*
  *----------------------------------------------------------------------
  *
  * SvLsetFlat --
@@ -998,8 +930,8 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
      Tcl_Obj **indexArray;
      Tcl_Obj *valuePtr;      /* Value arg to 'lset' */
 {
-    int index, result, i;
-    int elemCount;
+    int elemCount, result, i;
+    size_t index;
     Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
 
     /*
@@ -1055,7 +987,7 @@ SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
          * Determine the index of the requested element.
          */
 
-        result = SvGetIntForIndex(interp, indexArray[i], elemCount-1, &index);
+        result = Tcl_GetIntForIndex(interp, indexArray[i], elemCount-1, &index);
         if (result != TCL_OK) {
             break;
         }
