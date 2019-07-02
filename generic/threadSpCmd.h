@@ -1,6 +1,6 @@
 /*
  * This is the header file for the module that implements some missing
- * synchronization priomitives from the Tcl API.
+ * synchronization primitives from the Tcl API.
  *
  * Copyright (c) 2002 by Zoran Vasiljevic.
  *

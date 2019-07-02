@@ -157,7 +157,7 @@ Sv_RegisterCommand(
 {
     size_t len = strlen(cmdName) + strlen(TSV_CMD_PREFIX) + 1;
     size_t len2 = strlen(cmdName) + strlen(TSV_CMD2_PREFIX) + 1;
-    SvCmdInfo *newCmd = Tcl_Alloc(sizeof(SvCmdInfo) + len + len2);
+    SvCmdInfo *newCmd = (SvCmdInfo *)Tcl_Alloc(sizeof(SvCmdInfo) + len + len2);
 
     /*
      * Setup new command structure
@@ -224,7 +224,7 @@ Sv_RegisterObjType(
                    const Tcl_ObjType *typePtr,               /* Type of object to register */
                    Tcl_DupInternalRepProc *dupProc)    /* Custom object duplicator */
 {
-    RegType *newType = Tcl_Alloc(sizeof(RegType));
+    RegType *newType = (RegType *)Tcl_Alloc(sizeof(RegType));
 
     /*
      * Setup new type structure
@@ -263,7 +263,7 @@ void
 Sv_RegisterPsStore(const PsStore *psStorePtr)
 {
 
-    PsStore *psPtr = Tcl_Alloc(sizeof(PsStore));
+    PsStore *psPtr = (PsStore *)Tcl_Alloc(sizeof(PsStore));
 
     *psPtr = *psStorePtr;
 
@@ -471,7 +471,7 @@ GetPsStore(const char *handle)
         if (strcmp(tmpPtr->type, type) == 0) {
             tmpPtr->psHandle = tmpPtr->psOpen(addr);
             if (tmpPtr->psHandle) {
-                psPtr = Tcl_Alloc(sizeof(PsStore));
+                psPtr = (PsStore *)Tcl_Alloc(sizeof(PsStore));
                 *psPtr = *tmpPtr;
                 psPtr->nextPtr = NULL;
             }
@@ -510,7 +510,7 @@ AcquireContainer(
                  const char *key,
                  int flags)
 {
-    int new;
+    int isNew;
     Tcl_Obj *tclObj = NULL;
     Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&arrayPtr->vars, key);
 
@@ -530,7 +530,7 @@ AcquireContainer(
         if (tclObj == NULL) {
             tclObj = Tcl_NewObj();
         }
-        hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &new);
+        hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &isNew);
         Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, tclObj));
     }
 
@@ -570,7 +570,7 @@ ReleaseContainer(
     case SV_ERROR:     return TCL_ERROR;
     case SV_CHANGED:
         if (psPtr) {
-            key = Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
+            key = (char *)Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
             val = Tcl_GetString(svObj->tclObj);
             len = svObj->tclObj->length;
             if (psPtr->psPut(psPtr->psHandle, key, val, len) == -1) {
@@ -661,7 +661,7 @@ DeleteContainer(
     if (svObj->entryPtr) {
         PsStore *psPtr = svObj->arrayPtr->psPtr;
         if (psPtr) {
-            char *key = Tcl_GetHashKey(&svObj->arrayPtr->vars,svObj->entryPtr);
+            char *key = (char *)Tcl_GetHashKey(&svObj->arrayPtr->vars,svObj->entryPtr);
             if (psPtr->psDelete(psPtr->psHandle, key) == -1) {
                 return TCL_ERROR;
             }
@@ -799,16 +799,16 @@ CreateArray(
             Bucket *bucketPtr,
             const char *arrayName)
 {
-    int new;
+    int isNew;
     Array *arrayPtr;
     Tcl_HashEntry *hPtr;
 
-    hPtr = Tcl_CreateHashEntry(&bucketPtr->arrays, arrayName, &new);
-    if (!new) {
+    hPtr = Tcl_CreateHashEntry(&bucketPtr->arrays, arrayName, &isNew);
+    if (!isNew) {
         return (Array*)Tcl_GetHashValue(hPtr);
     }
 
-    arrayPtr = Tcl_Alloc(sizeof(Array));
+    arrayPtr = (Array *)Tcl_Alloc(sizeof(Array));
     arrayPtr->bucketPtr = bucketPtr;
     arrayPtr->entryPtr  = hPtr;
     arrayPtr->psPtr     = NULL;
@@ -906,7 +906,7 @@ SvAllocateContainers(Bucket *bucketPtr)
     register Container *prevPtr = NULL, *objPtr = NULL;
     register int i;
 
-    basePtr = Tcl_Alloc(bytesToAlloc);
+    basePtr = (char *)Tcl_Alloc(bytesToAlloc);
     memset(basePtr, 0, bytesToAlloc);
 
     objPtr = (Container*)basePtr;
@@ -995,9 +995,9 @@ SvFinalizeContainers(Bucket *bucketPtr)
  */
 
 Tcl_Obj *
-Sv_DuplicateObj(objPtr)
-    register Tcl_Obj *objPtr;        /* The object to duplicate. */
-{
+Sv_DuplicateObj(
+    register Tcl_Obj *objPtr        /* The object to duplicate. */
+) {
     register Tcl_Obj *dupPtr = Tcl_NewObj();
 
     /*
@@ -1057,7 +1057,7 @@ Sv_DuplicateObj(objPtr)
         dupPtr->bytes = NULL;
     } else if (objPtr->bytes != Sv_tclEmptyStringRep) {
         /* A copy of TclInitStringRep macro */
-        dupPtr->bytes = Tcl_Alloc((unsigned)objPtr->length + 1);
+        dupPtr->bytes = (char *)Tcl_Alloc(objPtr->length + 1);
         if (objPtr->length > 0) {
             memcpy((void*)dupPtr->bytes,(void*)objPtr->bytes,
                    (unsigned)objPtr->length);
@@ -1143,7 +1143,7 @@ SvObjObjCmd(
             int objc,                   /* Number of arguments. */
             Tcl_Obj *const objv[])              /* Argument objects. */
 {
-    int new, off, ret, flg;
+    int isNew, off, ret, flg;
     char buf[128];
     Tcl_Obj *val = NULL;
     Container *svObj = NULL;
@@ -1174,7 +1174,7 @@ SvObjObjCmd(
 
     if (svObj->handlePtr == NULL) {
         Tcl_HashTable *handles = &svObj->arrayPtr->bucketPtr->handles;
-        svObj->handlePtr = Tcl_CreateHashEntry(handles, (char*)svObj, &new);
+        svObj->handlePtr = Tcl_CreateHashEntry(handles, (char*)svObj, &isNew);
     }
 
     /*
@@ -1316,7 +1316,7 @@ SvArrayObjCmd(
             const char *pattern = (argx == 0) ? NULL : Tcl_GetString(objv[argx]);
             Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
             while (hPtr) {
-                char *key = Tcl_GetHashKey(&arrayPtr->vars, hPtr);
+                char *key = (char *)Tcl_GetHashKey(&arrayPtr->vars, hPtr);
                 if (pattern == NULL || Tcl_StringCaseMatch(key, pattern, 0)) {
                     Tcl_ListObjAppendElement(interp, resObj,
                             Tcl_NewStringObj(key, TCL_AUTO_LENGTH));
@@ -1348,7 +1348,7 @@ SvArrayObjCmd(
         PsStore *psPtr;
         Tcl_HashEntry *hPtr;
         size_t len;
-        int new;
+        int isNew;
         char *psurl, *key = NULL, *val = NULL;
 
         if (objc < 4) {
@@ -1377,9 +1377,9 @@ SvArrayObjCmd(
             Tcl_HashSearch search;
             hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
             arrayPtr->psPtr = psPtr;
-            arrayPtr->bindAddr = strcpy(Tcl_Alloc(len+1), psurl);
+            arrayPtr->bindAddr = strcpy((char *)Tcl_Alloc(len+1), psurl);
             while (hPtr) {
-                svObj = Tcl_GetHashValue(hPtr);
+                svObj = (Container *)Tcl_GetHashValue(hPtr);
                 if (ReleaseContainer(interp, svObj, SV_CHANGED) != TCL_OK) {
                     ret = TCL_ERROR;
                     goto cmdExit;
@@ -1389,12 +1389,12 @@ SvArrayObjCmd(
         } else {
             arrayPtr = LockArray(interp, arrayName, FLAGS_CREATEARRAY);
             arrayPtr->psPtr = psPtr;
-            arrayPtr->bindAddr = strcpy(Tcl_Alloc(len+1), psurl);
+            arrayPtr->bindAddr = strcpy((char *)Tcl_Alloc(len+1), psurl);
         }
         if (!psPtr->psFirst(psPtr->psHandle, &key, &val, &len)) {
             do {
                 Tcl_Obj * tclObj = Tcl_NewStringObj(val, len);
-                hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &new);
+                hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &isNew);
                 Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, tclObj));
                 psPtr->psFree(psPtr->psHandle, val);
             } while (!psPtr->psNext(psPtr->psHandle, &key, &val, &len));
@@ -1531,7 +1531,7 @@ SvNamesObjCmd(
         LOCK_BUCKET(bucketPtr);
         hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
         while (hPtr) {
-            char *key = Tcl_GetHashKey(&bucketPtr->arrays, hPtr);
+            char *key = (char *)Tcl_GetHashKey(&bucketPtr->arrays, hPtr);
             if ((arg==NULL || (*key != '.')) /* Hide .<name> arrays for AOL*/ &&
                 (pattern == NULL || Tcl_StringCaseMatch(key, pattern, 0))) {
                 Tcl_ListObjAppendElement(interp, resObj,
@@ -1750,7 +1750,7 @@ SvIncrObjCmd(
              int objc,                   /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
 {
-    int off, ret, flg, new = 0;
+    int off, ret, flg, isNew = 0;
     Tcl_WideInt incrValue = 1, currValue = 0;
     Container *svObj = (Container*)arg;
 
@@ -1771,7 +1771,7 @@ SvIncrObjCmd(
         if (ret != TCL_OK) {
             return TCL_ERROR;
         }
-        new = 1;
+        isNew = 1;
     }
     if ((objc - off)) {
         ret = Tcl_GetWideIntFromObj(interp, objv[off], &incrValue);
@@ -1779,7 +1779,7 @@ SvIncrObjCmd(
             goto cmd_err;
         }
     }
-    if (new) {
+    if (isNew) {
         currValue = 0;
     } else {
         ret = Tcl_GetWideIntFromObj(interp, svObj->tclObj, &currValue);
@@ -1960,7 +1960,7 @@ SvMoveObjCmd(
              int objc,                   /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
 {
-    int ret, off, new;
+    int ret, off, isNew;
     const char *toKey;
     Tcl_HashEntry *hPtr;
     Container *svObj = (Container*)arg;
@@ -1977,14 +1977,14 @@ SvMoveObjCmd(
     }
 
     toKey = Tcl_GetString(objv[off]);
-    hPtr = Tcl_CreateHashEntry(&svObj->arrayPtr->vars, toKey, &new);
+    hPtr = Tcl_CreateHashEntry(&svObj->arrayPtr->vars, toKey, &isNew);
 
-    if (!new) {
+    if (!isNew) {
         Tcl_AppendResult(interp, "key \"", toKey, "\" exists", NULL);
         goto cmd_err;
     }
     if (svObj->entryPtr) {
-        char *key = Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
+        char *key = (char *)Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
         if (svObj->arrayPtr->psPtr) {
             PsStore *psPtr = svObj->arrayPtr->psPtr;
             if (psPtr->psDelete(psPtr->psHandle, key) == -1) {
@@ -2191,9 +2191,9 @@ SvRegisterStdCommands(void)
  *-----------------------------------------------------------------------------
  */
 int
-Sv_Init (interp)
-    Tcl_Interp *interp;
-{
+Sv_Init (
+    Tcl_Interp *interp
+) {
     int i;
     Bucket *bucketPtr;
     SvCmdInfo *cmdPtr;
@@ -2280,7 +2280,7 @@ Sv_Init (interp)
     if (buckets == NULL) {
         Tcl_MutexLock(&bucketsMutex);
         if (buckets == NULL) {
-            buckets = Tcl_Alloc(sizeof(Bucket) * NUMBUCKETS);
+            buckets = (Bucket *)Tcl_Alloc(sizeof(Bucket) * NUMBUCKETS);
 
             for (i = 0; i < NUMBUCKETS; ++i) {
                 bucketPtr = &buckets[i];
