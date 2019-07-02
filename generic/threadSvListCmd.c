@@ -19,13 +19,13 @@
 /*  Little hack to eliminate the need for "tclInt.h" here:
     Just copy a small portion of TclIntStubs, just
     enough to make it work */
-typedef struct {
+typedef struct TclIntStubs {
     int magic;
     void *hooks;
     void (*dummy[34]) (void); /* dummy entries 0-33, not used */
     int (*tclGetIntForIndex) (Tcl_Interp *interp, Tcl_Obj *objPtr, int endValue, int *indexPtr); /* 34 */
 } TclIntStubs;
-extern const TclIntStubs *tclIntStubsPtr;
+extern const struct TclIntStubs *tclIntStubsPtr;
 
 # undef Tcl_GetIntForIndex
 # define Tcl_GetIntForIndex(interp, obj, max, ptr) ((threadTclVersion>86)? \
@@ -149,12 +149,12 @@ Sv_RegisterListCommands(void)
  */
 
 static int
-SvLpopObjCmd (arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLpopObjCmd (
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     int ret, off, llen, iarg = 0;
     tclSizeT index = 0;
     Tcl_Obj *elPtr = NULL;
@@ -229,12 +229,12 @@ SvLpopObjCmd (arg, interp, objc, objv)
  */
 
 static int
-SvLpushObjCmd (arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLpushObjCmd (
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     int off, ret, flg, llen;
     tclSizeT index = 0;
     Tcl_Obj *args[1];
@@ -302,12 +302,12 @@ SvLpushObjCmd (arg, interp, objc, objv)
  */
 
 static int
-SvLappendObjCmd(arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLappendObjCmd(
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     int i, ret, flg, off;
     Tcl_Obj *dup;
     Container *svObj = (Container*)arg;
@@ -362,12 +362,12 @@ SvLappendObjCmd(arg, interp, objc, objv)
  */
 
 static int
-SvLreplaceObjCmd (arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLreplaceObjCmd(
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     const char *firstArg;
     size_t argLen;
     int ret, off, llen, ndel, nargs, i, j;
@@ -462,12 +462,12 @@ SvLreplaceObjCmd (arg, interp, objc, objv)
  */
 
 static int
-SvLrangeObjCmd (arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLrangeObjCmd(
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     int ret, off, llen, nargs, i, j;
     tclSizeT first, last;
     Tcl_Obj **elPtrs, **args;
@@ -544,12 +544,12 @@ SvLrangeObjCmd (arg, interp, objc, objv)
  */
 
 static int
-SvLinsertObjCmd (arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLinsertObjCmd(
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     int off, ret, flg, llen, nargs, i, j;
     tclSizeT index = 0;
     Tcl_Obj **args;
@@ -624,12 +624,12 @@ SvLinsertObjCmd (arg, interp, objc, objv)
  */
 
 static int
-SvLlengthObjCmd (arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLlengthObjCmd(
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     int llen, off, ret;
     Container *svObj = (Container*)arg;
 
@@ -673,12 +673,12 @@ SvLlengthObjCmd (arg, interp, objc, objv)
  */
 
 static int
-SvLsearchObjCmd (arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLsearchObjCmd(
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     size_t length;
     int ret, off, listc, mode, imode, ipatt, index, match, i;
     const char *patBytes;
@@ -779,12 +779,12 @@ SvLsearchObjCmd (arg, interp, objc, objv)
  */
 
 static int
-SvLindexObjCmd (arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLindexObjCmd(
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     Tcl_Obj **elPtrs;
     int ret, off, llen;
     tclSizeT index;
@@ -840,12 +840,12 @@ SvLindexObjCmd (arg, interp, objc, objv)
  */
 
 static int
-SvLsetObjCmd (arg, interp, objc, objv)
-    ClientData arg;
-    Tcl_Interp *interp;
-    int objc;
-    Tcl_Obj *const objv[];
-{
+SvLsetObjCmd(
+    ClientData arg,
+    Tcl_Interp *interp,
+    int objc,
+    Tcl_Obj *const objv[]
+) {
     Tcl_Obj *lPtr;
     int ret, argc, off;
     Container *svObj = (Container*)arg;
@@ -904,10 +904,10 @@ SvLsetObjCmd (arg, interp, objc, objv)
  */
 
 static void
-DupListObjShared(srcPtr, copyPtr)
-    Tcl_Obj *srcPtr;            /* Object with internal rep to copy. */
-    Tcl_Obj *copyPtr;           /* Object with internal rep to set. */
-{
+DupListObjShared(
+    Tcl_Obj *srcPtr,           /* Object with internal rep to copy. */
+    Tcl_Obj *copyPtr           /* Object with internal rep to set. */
+) {
     int i, llen;
     Tcl_Obj *elObj, **newObjList;
 
@@ -946,13 +946,13 @@ DupListObjShared(srcPtr, copyPtr)
  */
 
 static Tcl_Obj*
-SvLsetFlat(interp, listPtr, indexCount, indexArray, valuePtr)
-     Tcl_Interp *interp;     /* Tcl interpreter */
-     Tcl_Obj *listPtr;       /* Pointer to the list being modified */
-     int indexCount;         /* Number of index args */
-     Tcl_Obj **indexArray;
-     Tcl_Obj *valuePtr;      /* Value arg to 'lset' */
-{
+SvLsetFlat(
+     Tcl_Interp *interp,    /* Tcl interpreter */
+     Tcl_Obj *listPtr,      /* Pointer to the list being modified */
+     int indexCount,        /* Number of index args */
+     Tcl_Obj **indexArray,
+     Tcl_Obj *valuePtr      /* Value arg to 'lset' */
+) {
     int elemCount, result, i;
     tclSizeT index;
     Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
