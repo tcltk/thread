@@ -176,12 +176,12 @@ static int       AnyMutexIsLocked  (Sp_AnyMutex *mPtr, Tcl_ThreadId);
  */
 
 static int
-ThreadMutexObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
-    Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
-    Tcl_Obj *const objv[];              /* Argument objects. */
-{
+ThreadMutexObjCmd(
+    ClientData dummy,                  /* Not used. */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *const objv[]              /* Argument objects. */
+) {
     int opt, ret;
     size_t nameLen;
     const char *mutexName;
@@ -352,12 +352,12 @@ ThreadMutexObjCmd(dummy, interp, objc, objv)
  */
 
 static int
-ThreadRWMutexObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
-    Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
-    Tcl_Obj *const objv[];              /* Argument objects. */
-{
+ThreadRWMutexObjCmd(
+    ClientData dummy,                  /* Not used. */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *const objv[]              /* Argument objects. */
+) {
     int opt, ret;
     size_t nameLen;
     const char *mutexName;
@@ -516,12 +516,12 @@ ThreadRWMutexObjCmd(dummy, interp, objc, objv)
  */
 
 static int
-ThreadCondObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
-    Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
-    Tcl_Obj *const objv[];              /* Argument objects. */
-{
+ThreadCondObjCmd(
+    ClientData dummy,                  /* Not used. */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *const objv[]              /* Argument objects. */
+) {
     int opt, ret, timeMsec = 0;
     size_t nameLen;
     const char *condvName, *mutexName;
@@ -684,12 +684,12 @@ ThreadCondObjCmd(dummy, interp, objc, objv)
  */
 
 static int
-ThreadEvalObjCmd(dummy, interp, objc, objv)
-    ClientData dummy;                   /* Not used. */
-    Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
-    Tcl_Obj *const objv[];              /* Argument objects. */
-{
+ThreadEvalObjCmd(
+    ClientData dummy,                  /* Not used. */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *const objv[]              /* Argument objects. */
+) {
     int ret, optx, internal;
     const char *mutexName;
     Tcl_Obj *scriptObj;
@@ -929,13 +929,13 @@ PutAnyItem(SpItem *itemPtr)
 static void
 AddAnyItem(int type, const char *handle, size_t len, SpItem *itemPtr)
 {
-    int new;
+    int isNew;
     SpBucket *bucketPtr = GetBucket(type, handle, len);
     Tcl_HashEntry *hashEntryPtr;
 
     Tcl_MutexLock(&bucketPtr->lock);
 
-    hashEntryPtr = Tcl_CreateHashEntry(&bucketPtr->handles, handle, &new);
+    hashEntryPtr = Tcl_CreateHashEntry(&bucketPtr->handles, handle, &isNew);
     Tcl_SetHashValue(hashEntryPtr, (ClientData)itemPtr);
 
     itemPtr->refcnt = 0;
@@ -1074,9 +1074,9 @@ RemoveCondv(const char *name, size_t len)
  */
 
 int
-Sp_Init (interp)
-    Tcl_Interp *interp;                 /* Interp where to create cmds */
-{
+Sp_Init (
+    Tcl_Interp *interp                 /* Interp where to create cmds */
+) {
     SpBucket *bucketPtr;
 
     if (!initOnce) {
