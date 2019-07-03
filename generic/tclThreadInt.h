@@ -56,6 +56,10 @@
 # endif
 #endif
 
+#ifndef TCL_INDEX_NONE
+# define TCL_INDEX_NONE	(-1)
+#endif
+
 /*
  * Allow for some command names customization.
  * Only thread:: and tpool:: are handled here.
