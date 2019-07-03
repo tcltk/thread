@@ -387,7 +387,7 @@ SvLreplaceObjCmd(
         Tcl_AppendResult(interp, "list doesn't have element ", firstArg, NULL);
         goto cmd_err;
     }
-    if (last >= (size_t)llen) {
+    if (last + 1 >= (size_t)llen + 1) {
         last = llen - 1;
     }
     if (first + 1 <= last + 1) {
@@ -478,7 +478,7 @@ SvLrangeObjCmd(
     if (first == TCL_INDEX_NONE)  {
         first = 0;
     }
-    if (last >= (size_t)llen) {
+    if (last + 1 >= (size_t)llen + 1) {
         last = llen - 1;
     }
     if (first + 1 > last + 1) {
@@ -1007,7 +1007,7 @@ SvLsetFlat(
          * Break the loop after extracting the innermost sublist
          */
 
-        if (i >= (indexCount - 1)) {
+        if (i + 1 >= indexCount) {
             result = TCL_OK;
             break;
         }
