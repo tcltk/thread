@@ -18,17 +18,6 @@
 #include "tclXkeylist.h"
 
 /*
- * This is defined in keylist.c. We need it here
- * to be able to plug-in our custom keyed-list
- * object duplicator which produces proper deep
- * copies of the keyed-list objects. The standard
- * one produces shallow copies which are not good
- * for usage in the thread shared variables code.
- */
-
-extern const Tcl_ObjType keyedListType;
-
-/*
  * Wrapped keyed-list commands
  */
 
