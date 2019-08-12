@@ -96,7 +96,7 @@ ps_gdbm_open(
     dbf = gdbm_open(ext, 512, GDBM_WRCREAT|GDBM_SYNC|GDBM_NOLOCK, 0666, NULL);
     Tcl_DStringFree(&toext);
 
-    return (ClientData)dbf;
+    return dbf;
 }
 
 /*

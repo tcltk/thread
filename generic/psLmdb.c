@@ -188,7 +188,7 @@ ps_lmdb_open(
         return NULL;
     }
 
-    return (ClientData)ctx;
+    return ctx;
 }
 
 /*

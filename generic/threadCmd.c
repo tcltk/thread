@@ -556,12 +556,12 @@ Init(
 ) {
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    if (tsdPtr->interp == (Tcl_Interp*)NULL) {
+    if (tsdPtr->interp == NULL) {
         memset(tsdPtr, 0, sizeof(ThreadSpecificData));
         tsdPtr->interp = interp;
         ListUpdate(tsdPtr);
         Tcl_CreateThreadExitHandler(ThreadExitProc,
-                                    (ClientData)threadEmptyResult);
+                                    threadEmptyResult);
     }
 }
 
@@ -1003,7 +1003,7 @@ ThreadSendObjCmd(
         clbkPtr->freeProc   = threadSendFree;
         clbkPtr->interp     = interp;
         clbkPtr->threadId   = Tcl_GetCurrentThread();
-        clbkPtr->clientData = (ClientData)memcpy(ckalloc(vsize), varName, vsize);
+        clbkPtr->clientData = memcpy(ckalloc(vsize), varName, vsize);
     }
 
     /*
@@ -1014,7 +1014,7 @@ ThreadSendObjCmd(
     sendPtr->interp     = NULL; /* Signal to use thread main interp */
     sendPtr->execProc   = ThreadSendEval;
     sendPtr->freeProc   = threadSendFree;
-    sendPtr->clientData = (ClientData)memcpy(ckalloc(size), script, size);
+    sendPtr->clientData = memcpy(ckalloc(size), script, size);
 
     ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, flags);
 
@@ -1117,7 +1117,7 @@ ThreadBroadcastObjCmd(
         }
         sendPtr  = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
         *sendPtr = job;
-        sendPtr->clientData = (ClientData)memcpy(ckalloc(size), script, size);
+        sendPtr->clientData = memcpy(ckalloc(size), script, size);
         ThreadSend(interp, thrIdArray[ii], sendPtr, NULL, THREAD_SEND_HEAD);
     }
 
@@ -1325,7 +1325,7 @@ ThreadTransferObjCmd(
     }
 
     chan = Tcl_GetChannel(interp, Tcl_GetString(objv[2]), NULL);
-    if (chan == (Tcl_Channel)NULL) {
+    if (chan == NULL) {
         return TCL_ERROR;
     }
 
@@ -1370,7 +1370,7 @@ ThreadDetachObjCmd(
     }
 
     chan = Tcl_GetChannel(interp, Tcl_GetString(objv[1]), NULL);
-    if (chan == (Tcl_Channel)NULL) {
+    if (chan == NULL) {
         return TCL_ERROR;
     }
 
@@ -1727,7 +1727,7 @@ ThreadCreate(
     ctrl.flags    = 0;
 
     Tcl_MutexLock(&threadMutex);
-    if (Tcl_CreateThread(&thrId, NewThread, (ClientData)&ctrl,
+    if (Tcl_CreateThread(&thrId, NewThread, &ctrl,
             stacksize, flags) != TCL_OK) {
         Tcl_MutexUnlock(&threadMutex);
         Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", -1));
@@ -1744,7 +1744,7 @@ ThreadCreate(
     }
     if (preserve) {
         ThreadSpecificData *tsdPtr = ThreadExistsInner(thrId);
-        if (tsdPtr == (ThreadSpecificData*)NULL) {
+        if (tsdPtr == NULL) {
             Tcl_MutexUnlock(&threadMutex);
             Tcl_ConditionFinalize(&ctrl.condWait);
             ErrorNoSuchThread(interp, thrId);
@@ -1840,7 +1840,7 @@ NewThread(
 
     scriptLen = strlen(ctrlPtr->script);
     evalScript = strcpy((char*)ckalloc(scriptLen+1), ctrlPtr->script);
-    Tcl_CreateThreadExitHandler(ThreadExitProc,(ClientData)evalScript);
+    Tcl_CreateThreadExitHandler(ThreadExitProc,evalScript);
 
     /*
      * Notify the parent we are alive.
@@ -1855,7 +1855,7 @@ NewThread(
      * Run the script.
      */
 
-    Tcl_Preserve((ClientData)tsdPtr->interp);
+    Tcl_Preserve(tsdPtr->interp);
     result = Tcl_EvalEx(tsdPtr->interp, evalScript,scriptLen,TCL_EVAL_GLOBAL);
     if (result != TCL_OK) {
         ThreadErrorProc(tsdPtr->interp);
@@ -1883,7 +1883,7 @@ NewThread(
 #else
     Tcl_DeleteInterp(tsdPtr->interp);
 #endif
-    Tcl_Release((ClientData)tsdPtr->interp);
+    Tcl_Release(tsdPtr->interp);
 
     /*tsdPtr->interp = NULL;*/
 
@@ -1954,7 +1954,7 @@ ThreadErrorProc(
         sendPtr = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
         sendPtr->execProc   = ThreadSendEval;
         sendPtr->freeProc   = threadSendFree;
-        sendPtr->clientData = (ClientData) Tcl_Merge(3, argv);
+        sendPtr->clientData = Tcl_Merge(3, argv);
         sendPtr->interp     = NULL;
 
         ThreadSend(interp, errorThreadId, sendPtr, NULL, 0);
@@ -2243,7 +2243,7 @@ ThreadCancel(
     Tcl_MutexLock(&threadMutex);
 
     tsdPtr = ThreadExistsInner(thrId);
-    if (tsdPtr == (ThreadSpecificData*)NULL) {
+    if (tsdPtr == NULL) {
         Tcl_MutexUnlock(&threadMutex);
         ErrorNoSuchThread(interp, thrId);
         return TCL_ERROR;
@@ -2542,9 +2542,9 @@ ThreadDetach(
      * Initialize the result fields. This is not used.
      */
 
-    resultPtr->done       = (Tcl_Condition)NULL;
+    resultPtr->done       = NULL;
     resultPtr->resultCode = -1;
-    resultPtr->resultMsg  = (char*)NULL;
+    resultPtr->resultMsg  = NULL;
 
     /*
      * Maintain the cleanup list. By setting the dst/srcThreadId
@@ -2633,7 +2633,7 @@ ThreadAttach(
 
     Tcl_SpliceChannel(chan);
     Tcl_RegisterChannel(interp, chan);
-    Tcl_UnregisterChannel((Tcl_Interp *)NULL, chan);
+    Tcl_UnregisterChannel(NULL, chan);
 
     return TCL_OK;
 }
@@ -2679,13 +2679,13 @@ ThreadSend(
 
     tsdPtr = ThreadExistsInner(thrId);
 
-    if (tsdPtr == (ThreadSpecificData*)NULL
+    if (tsdPtr == NULL
             || (tsdPtr->flags & THREAD_FLAGS_INERROR)) {
         int inerror = tsdPtr && (tsdPtr->flags & THREAD_FLAGS_INERROR);
         Tcl_MutexUnlock(&threadMutex);
-        ThreadFreeProc((ClientData)send);
+        ThreadFreeProc(send);
         if (clbk) {
-            ThreadFreeProc((ClientData)clbk);
+            ThreadFreeProc(clbk);
         }
         if (inerror) {
             Tcl_SetObjResult(interp, Tcl_NewStringObj("thread is in error", -1));
@@ -2702,13 +2702,13 @@ ThreadSend(
     if (thrId == Tcl_GetCurrentThread()) {
         Tcl_MutexUnlock(&threadMutex);
         if ((flags & THREAD_SEND_WAIT)) {
-            int code = (*send->execProc)(interp, (ClientData)send);
-            ThreadFreeProc((ClientData)send);
+            int code = (*send->execProc)(interp, send);
+            ThreadFreeProc(send);
             return code;
         } else {
             send->interp = interp;
-            Tcl_Preserve((ClientData)send->interp);
-            Tcl_DoWhenIdle((Tcl_IdleProc*)ThreadIdleProc, (ClientData)send);
+            Tcl_Preserve(send->interp);
+            Tcl_DoWhenIdle((Tcl_IdleProc*)ThreadIdleProc, send);
             return TCL_OK;
         }
     }
@@ -2736,14 +2736,14 @@ ThreadSend(
      */
 
     if (eventPtr->clbkData) {
-        Tcl_Preserve((ClientData)eventPtr->clbkData->interp);
+        Tcl_Preserve(eventPtr->clbkData->interp);
     }
     if ((flags & THREAD_SEND_WAIT) == 0) {
         resultPtr              = NULL;
         eventPtr->resultPtr    = NULL;
     } else {
         resultPtr = (ThreadEventResult*)ckalloc(sizeof(ThreadEventResult));
-        resultPtr->done        = (Tcl_Condition)NULL;
+        resultPtr->done        = NULL;
         resultPtr->result      = NULL;
         resultPtr->errorCode   = NULL;
         resultPtr->errorInfo   = NULL;
@@ -2993,7 +2993,7 @@ ThreadReserve(
         tsdPtr = TCL_TSD_INIT(&dataKey);
     } else {
         tsdPtr = ThreadExistsInner(thrId);
-        if (tsdPtr == (ThreadSpecificData*)NULL) {
+        if (tsdPtr == NULL) {
             Tcl_MutexUnlock(&threadMutex);
             ErrorNoSuchThread(interp, thrId);
             return TCL_ERROR;
@@ -3035,7 +3035,7 @@ ThreadReserve(
             if (dowait) {
                 resultPtr = (ThreadEventResult*)
                     ckalloc(sizeof(ThreadEventResult));
-                resultPtr->done        = (Tcl_Condition)NULL;
+                resultPtr->done        = NULL;
                 resultPtr->result      = NULL;
                 resultPtr->code        = TCL_OK;
                 resultPtr->errorCode   = NULL;
@@ -3118,28 +3118,28 @@ ThreadEventProc(
     interp = (sendPtr && sendPtr->interp) ? sendPtr->interp : tsdPtr->interp;
 
     if (interp != NULL) {
-        Tcl_Preserve((ClientData)interp);
+        Tcl_Preserve(interp);
 
         if (clbkPtr && clbkPtr->threadId == thrId) {
-            Tcl_Release((ClientData)interp);
+            Tcl_Release(interp);
             /* Watch: this thread evaluates its own callback. */
             interp = clbkPtr->interp;
-            Tcl_Preserve((ClientData)interp);
+            Tcl_Preserve(interp);
         }
 
         Tcl_ResetResult(interp);
 
         if (sendPtr) {
-            Tcl_CreateThreadExitHandler(ThreadFreeProc, (ClientData)sendPtr);
+            Tcl_CreateThreadExitHandler(ThreadFreeProc, sendPtr);
             if (clbkPtr) {
                 Tcl_CreateThreadExitHandler(ThreadFreeProc,
-                                            (ClientData)clbkPtr);
+                                            clbkPtr);
             }
-            code = (*sendPtr->execProc)(interp, (ClientData)sendPtr);
-            Tcl_DeleteThreadExitHandler(ThreadFreeProc, (ClientData)sendPtr);
+            code = (*sendPtr->execProc)(interp, sendPtr);
+            Tcl_DeleteThreadExitHandler(ThreadFreeProc, sendPtr);
             if (clbkPtr) {
                 Tcl_DeleteThreadExitHandler(ThreadFreeProc,
-                                            (ClientData)clbkPtr);
+                                            clbkPtr);
             }
         } else {
             code = TCL_OK;
@@ -3147,7 +3147,7 @@ ThreadEventProc(
     }
 
     if (sendPtr) {
-        ThreadFreeProc((ClientData)sendPtr);
+        ThreadFreeProc(sendPtr);
         eventPtr->sendData = NULL;
     }
 
@@ -3169,7 +3169,7 @@ ThreadEventProc(
          */
 
         if (clbkPtr) {
-            Tcl_Release((ClientData)clbkPtr->interp);
+            Tcl_Release(clbkPtr->interp);
         }
     } else if (clbkPtr && clbkPtr->threadId != thrId) {
 
@@ -3201,7 +3201,7 @@ ThreadEventProc(
          */
 
         if (clbkPtr) {
-            Tcl_Release((ClientData)clbkPtr->interp);
+            Tcl_Release(clbkPtr->interp);
         }
     } else {
         /*
@@ -3211,12 +3211,12 @@ ThreadEventProc(
          */
 
         if (clbkPtr) {
-            Tcl_Release((ClientData)clbkPtr->interp);
+            Tcl_Release(clbkPtr->interp);
         }
     }
 
     if (interp != NULL) {
-        Tcl_Release((ClientData)interp);
+        Tcl_Release(interp);
     }
 
     /*
@@ -3332,7 +3332,7 @@ ThreadGetOption(
 
     tsdPtr = ThreadExistsInner(thrId);
 
-    if (tsdPtr == (ThreadSpecificData*)NULL) {
+    if (tsdPtr == NULL) {
         Tcl_MutexUnlock(&threadMutex);
         ErrorNoSuchThread(interp, thrId);
         return TCL_ERROR;
@@ -3417,7 +3417,7 @@ ThreadSetOption(
 
     tsdPtr = ThreadExistsInner(thrId);
 
-    if (tsdPtr == (ThreadSpecificData*)NULL) {
+    if (tsdPtr == NULL) {
         Tcl_MutexUnlock(&threadMutex);
         ErrorNoSuchThread(interp, thrId);
         return TCL_ERROR;
@@ -3480,12 +3480,12 @@ ThreadIdleProc(
     int ret;
     ThreadSendData *sendPtr = (ThreadSendData*)clientData;
 
-    ret = (*sendPtr->execProc)(sendPtr->interp, (ClientData)sendPtr);
+    ret = (*sendPtr->execProc)(sendPtr->interp, sendPtr);
     if (ret != TCL_OK) {
         ThreadErrorProc(sendPtr->interp);
     }
 
-    Tcl_Release((ClientData)sendPtr->interp);
+    Tcl_Release(sendPtr->interp);
     ThreadFreeProc(clientData);
 }
 
@@ -3616,11 +3616,11 @@ ThreadDeleteEvent(
          */
         ThreadEvent *evPtr = (ThreadEvent*)eventPtr;
         if (evPtr->sendData) {
-            ThreadFreeProc((ClientData)evPtr->sendData);
+            ThreadFreeProc(evPtr->sendData);
             evPtr->sendData = NULL;
         }
         if (evPtr->clbkData) {
-            ThreadFreeProc((ClientData)evPtr->clbkData);
+            ThreadFreeProc(evPtr->clbkData);
             evPtr->clbkData = NULL;
         }
         return 1;

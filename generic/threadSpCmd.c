@@ -875,7 +875,7 @@ GetAnyItem(int type, const char *name, size_t len)
 
     Tcl_MutexLock(&bucketPtr->lock);
     hashEntryPtr = Tcl_FindHashEntry(&bucketPtr->handles, name);
-    if (hashEntryPtr != (Tcl_HashEntry*)NULL) {
+    if (hashEntryPtr != NULL) {
         itemPtr = (SpItem*)Tcl_GetHashValue(hashEntryPtr);
         itemPtr->refcnt++;
     }
@@ -936,7 +936,7 @@ AddAnyItem(int type, const char *handle, size_t len, SpItem *itemPtr)
     Tcl_MutexLock(&bucketPtr->lock);
 
     hashEntryPtr = Tcl_CreateHashEntry(&bucketPtr->handles, handle, &isNew);
-    Tcl_SetHashValue(hashEntryPtr, (ClientData)itemPtr);
+    Tcl_SetHashValue(hashEntryPtr, itemPtr);
 
     itemPtr->refcnt = 0;
     itemPtr->bucket = bucketPtr;
@@ -970,7 +970,7 @@ RemoveAnyItem(int type, const char *name, size_t len)
 
     Tcl_MutexLock(&bucketPtr->lock);
     hashEntryPtr = Tcl_FindHashEntry(&bucketPtr->handles, name);
-    if (hashEntryPtr == (Tcl_HashEntry*)NULL) {
+    if (hashEntryPtr == NULL) {
         Tcl_MutexUnlock(&bucketPtr->lock);
         return NULL;
     }
