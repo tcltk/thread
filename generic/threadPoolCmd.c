@@ -1078,7 +1078,7 @@ CreateWorker(
      */
 
     Tcl_MutexLock(&startMutex);
-    if (Tcl_CreateThread(&id, TpoolWorker, (ClientData)&result,
+    if (Tcl_CreateThread(&id, TpoolWorker, &result,
                          TCL_THREAD_STACK_DEFAULT, 0) != TCL_OK) {
         Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", -1));
         Tcl_MutexUnlock(&startMutex);
@@ -1242,7 +1242,7 @@ TpoolWorker(
             int isNew;
             Tcl_SetHashValue(Tcl_CreateHashEntry(&tpoolPtr->jobsDone,
                                                  (void *)(size_t)rPtr->jobId, &isNew),
-                             (ClientData)rPtr);
+                             rPtr);
             SignalWaiter(tpoolPtr);
         } else {
             ckfree((char*)rPtr);
@@ -1835,7 +1835,7 @@ InitWaiter ()
         tsdPtr->waitPtr->prevPtr  = NULL;
         tsdPtr->waitPtr->nextPtr  = NULL;
         tsdPtr->waitPtr->threadId = Tcl_GetCurrentThread();
-        Tcl_CreateThreadExitHandler(ThrExitHandler, (ClientData)tsdPtr);
+        Tcl_CreateThreadExitHandler(ThrExitHandler, tsdPtr);
     }
 }
 

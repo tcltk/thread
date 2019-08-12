@@ -703,9 +703,9 @@ LockArray(
           const char *array,                  /* Name of array to lock */
           int flags)                          /* FLAGS_CREATEARRAY/FLAGS_NOERRMSG*/
 {
-    register const char *p;
-    register unsigned int result;
-    register int i;
+    const char *p;
+    unsigned int result;
+    int i;
     Bucket *bucketPtr;
     Array *arrayPtr;
 
@@ -903,8 +903,8 @@ SvAllocateContainers(Bucket *bucketPtr)
     size_t objSizePlusPadding = (size_t)(((char*)(tmp+1))-(char*)tmp);
     size_t bytesToAlloc = (OBJS_TO_ALLOC_EACH_TIME * objSizePlusPadding);
     char *basePtr;
-    register Container *prevPtr = NULL, *objPtr = NULL;
-    register int i;
+    Container *prevPtr = NULL, *objPtr = NULL;
+    int i;
 
     basePtr = (char*)ckalloc(bytesToAlloc);
     memset(basePtr, 0, bytesToAlloc);
@@ -996,9 +996,9 @@ SvFinalizeContainers(Bucket *bucketPtr)
 
 Tcl_Obj *
 Sv_DuplicateObj(
-    register Tcl_Obj *objPtr        /* The object to duplicate. */
+    Tcl_Obj *objPtr        /* The object to duplicate. */
 ) {
-    register Tcl_Obj *dupPtr = Tcl_NewObj();
+    Tcl_Obj *dupPtr = Tcl_NewObj();
 
     /*
      * Handle the internal rep
@@ -1023,7 +1023,7 @@ Sv_DuplicateObj(
               Tcl_InvalidateStringRep(dupPtr);
             } else {
                 int found = 0;
-                register RegType *regPtr;
+                RegType *regPtr;
                /*
                 * Cover special registered types. Assume not
                 * very many of those, so this sequential walk
@@ -2268,7 +2268,7 @@ Sv_Init (
                 NULL, (Tcl_CmdDeleteProc*)0);
 #ifdef NS_AOLSERVER
         Tcl_CreateObjCommand(interp, cmdPtr->cmdName2, cmdPtr->objProcPtr,
-                (ClientData)(size_t)cmdPtr->aolSpecial, (Tcl_CmdDeleteProc*)0);
+                (ClientData)(size_t)cmdPtr->aolSpecial, NULL);
 #endif
     }
 
@@ -2342,7 +2342,7 @@ Sv_Init (
 static void
 SvFinalize (ClientData clientData)
 {
-    register int i;
+    int i;
     SvCmdInfo *cmdPtr;
     RegType *regPtr;
 
