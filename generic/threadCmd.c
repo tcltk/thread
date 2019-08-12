@@ -287,9 +287,6 @@ static void
 ThreadFreeProc(void *clientData);
 
 static void
-ThreadIdleProc(void *clientData);
-
-static void
 ThreadExitProc(void *clientData);
 
 static void
@@ -487,7 +484,7 @@ Init(
 ) {
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
-    if (tsdPtr->interp == (Tcl_Interp*)NULL) {
+    if (tsdPtr->interp == NULL) {
         memset(tsdPtr, 0, sizeof(ThreadSpecificData));
         tsdPtr->interp = interp;
         ListUpdate(tsdPtr);
@@ -1267,7 +1264,7 @@ ThreadTransferObjCmd(
     }
 
     chan = Tcl_GetChannel(interp, Tcl_GetString(objv[2]), NULL);
-    if (chan == (Tcl_Channel)NULL) {
+    if (chan == NULL) {
         return TCL_ERROR;
     }
 
@@ -1312,7 +1309,7 @@ ThreadDetachObjCmd(
     }
 
     chan = Tcl_GetChannel(interp, Tcl_GetString(objv[1]), NULL);
-    if (chan == (Tcl_Channel)NULL) {
+    if (chan == NULL) {
         return TCL_ERROR;
     }
 
@@ -1705,7 +1702,7 @@ ThreadCreate(
     }
     if (preserve) {
         ThreadSpecificData *tsdPtr = ThreadExistsInner(thrId);
-        if (tsdPtr == (ThreadSpecificData*)NULL) {
+        if (tsdPtr == NULL) {
             Tcl_MutexUnlock(&threadMutex);
             Tcl_ConditionFinalize(&ctrl.condWait);
             ErrorNoSuchThread(interp, thrId);
@@ -2203,7 +2200,7 @@ ThreadCancel(
     Tcl_MutexLock(&threadMutex);
 
     tsdPtr = ThreadExistsInner(thrId);
-    if (tsdPtr == (ThreadSpecificData*)NULL) {
+    if (tsdPtr == NULL) {
         Tcl_MutexUnlock(&threadMutex);
         ErrorNoSuchThread(interp, thrId);
         return TCL_ERROR;
@@ -2495,9 +2492,9 @@ ThreadDetach(
      * Initialize the result fields. This is not used.
      */
 
-    resultPtr->done       = (Tcl_Condition)NULL;
+    resultPtr->done       = NULL;
     resultPtr->resultCode = -1;
-    resultPtr->resultMsg  = (char*)NULL;
+    resultPtr->resultMsg  = NULL;
 
     /*
      * Maintain the cleanup list. By setting the dst/srcThreadId
@@ -2586,7 +2583,7 @@ ThreadAttach(
 
     Tcl_SpliceChannel(chan);
     Tcl_RegisterChannel(interp, chan);
-    Tcl_UnregisterChannel((Tcl_Interp *)NULL, chan);
+    Tcl_UnregisterChannel(NULL, chan);
 
     return TCL_OK;
 }
@@ -2632,7 +2629,7 @@ ThreadSend(
 
     tsdPtr = ThreadExistsInner(thrId);
 
-    if (tsdPtr == (ThreadSpecificData*)NULL
+    if (tsdPtr == NULL
             || (tsdPtr->flags & THREAD_FLAGS_INERROR)) {
         int inerror = tsdPtr && (tsdPtr->flags & THREAD_FLAGS_INERROR);
         Tcl_MutexUnlock(&threadMutex);
@@ -2649,21 +2646,22 @@ ThreadSend(
     }
 
     /*
-     * Short circuit sends to ourself.
+     * Short circuit sends to ourself (synchronously only).
      */
 
-    if (thrId == Tcl_GetCurrentThread()) {
+    if (thrId == Tcl_GetCurrentThread() && (flags & THREAD_SEND_WAIT)) {
         Tcl_MutexUnlock(&threadMutex);
-        if ((flags & THREAD_SEND_WAIT)) {
-            int code = (*send->execProc)(interp, send);
-            ThreadFreeProc(send);
-            return code;
-        } else {
-            send->interp = interp;
-            Tcl_Preserve(send->interp);
-            Tcl_DoWhenIdle((Tcl_IdleProc*)ThreadIdleProc, send);
-            return TCL_OK;
-        }
+
+	if (!(flags & THREAD_SEND_HEAD)) {
+	    /* 
+	     * Be sure all already queued events are processed before this event
+	     */
+	    while ( Tcl_DoOneEvent((TCL_ALL_EVENTS & ~TCL_IDLE_EVENTS)|TCL_DONT_WAIT) ) {};
+	}
+	/* call it synchronously right now */
+	int code = (*send->execProc)(interp, send);
+	ThreadFreeProc(send);
+	return code;
     }
 
     /*
@@ -2696,7 +2694,7 @@ ThreadSend(
         eventPtr->resultPtr    = NULL;
     } else {
         resultPtr = (ThreadEventResult *)Tcl_Alloc(sizeof(ThreadEventResult));
-        resultPtr->done        = (Tcl_Condition)NULL;
+        resultPtr->done        = NULL;
         resultPtr->result      = NULL;
         resultPtr->errorCode   = NULL;
         resultPtr->errorInfo   = NULL;
@@ -2933,7 +2931,7 @@ ThreadReserve(
         tsdPtr = TCL_TSD_INIT(&dataKey);
     } else {
         tsdPtr = ThreadExistsInner(thrId);
-        if (tsdPtr == (ThreadSpecificData*)NULL) {
+        if (tsdPtr == NULL) {
             Tcl_MutexUnlock(&threadMutex);
             ErrorNoSuchThread(interp, thrId);
             return TCL_ERROR;
@@ -2975,7 +2973,7 @@ ThreadReserve(
             if (dowait) {
                 resultPtr = (ThreadEventResult*)
                     Tcl_Alloc(sizeof(ThreadEventResult));
-                resultPtr->done        = (Tcl_Condition)NULL;
+                resultPtr->done        = NULL;
                 resultPtr->result      = NULL;
                 resultPtr->code        = TCL_OK;
                 resultPtr->errorCode   = NULL;
@@ -3265,7 +3263,7 @@ ThreadGetOption(
 
     tsdPtr = ThreadExistsInner(thrId);
 
-    if (tsdPtr == (ThreadSpecificData*)NULL) {
+    if (tsdPtr == NULL) {
         Tcl_MutexUnlock(&threadMutex);
         ErrorNoSuchThread(interp, thrId);
         return TCL_ERROR;
@@ -3350,7 +3348,7 @@ ThreadSetOption(
 
     tsdPtr = ThreadExistsInner(thrId);
 
-    if (tsdPtr == (ThreadSpecificData*)NULL) {
+    if (tsdPtr == NULL) {
         Tcl_MutexUnlock(&threadMutex);
         ErrorNoSuchThread(interp, thrId);
         return TCL_ERROR;
@@ -3392,34 +3390,6 @@ ThreadSetOption(
     Tcl_MutexUnlock(&threadMutex);
 
     return TCL_OK;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * ThreadIdleProc --
- *
- * Results:
- *
- * Side effects.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-ThreadIdleProc(
-    void *clientData
-) {
-    int ret;
-    ThreadSendData *sendPtr = (ThreadSendData *)clientData;
-
-    ret = (*sendPtr->execProc)(sendPtr->interp, sendPtr);
-    if (ret != TCL_OK) {
-        ThreadErrorProc(sendPtr->interp);
-    }
-
-    Tcl_Release(sendPtr->interp);
-    ThreadFreeProc(clientData);
 }
 
 /*
