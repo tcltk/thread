@@ -254,10 +254,6 @@ SOURCE=$(ROOT)\win\README.txt
 
 SOURCE=$(ROOT)\win\thread.rc
 # End Source File
-# Begin Source File
-
-SOURCE=$(ROOT)\win\threadWin.c
-# End Source File
 # End Group
 # Begin Source File
 
