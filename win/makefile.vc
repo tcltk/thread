@@ -43,8 +43,7 @@ PRJ_OBJS = \
 	$(TMP_DIR)\psLmdb.obj \
 	$(TMP_DIR)\threadSvListCmd.obj \
 	$(TMP_DIR)\threadSvKeylistCmd.obj \
-	$(TMP_DIR)\tclXkeylist.obj \
-	$(TMP_DIR)\threadWin.obj
+	$(TMP_DIR)\tclXkeylist.obj
 
 !include "$(_RULESDIR)\targets.vc"
 
