@@ -133,7 +133,6 @@ TEA_ADD_TCL_SOURCES([lib/ttrace.tcl])
 #--------------------------------------------------------------------
 
 if test "${TEA_PLATFORM}" = "windows" ; then
-    TEA_ADD_SOURCES([win/threadWin.c])
     TEA_ADD_INCLUDES([-I\"$(${CYGPATH} ${srcdir}/win)\"])
 else
     TEA_ADD_SOURCES([unix/threadUnix.c])
