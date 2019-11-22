@@ -124,6 +124,11 @@ Sv_RegisterListCommands(void)
  *-----------------------------------------------------------------------------
  */
 
+#if TCL_MAJOR_VERSION < 9
+#   undef size_t
+#   define size_t int
+#endif
+
 static int
 SvLpopObjCmd (
     void *arg,

@@ -57,6 +57,13 @@
 # endif
 #endif
 
+#if (TCL_MAJOR_VERSION < 9) && defined(USE_TCL_STUBS)
+#undef Tcl_Free
+#define Tcl_Free(p) tclStubsPtr->tcl_Free((void *)(p))
+#undef Tcl_Realloc
+#define Tcl_Realloc(p,m) tclStubsPtr->tcl_Realloc((void *)(p),(m))
+#endif
+
 /*
  * Allow for some command names customization.
  * Only thread:: and tpool:: are handled here.
