@@ -159,7 +159,7 @@ ps_lmdb_open(
     char *ext;
     Tcl_DString toext;
 
-    ctx = Tcl_Alloc(sizeof(*ctx));
+    ctx = (LmdbCtx)Tcl_Alloc(sizeof(*ctx));
     if (ctx == NULL)
     {
         return NULL;
