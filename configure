@@ -8250,19 +8250,6 @@ $as_echo "#define USE_TCL_STUBS 1" >>confdefs.h
 
 
 #--------------------------------------------------------------------
-# Enable compile-time support for TIP #143 and TIP #285.  When using
-# a pre-Tcl 8.5 or 8.6 core, respectively, the actual functionality
-# will not be available at runtime.
-#--------------------------------------------------------------------
-
-
-$as_echo "#define TCL_TIP143 1" >>confdefs.h
-
-
-$as_echo "#define TCL_TIP285 1" >>confdefs.h
-
-
-#--------------------------------------------------------------------
 # This macro generates a line to use when building a library.  It
 # depends on values set by the TEA_ENABLE_SHARED, TEA_ENABLE_SYMBOLS,
 # and TEA_LOAD_TCLCONFIG macros above.
