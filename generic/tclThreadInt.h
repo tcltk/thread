@@ -123,7 +123,7 @@ MODULE_SCOPE int Tpool_Init(Tcl_Interp *interp);
     return TCL_ERROR
 
 #define OPT_CMP(a,b) \
-  ((a) && (b) && (*(a)==*(b)) && (*(a+1)==*(b+1)) && (!strcmp((a),(b))))
+  ((a) && (b) && ((a)[0]==(b)[0]) && ((a)[1]==(b)[1]) && (!strcmp((a),(b))))
 
 #ifndef TCL_TSD_INIT
 #define TCL_TSD_INIT(keyPtr) \
