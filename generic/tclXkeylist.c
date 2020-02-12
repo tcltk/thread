@@ -1235,7 +1235,7 @@ Tcl_KeylgetObjCmd(
  */
 static int
 Tcl_KeylsetObjCmd(
-    void        *clientData,
+    void        *dummy,
     Tcl_Interp  *interp,
     int          objc,
     Tcl_Obj     *const objv[]
@@ -1243,6 +1243,7 @@ Tcl_KeylsetObjCmd(
     Tcl_Obj *keylVarPtr, *newVarObj;
     const char *key;
     int idx;
+    (void)dummy;
 
     if ((objc < 4) || ((objc % 2) != 0)) {
         return TclX_WrongArgs (interp, objv [0],
@@ -1298,7 +1299,7 @@ Tcl_KeylsetObjCmd(
  */
 static int
 Tcl_KeyldelObjCmd(
-    void        *clientData,
+    void        *dummy,
     Tcl_Interp  *interp,
     int          objc,
     Tcl_Obj     *const objv[]
@@ -1306,6 +1307,7 @@ Tcl_KeyldelObjCmd(
     Tcl_Obj *keylVarPtr, *keylPtr;
     const char *key;
     int idx, status;
+    (void)dummy;
 
     if (objc < 3) {
         return TclX_WrongArgs (interp, objv [0], "listvar key ?key ...?");
@@ -1360,7 +1362,7 @@ Tcl_KeyldelObjCmd(
  */
 static int
 Tcl_KeylkeysObjCmd(
-    void        *clientData,
+    void        *dummy,
     Tcl_Interp  *interp,
     int          objc,
     Tcl_Obj     *const objv[]
@@ -1368,6 +1370,7 @@ Tcl_KeylkeysObjCmd(
     Tcl_Obj *keylPtr, *listObjPtr;
     const char *key;
     int status;
+    (void)dummy;
 
     if ((objc < 2) || (objc > 3)) {
         return TclX_WrongArgs(interp, objv [0], "listvar ?key?");

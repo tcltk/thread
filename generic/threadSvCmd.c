@@ -1447,6 +1447,7 @@ SvUnsetObjCmd(
     int ii;
     const char *arrayName;
     Array *arrayPtr;
+    (void)dummy;
 
     if (objc < 2) {
         Tcl_WrongNumArgs(interp, 1, objv, "array ?key ...?");
@@ -2034,6 +2035,7 @@ SvLockObjCmd(
     Tcl_Obj *scriptObj;
     Bucket *bucketPtr;
     Array *arrayPtr = NULL;
+    (void)dummy;
 
     /*
      * Syntax:
@@ -2101,12 +2103,13 @@ SvLockObjCmd(
  */
 static int
 SvHandlersObjCmd(
-             void *arg,                     /* Not used. */
+             void *dummy,                     /* Not used. */
              Tcl_Interp *interp,                 /* Current interpreter. */
              int objc,                           /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
 {
     PsStore *tmpPtr = NULL;
+    (void)dummy;
 
     /*
      * Syntax:
@@ -2341,7 +2344,7 @@ Sv_Init (
  */
 
 static void
-SvFinalize (void *clientData)
+SvFinalize (void *dummy)
 {
     int i;
     SvCmdInfo *cmdPtr;
@@ -2349,6 +2352,7 @@ SvFinalize (void *clientData)
 
     Tcl_HashEntry *hashPtr;
     Tcl_HashSearch search;
+    (void)dummy;
 
     /*
      * Decrement number of threads. Proceed only if I was the last one. The
