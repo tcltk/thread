@@ -592,6 +592,7 @@ ThreadCreateObjCmd(
     int argc, rsrv = 0;
     const char *arg, *script;
     int flags = TCL_THREAD_NOFLAGS;
+    (void)dummy;
 
     Init(interp);
 
@@ -656,6 +657,7 @@ ThreadReserveObjCmd(
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId = NULL;
+    (void)dummy;
 
     Init(interp);
 
@@ -699,6 +701,7 @@ ThreadReleaseObjCmd(
 ) {
     int wait = 0;
     Tcl_ThreadId thrId = NULL;
+    (void)dummy;
 
     Init(interp);
 
@@ -746,6 +749,8 @@ ThreadUnwindObjCmd(
     int         objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
+    (void)dummy;
+
     Init(interp);
 
     if (objc > 1) {
@@ -782,6 +787,7 @@ ThreadExitObjCmd(
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int status = 666;
+    (void)dummy;
 
     Init(interp);
 
@@ -828,6 +834,7 @@ ThreadIdObjCmd(
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char thrHandle[THREAD_HNDLMAXLEN];
+    (void)dummy;
 
     Init(interp);
 
@@ -872,6 +879,7 @@ ThreadNamesObjCmd(
     char *result, thrHandle[THREAD_HNDLMAXLEN];
     Tcl_ThreadId *thrIdArray;
     Tcl_DString threadNames;
+    (void)dummy;
 
     Init(interp);
 
@@ -939,6 +947,7 @@ ThreadSendObjCmd(
     Tcl_ThreadId thrId;
     const char *script, *arg;
     Tcl_Obj *var = NULL;
+    (void)dummy;
 
     ThreadClbkData *clbkPtr = NULL;
     ThreadSendData *sendPtr = NULL;
@@ -1069,6 +1078,7 @@ ThreadBroadcastObjCmd(
     const char *script;
     Tcl_ThreadId *thrIdArray;
     ThreadSendData *sendPtr, job;
+    (void)dummy;
 
     Init(interp);
 
@@ -1151,6 +1161,8 @@ ThreadWaitObjCmd(
     int         objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
+    (void)dummy;
+
     Init(interp);
 
     if (objc > 1) {
@@ -1189,6 +1201,7 @@ ThreadErrorProcObjCmd(
 ) {
     size_t len;
     char *proc;
+    (void)dummy;
 
     Init(interp);
 
@@ -1225,8 +1238,10 @@ ThreadErrorProcObjCmd(
 
 static void
 ThreadFreeError(
-    ClientData clientData
+    ClientData dummy
 ) {
+    (void)dummy;
+
     Tcl_MutexLock(&threadMutex);
     if (errorThreadId != Tcl_GetCurrentThread()) {
         Tcl_MutexUnlock(&threadMutex);
@@ -1263,6 +1278,7 @@ ThreadJoinObjCmd(
     Tcl_Obj    *const objv[]    /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
+    (void)dummy;
 
     Init(interp);
 
@@ -1306,6 +1322,7 @@ ThreadTransferObjCmd(
     int         objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
+    (void)dummy;
 
     Tcl_ThreadId thrId;
     Tcl_Channel chan;
@@ -1357,6 +1374,7 @@ ThreadDetachObjCmd(
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_Channel chan;
+    (void)dummy;
 
     Init(interp);
 
@@ -1402,6 +1420,7 @@ ThreadAttachObjCmd(
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char *chanName;
+    (void)dummy;
 
     Init(interp);
 
@@ -1447,6 +1466,7 @@ ThreadExistsObjCmd(
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
+    (void)dummy;
 
     Init(interp);
 
@@ -1491,6 +1511,7 @@ ThreadConfigureObjCmd(
     int i;                      /* Iterate over arg-value pairs. */
     Tcl_DString ds;             /* DString to hold result of
                                  * calling GetThreadOption. */
+    (void)dummy;
 
     if (objc < 2 || (objc % 2 == 1 && objc != 3)) {
         Tcl_WrongNumArgs(interp, 1, objv, "threadlId ?optionName? "
@@ -1561,6 +1582,7 @@ ThreadCancelObjCmd(
     Tcl_ThreadId thrId;
     int ii, flags;
     const char *result;
+    (void)dummy;
 
     if ((objc < 2) || (objc > 4)) {
         Tcl_WrongNumArgs(interp, 1, objv, "?-unwind? id ?result?");
@@ -2107,11 +2129,12 @@ ListRemoveInner(
 
 static int
 ThreadList(
-    Tcl_Interp *interp,
+    Tcl_Interp *dummy,
     Tcl_ThreadId **thrIdArray
 ) {
     int ii, count = 0;
     ThreadSpecificData *tsdPtr;
+    (void)dummy;
 
     Tcl_MutexLock(&threadMutex);
 
@@ -3104,6 +3127,7 @@ ThreadEventProc(
     ThreadEventResult* resultPtr = eventPtr->resultPtr;
 
     int code = TCL_ERROR; /* Pessimistic assumption */
+    (void)mask;
 
     /*
      * See whether user has any preferences about which interpreter
@@ -3516,6 +3540,7 @@ TransferEventProc(
     Tcl_Interp            *interp = tsdPtr->interp;
     int code;
     const char* msg = NULL;
+    (void)mask;
 
     if (interp == NULL) {
         /*
@@ -3608,8 +3633,10 @@ ThreadFreeProc(
 static int
 ThreadDeleteEvent(
     Tcl_Event *eventPtr,       /* Really ThreadEvent */
-    ClientData clientData      /* dummy */
+    ClientData dummy      /* dummy */
 ) {
+    (void)dummy;
+
     if (eventPtr->proc == ThreadEventProc) {
         /*
          * Regular script event. Just dispose memory

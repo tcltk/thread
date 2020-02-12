@@ -187,6 +187,7 @@ ThreadMutexObjCmd(
     const char *mutexName;
     char type;
     SpMutex *mutexPtr;
+    (void)dummy;
 
     static const char *cmdOpts[] = {
         "create", "destroy", "lock", "unlock", NULL
@@ -371,6 +372,7 @@ ThreadRWMutexObjCmd(
     enum options {
         w_CREATE, w_DESTROY, w_RLOCK, w_WLOCK, w_UNLOCK
     };
+    (void)dummy;
 
     /*
      * Syntax:
@@ -534,6 +536,7 @@ ThreadCondObjCmd(
     enum options {
         c_CREATE, c_DESTROY, c_NOTIFY, c_WAIT
     };
+    (void)dummy;
 
     /*
      * Syntax:
@@ -695,6 +698,7 @@ ThreadEvalObjCmd(
     Tcl_Obj *scriptObj;
     SpMutex *mutexPtr = NULL;
     static Sp_RecursiveMutex evalMutex;
+    (void)dummy;
 
     /*
      * Syntax:
@@ -808,11 +812,12 @@ ThreadEvalObjCmd(
  */
 
 static Tcl_Obj*
-GetName(int type, void *addrPtr)
+GetName(int type, void *dummy)
 {
     char name[32];
     unsigned int id;
     static unsigned int idcounter;
+    (void)dummy;
 
     Tcl_MutexLock(&initMutex);
     id = idcounter++;

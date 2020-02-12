@@ -202,6 +202,7 @@ TpoolCreateObjCmd(
     int ii, minw, maxw, idle;
     char buf[64], *exs = NULL, *cmd = NULL;
     ThreadPool *tpoolPtr;
+    (void)dummy;
 
     /*
      * Syntax:  tpool::create ?-minworkers count?
@@ -343,6 +344,7 @@ TpoolPostObjCmd(
     ThreadPool *tpoolPtr;
 
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+    (void)dummy;
 
     /*
      * Syntax: tpool::post ?-detached? ?-nowait? tpoolId script
@@ -517,6 +519,7 @@ TpoolWaitObjCmd(
     Tcl_HashEntry *hPtr;
 
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+    (void)dummy;
 
     /*
      * Syntax: tpool::wait tpoolId jobIdList ?listVar?
@@ -629,6 +632,7 @@ TpoolCancelObjCmd(
     Tcl_Obj *doneList, *waitList, **wObjv;
     ThreadPool *tpoolPtr;
     TpoolResult *rPtr;
+    (void)dummy;
 
     /*
      * Syntax: tpool::cancel tpoolId jobIdList ?listVar?
@@ -725,6 +729,7 @@ TpoolGetObjCmd(
     ThreadPool *tpoolPtr;
     TpoolResult *rPtr;
     Tcl_HashEntry *hPtr;
+    (void)dummy;
 
     /*
      * Syntax: tpool::get tpoolId jobId ?result?
@@ -816,6 +821,7 @@ TpoolReserveObjCmd(
     int ret;
     char *tpoolName;
     ThreadPool *tpoolPtr;
+    (void)dummy;
 
     /*
      * Syntax: tpool::preserve tpoolId
@@ -871,6 +877,7 @@ TpoolReleaseObjCmd(
     size_t ret;
     char *tpoolName;
     ThreadPool *tpoolPtr;
+    (void)dummy;
 
     /*
      * Syntax: tpool::release tpoolId
@@ -925,6 +932,7 @@ TpoolSuspendObjCmd(
 ) {
     char *tpoolName;
     ThreadPool *tpoolPtr;
+    (void)dummy;
 
     /*
      * Syntax: tpool::suspend tpoolId
@@ -975,6 +983,7 @@ TpoolResumeObjCmd(
 ) {
     char *tpoolName;
     ThreadPool *tpoolPtr;
+    (void)dummy;
 
     /*
      * Syntax: tpool::resume tpoolId
@@ -1025,6 +1034,9 @@ TpoolNamesObjCmd(
 ) {
     ThreadPool *tpoolPtr;
     Tcl_Obj *listObj = Tcl_NewListObj(0, NULL);
+    (void)dummy;
+    (void)objc;
+    (void)objv;
 
     Tcl_MutexLock(&listMutex);
     for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
@@ -1291,10 +1303,12 @@ TpoolWorker(
  */
 static int
 RunStopEvent(
-    Tcl_Event *eventPtr,
+    Tcl_Event *dummy,
     int mask
 ) {
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
+    (void)dummy;
+    (void)mask;
 
     tsdPtr->stop = 1;
     return 1;
@@ -1880,9 +1894,10 @@ ThrExitHandler(
  */
 static void
 AppExitHandler(
-    ClientData clientData
+    ClientData dummy
 ) {
     ThreadPool *tpoolPtr;
+    (void)dummy;
 
     Tcl_MutexLock(&listMutex);
     /*
