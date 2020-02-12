@@ -635,6 +635,8 @@ SHLIB_CFLAGS
 SHLIB_LD_LIBS
 SHLIB_LD
 STLIB_LD
+LDFLAGS_OPTIMIZE
+LDFLAGS_DEBUG
 CFLAGS_WARNING
 CFLAGS_OPTIMIZE
 CFLAGS_DEBUG
@@ -5159,7 +5161,7 @@ $as_echo "found NaviServer/AOLserver in $NS_DIR" >&6; }
     for i in $vars; do
 	if test "${TEA_PLATFORM}" = "windows" -a "$GCC" = "yes" ; then
 	    # Convert foo.lib to -lfoo for GCC.  No-op if not *.lib
-	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.lib$/-l\1/i'`
+	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.[lL][iI][bB]$/-l\1/'`
 	fi
 	PKG_LIBS="$PKG_LIBS $i"
     done
@@ -6141,7 +6143,7 @@ fi
     for i in $vars; do
 	if test "${TEA_PLATFORM}" = "windows" -a "$GCC" = "yes" ; then
 	    # Convert foo.lib to -lfoo for GCC.  No-op if not *.lib
-	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.lib$/-l\1/i'`
+	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.[lL][iI][bB]$/-l\1/'`
 	fi
 	PKG_LIBS="$PKG_LIBS $i"
     done
@@ -6166,7 +6168,7 @@ fi
     for i in $vars; do
 	if test "${TEA_PLATFORM}" = "windows" -a "$GCC" = "yes" ; then
 	    # Convert foo.lib to -lfoo for GCC.  No-op if not *.lib
-	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.lib$/-l\1/i'`
+	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.[lL][iI][bB]$/-l\1/'`
 	fi
 	PKG_LIBS="$PKG_LIBS $i"
     done
@@ -7761,6 +7763,8 @@ fi
 
 
 
+
+
     # These must be called after we do the basic CFLAGS checks and
     # verify any possible 64-bit or similar switches are necessary
 
@@ -8169,10 +8173,6 @@ $as_echo "no" >&6; }
 $as_echo "yes (standard debugging)" >&6; }
 	fi
     fi
-    # TEA specific:
-    if test "${TEA_PLATFORM}" != "windows" ; then
-	LDFLAGS_DEFAULT="${LDFLAGS}"
-    fi
 
 
 
@@ -8227,7 +8227,7 @@ $as_echo "#define TCL_TIP285 1" >>confdefs.h
 
     if test "${TEA_PLATFORM}" = "windows" -a "$GCC" != "yes"; then
 	MAKE_STATIC_LIB="\${STLIB_LD} -out:\$@ \$(PKG_OBJECTS)"
-	MAKE_SHARED_LIB="\${SHLIB_LD} \${SHLIB_LD_LIBS} \${LDFLAGS_DEFAULT} -out:\$@ \$(PKG_OBJECTS)"
+	MAKE_SHARED_LIB="\${SHLIB_LD} \${LDFLAGS} \${LDFLAGS_DEFAULT} -out:\$@ \$(PKG_OBJECTS) \${SHLIB_LD_LIBS}"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -8253,7 +8253,7 @@ rm -f conftest*
 	MAKE_STUB_LIB="\${STLIB_LD} -nodefaultlib -out:\$@ \$(PKG_STUB_OBJECTS)"
     else
 	MAKE_STATIC_LIB="\${STLIB_LD} \$@ \$(PKG_OBJECTS)"
-	MAKE_SHARED_LIB="\${SHLIB_LD} -o \$@ \$(PKG_OBJECTS) \${SHLIB_LD_LIBS}"
+	MAKE_SHARED_LIB="\${SHLIB_LD} \${LDFLAGS} \${LDFLAGS_DEFAULT} -o \$@ \$(PKG_OBJECTS) \${SHLIB_LD_LIBS}"
 	MAKE_STUB_LIB="\${STLIB_LD} \$@ \$(PKG_STUB_OBJECTS)"
     fi
 
