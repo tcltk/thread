@@ -414,7 +414,7 @@ GetPsStore(const char *handle)
 {
     int i;
     const char *type = handle;
-    char *addr, *delimiter = strchr(handle, ':');
+    char *addr, *delimiter = (char *)strchr(handle, ':');
     PsStore *tmpPtr, *psPtr = NULL;
 
     /*
