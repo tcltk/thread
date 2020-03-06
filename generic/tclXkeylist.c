@@ -555,11 +555,11 @@ FindKeyedListEntry(
     size_t       *keyLenPtr,
     const char   **nextSubKeyPtr
 ) {
-    char *keySeparPtr;
+    const char *keySeparPtr;
     size_t keyLen;
     int findIdx;
 
-    keySeparPtr = strchr (key, '.');
+    keySeparPtr = strchr(key, '.');
     if (keySeparPtr != NULL) {
         keyLen = keySeparPtr - key;
     } else {
