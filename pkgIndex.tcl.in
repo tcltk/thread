@@ -6,7 +6,7 @@
 # Lower than that is never supported. Bye!
 if {![package vsatisfies [package provide Tcl] 9.0]
 	&& ((![package vsatisfies [package provide Tcl] 8.7])
-	|| ($::tcl_platform(pointerSize)<4))} {
+	|| ($::tcl_platform(pointerSize)!=4))} {
     return
 }
 

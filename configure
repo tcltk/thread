@@ -3487,7 +3487,7 @@ _ACEOF
 
 if test "${TCL_MAJOR_VERSION}" -eq 8 ; then
     if test "${TCL_MINOR_VERSION}" -lt 7 ; then
-        as_fn_error $? "${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.7+
+        as_fn_error $? "${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 9.0+
 Found config for Tcl ${TCL_VERSION}" "$LINENO" 5
 fi
 fi

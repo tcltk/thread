@@ -372,7 +372,17 @@ ThreadInit(
     /* Tcl 8.7 interps are only supported on 32-bit machines.
      * Lower than that is never supported. Bye!
      */
-    const char *ver = (sizeof(size_t) >= sizeof(int))? "8.7-": "9.0";
+#if defined(TCL_WIDE_INT_IS_LONG) && TCL_MAJOR_VERSION < 9
+#   error "Thread 3.0 is only supported with Tcl 9.0 and higher."
+#	error "Please use Thread 2.8 (branch thread-2-8-branch)"
+#endif
+
+	/* Even though it's not supported, Thread 3.0 works with Tcl 8.7
+	 * on 32-bit platforms, so allow that for now. It could be that
+	 * Tcl 9.0 introduces a further binary incompatibility in the
+	 * future, so this is not guaranteed to stay like it is now!
+	 */
+    const char *ver = (sizeof(size_t) == sizeof(int))? "8.7-": "9.0";
 
     if (!((Tcl_InitStubs)(interp, ver, (TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16),
 	    TCL_STUB_MAGIC))) {
