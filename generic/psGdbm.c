@@ -83,7 +83,7 @@ Sv_RegisterGdbmStore(void)
  *
  *-----------------------------------------------------------------------------
  */
-static ClientData
+static void *
 ps_gdbm_open(
     const char *path)
 {
@@ -116,7 +116,7 @@ ps_gdbm_open(
  */
 static int
 ps_gdbm_close(
-    ClientData handle)
+    void *handle)
 {
     gdbm_close((GDBM_FILE)handle);
 
@@ -141,7 +141,7 @@ ps_gdbm_close(
  */
 static int
 ps_gdbm_get(
-     ClientData handle,
+     void *handle,
      const char   *key,
      char **dataptrptr,
      size_t    *lenptr)
@@ -181,7 +181,7 @@ ps_gdbm_get(
  */
 static int
 ps_gdbm_first(
-    ClientData  handle,
+    void *handle,
     char   **keyptrptr,
     char  **dataptrptr,
     size_t     *lenptr)
@@ -222,7 +222,7 @@ ps_gdbm_first(
  *-----------------------------------------------------------------------------
  */
 static int ps_gdbm_next(
-    ClientData  handle,
+    void *handle,
     char   **keyptrptr,
     char  **dataptrptr,
     size_t     *lenptr)
@@ -270,7 +270,7 @@ static int ps_gdbm_next(
  */
 static int
 ps_gdbm_put(
-    ClientData handle,
+    void *handle,
     const char   *key,
     char     *dataptr,
     size_t        len)
@@ -312,7 +312,7 @@ ps_gdbm_put(
  */
 static int
 ps_gdbm_delete(
-    ClientData handle,
+    void *handle,
     const char   *key)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
@@ -347,7 +347,7 @@ ps_gdbm_delete(
  */
 static void
 ps_gdbm_free(
-    ClientData handle,
+    void *handle,
     void        *data)
 {
     (void)handle;
@@ -372,7 +372,7 @@ ps_gdbm_free(
  */
 static const char*
 ps_gdbm_geterr(
-    ClientData handle)
+    void *handle)
 {
    /*
     * The problem with gdbm interface is that it uses the global

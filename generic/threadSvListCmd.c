@@ -150,7 +150,7 @@ Sv_RegisterListCommands(void)
 
 static int
 SvLpopObjCmd (
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
@@ -230,7 +230,7 @@ SvLpopObjCmd (
 
 static int
 SvLpushObjCmd (
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
@@ -303,7 +303,7 @@ SvLpushObjCmd (
 
 static int
 SvLappendObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
@@ -363,7 +363,7 @@ SvLappendObjCmd(
 
 static int
 SvLreplaceObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
@@ -463,7 +463,7 @@ SvLreplaceObjCmd(
 
 static int
 SvLrangeObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
@@ -545,7 +545,7 @@ SvLrangeObjCmd(
 
 static int
 SvLinsertObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
@@ -625,7 +625,7 @@ SvLinsertObjCmd(
 
 static int
 SvLlengthObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
@@ -674,7 +674,7 @@ SvLlengthObjCmd(
 
 static int
 SvLsearchObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
@@ -780,7 +780,7 @@ SvLsearchObjCmd(
 
 static int
 SvLindexObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
@@ -841,7 +841,7 @@ SvLindexObjCmd(
 
 static int
 SvLsetObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
