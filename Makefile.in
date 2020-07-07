@@ -322,9 +322,14 @@ DIST_INSTALL_SCRIPT	= CPPROG='cp -p' $(INSTALL) -m 755
 dist-clean:
 	rm -rf $(DIST_DIR) $(DIST_ROOT)/$(PKG_DIR).tar.*
 
-dist: dist-clean
+$(srcdir)/manifest.uuid:
+	printf "git." >$(srcdir)/manifest.uuid
+	git rev-parse HEAD >>$(srcdir)/manifest.uuid
+
+dist: dist-clean $(srcdir)/manifest.uuid
 	$(INSTALL_DATA_DIR) $(DIST_DIR)
 	$(DIST_INSTALL_DATA) $(srcdir)/license.terms \
+		$(srcdir)/manifest.uuid \
 		$(srcdir)/ChangeLog $(srcdir)/README \
 		$(srcdir)/aclocal.m4 $(srcdir)/configure.ac \
 		$(srcdir)/Makefile.in $(srcdir)/pkgIndex.tcl.in \
