@@ -21,6 +21,7 @@ config.status
 config.status.lineno
 html
 manifest.uuid
+pkgIndex.tcl
 _FOSSIL_
 */versions.vc
 */version.vc

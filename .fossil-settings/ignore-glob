@@ -18,6 +18,7 @@ autom4te.cache
 config.cache
 config.log
 config.status
+pkgIndex.tcl
 */versions.vc
 */version.vc
 html
