@@ -25,7 +25,7 @@ typedef struct TclIntStubs {
 extern const struct TclIntStubs *tclIntStubsPtr;
 
 # undef Tcl_GetIntForIndex
-# define Tcl_GetIntForIndex(interp, obj, max, ptr) ((threadTclVersion>86)? \
+# define Tcl_GetIntForIndex(interp, obj, max, ptr) ((tclIntStubsPtr->tclGetIntForIndex == NULL)? \
     ((int (*)(Tcl_Interp*,  Tcl_Obj *, int, int*))((&(tclStubsPtr->tcl_PkgProvideEx))[645]))((interp), (obj), (max), (ptr)): \
 	tclIntStubsPtr->tclGetIntForIndex((interp), (obj), (max), (ptr)))
 #elif TCL_MINOR_VERSION < 7
