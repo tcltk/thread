@@ -203,7 +203,6 @@ typedef struct ThreadEvent {
 } ThreadEvent;
 
 typedef int  (ThreadSendProc) (Tcl_Interp*, ClientData);
-typedef void (ThreadSendFree) (ClientData);
 
 static ThreadSendProc ThreadSendEval;     /* Does a regular Tcl_Eval */
 static ThreadSendProc ThreadClbkSetVar;   /* Sets the named variable */
@@ -213,21 +212,19 @@ static ThreadSendProc ThreadClbkSetVar;   /* Sets the named variable */
  * threads. The ThreadSendData is used for source->target command passing,
  * while the ThreadClbkData is used for doing asynchronous callbacks.
  *
- * Important: structures below must have first three elements identical!
+ * Important: structures below must have first two elements identical!
  */
 
 typedef struct ThreadSendData {
     ThreadSendProc *execProc;             /* Func to exec in remote thread */
     ClientData clientData;                /* Ptr to pass to send function */
-    ThreadSendFree *freeProc;             /* Function to free client data */
-     /* ---- */
+    /* ---- */
     Tcl_Interp *interp;                   /* Interp to run the command */
 } ThreadSendData;
 
 typedef struct ThreadClbkData {
     ThreadSendProc *execProc;             /* The callback function */
     ClientData clientData;                /* Ptr to pass to clbk function */
-    ThreadSendFree *freeProc;             /* Function to free client data */
     /* ---- */
     Tcl_Interp *interp;                   /* Interp to run the command */
     Tcl_ThreadId threadId;                /* Thread where to post callback */
@@ -929,12 +926,6 @@ ThreadNamesObjCmd(
  *----------------------------------------------------------------------
  */
 
-static void
-threadSendFree(ClientData ptr)
-{
-    ckfree((char *)ptr);
-}
-
 static int
 ThreadSendObjCmd(
     ClientData  dummy,         /* Not used. */
@@ -1009,7 +1000,6 @@ ThreadSendObjCmd(
 
         clbkPtr = (ThreadClbkData*)ckalloc(sizeof(ThreadClbkData));
         clbkPtr->execProc   = ThreadClbkSetVar;
-        clbkPtr->freeProc   = threadSendFree;
         clbkPtr->interp     = interp;
         clbkPtr->threadId   = Tcl_GetCurrentThread();
         clbkPtr->clientData = memcpy(ckalloc(vsize), varName, vsize);
@@ -1022,7 +1012,6 @@ ThreadSendObjCmd(
     sendPtr = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
     sendPtr->interp     = NULL; /* Signal to use thread main interp */
     sendPtr->execProc   = ThreadSendEval;
-    sendPtr->freeProc   = threadSendFree;
     sendPtr->clientData = memcpy(ckalloc(size), script, size);
 
     ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, flags);
@@ -1111,7 +1100,6 @@ ThreadBroadcastObjCmd(
 
     job.interp     = NULL; /* Signal to use thread's main interp */
     job.execProc   = ThreadSendEval;
-    job.freeProc   = threadSendFree;
     job.clientData = NULL;
 
     /*
@@ -1975,7 +1963,6 @@ ThreadErrorProc(
 
         sendPtr = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
         sendPtr->execProc   = ThreadSendEval;
-        sendPtr->freeProc   = threadSendFree;
         sendPtr->clientData = Tcl_Merge(3, argv);
         sendPtr->interp     = NULL;
 
@@ -3607,10 +3594,10 @@ ThreadFreeProc(
     ThreadSendData *anyPtr = (ThreadSendData*)clientData;
 
     if (anyPtr) {
-        if (anyPtr->clientData) {
-            (*anyPtr->freeProc)(anyPtr->clientData);
-        }
-        ckfree((char*)anyPtr);
+	if (anyPtr->clientData) {
+	    ckfree((char *)anyPtr->clientData);
+	}
+	ckfree((char*)anyPtr);
     }
 }
 
