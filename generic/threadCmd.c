@@ -220,6 +220,7 @@ typedef struct ThreadSendData {
     ClientData clientData;                /* Ptr to pass to send function */
     /* ---- */
     Tcl_Interp *interp;                   /* Interp to run the command */
+    char script[1];                       /* Script to be executed */
 } ThreadSendData;
 
 typedef struct ThreadClbkData {
@@ -229,6 +230,7 @@ typedef struct ThreadClbkData {
     Tcl_Interp *interp;                   /* Interp to run the command */
     Tcl_ThreadId threadId;                /* Thread where to post callback */
     ThreadEventResult result;             /* Returns result asynchronously */
+    char var[1];                          /* Variable name to be set */
 } ThreadClbkData;
 
 /*
@@ -998,21 +1000,23 @@ ThreadSendObjCmd(
          * We should do a vwait on the "var" to get notified.
          */
 
-        clbkPtr = (ThreadClbkData*)ckalloc(sizeof(ThreadClbkData));
+        clbkPtr = (ThreadClbkData*)ckalloc(sizeof(ThreadClbkData) + vsize);
         clbkPtr->execProc   = ThreadClbkSetVar;
         clbkPtr->interp     = interp;
         clbkPtr->threadId   = Tcl_GetCurrentThread();
-        clbkPtr->clientData = memcpy(ckalloc(vsize), varName, vsize);
+        memcpy(clbkPtr->var, varName, vsize);
+        clbkPtr->clientData = NULL;
     }
 
     /*
      * Prepare job record for the target thread
      */
 
-    sendPtr = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
+    sendPtr = (ThreadSendData*)ckalloc(sizeof(ThreadSendData) + size);
     sendPtr->interp     = NULL; /* Signal to use thread main interp */
     sendPtr->execProc   = ThreadSendEval;
-    sendPtr->clientData = memcpy(ckalloc(size), script, size);
+    memcpy(sendPtr->script, script, size);
+    sendPtr->clientData = NULL;
 
     ret = ThreadSend(interp, thrId, sendPtr, clbkPtr, flags);
 
@@ -1113,9 +1117,10 @@ ThreadBroadcastObjCmd(
         if (thrIdArray[ii] == Tcl_GetCurrentThread()) {
             continue; /* Do not broadcast self */
         }
-        sendPtr  = (ThreadSendData*)ckalloc(sizeof(ThreadSendData));
+        sendPtr  = (ThreadSendData*)ckalloc(sizeof(ThreadSendData) + size);
         *sendPtr = job;
-        sendPtr->clientData = memcpy(ckalloc(size), script, size);
+        memcpy(sendPtr->script, script, size);
+        sendPtr->clientData = NULL;
         ThreadSend(interp, thrIdArray[ii], sendPtr, NULL, THREAD_SEND_HEAD);
     }
 
@@ -1622,8 +1627,9 @@ ThreadSendEval(
     ClientData clientData
 ) {
     ThreadSendData *sendPtr = (ThreadSendData*)clientData;
-    char *script = (char*)sendPtr->clientData;
+    char *script = (char *)sendPtr->clientData;
 
+    if (!script) script = sendPtr->script;
     return Tcl_EvalEx(interp, script, -1, TCL_EVAL_GLOBAL);
 }
 
@@ -1650,7 +1656,7 @@ ThreadClbkSetVar(
     ClientData clientData
 ) {
     ThreadClbkData *clbkPtr = (ThreadClbkData*)clientData;
-    const char *var = (const char *)clbkPtr->clientData;
+    const char *var = clbkPtr->var;
     Tcl_Obj *valObj;
     ThreadEventResult *resultPtr = &clbkPtr->result;
     int rc = TCL_OK;
