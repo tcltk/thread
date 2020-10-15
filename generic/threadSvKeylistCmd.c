@@ -18,17 +18,6 @@
 #include "tclXkeylist.h"
 
 /*
- * This is defined in keylist.c. We need it here
- * to be able to plug-in our custom keyed-list
- * object duplicator which produces proper deep
- * copies of the keyed-list objects. The standard
- * one produces shallow copies which are not good
- * for usage in the thread shared variables code.
- */
-
-extern Tcl_ObjType keyedListType;
-
-/*
  * Wrapped keyed-list commands
  */
 
@@ -97,12 +86,12 @@ Sv_RegisterKeylistCommands(void)
  */
 
 static int
-SvKeylsetObjCmd(arg, interp, objc, objv)
-    ClientData arg;                     /* Not used. */
-    Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
-    Tcl_Obj *const objv[];              /* Argument objects. */
-{
+SvKeylsetObjCmd(
+    void *arg,                         /* Not used. */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *const objv[]              /* Argument objects. */
+) {
     int i, off, ret, flg;
     char *key;
     Tcl_Obj *val;
@@ -156,12 +145,12 @@ SvKeylsetObjCmd(arg, interp, objc, objv)
  */
 
 static int
-SvKeylgetObjCmd(arg, interp, objc, objv)
-    ClientData arg;                     /* Not used. */
-    Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
-    Tcl_Obj *const objv[];              /* Argument objects. */
-{
+SvKeylgetObjCmd(
+    void *arg,                         /* Not used. */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *const objv[]              /* Argument objects. */
+) {
     int ret, flg, off;
     char *key;
     Tcl_Obj *varObjPtr = NULL, *valObjPtr = NULL;
@@ -244,12 +233,12 @@ SvKeylgetObjCmd(arg, interp, objc, objv)
  */
 
 static int
-SvKeyldelObjCmd(arg, interp, objc, objv)
-    ClientData arg;                     /* Not used. */
-    Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
-    Tcl_Obj *const objv[];              /* Argument objects. */
-{
+SvKeyldelObjCmd(
+    void *arg,                         /* Not used. */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *const objv[]              /* Argument objects. */
+) {
     int i, off, ret;
     char *key;
     Container *svObj = (Container*)arg;
@@ -303,12 +292,12 @@ SvKeyldelObjCmd(arg, interp, objc, objv)
  */
 
 static int
-SvKeylkeysObjCmd(arg, interp, objc, objv)
-    ClientData arg;                     /* Not used. */
-    Tcl_Interp *interp;                 /* Current interpreter. */
-    int objc;                           /* Number of arguments. */
-    Tcl_Obj *const objv[];              /* Argument objects. */
-{
+SvKeylkeysObjCmd(
+    void *arg,                         /* Not used. */
+    Tcl_Interp *interp,                /* Current interpreter. */
+    int objc,                          /* Number of arguments. */
+    Tcl_Obj *const objv[]              /* Argument objects. */
+) {
     int ret, off;
     char *key = NULL;
     Tcl_Obj *listObj = NULL;

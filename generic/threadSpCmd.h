@@ -1,6 +1,6 @@
 /*
  * This is the header file for the module that implements some missing
- * synchronization priomitives from the Tcl API.
+ * synchronization primitives from the Tcl API.
  *
  * Copyright (c) 2002 by Zoran Vasiljevic.
  *
@@ -79,7 +79,7 @@ typedef struct Sp_ReadWriteMutex_ {
     Tcl_Mutex lock;             /* Regular mutex */
     Tcl_ThreadId owner;         /* Current lock owner thread */
     /* --- */
-    unsigned int numrd;	        /* # of readers waiting for lock */
+    unsigned int numrd;         /* # of readers waiting for lock */
     unsigned int numwr;         /* # of writers waiting for lock */
     Tcl_Condition rcond;        /* Reader lockers wait here */
     Tcl_Condition wcond;        /* Writer lockers wait here */

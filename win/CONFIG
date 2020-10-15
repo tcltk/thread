@@ -14,7 +14,7 @@
 # to compile the small test file which checks the presence
 # of the MinGW build environment. It is *not* enough to use
 # "--enable-gcc" configure option; you *need* to define CC.
-# 
+#
 
 export CC=gcc
 sh ../configure --enable-threads --with-tcl=e:/tcl/win

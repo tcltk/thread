@@ -17,7 +17,7 @@ dnl	to configure the system for the local environment.
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
-AC_INIT([thread], [2.7.3])
+AC_INIT([thread], [2.9a1])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -25,7 +25,7 @@ AC_INIT([thread], [2.7.3])
 # as well as PKG_LIB_FILE and PKG_STUB_LIB_FILE.
 #--------------------------------------------------------------------
 
-TEA_INIT([3.9])
+TEA_INIT()
 
 AC_CONFIG_AUX_DIR(tclconfig)
 
@@ -76,6 +76,13 @@ TEA_SETUP_COMPILER
 TCLTHREAD_WITH_GDBM
 
 #--------------------------------------------------------------------
+# Check if building with optional lmdb package. This will declare
+# LMDB_CFLAGS and LMDB_LIBS variables.
+#--------------------------------------------------------------------
+
+TCLTHREAD_WITH_LMDB
+
+#--------------------------------------------------------------------
 # Locate the NaviServer/AOLserver dir for compilation as NaviServer/AOLserver module.
 # This will declare NS_INCLUDES, NS_LIBS and define NS_AOLSERVER.
 #--------------------------------------------------------------------
@@ -98,6 +105,7 @@ TEA_ADD_SOURCES([generic/threadNs.c           \
                  generic/threadSpCmd.c        \
                  generic/threadPoolCmd.c      \
                  generic/psGdbm.c             \
+                 generic/psLmdb.c             \
                  generic/threadSvListCmd.c    \
                  generic/threadSvKeylistCmd.c \
                  generic/tclXkeylist.c        \
@@ -105,8 +113,8 @@ TEA_ADD_SOURCES([generic/threadNs.c           \
 
 TEA_ADD_HEADERS([generic/tclThread.h])
 TEA_ADD_INCLUDES([${NS_INCLUDES}])
-TEA_ADD_LIBS([${GDBM_LIBS} ${NS_LIBS}])
-TEA_ADD_CFLAGS([${GDBM_CFLAGS}])
+TEA_ADD_LIBS([${GDBM_LIBS} ${LMDB_LIBS} ${NS_LIBS}])
+TEA_ADD_CFLAGS([${GDBM_CFLAGS} ${LMDB_CFLAGS}])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([lib/ttrace.tcl])
 
@@ -125,7 +133,6 @@ TEA_ADD_TCL_SOURCES([lib/ttrace.tcl])
 #--------------------------------------------------------------------
 
 if test "${TEA_PLATFORM}" = "windows" ; then
-    TEA_ADD_SOURCES([win/threadWin.c])
     TEA_ADD_INCLUDES([-I\"$(${CYGPATH} ${srcdir}/win)\"])
 else
     TEA_ADD_SOURCES([unix/threadUnix.c])

@@ -32,6 +32,17 @@ MODULE_SCOPE int  TclX_KeyedListDelete(Tcl_Interp*, Tcl_Obj*, const char*);
 MODULE_SCOPE int  TclX_KeyedListGetKeys(Tcl_Interp*, Tcl_Obj*, const char*, Tcl_Obj**);
 
 /*
+ * This is defined in keylist.c. We need it here
+ * to be able to plug-in our custom keyed-list
+ * object duplicator which produces proper deep
+ * copies of the keyed-list objects. The standard
+ * one produces shallow copies which are not good
+ * for usage in the thread shared variables code.
+ */
+
+MODULE_SCOPE Tcl_ObjType keyedListType;
+
+/*
  * Exported for usage in Sv_DuplicateObj. This is slightly
  * modified version of the DupKeyedListInternalRep() function.
  * It does a proper deep-copy of the keyed list object.
