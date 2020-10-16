@@ -51,7 +51,7 @@
  */
 #undef Tcl_RegisterObjType
 #define Tcl_RegisterObjType(typePtr) if (threadTclVersion<90) { \
-    ((void (*)(const Tcl_ObjType *))((&(tclStubsPtr->tcl_PkgProvideEx))[211]))(typePtr); \
+    ((void (*)(const Tcl_ObjType *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[211]))(typePtr); \
 } else { \
     (typePtr)->setFromAnyProc = NULL; \
 }

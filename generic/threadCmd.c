@@ -566,6 +566,12 @@ Thread_Init(
 #endif
 	    STRINGIFY(__GNUC_MINOR__)
 #endif
+#ifdef HAVE_GDBM
+	    ".gdbm"
+#endif
+#ifdef HAVE_LMDB
+	    ".lmdb"
+#endif
 #if defined(_MSC_VER)
 	    ".msvc-" STRINGIFY(_MSC_VER)
 #endif
@@ -574,9 +580,6 @@ Thread_Init(
 #endif
 #ifdef STATIC_BUILD
 	    ".static"
-#endif
-#if TCL_UTF_MAX < 4
-	    ".utf16"
 #endif
 	    ,NULL);
 
