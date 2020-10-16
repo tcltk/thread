@@ -170,7 +170,7 @@ typedef struct {
     ((void (*)(Tcl_Interp *, int))((&(tclStubsPtr->tcl_PkgProvideEx))[609]))(interp, result): \
     ((void (*)(Tcl_Interp *))((&(tclStubsPtr->tcl_PkgProvideEx))[76]))(interp))
 #elif !TCL_MINIMUM_VERSION(8,6)
-  /* 8.5, 8.4, or less - Emulate access to the error-line information */
+  /* 8.5 - Emulate access to the error-line information */
 # define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
 #endif
 

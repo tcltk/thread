@@ -241,7 +241,7 @@ install-doc: doc
 
 test: binaries libraries
 	$(TCLSH) `@CYGPATH@ $(srcdir)/tests/all.tcl` $(TESTFLAGS) \
-		-load "package ifneeded thread $(PACKAGE_VERSION) \
+		-load "package ifneeded Thread $(PACKAGE_VERSION) \
 			[list load `@CYGPATH@ $(PKG_LIB_FILE)` $(PACKAGE_NAME)]"
 
 shell: binaries libraries
@@ -307,6 +307,10 @@ VPATH = $(srcdir):$(srcdir)/generic:$(srcdir)/unix:$(srcdir)/win:$(srcdir)/macos
 	$(COMPILE) -c `@CYGPATH@ $<` -o $@
 
 threadCmd.@OBJEXT@:	threadUuid.h
+
+$(TOP_DIR)/manifest.uuid:
+	printf "git-" >$(TOP_DIR)/manifest.uuid
+	git rev-parse HEAD >>$(TOP_DIR)/manifest.uuid
 
 threadUuid.h:	$(srcdir)/manifest.uuid
 	echo "#define THREAD_VERSION_UUID \\" >$@

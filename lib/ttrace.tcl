@@ -57,7 +57,7 @@ namespace eval ttrace {
         interp alias {} [namespace current]::_set     {} nsv_set
         interp alias {} [namespace current]::_unset   {} nsv_unset
     } elseif {![catch {
-        variable tvers [package require thread]
+        variable tvers [package require Thread]
     }]} {
         variable mutex thread::mutex
         variable elock [$mutex create]

@@ -2,7 +2,7 @@
 [manpage_begin ttrace n 2.8]
 [moddesc {Tcl Threading}]
 [titledesc {Trace-based interpreter initialization}]
-[require Tcl 8.4]
+[require Tcl 8.5]
 [require Thread [opt 2.8]]
 
 [description]

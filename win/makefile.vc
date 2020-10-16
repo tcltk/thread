@@ -50,10 +50,17 @@ PRJ_OBJS = \
 install:    default-install-docs-html
 pkgindex:   default-pkgindex-tea
 
+$(ROOT)\manifest.uuid:
+   copy $(WIN_DIR)\gitmanifest.in $(ROOT)\manifest.uuid
+   git rev-parse HEAD >>$(ROOT)\manifest.uuid
+
+$(TMP_DIR)\threadUuid.h:	$(ROOT)\manifest.uuid
+	copy $(WIN_DIR)\threadUuid.h.in+$(ROOT)\manifest.uuid $(TMP_DIR)\threadUuid.h
+
 # Explicit dependency rules
 $(GENERICDIR)\psGdbm.c: $(GENERICDIR)\psGdbm.h
 $(GENERICDIR)\psLmdb.c: $(GENERICDIR)\psLmdb.h
-$(GENERICDIR)\threadCmd.c : $(GENERICDIR)\tclThreadInt.h
+$(GENERICDIR)\threadCmd.c : $(GENERICDIR)\tclThreadInt.h $(TMP_DIR)\threadUuid.h
 $(GENERICDIR)\threadSpCmd.c : $(GENERICDIR)\tclThreadInt.h
 $(GENERICDIR)\threadSvCmd.c : $(GENERICDIR)\tclThreadInt.h
 $(GENERICDIR)\threadPoolCmd.c : $(GENERICDIR)\tclThreadInt.h

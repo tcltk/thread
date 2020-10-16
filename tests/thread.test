@@ -14,11 +14,10 @@
 package require tcltest
 namespace import ::tcltest::*
 tcltest::loadTestedCommands
-package require thread
+package require Thread
 
 tcltest::testConstraint chanTransfer               \
-    [expr {   $::tcl_platform(platform) == "unix"  \
-           || $::tcl_patchLevel > "8.4.10"}]
+    [expr {$::tcl_platform(platform) == "unix"}]
 
 set dummy [makeFile dummyForTransfer dummyForTransfer]
 set tcltest::mainThread [thread::id]
@@ -34,8 +33,8 @@ proc ThreadReap {} {
     llength [thread::names]
 }
 
-test thread-1.0 {package require thread} {
-    lindex [split [package require thread] +] 0
+test thread-1.0 {package require Thread} {
+    lindex [split [package require Thread] +] 0
 } {2.9a1}
 
 test thread-2.0 {no global thread command} {

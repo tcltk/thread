@@ -2,7 +2,7 @@
 [manpage_begin thread n 2.8]
 [moddesc {Tcl Threading}]
 [titledesc {Extension for script access to Tcl threading}]
-[require Tcl 8.4]
+[require Tcl 8.5]
 [require Thread [opt 2.8]]
 
 [description]

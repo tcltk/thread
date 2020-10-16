@@ -3475,11 +3475,11 @@ _ACEOF
 
 
 if test "${TCL_MAJOR_VERSION}" -ne 8 ; then
-    as_fn_error $? "${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+    as_fn_error $? "${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.5+
 Found config for Tcl ${TCL_VERSION}" "$LINENO" 5
 fi
-if test "${TCL_MINOR_VERSION}" -lt 4 ; then
-    as_fn_error $? "${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+if test "${TCL_MINOR_VERSION}" -lt 5 ; then
+    as_fn_error $? "${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.5+
 Found config for Tcl ${TCL_VERSION}" "$LINENO" 5
 fi
 
