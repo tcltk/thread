@@ -9,11 +9,6 @@ The extension can be used with Tcl cores starting from Tcl8.7 and later.
 Also, this extension supports, i.e. can be used as a loadable module of,
 AOLserver 4.x series of the highly-scalable web server from America Online.
 
-You need to have your Tcl core compiled with "--enable-threads" in order
-to turn on internal directives supporting thread-specific details of the
-Tcl API. The extension will not load in an Tcl shell built w/o thread
-support.
-
 This extension is a freely available open source package. You can do
 virtually anything you like with it, such as modifying it, redistributing
 it, and selling it either in whole or in part.  See the "license.terms"
@@ -44,9 +39,9 @@ HOW TO GET SUPPORT ?
 ====================
 
 The extension is maintained, enhanced, and distributed freely by the Tcl
-community. The home for sources and bug/patch database is on SourceForge:
+community. The home for sources and bug/patch database is on fossil:
 
-        http://tcl.sourceforge.net/
+        https://core.tcl-lang.org/thread
 
 Alternatively, you are always welcome to post your questions, problems
 and/or suggestions relating the extension (or any other Tcl issue)
