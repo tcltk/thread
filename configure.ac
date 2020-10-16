@@ -37,11 +37,11 @@ TEA_PATH_TCLCONFIG
 TEA_LOAD_TCLCONFIG
 
 if test "${TCL_MAJOR_VERSION}" -ne 8 ; then
-    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.5+
 Found config for Tcl ${TCL_VERSION}])
 fi
-if test "${TCL_MINOR_VERSION}" -lt 4 ; then
-    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.4+
+if test "${TCL_MINOR_VERSION}" -lt 5 ; then
+    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 8.5+
 Found config for Tcl ${TCL_VERSION}])
 fi
 

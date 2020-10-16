@@ -93,7 +93,7 @@ e47b6a79a963c99b7de15a4817b3010fbb3dd693 {
   meta {
     class: source
     package-provide: {}
-    package-require: {{Tcl 8.4} {Thread 2.5}}
+    package-require: {{Tcl 8.5} {Thread 2.8}}
     path: tcl
   }
 }

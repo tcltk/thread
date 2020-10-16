@@ -433,12 +433,12 @@ static int
 ThreadInit(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
-    if (Tcl_InitStubs(interp, "8.4", 0) == NULL) {
+    if (Tcl_InitStubs(interp, "8.5", 0) == NULL) {
         if ((sizeof(size_t) != sizeof(int))
 #if TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 7 && defined(TCL_NO_DEPRECATED)
                 /* As long as Tcl 8.7 is not final, this allows the Thread extension */
                 /* to be loadable on Tcl 9.0, provided it is compiled against Tcl 8.7+ headers */
-                || !(Tcl_InitStubs)(interp, "8.4-",
+                || !(Tcl_InitStubs)(interp, "8.5-",
                 (TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16), TCL_STUB_MAGIC)
 #endif
             ) {

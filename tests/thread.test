@@ -17,8 +17,7 @@ tcltest::loadTestedCommands
 package require Thread
 
 tcltest::testConstraint chanTransfer               \
-    [expr {   $::tcl_platform(platform) == "unix"  \
-           || $::tcl_patchLevel > "8.4.10"}]
+    [expr {$::tcl_platform(platform) == "unix"}]
 
 set dummy [makeFile dummyForTransfer dummyForTransfer]
 set tcltest::mainThread [thread::id]

@@ -2,7 +2,7 @@
 [manpage_begin tpool n 2.8]
 [moddesc {Tcl Threading}]
 [titledesc {Part of the Tcl threading extension implementing pools of worker threads.}]
-[require Tcl 8.4]
+[require Tcl 8.5]
 [require Thread [opt 2.8]]
 
 [description]
