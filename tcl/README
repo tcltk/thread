@@ -25,7 +25,7 @@ Currently, following packages are supplied:
              blocking calls without halting the event loop.
 
 To play around with above packages, change to the corresponding
-directory and source files in the Tcl8.4 (or later) Tcl shell.
+directory and source files in the Tcl8.7 (or later) Tcl shell.
 Be sure to have the latest Tcl threading extension installed in
 your package path.
 

@@ -33,7 +33,7 @@
 # -----------------------------------------------------------------------------
 
 package require Tcl    8.5-
-package require Thread 2.5-
+package require Thread 2.8-
 
 #
 # Modify the following in order to load the
