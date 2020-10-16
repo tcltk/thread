@@ -268,7 +268,7 @@ ps_lmdb_get(
         return 1;
     }
 
-    *dataptrptr = data.mv_data;
+    *dataptrptr = (char *)data.mv_data;
     *lenptr = data.mv_size;
 
     /*
@@ -328,9 +328,9 @@ ps_lmdb_first(
         return 1;
     }
 
-    *dataptrptr = data.mv_data;
+    *dataptrptr = (char *)data.mv_data;
     *lenptr = data.mv_size;
-    *keyptrptr = key.mv_data;
+    *keyptrptr = (char *)key.mv_data;
 
     return 0;
 }
@@ -369,9 +369,9 @@ static int ps_lmdb_next(
         return 1;
     }
 
-    *dataptrptr = data.mv_data;
+    *dataptrptr = (char *)data.mv_data;
     *lenptr = data.mv_size;
-    *keyptrptr = key.mv_data;
+    *keyptrptr = (char *)key.mv_data;
 
     return 0;
 }
