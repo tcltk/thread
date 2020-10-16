@@ -374,17 +374,18 @@ static const char*
 ps_gdbm_geterr(
     ClientData handle)
 {
-   /*
-    * The problem with gdbm interface is that it uses the global
-    * gdbm_errno variable which is not per-thread nor mutex
-    * protected. This variable is used to reference array of gdbm
-    * error text strings. It is very dangeours to use this in the
-    * MT-program without proper locking. For this kind of app
-    * we should not be concerned with that, since all ps_gdbm_xxx
-    * operations are performed under shared variable lock anyway.
-    */
+    (void)handle;
+    /*
+     * The problem with gdbm interface is that it uses the global
+     * gdbm_errno variable which is not per-thread nor mutex
+     * protected. This variable is used to reference array of gdbm
+     * error text strings. It is very dangerous to use this in the
+     * MT-program without proper locking. For this kind of app
+     * we should not be concerned with that, since all ps_gdbm_xxx
+     * operations are performed under shared variable lock anyway.
+     */
 
-    return gdbm_strerror(gdbm_errno);
+     return gdbm_strerror(gdbm_errno);
 }
 
 #endif  /* HAVE_GDBM */

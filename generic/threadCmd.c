@@ -2718,7 +2718,7 @@ ThreadSend(
     if (thrId == Tcl_GetCurrentThread()) {
         Tcl_MutexUnlock(&threadMutex);
         if ((flags & THREAD_SEND_WAIT)) {
-            int code = (*send->execProc)(interp, send);
+            code = (*send->execProc)(interp, send);
             ThreadFreeProc(send);
             return code;
         } else {

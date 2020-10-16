@@ -153,18 +153,18 @@ typedef struct {
 #if defined(TCL_TIP285) && defined(USE_TCL_STUBS)
 # undef Tcl_GetErrorLine
 # define Tcl_GetErrorLine(interp) ((threadTclVersion>85)? \
-    ((int (*)(Tcl_Interp *))((&(tclStubsPtr->tcl_PkgProvideEx))[605]))(interp): \
+    ((int (*)(Tcl_Interp *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[605]))(interp): \
     (((tclInterpType *)(interp))->errorLine))
 /* TIP #270 */
 # undef Tcl_AddErrorInfo
 # define Tcl_AddErrorInfo(interp, msg) ((threadTclVersion>85)? \
-    ((void (*)(Tcl_Interp *, Tcl_Obj *))((&(tclStubsPtr->tcl_PkgProvideEx))[574]))(interp, Tcl_NewStringObj(msg, -1)): \
-    ((void (*)(Tcl_Interp *, const char *))((&(tclStubsPtr->tcl_PkgProvideEx))[66]))(interp, msg))
+    ((void (*)(Tcl_Interp *, Tcl_Obj *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[574]))(interp, Tcl_NewStringObj(msg, -1)): \
+    ((void (*)(Tcl_Interp *, const char *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[66]))(interp, msg))
 /* TIP #337 */
 # undef Tcl_BackgroundException
 # define Tcl_BackgroundException(interp, result) ((threadTclVersion>85)? \
-    ((void (*)(Tcl_Interp *, int))((&(tclStubsPtr->tcl_PkgProvideEx))[609]))(interp, result): \
-    ((void (*)(Tcl_Interp *))((&(tclStubsPtr->tcl_PkgProvideEx))[76]))(interp))
+    ((void (*)(Tcl_Interp *, int))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[609]))(interp, result): \
+    ((void (*)(Tcl_Interp *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[76]))(interp))
 #elif !TCL_MINIMUM_VERSION(8,6)
   /* 8.5, 8.4, or less - Emulate access to the error-line information */
 # define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
@@ -179,15 +179,15 @@ typedef struct {
 #if defined(USE_TCL_STUBS)
 # undef Tcl_SetIntObj
 # define Tcl_SetIntObj(objPtr, value) ((threadTclVersion>86)? \
-  ((void (*)(Tcl_Obj *, Tcl_WideInt))((&(tclStubsPtr->tcl_PkgProvideEx))[489]))(objPtr, (int)(value)): \
-  ((void (*)(Tcl_Obj *, int))((&(tclStubsPtr->tcl_PkgProvideEx))[61]))(objPtr, value))
+  ((void (*)(Tcl_Obj *, Tcl_WideInt))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[489]))(objPtr, (int)(value)): \
+  ((void (*)(Tcl_Obj *, int))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[61]))(objPtr, value))
 # undef Tcl_NewIntObj
 # define Tcl_NewIntObj(value) ((threadTclVersion>86)? \
-  ((Tcl_Obj * (*)(Tcl_WideInt))((&(tclStubsPtr->tcl_PkgProvideEx))[488]))((int)(value)): \
-  ((Tcl_Obj * (*)(int))((&(tclStubsPtr->tcl_PkgProvideEx))[52]))(value))
+  ((Tcl_Obj * (*)(Tcl_WideInt))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[488]))((int)(value)): \
+  ((Tcl_Obj * (*)(int))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[52]))(value))
 # undef Tcl_GetUnicodeFromObj
 # define Tcl_GetUnicodeFromObj ((((&(tclStubsPtr->tcl_PkgProvideEx))[378]) != ((&(tclStubsPtr->tcl_PkgProvideEx))[434])) ? \
-  ((void (*)(Tcl_Obj *, int *))((&(tclStubsPtr->tcl_PkgProvideEx))[434])) : ((void (*)(Tcl_Obj *, int *)) NULL))
+  ((void (*)(Tcl_Obj *, int *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[434])) : ((void (*)(Tcl_Obj *, int *)) NULL))
 #endif
 
 #endif /* _TCL_THREAD_INT_H_ */
