@@ -166,7 +166,7 @@ install:
   - mkdir "$HOME/install dir"
   - mkdir tclconfig
   - curl https://core.tcl-lang.org/tclconfig/raw/install-sh?name=f46cea65709582bed664d69a40095db0490968df69c355e30cd8905f0b60a153 >tclconfig/install-sh
-  - ./configure ${CFGOPT} "--prefix=$HOME/install dir --with-gdbm --with-lmdb" || (cat config.log && exit 1)
+  - ./configure ${CFGOPT} "--prefix=$HOME/install dir" --with-gdbm --with-lmdb || (cat config.log && exit 1)
 script:
   - make
   - make install
