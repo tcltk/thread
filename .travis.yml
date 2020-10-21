@@ -26,33 +26,25 @@ jobs:
       os: linux
       dist: focal
       compiler: gcc
-      env:
-        - BUILD_DIR=unix
     - name: "Linux/GCC/Shared/bionic"
       os: linux
       dist: bionic
       compiler: gcc
-      env:
-        - BUILD_DIR=unix
     - name: "Linux/GCC/Shared/xenial"
       os: linux
       dist: xenial
       compiler: gcc
-      env:
-        - BUILD_DIR=unix
     - name: "Linux/GCC/Static"
       os: linux
       dist: focal
       compiler: gcc
       env:
-        - BUILD_DIR=unix
         - CFGOPT="--disable-shared"
     - name: "Linux/GCC/Debug"
       os: linux
       dist: focal
       compiler: gcc
       env:
-        - BUILD_DIR=unix
         - CFGOPT="--enable-symbols"
 # Newer/Older versions of GCC
     - name: "Linux/GCC 10/Shared"
@@ -63,8 +55,6 @@ jobs:
         apt:
           packages:
             - g++-10
-      env:
-        - BUILD_DIR=unix
     - name: "Linux/GCC 5/Shared"
       os: linux
       dist: bionic
@@ -73,35 +63,28 @@ jobs:
         apt:
           packages:
             - g++-5
-      env:
-        - BUILD_DIR=unix
 # Testing on Linux Clang
     - name: "Linux/Clang/Shared"
       os: linux
       dist: focal
       compiler: clang
-      env:
-        - BUILD_DIR=unix
     - name: "Linux/Clang/Static"
       os: linux
       dist: focal
       compiler: clang
       env:
         - CFGOPT="--disable-shared"
-        - BUILD_DIR=unix
     - name: "Linux/Clang/Debug"
       os: linux
       dist: focal
       compiler: clang
       env:
-        - BUILD_DIR=unix
         - CFGOPT="--enable-symbols"
 # Testing on Mac, various styles
     - name: "macOS/Xcode 12/Shared"
       os: osx
       osx_image: xcode12
       env:
-        - BUILD_DIR=unix
         - CFGOPT="--with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include"
       install:
         - ./configure ${CFGOPT} "--prefix=$HOME" || (cat config.log && exit 1)
@@ -109,7 +92,6 @@ jobs:
       os: osx
       osx_image: xcode12
       env:
-        - BUILD_DIR=unix
         - CFGOPT="--with-tcl=/usr/local/opt/tcl-tk/lib --disable-shared CFLAGS=-I/usr/local/opt/tcl-tk/include"
       install:
         - ./configure ${CFGOPT} "--prefix=$HOME" || (cat config.log && exit 1)
@@ -118,7 +100,6 @@ jobs:
       os: osx
       osx_image: xcode12
       env:
-        - BUILD_DIR=unix
         - CFGOPT="--with-tcl=/usr/local/opt/tcl-tk/lib --enable-symbols CFLAGS=-I/usr/local/opt/tcl-tk/include"
       install:
         - ./configure ${CFGOPT} "--prefix=$HOME" || (cat config.log && exit 1)
@@ -127,7 +108,6 @@ jobs:
       os: osx
       osx_image: xcode11.7
       env:
-        - BUILD_DIR=unix
         - CFGOPT="--with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include CPPFLAGS=-mmacosx-version-min=10.14"
       install:
         - ./configure ${CFGOPT} "--prefix=$HOME" || (cat config.log && exit 1)
@@ -141,7 +121,6 @@ jobs:
             - tcl-tk
           update: true
       env:
-        - BUILD_DIR=unix
         - CFGOPT="--with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include CPPFLAGS=-mmacosx-version-min=10.14"
       install:
         - ./configure ${CFGOPT} "--prefix=$HOME" || (cat config.log && exit 1)
@@ -154,7 +133,6 @@ jobs:
             - tcl-tk
           update: true
       env:
-        - BUILD_DIR=unix
         - CFGOPT="--with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include CPPFLAGS=-mmacosx-version-min=10.13"
       install:
         - ./configure ${CFGOPT} "--prefix=$HOME" || (cat config.log && exit 1)
@@ -163,11 +141,9 @@ jobs:
 #     os: windows
 #     compiler: cl
 #     env: &vcenv
-#       - BUILD_DIR=win
 #       - VCDIR="/C/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools/VC/Auxiliary/Build"
 #     before_install: &vcpreinst
 #       - PATH="$PATH:$VCDIR"
-#       - cd ${BUILD_DIR}
 #     install: []
 #     script:
 #       - cmd.exe //C vcvarsall.bat x64 '&&' nmake '-f' makefile.vc all tktest
@@ -176,8 +152,6 @@ jobs:
       os: linux
       dist: focal
       compiler: gcc
-      env:
-        - BUILD_DIR=unix
       script:
         - touch ../doc/man.macros
         - make dist
@@ -188,10 +162,11 @@ before_install:
           choco install -y magicsplat-tcl-tk
           ;;
       esac
-  - cd ${BUILD_DIR}
 install:
   - mkdir "$HOME/install dir"
-  - ./configure ${CFGOPT} "--prefix=$HOME/install dir --with-gdbm --with-lmdb" || (cat config.log && exit 1)
+  - mkdir tclconfig
+  - curl https://core.tcl-lang.org/tclconfig/raw/install-sh?name=f46cea65709582bed664d69a40095db0490968df69c355e30cd8905f0b60a153 >tclconfig/install-sh
+  - ./configure ${CFGOPT} "--prefix=$HOME/install dir" --with-gdbm --with-lmdb || (cat config.log && exit 1)
 script:
   - make
   - make install
