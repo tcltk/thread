@@ -158,6 +158,7 @@ script:
   - make
   - make install
   - make test >out.txt
+  - cat out.txt
   - grep -q "Failed	0" out.txt
 cache:
   directories:
