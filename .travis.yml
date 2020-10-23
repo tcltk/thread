@@ -73,12 +73,12 @@ jobs:
       os: osx
       osx_image: xcode12
       env:
-        - CFGOPT="--with-gdbm --with-lmdb --with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include"
+        - CFGOPT="--with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include"
     - name: "macOS/Xcode 12/Debug"
       os: osx
       osx_image: xcode12
       env:
-        - CFGOPT="--with-gdbm --with-lmdb ---with-tcl=/usr/local/opt/tcl-tk/lib --enable-symbols CFLAGS=-I/usr/local/opt/tcl-tk/include"
+        - CFGOPT="---with-tcl=/usr/local/opt/tcl-tk/lib --enable-symbols CFLAGS=-I/usr/local/opt/tcl-tk/include"
 # Older MacOS versions
     - name: "macOS/Xcode 11/Shared"
       os: osx
@@ -136,7 +136,7 @@ install:
   - touch tclconfig/README.txt
   - touch tclconfig/tcl.m4
   - curl https://core.tcl-lang.org/tclconfig/raw/install-sh?name=f46cea65709582bed664d69a40095db0490968df69c355e30cd8905f0b60a153 >tclconfig/install-sh
-  - ./configure ${CFGOPT} "--prefix=$HOME/install dir" || (cat config.log && exit 1)
+  - ./configure ${CFGOPT} --with-gdbm --with-lmdb "--prefix=$HOME/install dir" || (cat config.log && exit 1)
 script:
   - make
   - make test >out.txt
