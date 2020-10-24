@@ -26,37 +26,26 @@ jobs:
       os: linux
       dist: focal
       compiler: gcc
+      env:
+        - CFGOPT="--enable-symbols --with-gdbm --with-lmdb"
     - name: "Linux/GCC/Shared/bionic"
       os: linux
       dist: bionic
       compiler: gcc
+      env:
+        - CFGOPT="--enable-symbols --with-gdbm --with-lmdb"
     - name: "Linux/GCC/Shared/xenial"
       os: linux
       dist: xenial
       compiler: gcc
+      env:
+        - CFGOPT="--enable-symbols --with-gdbm --with-lmdb"
     - name: "Linux/GCC/Debug"
       os: linux
       dist: focal
       compiler: gcc
       env:
-        - CFGOPT="--enable-symbols"
-# Newer/Older versions of GCC
-    - name: "Linux/GCC 10/Shared"
-      os: linux
-      dist: focal
-      compiler: gcc-10
-      addons:
-        apt:
-          packages:
-            - g++-10
-    - name: "Linux/GCC 5/Shared"
-      os: linux
-      dist: bionic
-      compiler: gcc-5
-      addons:
-        apt:
-          packages:
-            - g++-5
+        - CFGOPT="--enable-symbols --with-gdbm --with-lmdb"
 # Testing on Linux Clang
     - name: "Linux/Clang/Shared"
       os: linux
@@ -73,18 +62,18 @@ jobs:
       os: osx
       osx_image: xcode12
       env:
-        - CFGOPT="--with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include"
+        - CFGOPT="--with-gdbm --with-lmdb --with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include"
     - name: "macOS/Xcode 12/Debug"
       os: osx
       osx_image: xcode12
       env:
-        - CFGOPT="---with-tcl=/usr/local/opt/tcl-tk/lib --enable-symbols CFLAGS=-I/usr/local/opt/tcl-tk/include"
+        - CFGOPT="--with-gdbm --with-lmdb --with-tcl=/usr/local/opt/tcl-tk/lib --enable-symbols CFLAGS=-I/usr/local/opt/tcl-tk/include"
 # Older MacOS versions
     - name: "macOS/Xcode 11/Shared"
       os: osx
       osx_image: xcode11.7
       env:
-        - CFGOPT="--with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include CPPFLAGS=-mmacosx-version-min=10.14"
+        - CFGOPT="--with-gdbm --with-lmdb --with-tcl=/usr/local/opt/tcl-tk/lib CFLAGS=-I/usr/local/opt/tcl-tk/include CPPFLAGS=-mmacosx-version-min=10.14"
     - name: "macOS/Xcode 10/Shared"
       os: osx
       osx_image: xcode10.3
@@ -136,7 +125,7 @@ install:
   - touch tclconfig/README.txt
   - touch tclconfig/tcl.m4
   - curl https://core.tcl-lang.org/tclconfig/raw/install-sh?name=f46cea65709582bed664d69a40095db0490968df69c355e30cd8905f0b60a153 >tclconfig/install-sh
-  - ./configure ${CFGOPT} --with-gdbm --with-lmdb "--prefix=$HOME/install dir" || (cat config.log && exit 1)
+  - ./configure ${CFGOPT} "--prefix=$HOME/install dir" || (cat config.log && exit 1)
 script:
   - make
   - make test >out.txt
