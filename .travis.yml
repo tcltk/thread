@@ -125,7 +125,7 @@ install:
   - touch tclconfig/README.txt
   - touch tclconfig/tcl.m4
   - curl https://core.tcl-lang.org/tclconfig/raw/install-sh?name=f46cea65709582bed664d69a40095db0490968df69c355e30cd8905f0b60a153 >tclconfig/install-sh
-  - ./configure ${CFGOPT} "--prefix=$HOME/install dir" || (cat config.log && exit 1)
+  - ./configure ${CFGOPT} "--prefix=$HOME/install dir" "--exec-prefix=$HOME/install dir" || (cat config.log && exit 1)
 script:
   - make || echo "Something wrong, maybe a hickup, let's try again"
   - make test >out.txt
