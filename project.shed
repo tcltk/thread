@@ -7,10 +7,10 @@
   }
   meta {
     class: generic
-    description: {The Tcl Thread package}
+    description: {The Tcl thread package}
     distribution: fossil
     generated: {2015-10-06 10:32:03 UTC}
-    release: trunk
+    release: main
   }
   release/ {
     ccc83b2283498a2ec86d00bf8593e7de0cf8a456
@@ -34,12 +34,12 @@
 }
 ccc83b2283498a2ec86d00bf8593e7de0cf8a456 {
   entity {
-    name: trunk
+    name: main
     shed_class: release
     version: {}
   }
   meta {
-    checkout: trunk
+    checkout: main
     class: generic
     timestamp: {2015-10-06 10:32:03 UTC}
   }
@@ -54,9 +54,9 @@ e47b6a79a963c99b7de15a4817b3010fbb3dd693 {
     class: generic
     format: fossil
     project: 7bce708b4197acccd1db4644fdbe5ee249f3b5dd
-    project-name: {Tcl package Thread source code}
+    project-name: {Tcl package thread source code}
     project-short-name: thread
-    release: trunk
+    release: main
     url: http://fossil.etoyoc.com/fossil/thread
   }
 }
@@ -93,7 +93,7 @@ e47b6a79a963c99b7de15a4817b3010fbb3dd693 {
   meta {
     class: source
     package-provide: {}
-    package-require: {{Tcl 8.5} {Thread 2.8}}
+    package-require: {{Tcl 8.5} {thread 2.8}}
     path: tcl
   }
 }
