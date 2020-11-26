@@ -323,7 +323,7 @@ dist-clean:
 	rm -rf $(DIST_DIR) $(DIST_ROOT)/$(PKG_DIR).tar.*
 
 $(srcdir)/manifest.uuid:
-	printf "git." >$(srcdir)/manifest.uuid
+	printf "git-" >$(srcdir)/manifest.uuid
 	git rev-parse HEAD >>$(srcdir)/manifest.uuid
 
 dist: dist-clean $(srcdir)/manifest.uuid
