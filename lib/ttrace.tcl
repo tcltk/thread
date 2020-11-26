@@ -72,7 +72,8 @@ namespace eval ttrace {
         error "requires NaviServer/AOLserver or Tcl threading extension"
     }
 
-    # Keep in sync with the Thread package
+    # Keep in sync with the thread package
+    package provide ttrace 3.0a2
     package provide Ttrace 3.0a2
 
     # Package variables
@@ -116,7 +117,7 @@ namespace eval ttrace {
                 ns_ictl save [getscript]
             } else {
                 thread::broadcast {
-                    package require Ttrace
+                    package require ttrace
                     ttrace::update
                 }
             }

@@ -469,7 +469,8 @@ Thread_Init(
         return status;
     }
 
-    return Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
+    Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
+    return Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
 }
 
 /*

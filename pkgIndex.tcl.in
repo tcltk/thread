@@ -10,7 +10,7 @@ if {![package vsatisfies [package provide Tcl] 9.0]
     return
 }
 
-# All Tcl 8.7+ interps can [load] Thread @PACKAGE_VERSION@
+# All Tcl 8.7+ interps can [load] thread @PACKAGE_VERSION@
 #
 # For interps that are not thread-enabled, we still call [package ifneeded].
 # This is contrary to the usual convention, but is a good idea because we
@@ -22,12 +22,26 @@ if {![package vsatisfies [package provide Tcl] 9.0]
 # about a thread-disabled interp, instead of the message
 # "can't find package Thread".
 
+package ifneeded thread @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@] [string totitle @PACKAGE_NAME@]]
 package ifneeded Thread @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@] [string totitle @PACKAGE_NAME@]]
 
-# package Ttrace uses some support machinery.
+# package ttrace uses some support machinery.
 
 # In Tcl 8.7+ interps; use [::apply]
 
+package ifneeded ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
+    if {[info exists ::env(TCL_THREAD_LIBRARY)] &&
+	[file readable $::env(TCL_THREAD_LIBRARY)/ttrace.tcl]} {
+	source $::env(TCL_THREAD_LIBRARY)/ttrace.tcl
+    } elseif {[file readable [file join $dir .. lib ttrace.tcl]]} {
+	source [file join $dir .. lib ttrace.tcl]
+    } elseif {[file readable [file join $dir ttrace.tcl]]} {
+	source [file join $dir ttrace.tcl]
+    }
+    if {[namespace which ::ttrace::update] ne ""} {
+	::ttrace::update
+    }
+}} $dir]
 package ifneeded Ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
     if {[info exists ::env(TCL_THREAD_LIBRARY)] &&
 	[file readable $::env(TCL_THREAD_LIBRARY)/ttrace.tcl]} {

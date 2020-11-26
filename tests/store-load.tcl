@@ -1,7 +1,7 @@
 #!/usr/bin/env tclsh
 
 lappend auto_path .
-package require Thread
+package require thread
 
 if {[llength $argv] != 3} {
     puts "Usage: $argv0 handle path times"

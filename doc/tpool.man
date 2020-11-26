@@ -3,7 +3,7 @@
 [moddesc {Tcl Threading}]
 [titledesc {Part of the Tcl threading extension implementing pools of worker threads.}]
 [require Tcl 8.7]
-[require Thread [opt 2.8]]
+[require thread [opt 2.8]]
 
 [description]
 This package creates and manages pools of worker threads. It allows you
