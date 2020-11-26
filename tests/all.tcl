@@ -9,7 +9,7 @@
 
 package require tcltest
 ::tcltest::loadTestedCommands
-package require Thread
+package require -exact thread 2.9a1
 
 set ::tcltest::testSingleFile false
 set ::tcltest::testsDirectory [file dir [info script]]
@@ -39,7 +39,7 @@ puts stdout "Tests began at [eval $timeCmd]"
 # These tests need to know which is the main thread
 set ::tcltest::mainThread [thread::id]
 
-puts stdout "Thread [package provide Thread]"
+puts stdout "thread [package provide thread]"
 puts stdout "Mainthread id is $::tcltest::mainThread"
 
 # Source each of the specified tests

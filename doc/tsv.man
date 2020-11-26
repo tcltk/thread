@@ -3,7 +3,7 @@
 [moddesc {Tcl Threading}]
 [titledesc {Part of the Tcl threading extension allowing script level manipulation of data shared between threads.}]
 [require Tcl 8.5]
-[require Thread [opt 2.8]]
+[require thread [opt 2.8]]
 
 [description]
 This section describes commands implementing thread shared variables.

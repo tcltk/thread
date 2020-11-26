@@ -38,7 +38,7 @@
 #   --prefix=$nsdir --exec-prefix=$nsdir
 #
 # NaviServer/AOLserver uses its own package loading mechanism.
-# To load, just do "ns_eval package require Thread"
+# To load, just do "ns_eval package require thread"
 # at the NaviServer/AOLserver startup or later from any thread.
 #
 #

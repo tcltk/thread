@@ -73,6 +73,7 @@ namespace eval ttrace {
     }
 
     # Keep in sync with the Thread package
+    package provide ttrace 2.9a1
     package provide Ttrace 2.9a1
 
     # Package variables
@@ -116,7 +117,7 @@ namespace eval ttrace {
                 ns_ictl save [getscript]
             } else {
                 thread::broadcast {
-                    package require Ttrace
+                    package require ttrace
                     ttrace::update
                 }
             }
