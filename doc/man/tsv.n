@@ -273,9 +273,9 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 tsv \- Part of the Tcl threading extension allowing script level manipulation of data shared between threads\&.
 .SH SYNOPSIS
-package require \fBTcl  8\&.4\fR
+package require \fBTcl  8\&.5\fR
 .sp
-package require \fBThread  ?2\&.8?\fR
+package require \fBthread  ?2\&.9?\fR
 .sp
 \fBtsv::names\fR ?pattern?
 .sp

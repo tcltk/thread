@@ -273,9 +273,9 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 thread \- Extension for script access to Tcl threading
 .SH SYNOPSIS
-package require \fBTcl  8\&.4\fR
+package require \fBTcl  8\&.5\fR
 .sp
-package require \fBThread  ?2\&.8?\fR
+package require \fBthread  ?2\&.9?\fR
 .sp
 \fBthread::create\fR ?-joinable? ?-preserved? ?script?
 .sp

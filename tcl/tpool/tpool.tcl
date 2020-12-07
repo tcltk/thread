@@ -23,7 +23,7 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 # -----------------------------------------------------------------------------
 
-package require Thread 2.5
+package require thread 2.9
 set thisScript [info script]
 
 namespace eval tpool {
