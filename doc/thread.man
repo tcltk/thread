@@ -3,7 +3,7 @@
 [moddesc {Tcl Threading}]
 [titledesc {Extension for script access to Tcl threading}]
 [require Tcl 8.5]
-[require Thread [opt 2.8]]
+[require thread [opt 2.8]]
 
 [description]
 The [package thread] extension creates threads that contain Tcl

@@ -273,9 +273,9 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 ttrace \- Trace-based interpreter initialization
 .SH SYNOPSIS
-package require \fBTcl  8\&.4\fR
+package require \fBTcl  8\&.5\fR
 .sp
-package require \fBThread  ?2\&.8?\fR
+package require \fBthread  ?2\&.9?\fR
 .sp
 \fBttrace::eval\fR \fIarg\fR ?arg \&.\&.\&.?
 .sp

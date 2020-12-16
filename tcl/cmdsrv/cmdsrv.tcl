@@ -28,7 +28,7 @@
 # -----------------------------------------------------------------------------
 
 package require Tcl    8.5-
-package require Thread 2.8
+package require thread 2.9
 
 namespace eval cmdsrv {
     variable data; # Stores global configuration options

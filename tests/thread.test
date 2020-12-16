@@ -14,7 +14,7 @@
 package require tcltest
 namespace import ::tcltest::*
 tcltest::loadTestedCommands
-package require Thread
+package require thread
 
 tcltest::testConstraint chanTransfer               \
     [expr {$::tcl_platform(platform) == "unix"}]

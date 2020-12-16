@@ -8,7 +8,7 @@
 #   nmake /f makefile.vc INSTALLDIR=c:\tcl install
 #
 # For other build options (debug, static etc.),
-# See TIP 477 (https://core.tcl.tk/tips/doc/trunk/tip/477.md) for
+# See TIP 477 (https://core.tcl-lang.org/tips/doc/main/tip/477.md) for
 # detailed documentation.
 #
 # In addition to the command line macros described there the following

@@ -546,8 +546,8 @@ Thread_Init(
         return status;
     }
 
-    Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
-    return Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION
+    if (threadTclVersion>86) {
+	Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION
 	    "+" STRINGIFY(THREAD_VERSION_UUID)
 #if defined(__clang__) && defined(__clang_major__)
 	    ".clang-" STRINGIFY(__clang_major__)
@@ -582,7 +582,10 @@ Thread_Init(
 	    ".static"
 #endif
 	    ,NULL);
-
+    } else {
+	Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
+    }
+    return Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
 
 }
 

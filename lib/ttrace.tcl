@@ -57,7 +57,7 @@ namespace eval ttrace {
         interp alias {} [namespace current]::_set     {} nsv_set
         interp alias {} [namespace current]::_unset   {} nsv_unset
     } elseif {![catch {
-        variable tvers [package require Thread]
+        variable tvers [package require thread]
     }]} {
         variable mutex thread::mutex
         variable elock [$mutex create]
@@ -72,7 +72,7 @@ namespace eval ttrace {
         error "requires NaviServer/AOLserver or Tcl threading extension"
     }
 
-    # Keep in sync with the Thread package
+    # Keep in sync with the thread package
     package provide ttrace 2.9a1
     package provide Ttrace 2.9a1
 
