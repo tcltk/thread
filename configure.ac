@@ -17,7 +17,7 @@ dnl	to configure the system for the local environment.
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
-AC_INIT([thread], [3.0a2])
+AC_INIT([thread],[3.0a2])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -214,4 +214,5 @@ TEA_PROG_TCLSH
 # which require substituting th AC variables in.  Include these here.
 #--------------------------------------------------------------------
 
-AC_OUTPUT([Makefile pkgIndex.tcl])
+AC_CONFIG_FILES([Makefile pkgIndex.tcl])
+AC_OUTPUT
