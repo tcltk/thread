@@ -962,10 +962,9 @@ ThreadSendObjCmd(
     Tcl_ThreadId thrId;
     const char *script, *arg;
     Tcl_Obj *var = NULL;
-    (void)dummy;
-
     ThreadClbkData *clbkPtr = NULL;
     ThreadSendData *sendPtr = NULL;
+    (void)dummy;
 
     Init(interp);
 
@@ -1343,10 +1342,9 @@ ThreadTransferObjCmd(
     int         objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
-    (void)dummy;
-
     Tcl_ThreadId thrId;
     Tcl_Channel chan;
+    (void)dummy;
 
     Init(interp);
 
@@ -2774,7 +2772,7 @@ ThreadSend(
 	    while ( Tcl_DoOneEvent((TCL_ALL_EVENTS & ~TCL_IDLE_EVENTS)|TCL_DONT_WAIT) ) {};
 	}
 	/* call it synchronously right now */
-	int code = (*send->execProc)(interp, send);
+	code = (*send->execProc)(interp, send);
 	ThreadFreeProc(send);
 	return code;
     }
