@@ -187,14 +187,13 @@ ThreadMutexObjCmd(
     const char *mutexName;
     char type;
     SpMutex *mutexPtr;
-    (void)dummy;
-
     static const char *cmdOpts[] = {
         "create", "destroy", "lock", "unlock", NULL
     };
     enum options {
         m_CREATE, m_DESTROY, m_LOCK, m_UNLOCK
     };
+    (void)dummy;
 
     /*
      * Syntax:
