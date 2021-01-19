@@ -25,7 +25,7 @@ typedef struct TclIntStubs {
     void (*dummy[34]) (void); /* dummy entries 0-33, not used */
     int (*tclGetIntForIndex) (Tcl_Interp *interp, Tcl_Obj *objPtr, int endValue, int *indexPtr); /* 34 */
 } TclIntStubs;
-extern const struct TclIntStubs *tclIntStubsPtr;
+extern const TclIntStubs *tclIntStubsPtr;
 
 # undef Tcl_GetIntForIndex
 # define Tcl_GetIntForIndex(interp, obj, max, ptr) ((tclIntStubsPtr->tclGetIntForIndex == NULL)? \
