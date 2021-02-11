@@ -22,6 +22,7 @@ jobs:
           mkdir "$HOME/install dir"
           echo "CFGOPT=--with-tcl=/usr/lib/tcl8.6 --with-gdbm --with-lmdb" >> $GITHUB_ENV
           echo "CC=$COMPILER" >> $GITHUB_ENV
+        env:
           COMPILER: ${{ matrix.compiler }}
           OPTS: ${{ matrix.compiler }}
       - name: Configure
