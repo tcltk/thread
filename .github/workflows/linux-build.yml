@@ -10,7 +10,6 @@ jobs:
       matrix:
         compiler:
           - "gcc"
-          - "g++"
           - "clang"
     steps:
       - name: Checkout
