@@ -13,6 +13,7 @@
 *.res
 *.sl
 *.so
+*.gz
 Makefile
 autom4te.cache
 config.cache
@@ -22,6 +23,7 @@ pkgIndex.tcl
 */versions.vc
 */version.vc
 html
+tclconfig
 win/Debug*
 win/Release*
 win/nmhlp-out.txt
