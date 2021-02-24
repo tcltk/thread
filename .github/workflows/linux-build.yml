@@ -27,14 +27,14 @@ jobs:
           OPTS: ${{ matrix.compiler }}
       - name: Configure
         run: |
-          ./configure $CFGOPT "--prefix=$HOME/install dir" || {
+          ./configure $CFGOPT "--prefix=$HOME/install dir" "--exec-prefix=$HOME/install dir" || {
             cat config.log
             echo "::error::Failure during Configure"
             exit 1
           }
       - name: Build
         run: |
-          make binaries libraries|| {
+          make || {
             echo "::error::Failure during Build"
             exit 1
           }
