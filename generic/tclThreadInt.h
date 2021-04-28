@@ -140,39 +140,7 @@ typedef struct {
     char *server;
 } NsThreadInterpData;
 
-/*
- * Handle binary compatibility regarding
- * Tcl_GetErrorLine in 8.x
- * See Tcl bug #3562640.
- */
-
 MODULE_SCOPE int threadTclVersion;
-
-typedef struct {
-    void *unused1;
-    void *unused2;
-    int errorLine;
-} tclInterpType;
-
-#if defined(TCL_TIP285) && defined(USE_TCL_STUBS)
-# undef Tcl_GetErrorLine
-# define Tcl_GetErrorLine(interp) ((threadTclVersion>85)? \
-    ((int (*)(Tcl_Interp *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[605]))(interp): \
-    (((tclInterpType *)(interp))->errorLine))
-/* TIP #270 */
-# undef Tcl_AddErrorInfo
-# define Tcl_AddErrorInfo(interp, msg) ((threadTclVersion>85)? \
-    ((void (*)(Tcl_Interp *, Tcl_Obj *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[574]))(interp, Tcl_NewStringObj(msg, -1)): \
-    ((void (*)(Tcl_Interp *, const char *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[66]))(interp, msg))
-/* TIP #337 */
-# undef Tcl_BackgroundException
-# define Tcl_BackgroundException(interp, result) ((threadTclVersion>85)? \
-    ((void (*)(Tcl_Interp *, int))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[609]))(interp, result): \
-    ((void (*)(Tcl_Interp *))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[76]))(interp))
-#elif !TCL_MINIMUM_VERSION(8,6)
-  /* 8.5 - Emulate access to the error-line information */
-# define Tcl_GetErrorLine(interp) (((tclInterpType *)(interp))->errorLine)
-#endif
 
 /* When running on Tcl >= 8.7, make sure that Thread still runs when Tcl is compiled
  * with -DTCL_NO_DEPRECATED=1. Stub entries for Tcl_SetIntObj/Tcl_NewIntObj are NULL then.

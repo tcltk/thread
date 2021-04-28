@@ -32,63 +32,6 @@
 #endif
 
 /*
- * Check if this is Tcl 8.5 or higher.  In that case, we will have the TIP
- * #143 APIs (i.e. interpreter resource limiting) available.
- */
-
-#ifndef TCL_TIP143
-# if TCL_MINIMUM_VERSION(8,5)
-#  define TCL_TIP143
-# endif
-#endif
-
-/*
- * If TIP #143 support is enabled and we are compiling against a pre-Tcl 8.5
- * core, hard-wire the necessary APIs using the "well-known" offsets into the
- * stubs table.
- */
-
-#define haveInterpLimit (threadTclVersion>=85)
-#if defined(TCL_TIP143) && !TCL_MINIMUM_VERSION(8,5)
-# if defined(USE_TCL_STUBS)
-#  define Tcl_LimitExceeded ((int (*)(Tcl_Interp *)) \
-     ((&(tclStubsPtr->tcl_PkgProvideEx))[524]))
-# else
-#  error "Supporting TIP #143 requires USE_TCL_STUBS before Tcl 8.5"
-# endif
-#endif
-
-/*
- * Check if this is Tcl 8.6 or higher.  In that case, we will have the TIP
- * #285 APIs (i.e. asynchronous script cancellation) available.
- */
-
-#define haveInterpCancel (threadTclVersion>=86)
-#ifndef TCL_TIP285
-# if TCL_MINIMUM_VERSION(8,6)
-#  define TCL_TIP285
-# endif
-#endif
-
-/*
- * If TIP #285 support is enabled and we are compiling against a pre-Tcl 8.6
- * core, hard-wire the necessary APIs using the "well-known" offsets into the
- * stubs table.
- */
-
-#if defined(TCL_TIP285) && !TCL_MINIMUM_VERSION(8,6)
-# if defined(USE_TCL_STUBS)
-#  define TCL_CANCEL_UNWIND 0x100000
-#  define Tcl_CancelEval ((int (*)(Tcl_Interp *, Tcl_Obj *, void *, int)) \
-     ((&(tclStubsPtr->tcl_PkgProvideEx))[580]))
-#  define Tcl_Canceled ((int (*)(Tcl_Interp *, int)) \
-     ((&(tclStubsPtr->tcl_PkgProvideEx))[581]))
-# else
-#  error "Supporting TIP #285 requires USE_TCL_STUBS before Tcl 8.6"
-# endif
-#endif
-
-/*
  * Access to the list of threads and to the thread send results
  * (defined below) is guarded by this mutex.
  */
