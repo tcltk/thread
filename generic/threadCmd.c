@@ -556,6 +556,15 @@ Thread_Init(
 #endif
 	    STRINGIFY(__clang_minor__)
 #endif
+#ifdef TCL_COMPILE_DEBUG
+	    ".compiledebug"
+#endif
+#ifdef TCL_COMPILE_STATS
+	    ".compilestats"
+#endif
+#if defined(__cplusplus) && !defined(__OBJC__)
+	    ".cplusplus"
+#endif
 #ifndef NDEBUG
 	    ".debug"
 #endif
@@ -572,14 +581,38 @@ Thread_Init(
 #ifdef HAVE_LMDB
 	    ".lmdb"
 #endif
+#ifdef TCL_MEM_DEBUG
+	    ".memdebug"
+#endif
 #if defined(_MSC_VER)
 	    ".msvc-" STRINGIFY(_MSC_VER)
 #endif
 #ifdef USE_NMAKE
 	    ".nmake"
 #endif
+#ifndef TCL_CFG_OPTIMIZED
+	    ".no-optimize"
+#endif
+#ifndef TCL_TIP143
+	    "no-limit"
+#endif
+#ifndef TCL_TIP285
+	    "no-cancel"
+#endif
+#ifdef __OBJC__
+	    ".objective-c"
+#if defined(__cplusplus)
+	    "plusplus"
+#endif
+#endif
+#ifdef TCL_CFG_PROFILED
+	    ".profiled"
+#endif
 #ifdef STATIC_BUILD
 	    ".static"
+#endif
+#if TCL_UTF_MAX < 4
+	    ".utf16"
 #endif
 	    ,NULL);
     } else {
@@ -1007,10 +1040,9 @@ ThreadSendObjCmd(
     Tcl_ThreadId thrId;
     const char *script, *arg;
     Tcl_Obj *var = NULL;
-    (void)dummy;
-
     ThreadClbkData *clbkPtr = NULL;
     ThreadSendData *sendPtr = NULL;
+    (void)dummy;
 
     Init(interp);
 
@@ -1388,10 +1420,9 @@ ThreadTransferObjCmd(
     int         objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
-    (void)dummy;
-
     Tcl_ThreadId thrId;
     Tcl_Channel chan;
+    (void)dummy;
 
     Init(interp);
 
@@ -2819,7 +2850,7 @@ ThreadSend(
 	    while ( Tcl_DoOneEvent((TCL_ALL_EVENTS & ~TCL_IDLE_EVENTS)|TCL_DONT_WAIT) ) {};
 	}
 	/* call it synchronously right now */
-	int code = (*send->execProc)(interp, send);
+	code = (*send->execProc)(interp, send);
 	ThreadFreeProc(send);
 	return code;
     }
