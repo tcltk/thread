@@ -8781,6 +8781,9 @@ fi
 	LDFLAGS_DEFAULT="${LDFLAGS_OPTIMIZE}"
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
+
+printf "%s\n" "#define TCL_CFG_OPTIMIZED 1" >>confdefs.h
+
     else
 	CFLAGS_DEFAULT="${CFLAGS_DEBUG}"
 	LDFLAGS_DEFAULT="${LDFLAGS_DEBUG}"
