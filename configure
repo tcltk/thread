@@ -8777,6 +8777,9 @@ fi
 	LDFLAGS_DEFAULT="${LDFLAGS_OPTIMIZE}"
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
+
+printf "%s\n" "#define TCL_CFG_OPTIMIZED 1" >>confdefs.h
+
     else
 	CFLAGS_DEFAULT="${CFLAGS_DEBUG}"
 	LDFLAGS_DEFAULT="${LDFLAGS_DEBUG}"
@@ -8814,19 +8817,6 @@ printf "%s\n" "enabled $tcl_ok debugging" >&6; }
 
 
 printf "%s\n" "#define USE_TCL_STUBS 1" >>confdefs.h
-
-
-#--------------------------------------------------------------------
-# Enable compile-time support for TIP #143 and TIP #285.  When using
-# a pre-Tcl 8.5 or 8.6 core, respectively, the actual functionality
-# will not be available at runtime.
-#--------------------------------------------------------------------
-
-
-printf "%s\n" "#define TCL_TIP143 1" >>confdefs.h
-
-
-printf "%s\n" "#define TCL_TIP285 1" >>confdefs.h
 
 
 #--------------------------------------------------------------------

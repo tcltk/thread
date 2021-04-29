@@ -2,8 +2,8 @@
 # Tcl package index file, version 1.1
 #
 
-if {![package vsatisfies [package provide Tcl] 8.5]} {
-    # Pre-8.5 Tcl interps we dont support at all.  Bye!
+if {![package vsatisfies [package provide Tcl] 8.6]} {
+    # Pre-8.6 Tcl interps we dont support at all.  Bye!
     # 9.0+ Tcl interps are only supported on 32-bit platforms.
     if {![package vsatisfies [package provide Tcl] 9.0]
 	    || ($::tcl_platform(pointerSize) != 4)} {
@@ -11,7 +11,7 @@ if {![package vsatisfies [package provide Tcl] 8.5]} {
     }
 }
 
-# All Tcl 8.5+ interps can [load] thread @PACKAGE_VERSION@
+# All Tcl 8.6+ interps can [load] thread @PACKAGE_VERSION@
 #
 # For interps that are not thread-enabled, we still call [package ifneeded].
 # This is contrary to the usual convention, but is a good idea because we
@@ -23,8 +23,8 @@ if {![package vsatisfies [package provide Tcl] 8.5]} {
 # about a thread-disabled interp, instead of the message
 # "can't find package thread".
 
-package ifneeded [string tolower @PACKAGE_NAME@] @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@] [string totitle @PACKAGE_NAME@]]
-package ifneeded [string totitle @PACKAGE_NAME@] @PACKAGE_VERSION@ [list package require -exact [string tolower @PACKAGE_NAME@] @PACKAGE_VERSION@]
+package ifneeded thread @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@] Thread]
+package ifneeded Thread @PACKAGE_VERSION@ [list package require -exact thread @PACKAGE_VERSION@]
 
 # package ttrace uses some support machinery.
 
