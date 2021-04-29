@@ -542,9 +542,6 @@ Thread_Init(
 #ifdef STATIC_BUILD
 	    ".static"
 #endif
-#if TCL_UTF_MAX < 4
-	    ".utf16"
-#endif
 	    ,NULL);
     } else {
 	Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
