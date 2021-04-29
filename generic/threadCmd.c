@@ -499,12 +499,6 @@ Thread_Init(
 #endif
 	    STRINGIFY(__clang_minor__)
 #endif
-#ifdef TCL_COMPILE_DEBUG
-	    ".compiledebug"
-#endif
-#ifdef TCL_COMPILE_STATS
-	    ".compilestats"
-#endif
 #if defined(__cplusplus) && !defined(__OBJC__)
 	    ".cplusplus"
 #endif
@@ -535,12 +529,6 @@ Thread_Init(
 #endif
 #ifndef TCL_CFG_OPTIMIZED
 	    ".no-optimize"
-#endif
-#ifndef TCL_TIP143
-	    "no-limit"
-#endif
-#ifndef TCL_TIP285
-	    "no-cancel"
 #endif
 #ifdef __OBJC__
 	    ".objective-c"
