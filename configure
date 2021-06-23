@@ -3955,7 +3955,7 @@ printf "%s\n" "#define BUILD_${PACKAGE_NAME} /**/" >>confdefs.h
 
 
 
-if test "${TCL_MAJOR_VERSION}" -eq 8 -a "${TRAVIS_OS_NAME}" -ne "linux"; then
+if test "${TCL_MAJOR_VERSION}" -eq 8 -a "x${TRAVIS_OS_NAME}" != "xlinux"; then
     if test "${TCL_MINOR_VERSION}" -lt 7 ; then
         as_fn_error $? "${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 9.0+
 Found config for Tcl ${TCL_VERSION}" "$LINENO" 5
