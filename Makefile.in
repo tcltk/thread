@@ -86,7 +86,7 @@ pkgdatadir	= $(datadir)/$(PKG_DIR)
 pkglibdir	= $(libdir)/$(PKG_DIR)
 pkgincludedir	= $(includedir)/$(PKG_DIR)
 
-top_builddir	= .
+top_builddir	= @abs_top_builddir@
 
 INSTALL_OPTIONS	=
 INSTALL		= @INSTALL@ $(INSTALL_OPTIONS)
@@ -99,6 +99,7 @@ INSTALL_LIBRARY	= @INSTALL_LIBRARY@
 PACKAGE_NAME	= @PACKAGE_NAME@
 PACKAGE_VERSION	= @PACKAGE_VERSION@
 CC		= @CC@
+CCLD		= @CCLD@
 CFLAGS_DEFAULT	= @CFLAGS_DEFAULT@
 CFLAGS_WARNING	= @CFLAGS_WARNING@
 EXEEXT		= @EXEEXT@
