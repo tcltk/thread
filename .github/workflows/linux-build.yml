@@ -19,7 +19,7 @@ jobs:
           tar xfz tclconfig.tar.gz
       - name: Configure (not really, just enough to do a "make dist")
         run: |
-          sed s/@srcdir@/\./ <Makefile.in | sed s/@SHELL@/bash/ | sed s/@PACKAGE_NAME@/thread/ | sed s/@PACKAGE_VERSION@/9.0a1/ | sed "s/@INSTALL@/tclconfig\/install-sh/" | sed "s/@INSTALL_DATA_DIR@/tclconfig\/install-sh -d -m 755/" >Makefile
+          sed s/@srcdir@/\./ <Makefile.in | sed s/@abs_top_builddir@/./ | sed s/@SHELL@/bash/ | sed s/@PACKAGE_NAME@/thread/ | sed s/@PACKAGE_VERSION@/9.0a1/ | sed "s/@INSTALL@/tclconfig\/install-sh/" | sed "s/@INSTALL_DATA_DIR@/tclconfig\/install-sh -d -m 755/" >Makefile
           touch config.status
       - name: Create Distribution Package
         run: |

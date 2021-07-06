@@ -209,6 +209,47 @@ TEA_PROG_TCLSH
 #TEA_PROG_WISH
 
 #--------------------------------------------------------------------
+#	Zipfs support - Tip 430
+#--------------------------------------------------------------------
+AC_ARG_ENABLE(zipfs,
+    AS_HELP_STRING([--enable-zipfs],[build with Zipfs support (default: on)]),
+    [tcl_ok=$enableval], [tcl_ok=yes])
+if test "$tcl_ok" = "yes" -a "x$enable_framework" != "xyes"; then
+    #
+    # Find a native zip implementation
+    #
+    TEA_ZIPFS_SUPPORT
+    ZIPFS_BUILD=1
+    THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
+else
+    ZIPFS_BUILD=0
+    THREAD_ZIP_FILE=
+fi
+# Do checking message here to not mess up interleaved configure output
+AC_MSG_CHECKING([for building with zipfs])
+if test "${ZIPFS_BUILD}" = 1; then
+    if test "${SHARED_BUILD}" = 0; then
+       ZIPFS_BUILD=2;
+       AC_DEFINE(ZIPFS_BUILD, 2, [Are we building with zipfs enabled?])
+       INSTALL_LIBRARIES=install-demos
+       AC_MSG_RESULT([yes])
+     else
+       AC_DEFINE(ZIPFS_BUILD, 1, [Are we building with zipfs enabled?])\
+       INSTALL_LIBRARIES=install-demos
+       AC_MSG_RESULT([yes])
+    fi
+else
+AC_MSG_RESULT([no])
+INSTALL_LIBRARIES=install-libraries
+INSTALL_MSGS=install-msgs
+fi
+AC_SUBST(ZIPFS_BUILD)
+AC_SUBST(THREAD_ZIP_FILE)
+AC_SUBST(INSTALL_LIBRARIES)
+AC_SUBST(INSTALL_MSGS)
+
+
+#--------------------------------------------------------------------
 # Finally, substitute all of the various values into the Makefile.
 # You may alternatively have a special pkgIndex.tcl.in or other files
 # which require substituting th AC variables in.  Include these here.
