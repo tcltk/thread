@@ -537,7 +537,7 @@ Thread_Init(
 #endif
 #endif
 #ifdef TCL_CFG_PROFILED
-	    ".profiled"
+	    ".profile"
 #endif
 #ifdef STATIC_BUILD
 	    ".static"
