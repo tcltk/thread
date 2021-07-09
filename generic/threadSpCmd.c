@@ -1063,12 +1063,12 @@ RemoveCondv(const char *name, size_t len)
 /*
  *----------------------------------------------------------------------
  *
- * Sp_Init --
+ * SpInit --
  *
  *      Create commands in current interpreter.
  *
  * Results:
- *      Standard Tcl result.
+ *      NULL
  *
  * Side effects:
  *      Initializes shared hash table for storing sync primitive
@@ -1077,8 +1077,8 @@ RemoveCondv(const char *name, size_t len)
  *----------------------------------------------------------------------
  */
 
-int
-Sp_Init (
+const char *
+SpInit (
     Tcl_Interp *interp                 /* Interp where to create cmds */
 ) {
     SpBucket *bucketPtr;
@@ -1107,7 +1107,7 @@ Sp_Init (
     TCL_CMD(interp, THREAD_CMD_PREFIX"::cond",    ThreadCondObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"::eval",    ThreadEvalObjCmd);
 
-    return TCL_OK;
+    return NULL;
 }
 
 /*
