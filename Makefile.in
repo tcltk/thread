@@ -88,6 +88,22 @@ pkgincludedir	= $(includedir)/$(PKG_DIR)
 
 top_builddir	= @abs_top_builddir@
 
+###
+# Tip 430 - ZipFS Modifications
+###
+
+THREAD_ZIP_FILE		= @THREAD_ZIP_FILE@
+THREAD_VFS_ROOT		= libthread.vfs
+THREAD_VFS_PATH		= ${THREAD_VFS_ROOT}/thread_library
+
+ZIPFS_BUILD		= @ZIPFS_BUILD@
+NATIVE_ZIP		= @ZIP_PROG@
+ZIP_PROG_OPTIONS	= @ZIP_PROG_OPTIONS@
+ZIP_PROG_VFSSEARCH	= @ZIP_PROG_VFSSEARCH@
+SHARED_BUILD		= @SHARED_BUILD@
+INSTALL_LIBRARIES	= @INSTALL_LIBRARIES@
+INSTALL_MSGS		= @INSTALL_MSGS@
+
 INSTALL_OPTIONS	=
 INSTALL		= @INSTALL@ $(INSTALL_OPTIONS)
 INSTALL_DATA_DIR = @INSTALL_DATA_DIR@
@@ -205,6 +221,26 @@ binaries: $(BINARIES)
 
 libraries:
 
+threadzipfile: ${THREAD_ZIP_FILE}
+
+${THREAD_ZIP_FILE}: ${ZIP_INSTALL_OBJS}
+	@rm -rf ${THREAD_VFS_ROOT}
+	@mkdir -p ${THREAD_VFS_PATH}
+	@echo "creating ${THREAD_VFS_PATH} (prepare compression)"
+	@if \
+	    ln -s $(srcdir)/lib/* ${THREAD_VFS_PATH}/; \
+	then : ; else \
+	    cp -a $(srcdir)/lib/* ${THREAD_VFS_PATH}; \
+	fi
+	@find ${THREAD_VFS_ROOT} -type d -empty -delete
+	@echo "creating ${THREAD_ZIP_FILE} from ${THREAD_VFS_PATH}"
+	@(zip=`(realpath '${NATIVE_ZIP}' || readlink -m '${NATIVE_ZIP}' || \
+	    echo '${NATIVE_ZIP}' | sed "s?^\./?$$(pwd)/?")  2>/dev/null`; \
+	    echo 'cd ${THREAD_VFS_ROOT} &&' $$zip '${ZIP_PROG_OPTIONS} ../${THREAD_ZIP_FILE} ${ZIP_PROG_VFSSEARCH}'; \
+	    cd ${THREAD_VFS_ROOT} && \
+	    $$zip ${ZIP_PROG_OPTIONS} ../${THREAD_ZIP_FILE} ${ZIP_PROG_VFSSEARCH} >/dev/null)
+
+
 #========================================================================
 # Your doc target should differentiate from doc builds (by the developer)
 # and doc installs (see install-doc), which just install the docs on the
@@ -280,10 +316,18 @@ depend:
 # source files above.
 #========================================================================
 
-$(PKG_LIB_FILE): $(PKG_OBJECTS)
+$(PKG_LIB_FILE): $(PKG_OBJECTS) ${THREAD_ZIP_FILE}
 	-rm -f $(PKG_LIB_FILE)
 	${MAKE_LIB}
-	$(RANLIB) $(PKG_LIB_FILE)
+	@if test "${ZIPFS_BUILD}" = "1" ; then \
+	    if test "x$(MACHER)" = "x" ; then \
+	    cat ${THREAD_ZIP_FILE} >> ${PKG_LIB_FILE}; \
+	    else $(MACHER) append ${PKG_LIB_FILE} ${THREAD_ZIP_FILE} /tmp/macher_output; \
+	         mv /tmp/macher_output ${PKG_LIB_FILE}; chmod u+x ${PKG_LIB_FILE}; \
+	    fi; \
+	    ${NATIVE_ZIP} -A ${PKG_LIB_FILE} \
+	    || echo 'ignore zip-error by adjust sfx process (not executable?)'; \
+	fi
 
 $(PKG_STUB_LIB_FILE): $(PKG_STUB_OBJECTS)
 	-rm -f $(PKG_STUB_LIB_FILE)
@@ -438,13 +482,15 @@ install-lib-binaries: binaries
 	    fi; \
 	  fi; \
 	done
-	@list='$(PKG_TCL_SOURCES)'; for p in $$list; do \
-	  if test -f $(srcdir)/$$p; then \
-	    destp=`basename $$p`; \
-	    echo " Install $$destp $(DESTDIR)$(pkglibdir)/$$destp"; \
-	    $(INSTALL_DATA) $(srcdir)/$$p "$(DESTDIR)$(pkglibdir)/$$destp"; \
-	  fi; \
-	done
+	@if test "${ZIPFS_BUILD}" = "0" ; then \
+	  list='$(PKG_TCL_SOURCES)'; for p in $$list; do \
+	    if test -f $(srcdir)/$$p; then \
+	      destp=`basename $$p`; \
+	      echo " Install $$destp $(DESTDIR)$(pkglibdir)/$$destp"; \
+	      $(INSTALL_DATA) $(srcdir)/$$p "$(DESTDIR)$(pkglibdir)/$$destp"; \
+	    fi; \
+	  done; \
+	fi;
 	@if test "x$(SHARED_BUILD)" = "x1"; then \
 	    echo " Install pkgIndex.tcl $(DESTDIR)$(pkglibdir)"; \
 	    $(INSTALL_DATA) pkgIndex.tcl "$(DESTDIR)$(pkglibdir)"; \
