@@ -74,19 +74,19 @@
  * Exported from threadSvCmd.c file.
  */
 
-MODULE_SCOPE int Sv_Init(Tcl_Interp *interp);
+MODULE_SCOPE const char *SvInit(Tcl_Interp *interp);
 
 /*
  * Exported from threadSpCmd.c file.
  */
 
-MODULE_SCOPE int Sp_Init(Tcl_Interp *interp);
+MODULE_SCOPE const char *SpInit(Tcl_Interp *interp);
 
 /*
  * Exported from threadPoolCmd.c file.
  */
 
-MODULE_SCOPE int Tpool_Init(Tcl_Interp *interp);
+MODULE_SCOPE const char *TpoolInit(Tcl_Interp *interp);
 
 /*
  * Macros for splicing in/out of linked lists
@@ -120,7 +120,7 @@ MODULE_SCOPE int Tpool_Init(Tcl_Interp *interp);
 
 #define TCL_CMD(a,b,c) \
   if (Tcl_CreateObjCommand((a),(b),(c),NULL, NULL) == NULL) \
-    return TCL_ERROR
+    return NULL;
 
 #define OPT_CMP(a,b) \
   ((a) && (b) && ((a)[0]==(b)[0]) && ((a)[1]==(b)[1]) && (!strcmp((a),(b))))

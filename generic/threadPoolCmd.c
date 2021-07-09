@@ -1912,7 +1912,7 @@ AppExitHandler(
 /*
  *----------------------------------------------------------------------
  *
- * Tpool_Init --
+ * TpoolInit --
  *
  *  Create commands in current interpreter.
  *
@@ -1926,8 +1926,8 @@ AppExitHandler(
  *----------------------------------------------------------------------
  */
 
-int
-Tpool_Init (
+const char *
+TpoolInit (
     Tcl_Interp *interp                 /* Interp where to create cmds */
 ) {
     static int initialized;
@@ -1951,7 +1951,7 @@ Tpool_Init (
         }
         Tcl_MutexUnlock(&listMutex);
     }
-    return TCL_OK;
+    return NULL;
 }
 
 /* EOF $RCSfile: threadPoolCmd.c,v $ */

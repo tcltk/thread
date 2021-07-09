@@ -236,7 +236,7 @@ NewThread(void *clientData);
 static ThreadSpecificData*
 ThreadExistsInner(Tcl_ThreadId id);
 
-static int
+static const char *
 ThreadInit(Tcl_Interp *interp);
 
 static int
@@ -372,7 +372,7 @@ static Tcl_ObjCmdProc ThreadAttachObjCmd;
 static Tcl_ObjCmdProc ThreadCancelObjCmd;
 #endif
 
-static int
+static const char *
 ThreadInit(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
@@ -385,7 +385,7 @@ ThreadInit(
                 (TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16), TCL_STUB_MAGIC)
 #endif
             ) {
-            return TCL_ERROR;
+            return NULL;
         }
         Tcl_ResetResult(interp);
     }
@@ -406,7 +406,7 @@ ThreadInit(
              * a dummy function, which is the case in unthreaded Tcl */
             const char *msg = "Tcl core wasn't compiled for threading";
             Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
-            return TCL_ERROR;
+            return NULL;
         }
         Tcl_GetVersion(&major, &minor, NULL, NULL);
         threadTclVersion = 10 * major + minor;
@@ -438,22 +438,22 @@ ThreadInit(
      * Add shared variable commands
      */
 
-    Sv_Init(interp);
+    SvInit(interp);
 
     /*
      * Add commands to access thread
      * synchronization primitives.
      */
 
-    Sp_Init(interp);
+    SpInit(interp);
 
     /*
      * Add threadpool commands.
      */
 
-    Tpool_Init(interp);
+    TpoolInit(interp);
 
-    return TCL_OK;
+    return PACKAGE_VERSION;
 }
 
 
@@ -477,14 +477,14 @@ DLLEXPORT int
 Thread_Init(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
-    int status = ThreadInit(interp);
+    const char *version = ThreadInit(interp);
 
-    if (status != TCL_OK) {
-        return status;
+    if (version == NULL) {
+        return TCL_ERROR;
     }
 
     Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
-    return Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
+    return Tcl_PkgProvideEx(interp, "thread", version, NULL);
 }
 
 /*
