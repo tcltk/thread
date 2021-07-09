@@ -53,7 +53,7 @@ static const Tcl_ObjType* stringObjTypePtr = 0;
 /*
  * In order to be fully stub enabled, a small
  * hack is needed to query the tclEmptyStringRep
- * global symbol defined by Tcl. See Sv_Init.
+ * global symbol defined by Tcl. See SvInit.
  */
 
 static char *Sv_tclEmptyStringRep = NULL;
@@ -2179,12 +2179,12 @@ SvRegisterStdCommands(void)
 /*
  *-----------------------------------------------------------------------------
  *
- * Sv_Init --
+ * SvInit --
  *
  *    Creates commands in current interpreter.
  *
  * Results:
- *    None.
+ *    NULL
  *
  * Side effects
  *    Many new command created in current interpreter. Global data
@@ -2192,8 +2192,8 @@ SvRegisterStdCommands(void)
  *
  *-----------------------------------------------------------------------------
  */
-int
-Sv_Init (
+const char *
+SvInit (
     Tcl_Interp *interp
 ) {
     int i;
@@ -2315,7 +2315,7 @@ Sv_Init (
         Tcl_MutexUnlock(&bucketsMutex);
     }
 
-    return TCL_OK;
+    return NULL;
 }
 
 #ifdef SV_FINALIZE
