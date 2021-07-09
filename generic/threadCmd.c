@@ -237,7 +237,7 @@ NewThread(void *clientData);
 static ThreadSpecificData*
 ThreadExistsInner(Tcl_ThreadId id);
 
-static int
+static const char *
 ThreadInit(Tcl_Interp *interp);
 
 static int
@@ -373,7 +373,12 @@ static Tcl_ObjCmdProc ThreadAttachObjCmd;
 static Tcl_ObjCmdProc ThreadCancelObjCmd;
 #endif
 
-static int
+#ifndef STRINGIFY
+#  define STRINGIFY(x) STRINGIFY1(x)
+#  define STRINGIFY1(x) #x
+#endif
+
+static const char *
 ThreadInit(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
@@ -386,7 +391,7 @@ ThreadInit(
                 (TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16), TCL_STUB_MAGIC)
 #endif
             ) {
-            return TCL_ERROR;
+            return NULL;
         }
         Tcl_ResetResult(interp);
     }
@@ -407,7 +412,7 @@ ThreadInit(
              * a dummy function, which is the case in unthreaded Tcl */
             const char *msg = "Tcl core wasn't compiled for threading";
             Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
-            return TCL_ERROR;
+            return NULL;
         }
         Tcl_GetVersion(&major, &minor, NULL, NULL);
         threadTclVersion = 10 * major + minor;
@@ -439,22 +444,77 @@ ThreadInit(
      * Add shared variable commands
      */
 
-    Sv_Init(interp);
+    SvInit(interp);
 
     /*
      * Add commands to access thread
      * synchronization primitives.
      */
 
-    Sp_Init(interp);
+    SpInit(interp);
 
     /*
      * Add threadpool commands.
      */
 
-    Tpool_Init(interp);
+    TpoolInit(interp);
 
-    return TCL_OK;
+    if (threadTclVersion>86) {
+	return PACKAGE_VERSION
+		"+" STRINGIFY(THREAD_VERSION_UUID)
+#if defined(__clang__) && defined(__clang_major__)
+		".clang-" STRINGIFY(__clang_major__)
+#if __clang_minor__ < 10
+		"0"
+#endif
+		STRINGIFY(__clang_minor__)
+#endif
+#if defined(__cplusplus) && !defined(__OBJC__)
+		".cplusplus"
+#endif
+#ifndef NDEBUG
+		".debug"
+#endif
+#if !defined(__clang__) && defined(__GNUC__)
+		".gcc-" STRINGIFY(__GNUC__)
+#if __GNUC_MINOR__ < 10
+		"0"
+#endif
+		STRINGIFY(__GNUC_MINOR__)
+#endif
+#ifdef HAVE_GDBM
+		".gdbm"
+#endif
+#ifdef HAVE_LMDB
+		".lmdb"
+#endif
+#ifdef TCL_MEM_DEBUG
+		".memdebug"
+#endif
+#if defined(_MSC_VER)
+		".msvc-" STRINGIFY(_MSC_VER)
+#endif
+#ifdef USE_NMAKE
+		".nmake"
+#endif
+#ifndef TCL_CFG_OPTIMIZED
+		".no-optimize"
+#endif
+#ifdef __OBJC__
+		".objective-c"
+#if defined(__cplusplus)
+		"plusplus"
+#endif
+#endif
+#ifdef TCL_CFG_PROFILED
+		".profile"
+#endif
+#ifdef STATIC_BUILD
+		".static"
+#endif
+		;
+    }
+    return PACKAGE_VERSION;
 }
 
 
@@ -474,80 +534,18 @@ ThreadInit(
  *----------------------------------------------------------------------
  */
 
-#ifndef STRINGIFY
-#  define STRINGIFY(x) STRINGIFY1(x)
-#  define STRINGIFY1(x) #x
-#endif
-
 DLLEXPORT int
 Thread_Init(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
-    int status = ThreadInit(interp);
+    const char *version = ThreadInit(interp);
 
-    if (status != TCL_OK) {
-        return status;
+    if (version == NULL) {
+        return TCL_ERROR;
     }
 
-    if (threadTclVersion>86) {
-	Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION
-	    "+" STRINGIFY(THREAD_VERSION_UUID)
-#if defined(__clang__) && defined(__clang_major__)
-	    ".clang-" STRINGIFY(__clang_major__)
-#if __clang_minor__ < 10
-	    "0"
-#endif
-	    STRINGIFY(__clang_minor__)
-#endif
-#if defined(__cplusplus) && !defined(__OBJC__)
-	    ".cplusplus"
-#endif
-#ifndef NDEBUG
-	    ".debug"
-#endif
-#if !defined(__clang__) && defined(__GNUC__)
-	    ".gcc-" STRINGIFY(__GNUC__)
-#if __GNUC_MINOR__ < 10
-	    "0"
-#endif
-	    STRINGIFY(__GNUC_MINOR__)
-#endif
-#ifdef HAVE_GDBM
-	    ".gdbm"
-#endif
-#ifdef HAVE_LMDB
-	    ".lmdb"
-#endif
-#ifdef TCL_MEM_DEBUG
-	    ".memdebug"
-#endif
-#if defined(_MSC_VER)
-	    ".msvc-" STRINGIFY(_MSC_VER)
-#endif
-#ifdef USE_NMAKE
-	    ".nmake"
-#endif
-#ifndef TCL_CFG_OPTIMIZED
-	    ".no-optimize"
-#endif
-#ifdef __OBJC__
-	    ".objective-c"
-#if defined(__cplusplus)
-	    "plusplus"
-#endif
-#endif
-#ifdef TCL_CFG_PROFILED
-	    ".profile"
-#endif
-#ifdef STATIC_BUILD
-	    ".static"
-#endif
-	    ,NULL);
-    } else {
-	Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
-    }
-    return Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
-
+    Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
+    return Tcl_PkgProvideEx(interp, "thread", version, NULL);
 }
 
 /*
