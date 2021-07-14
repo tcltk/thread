@@ -459,62 +459,65 @@ ThreadInit(
 
     TpoolInit(interp);
 
-    if (threadTclVersion>86) {
-	return PACKAGE_VERSION
-		"+" STRINGIFY(THREAD_VERSION_UUID)
+    return PACKAGE_VERSION
+	    "+" STRINGIFY(THREAD_VERSION_UUID)
 #if defined(__clang__) && defined(__clang_major__)
-		".clang-" STRINGIFY(__clang_major__)
+	    ".clang-" STRINGIFY(__clang_major__)
 #if __clang_minor__ < 10
-		"0"
+	    "0"
 #endif
-		STRINGIFY(__clang_minor__)
+	    STRINGIFY(__clang_minor__)
 #endif
 #if defined(__cplusplus) && !defined(__OBJC__)
-		".cplusplus"
+	    ".cplusplus"
 #endif
 #ifndef NDEBUG
-		".debug"
+	    ".debug"
 #endif
-#if !defined(__clang__) && defined(__GNUC__)
-		".gcc-" STRINGIFY(__GNUC__)
+#if !defined(__clang__) && !defined(__INTEL_COMPILER) && defined(__GNUC__)
+	    ".gcc-" STRINGIFY(__GNUC__)
 #if __GNUC_MINOR__ < 10
-		"0"
+	    "0"
 #endif
-		STRINGIFY(__GNUC_MINOR__)
+	    STRINGIFY(__GNUC_MINOR__)
+#endif
+#ifdef __INTEL_COMPILER
+	    ".icc-" STRINGIFY(__INTEL_COMPILER)
 #endif
 #ifdef HAVE_GDBM
-		".gdbm"
+	    ".gdbm"
 #endif
 #ifdef HAVE_LMDB
-		".lmdb"
+	    ".lmdb"
 #endif
 #ifdef TCL_MEM_DEBUG
-		".memdebug"
+	    ".memdebug"
 #endif
 #if defined(_MSC_VER)
-		".msvc-" STRINGIFY(_MSC_VER)
+	    ".msvc-" STRINGIFY(_MSC_VER)
 #endif
 #ifdef USE_NMAKE
-		".nmake"
+	    ".nmake"
 #endif
 #ifndef TCL_CFG_OPTIMIZED
-		".no-optimize"
+	    ".no-optimize"
 #endif
 #ifdef __OBJC__
-		".objective-c"
+	    ".objective-c"
 #if defined(__cplusplus)
-		"plusplus"
+	    "plusplus"
 #endif
 #endif
 #ifdef TCL_CFG_PROFILED
-		".profile"
+	    ".profile"
+#endif
+#ifdef PURIFY
+	    ".purify"
 #endif
 #ifdef STATIC_BUILD
-		".static"
+	    ".static"
 #endif
-		;
-    }
-    return PACKAGE_VERSION;
+	    ;
 }
 
 
@@ -539,13 +542,18 @@ Thread_Init(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
     const char *version = ThreadInit(interp);
+    Tcl_CmdInfo info;
 
     if (version == NULL) {
         return TCL_ERROR;
     }
 
+    if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
+	Tcl_CreateObjCommand(interp, "::thread::build-info",
+		info.objProc, (void *)version, NULL);
+    }
     Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
-    return Tcl_PkgProvideEx(interp, "thread", version, NULL);
+    return Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
 }
 
 /*
