@@ -21,6 +21,7 @@
 
 #include "tclThreadInt.h"
 #include "threadSvCmd.h"
+#include "threadUuid.h"
 
 /*
  * Provide package version in build contexts which do not provide
@@ -372,6 +373,11 @@ static Tcl_ObjCmdProc ThreadAttachObjCmd;
 static Tcl_ObjCmdProc ThreadCancelObjCmd;
 #endif
 
+#ifndef STRINGIFY
+#  define STRINGIFY(x) STRINGIFY1(x)
+#  define STRINGIFY1(x) #x
+#endif
+
 static const char *
 ThreadInit(
     Tcl_Interp *interp /* The current Tcl interpreter */
@@ -453,7 +459,65 @@ ThreadInit(
 
     TpoolInit(interp);
 
-    return PACKAGE_VERSION;
+    return PACKAGE_VERSION
+	    "+" STRINGIFY(THREAD_VERSION_UUID)
+#if defined(__clang__) && defined(__clang_major__)
+	    ".clang-" STRINGIFY(__clang_major__)
+#if __clang_minor__ < 10
+	    "0"
+#endif
+	    STRINGIFY(__clang_minor__)
+#endif
+#if defined(__cplusplus) && !defined(__OBJC__)
+	    ".cplusplus"
+#endif
+#ifndef NDEBUG
+	    ".debug"
+#endif
+#if !defined(__clang__) && !defined(__INTEL_COMPILER) && defined(__GNUC__)
+	    ".gcc-" STRINGIFY(__GNUC__)
+#if __GNUC_MINOR__ < 10
+	    "0"
+#endif
+	    STRINGIFY(__GNUC_MINOR__)
+#endif
+#ifdef __INTEL_COMPILER
+	    ".icc-" STRINGIFY(__INTEL_COMPILER)
+#endif
+#ifdef HAVE_GDBM
+	    ".gdbm"
+#endif
+#ifdef HAVE_LMDB
+	    ".lmdb"
+#endif
+#ifdef TCL_MEM_DEBUG
+	    ".memdebug"
+#endif
+#if defined(_MSC_VER)
+	    ".msvc-" STRINGIFY(_MSC_VER)
+#endif
+#ifdef USE_NMAKE
+	    ".nmake"
+#endif
+#ifndef TCL_CFG_OPTIMIZED
+	    ".no-optimize"
+#endif
+#ifdef __OBJC__
+	    ".objective-c"
+#if defined(__cplusplus)
+	    "plusplus"
+#endif
+#endif
+#ifdef TCL_CFG_PROFILED
+	    ".profile"
+#endif
+#ifdef PURIFY
+	    ".purify"
+#endif
+#ifdef STATIC_BUILD
+	    ".static"
+#endif
+	    ;
 }
 
 
@@ -478,13 +542,18 @@ Thread_Init(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
     const char *version = ThreadInit(interp);
+    Tcl_CmdInfo info;
 
     if (version == NULL) {
         return TCL_ERROR;
     }
 
+    if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
+	Tcl_CreateObjCommand(interp, "::thread::build-info",
+		info.objProc, (void *)version, NULL);
+    }
     Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
-    return Tcl_PkgProvideEx(interp, "thread", version, NULL);
+    return Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
 }
 
 /*
