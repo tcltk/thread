@@ -326,7 +326,7 @@ namespace eval ttrace {
         if {[uplevel ttrace::_resolve [list $cmd]]} {
             set c [catch {uplevel $cmd [lrange $args 1 end]} r]
         } else {
-            set c [catch {::eval ::tcl::unknown $args} r]
+            set c [catch {uplevel ::tcl::unknown $args} r]
         }
         return -code $c -errorcode $::errorCode -errorinfo $::errorInfo $r
     }
