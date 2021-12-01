@@ -196,7 +196,7 @@ namespace eval ttrace {
             }
             variable epoch $from
         }
-        uplevel [getscript]
+        uplevel 1 [getscript]
     }
 
     proc getscript {} {
@@ -219,7 +219,7 @@ namespace eval ttrace {
 
     proc cleanup {args} {
         foreach cmd [info commands resolve::cleaner_*] {
-            uplevel $cmd $args
+            uplevel 1 $cmd $args
         }
     }
 
@@ -323,10 +323,10 @@ namespace eval ttrace {
 
     proc unknown {args} {
         set cmd [lindex $args 0]
-        if {[uplevel ttrace::_resolve [list $cmd]]} {
-            set c [catch {uplevel $cmd [lrange $args 1 end]} r]
+        if {[uplevel 1 ttrace::_resolve [list $cmd]]} {
+            set c [catch {uplevel 1 $cmd [lrange $args 1 end]} r]
         } else {
-            set c [catch {uplevel ::tcl::unknown $args} r]
+            set c [catch {uplevel 1 ::tcl::unknown $args} r]
         }
         return -code $c -errorcode $::errorCode -errorinfo $::errorInfo $r
     }
@@ -334,7 +334,7 @@ namespace eval ttrace {
     proc _resolve {cmd} {
         variable resolvers
         foreach resolver $resolvers {
-            if {[uplevel [info comm resolve::$resolver] [list $cmd]]} {
+            if {[uplevel 1 [info comm resolve::$resolver] [list $cmd]]} {
                 return 1
             }
         }
@@ -543,7 +543,7 @@ eval {
             return
         }
         set nop [lindex $cmdline 1]
-        set cns [uplevel namespace current]
+        set cns [uplevel 1 namespace current]
         if {$cns == "::"} {
             set cns ""
         }
@@ -615,7 +615,7 @@ eval {
         }
         set opts [lrange $cmdline 1 end]
         if {[llength $opts]} {
-            set cns [uplevel namespace current]
+            set cns [uplevel 1 namespace current]
             if {$cns == "::"} {
                 set cns ""
             }
@@ -663,7 +663,7 @@ eval {
         if {$code != 0} {
             return
         }
-        set cns [uplevel namespace current]
+        set cns [uplevel 1 namespace current]
         if {$cns == "::"} {
             set cns ""
         }
@@ -708,7 +708,7 @@ eval {
         if {$code != 0} {
             return
         }
-        set cns [uplevel namespace current]
+        set cns [uplevel 1 namespace current]
         if {$cns == "::"} {
             set cns ""
         }
@@ -748,15 +748,15 @@ eval {
                 set cmd [lindex $args 0]
                 set hit [lsearch -glob {commands procs args default body} $cmd*]
                 if {$hit > 1} {
-                    if {[catch {uplevel ::tcl::info $args}]} {
-                        uplevel ttrace::_resolve [list [lindex $args 1]]
+                    if {[catch {uplevel 1 ::tcl::info $args}]} {
+                        uplevel 1 ttrace::_resolve [list [lindex $args 1]]
                     }
-                    return [uplevel ::tcl::info $args]
+                    return [uplevel 1 ::tcl::info $args]
                 }
                 if {$hit == -1} {
-                    return [uplevel ::tcl::info $args]
+                    return [uplevel 1 ::tcl::info $args]
                 }
-                set cns [uplevel namespace current]
+                set cns [uplevel 1 namespace current]
                 if {$cns == "::"} {
                     set cns ""
                 }
@@ -775,7 +775,7 @@ eval {
                         set lazy([namespace tail $entry]) 1
                     }
                 }
-                foreach entry [uplevel ::tcl::info $args] {
+                foreach entry [uplevel 1 ::tcl::info $args] {
                     set lazy($entry) 1
                 }
                 array names lazy
@@ -790,7 +790,7 @@ eval {
     #
 
     ttrace::addresolver resolveprocs {cmd {export 0}} {
-        set cns [uplevel namespace current]
+        set cns [uplevel 1 namespace current]
         set name [namespace tail $cmd]
         if {$cns == "::"} {
             set cns ""
@@ -880,7 +880,7 @@ eval {
     }
 
     set resolver [ttrace::addresolver resolveclasses {classname} {
-        set cns [uplevel namespace current]
+        set cns [uplevel 1 namespace current]
         set script [ttrace::getentry xotcl $classname]
         if {$script == ""} {
             set name [namespace tail $classname]
@@ -896,7 +896,7 @@ eval {
                 return 0
             }
         }
-        uplevel [list namespace eval $cns $script]
+        uplevel 1 [list namespace eval $cns $script]
         return 1
     }]
 
