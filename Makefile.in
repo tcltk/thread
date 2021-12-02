@@ -312,12 +312,12 @@ VPATH = $(srcdir):$(srcdir)/generic:$(srcdir)/unix:$(srcdir)/win:$(srcdir)/macos
 
 threadCmd.@OBJEXT@:	threadUuid.h
 
-$(TOP_DIR)/manifest.uuid:
-	printf "git-" >$(TOP_DIR)/manifest.uuid
-	(cd $(TOP_DIR); git rev-parse HEAD >>$(TOP_DIR)/manifest.uuid || \
-	    (printf "svn-r" >$(TOP_DIR)/manifest.uuid ; \
-	    svn info --show-item last-changed-revision >>$(TOP_DIR)/manifest.uuid) || \
-	    printf "unknown" >$(TOP_DIR)/manifest.uuid)
+$(srcdir)/manifest.uuid:
+	printf "git-" >$(srcdir)/manifest.uuid
+	(cd $(srcdir); git rev-parse HEAD >>$(srcdir)/manifest.uuid || \
+	    (printf "svn-r" >$(srcdir)/manifest.uuid ; \
+	    svn info --show-item last-changed-revision >>$(srcdir)/manifest.uuid) || \
+	    printf "unknown" >$(srcdir)/manifest.uuid)
 
 threadUuid.h:	$(srcdir)/manifest.uuid
 	echo "#define THREAD_VERSION_UUID \\" >$@
@@ -339,10 +339,6 @@ DIST_INSTALL_SCRIPT	= CPPROG='cp -p' $(INSTALL) -m 755
 
 dist-clean:
 	rm -rf $(DIST_DIR) $(DIST_ROOT)/$(PKG_DIR).tar.*
-
-$(srcdir)/manifest.uuid:
-	printf "git-" >$(srcdir)/manifest.uuid
-	git rev-parse HEAD >>$(srcdir)/manifest.uuid
 
 dist: dist-clean $(srcdir)/manifest.uuid
 	$(INSTALL_DATA_DIR) $(DIST_DIR)
@@ -368,10 +364,8 @@ dist: dist-clean $(srcdir)/manifest.uuid
 	$(INSTALL_DATA_DIR) $(DIST_DIR)/win
 	$(DIST_INSTALL_DATA) \
 		$(srcdir)/win/README.txt $(srcdir)/win/CONFIG $(srcdir)/win/thread.rc \
-		$(srcdir)/win/makefile.vc \
-		$(srcdir)/win/nmakehlp.c $(srcdir)/win/pkg.vc \
-		$(srcdir)/win/targets.vc $(srcdir)/win/rules-ext.vc \
-		$(srcdir)/win/rules.vc $(srcdir)/win/thread_win.dsw \
+		$(srcdir)/win/*.vc $(srcdir)/win/*.in \
+		$(srcdir)/win/nmakehlp.c $(srcdir)/win/thread_win.dsw \
 		$(srcdir)/win/thread_win.dsp \
 		$(DIST_DIR)/win/
 
