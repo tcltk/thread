@@ -907,9 +907,10 @@ DupListObjShared(
 ) {
     int i, llen;
     Tcl_Obj *elObj, **newObjList;
+    Tcl_Obj *buf[16];
 
     Tcl_ListObjLength(NULL, srcPtr, &llen);
-    newObjList = (llen > 0) ? (Tcl_Obj**)ckalloc(llen*sizeof(Tcl_Obj*)) : NULL;
+    newObjList = (llen > 16) ? (Tcl_Obj**)ckalloc(llen*sizeof(Tcl_Obj*)) : &buf[0];
 
     for (i = 0; i < llen; i++) {
 	Tcl_ListObjIndex(NULL, srcPtr, i, &elObj);
@@ -918,7 +919,7 @@ DupListObjShared(
 
     Tcl_SetListObj(copyPtr, llen, newObjList);
 
-    if (newObjList != NULL) {
+    if (newObjList != &buf[0]) {
 	ckfree((char*)newObjList);
     }
 }
