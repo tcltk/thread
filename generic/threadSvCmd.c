@@ -1020,7 +1020,9 @@ Sv_DuplicateObj(
                 * Cover all "safe" obj types (see header comment)
                 */
               (*objPtr->typePtr->dupIntRepProc)(objPtr, dupPtr);
-              Tcl_InvalidateStringRep(dupPtr);
+              if (dupPtr->typePtr != NULL) {
+                  Tcl_InvalidateStringRep(dupPtr);
+              }
             } else {
                 int found = 0;
                 RegType *regPtr;
@@ -1032,7 +1034,9 @@ Sv_DuplicateObj(
                 for (regPtr = regType; regPtr; regPtr = regPtr->nextPtr) {
                     if (objPtr->typePtr == regPtr->typePtr) {
                         (*regPtr->dupIntRepProc)(objPtr, dupPtr);
-                        Tcl_InvalidateStringRep(dupPtr);
+                        if (dupPtr->typePtr != NULL) {
+                            Tcl_InvalidateStringRep(dupPtr);
+                        }
                         found = 1;
                         break;
                     }
