@@ -892,24 +892,21 @@ DupListObjShared(
     int i;
     int llen;
     Tcl_Obj *elObj, **newObjList;
+    Tcl_Obj *buf[16];
 
     Tcl_ListObjLength(NULL, srcPtr, &llen);
-    if (llen == 0) {
-        (*srcPtr->typePtr->dupIntRepProc)(srcPtr, copyPtr);
-        copyPtr->refCount = 0;
-        return;
-    }
-
-    newObjList = (Tcl_Obj **)Tcl_Alloc(llen*sizeof(Tcl_Obj *));
+    newObjList = (llen > 16) ? (Tcl_Obj**)Tcl_Alloc(llen*sizeof(Tcl_Obj *)) : &buf[0];
 
     for (i = 0; i < llen; i++) {
-        Tcl_ListObjIndex(NULL, srcPtr, i, &elObj);
-        newObjList[i] = Sv_DuplicateObj(elObj);
+	Tcl_ListObjIndex(NULL, srcPtr, i, &elObj);
+	newObjList[i] = Sv_DuplicateObj(elObj);
     }
 
     Tcl_SetListObj(copyPtr, llen, newObjList);
 
-    Tcl_Free(newObjList);
+    if (newObjList != &buf[0]) {
+	Tcl_Free(newObjList);
+    }
 }
 
 /*
