@@ -918,7 +918,9 @@ DupListObjShared(
 
     Tcl_SetListObj(copyPtr, llen, newObjList);
 
-    ckfree((char*)newObjList);
+    if (newObjList != NULL) {
+	ckfree((char*)newObjList);
+    }
 }
 
 /*
