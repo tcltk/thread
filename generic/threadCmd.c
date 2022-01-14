@@ -344,9 +344,6 @@ static void
 ThreadFreeProc(ClientData clientData);
 
 static void
-ThreadIdleProc(ClientData clientData);
-
-static void
 ThreadExitProc(ClientData clientData);
 
 static void
@@ -2779,21 +2776,22 @@ ThreadSend(
     }
 
     /*
-     * Short circuit sends to ourself.
+     * Short circuit sends to ourself (synchronously only).
      */
 
-    if (thrId == Tcl_GetCurrentThread()) {
+    if (thrId == Tcl_GetCurrentThread() && (flags & THREAD_SEND_WAIT)) {
         Tcl_MutexUnlock(&threadMutex);
-        if ((flags & THREAD_SEND_WAIT)) {
-            code = (*send->execProc)(interp, send);
-            ThreadFreeProc(send);
-            return code;
-        } else {
-            send->interp = interp;
-            Tcl_Preserve(send->interp);
-            Tcl_DoWhenIdle((Tcl_IdleProc*)ThreadIdleProc, send);
-            return TCL_OK;
-        }
+
+	if (!(flags & THREAD_SEND_HEAD)) {
+	    /* 
+	     * Be sure all already queued events are processed before this event
+	     */
+	    while ( Tcl_DoOneEvent((TCL_ALL_EVENTS & ~TCL_IDLE_EVENTS)|TCL_DONT_WAIT) ) {};
+	}
+	/* call it synchronously right now */
+	code = (*send->execProc)(interp, (ClientData)send);
+	ThreadFreeProc((ClientData)send);
+	return code;
     }
 
     /*
@@ -3543,34 +3541,6 @@ ThreadSetOption(
     Tcl_MutexUnlock(&threadMutex);
 
     return TCL_OK;
-}
-
-/*
- *----------------------------------------------------------------------
- *
- * ThreadIdleProc --
- *
- * Results:
- *
- * Side effects.
- *
- *----------------------------------------------------------------------
- */
-
-static void
-ThreadIdleProc(
-    ClientData clientData
-) {
-    int ret;
-    ThreadSendData *sendPtr = (ThreadSendData*)clientData;
-
-    ret = (*sendPtr->execProc)(sendPtr->interp, sendPtr);
-    if (ret != TCL_OK) {
-        ThreadErrorProc(sendPtr->interp);
-    }
-
-    Tcl_Release(sendPtr->interp);
-    ThreadFreeProc(clientData);
 }
 
 /*

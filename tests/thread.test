@@ -307,6 +307,30 @@ test thread-11.11 {Thread_Send preserve errorCode} {
     list $c $msg $errorCode
 } {1 ERR CODE}
 
+test thread-11.12 {thread::send - self as target, queue order (bug [b5709ea906])} -body {
+    # Short circuit sending to itself should consider order of already dispatched events,
+    # so SYNC is expected after ASYNC (and possibly TMR-0) but definitely before IDLE, only
+    # the HEAD event (synchronously sends to head of queue) is expected as first in the result,
+    # (note the timer-generation may be retarded tcl-versions related, so TMR-0 can be delayed)
+    ThreadReap
+    set res {}
+    set e [after 500 {lappend res TIMEOUT}]
+    #
+    after 0                                {lappend res TMR-0}
+    after idle                             {lappend res IDLE}
+    thread::send -async       [thread::id] {lappend res ASYNC}
+    thread::send -async -head [thread::id] {lappend res AHEAD}
+    thread::send        -head [thread::id] {lappend res HEAD}
+    thread::send              [thread::id] {lappend res SYNC}
+    #
+    while {[llength $res] < 6 && "TIMEOUT" ni $res} {
+	vwait res
+    }
+    after cancel $e
+    ThreadReap
+    set res
+} -match regexp -result {^HEAD(?:(?: TMR-0| AHEAD ASYNC){2} SYNC| AHEAD ASYNC SYNC TMR-0) IDLE$}
+
 test thread-12.0 {thread::wait} {
     ThreadReap
     set tid [thread::create {set x 5; thread::wait}]
