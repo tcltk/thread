@@ -113,7 +113,7 @@ TclX_IsNullObj (
     if (objPtr->typePtr == NULL) {
         return (objPtr->length == 0);
     } else if (objPtr->typePtr == listType) {
-        int length;
+        tclThreadSizeT length;
         Tcl_ListObjLength(NULL, objPtr, &length);
         return (length == 0);
     }
@@ -610,7 +610,7 @@ ObjToKeyedListEntry(
     Tcl_Obj     *objPtr,
     keylEntry_t *entryPtr
 ) {
-    int objc;
+    tclThreadSizeT objc;
     Tcl_Obj **objv;
     const char *key;
 
@@ -759,7 +759,8 @@ SetKeyedListFromAny(
     Tcl_Obj    *objPtr
 ) {
     keylIntObj_t *keylIntPtr;
-    int idx, objc;
+    int idx;
+    tclThreadSizeT objc;
     Tcl_Obj **objv;
 
     if (Tcl_ListObjGetElements (interp, objPtr, &objc, &objv) != TCL_OK)

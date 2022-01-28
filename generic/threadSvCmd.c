@@ -1218,7 +1218,8 @@ SvArrayObjCmd(
               int objc,                           /* Number of arguments. */
               Tcl_Obj *const objv[])              /* Argument objects. */
 {
-    int i, argx = 0, lobjc = 0, index, ret = TCL_OK;
+    int i, argx = 0, index, ret = TCL_OK;
+    tclThreadSizeT lobjc = 0;
     const char *arrayName = NULL;
     Array *arrayPtr = NULL;
     Tcl_Obj **lobjv = NULL;

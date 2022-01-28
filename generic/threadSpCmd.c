@@ -183,7 +183,7 @@ ThreadMutexObjCmd(
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int opt, ret;
-    size_t nameLen;
+    tclThreadSizeT nameLen;
     const char *mutexName;
     char type;
     SpMutex *mutexPtr;
@@ -255,8 +255,7 @@ ThreadMutexObjCmd(
          */
 
         nameObj = GetName(mutexPtr->type, (void*)mutexPtr);
-        mutexName = Tcl_GetString(nameObj);
-        nameLen = nameObj->length;
+        mutexName = Tcl_GetStringFromObj(nameObj, &nameLen);
         AddMutex(mutexName, nameLen, mutexPtr);
         Tcl_SetObjResult(interp, nameObj);
         return TCL_OK;
@@ -271,8 +270,7 @@ ThreadMutexObjCmd(
         return TCL_ERROR;
     }
 
-    mutexName = Tcl_GetString(objv[2]);
-    nameLen = objv[2]->length;
+    mutexName = Tcl_GetStringFromObj(objv[2], &nameLen);
 
     /*
      * Try mutex destroy

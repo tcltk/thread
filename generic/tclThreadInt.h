@@ -60,6 +60,12 @@
 # define TCL_INDEX_NONE	(-1)
 #endif
 
+#if TCL_MAJOR_VERSION > 8
+#   define tclThreadSizeT size_t
+#else
+#   define tclThreadSizeT int
+#endif
+
 /*
  * Allow for some command names customization.
  * Only thread:: and tpool:: are handled here.
