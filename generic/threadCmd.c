@@ -2754,7 +2754,7 @@ ThreadSend(
         Tcl_MutexUnlock(&threadMutex);
 
 	if (!(flags & THREAD_SEND_HEAD)) {
-	    /* 
+	    /*
 	     * Be sure all already queued events are processed before this event
 	     */
 	    while ( Tcl_DoOneEvent((TCL_ALL_EVENTS & ~TCL_IDLE_EVENTS)|TCL_DONT_WAIT) ) {};
