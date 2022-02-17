@@ -661,13 +661,13 @@ SvLsearchObjCmd(
     Tcl_Obj *const objv[]
 ) {
     size_t length;
-    int ret, off, listc, mode, imode, ipatt, index, match, i;
+    int ret, off, listc, imode, ipatt, index, match, i;
     const char *patBytes;
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
 
     static const char *const modes[] = {"-exact", "-glob", "-regexp", NULL};
-    enum {LS_EXACT, LS_GLOB, LS_REGEXP};
+    enum {LS_EXACT, LS_GLOB, LS_REGEXP} mode;
 
     mode = LS_GLOB;
 

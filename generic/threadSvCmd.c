@@ -1218,8 +1218,7 @@ SvArrayObjCmd(
               int objc,                   /* Number of arguments. */
               Tcl_Obj *const objv[])              /* Argument objects. */
 {
-    int i, argx = 0, index, ret = TCL_OK;
-    int lobjc = 0;
+    int i, argx = 0, lobjc = 0, ret = TCL_OK;
     const char *arrayName = NULL;
     Array *arrayPtr = NULL;
     Tcl_Obj **lobjv = NULL;
@@ -1232,7 +1231,7 @@ SvArrayObjCmd(
     enum options {
         ASET,   ARESET,  AGET,  ANAMES,  ASIZE,  AEXISTS, AISBOUND,
         ABIND,  AUNBIND
-    };
+    } index;
 
     svObj = (Container*)arg;
 

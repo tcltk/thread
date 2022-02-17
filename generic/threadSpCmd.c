@@ -182,7 +182,7 @@ ThreadMutexObjCmd(
     int objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    int opt, ret;
+    int ret;
     size_t nameLen;
     const char *mutexName;
     char type;
@@ -192,7 +192,7 @@ ThreadMutexObjCmd(
     };
     enum options {
         m_CREATE, m_DESTROY, m_LOCK, m_UNLOCK
-    };
+    } opt;
     (void)dummy;
 
     /*
@@ -278,7 +278,7 @@ ThreadMutexObjCmd(
      * Try mutex destroy
      */
 
-    if (opt == (int)m_DESTROY) {
+    if (opt == m_DESTROY) {
         ret = RemoveMutex(mutexName, nameLen);
         if (ret <= 0) {
             if (ret == -1) {
@@ -309,7 +309,7 @@ ThreadMutexObjCmd(
         return TCL_ERROR;
     }
 
-    switch ((enum options)opt) {
+    switch (opt) {
     case m_LOCK:
         if (!SpMutexLock(mutexPtr)) {
             PutMutex(mutexPtr);
@@ -358,7 +358,7 @@ ThreadRWMutexObjCmd(
     int objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    int opt, ret;
+    int ret;
     size_t nameLen;
     const char *mutexName;
     SpMutex *mutexPtr;
@@ -370,7 +370,7 @@ ThreadRWMutexObjCmd(
     };
     enum options {
         w_CREATE, w_DESTROY, w_RLOCK, w_WLOCK, w_UNLOCK
-    };
+    } opt;
     (void)dummy;
 
     /*
@@ -396,7 +396,7 @@ ThreadRWMutexObjCmd(
      * Cover the "create" option first, since it needs no existing name.
      */
 
-    if (opt == (int)w_CREATE) {
+    if (opt == w_CREATE) {
         Tcl_Obj *nameObj;
         if (objc > 2) {
             Tcl_WrongNumArgs(interp, 1, objv, "create");
@@ -432,7 +432,7 @@ ThreadRWMutexObjCmd(
      * Try mutex destroy
      */
 
-    if (opt == (int)w_DESTROY) {
+    if (opt == w_DESTROY) {
         ret = RemoveMutex(mutexName, nameLen);
         if (ret <= 0) {
             if (ret == -1) {
@@ -465,7 +465,7 @@ ThreadRWMutexObjCmd(
     lockPtr = &mutexPtr->lock;
     rwPtr = (Sp_ReadWriteMutex*) lockPtr;
 
-    switch ((enum options)opt) {
+    switch (opt) {
     case w_RLOCK:
         if (!Sp_ReadWriteMutexRLock(rwPtr)) {
             PutMutex(mutexPtr);
@@ -523,7 +523,7 @@ ThreadCondObjCmd(
     int objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    int opt, ret, timeMsec = 0;
+    int ret, timeMsec = 0;
     size_t nameLen;
     const char *condvName, *mutexName;
     SpMutex *mutexPtr;
@@ -534,7 +534,7 @@ ThreadCondObjCmd(
     };
     enum options {
         c_CREATE, c_DESTROY, c_NOTIFY, c_WAIT
-    };
+    } opt;
     (void)dummy;
 
     /*
@@ -559,7 +559,7 @@ ThreadCondObjCmd(
      * Cover the "create" option since it needs no existing name.
      */
 
-    if (opt == (int)c_CREATE) {
+    if (opt == c_CREATE) {
         Tcl_Obj *nameObj;
         if (objc > 2) {
             Tcl_WrongNumArgs(interp, 1, objv, "create");
@@ -595,7 +595,7 @@ ThreadCondObjCmd(
      * Try variable destroy.
      */
 
-    if (opt == (int)c_DESTROY) {
+    if (opt == c_DESTROY) {
         ret = RemoveCondv(condvName, nameLen);
         if (ret <= 0) {
             if (ret == -1) {
@@ -620,7 +620,7 @@ ThreadCondObjCmd(
         goto notfound;
     }
 
-    switch ((enum options)opt) {
+    switch (opt) {
     case c_WAIT:
 
         /*
