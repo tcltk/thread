@@ -105,9 +105,9 @@ newly created thread is initialized. If the current number of worker
 threads is equal to the maximum number of worker threads, as defined
 during the threadpool creation, the command will enter the event loop and
 service events while waiting for one of the worker threads to become idle.
-If the optional [opt -nowait] argument is given, the command will not wait
-for one idle worker. It will just place the job in the pool's job queue
-and return immediately.
+If the optional [opt -nowait] argument is given, the command just places the
+job in the pool's job queue without waiting for an idle worker or creating a
+new one, even if the pool would still have room for additional threads.
 [para]
 The command returns the ID of the posted job. This ID is used for subsequent
 [cmd tpool::wait], [cmd tpool::get] and [cmd tpool::cancel] commands to wait
