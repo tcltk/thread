@@ -85,7 +85,7 @@ TclX_IsNullObj (
     if (objPtr->typePtr == NULL) {
         return (objPtr->length == 0);
     } else if (objPtr->typePtr == listType) {
-        int length;
+        Tcl_Size length;
         Tcl_ListObjLength(NULL, objPtr, &length);
         return (length == 0);
     }
@@ -190,8 +190,8 @@ typedef struct {
  * Internal representation of a keyed list object.
  */
 typedef struct {
-    int          arraySize;   /* Current slots available in the array.  */
-    int          numEntries;  /* Number of actual entries in the array. */
+    Tcl_Size     arraySize;   /* Current slots available in the array.  */
+    Tcl_Size     numEntries;  /* Number of actual entries in the array. */
     keylEntry_t *entries;     /* Array of keyed list entries.           */
 } keylIntObj_t;
 
@@ -248,13 +248,13 @@ FreeKeyedListData(keylIntObj_t *keylIntPtr);
 
 static void
 EnsureKeyedListSpace(keylIntObj_t *keylIntPtr,
-                                  int           newNumEntries);
+                                  Tcl_Size newNumEntries);
 
 static void
 DeleteKeyedListEntry(keylIntObj_t *keylIntPtr,
-                                  int           entryIdx);
+                                  Tcl_Size entryIdx);
 
-static int
+static Tcl_Size
 FindKeyedListEntry(keylIntObj_t *keylIntPtr,
                                 const char   *key,
                                 size_t       *keyLenPtr,
@@ -327,11 +327,9 @@ static void
 ValidateKeyedList (keylIntPtr)
     keylIntObj_t *keylIntPtr;
 {
-    int idx;
+    Tcl_Size idx;
 
     TclX_Assert (keylIntPtr->arraySize >= keylIntPtr->numEntries);
-    TclX_Assert (keylIntPtr->arraySize >= 0);
-    TclX_Assert (keylIntPtr->numEntries >= 0);
     TclX_Assert ((keylIntPtr->arraySize > 0) ?
                  (keylIntPtr->entries != NULL) : 1);
     TclX_Assert ((keylIntPtr->numEntries > 0) ?
@@ -433,7 +431,7 @@ static void
 FreeKeyedListData(
     keylIntObj_t *keylIntPtr
 ) {
-    int idx;
+    Tcl_Size idx;
 
     for (idx = 0; idx < keylIntPtr->numEntries ; idx++) {
         Tcl_Free(keylIntPtr->entries[idx].key);
@@ -458,12 +456,12 @@ FreeKeyedListData(
 static void
 EnsureKeyedListSpace(
     keylIntObj_t *keylIntPtr,
-    int           newNumEntries
+    Tcl_Size newNumEntries
 ) {
     KEYL_REP_ASSERT (keylIntPtr);
 
-    if ((keylIntPtr->arraySize - keylIntPtr->numEntries) < newNumEntries) {
-        int newSize = keylIntPtr->arraySize + newNumEntries +
+    if ((keylIntPtr->arraySize) < newNumEntries + keylIntPtr->numEntries) {
+        Tcl_Size newSize = keylIntPtr->arraySize + newNumEntries +
             KEYEDLIST_ARRAY_INCR_SIZE;
         if (keylIntPtr->entries == NULL) {
             keylIntPtr->entries = (keylEntry_t *)
@@ -491,9 +489,9 @@ EnsureKeyedListSpace(
 static void
 DeleteKeyedListEntry (
     keylIntObj_t *keylIntPtr,
-    int           entryIdx
+    Tcl_Size entryIdx
 ) {
-    int idx;
+    Tcl_Size idx;
 
     Tcl_Free(keylIntPtr->entries [entryIdx].key);
     Tcl_DecrRefCount (keylIntPtr->entries [entryIdx].valuePtr);
@@ -517,10 +515,10 @@ DeleteKeyedListEntry (
  *   o nextSubKeyPtr - If not NULL, the start of the name of the next
  *     sub-key within key is returned.
  * Returns:
- *   Index of the entry or -1 if not found.
+ *   Index of the entry or TCL_INDEX_NONE if not found.
  *-----------------------------------------------------------------------------
  */
-static int
+static Tcl_Size
 FindKeyedListEntry(
     keylIntObj_t *keylIntPtr,
     const char   *key,
@@ -529,7 +527,7 @@ FindKeyedListEntry(
 ) {
     const char *keySeparPtr;
     size_t keyLen;
-    int findIdx;
+    Tcl_Size findIdx;
 
     keySeparPtr = strchr(key, '.');
     if (keySeparPtr != NULL) {
@@ -556,7 +554,7 @@ FindKeyedListEntry(
     }
 
     if (findIdx >= keylIntPtr->numEntries) {
-        return -1;
+        return TCL_INDEX_NONE;
     }
 
     return findIdx;
@@ -582,7 +580,7 @@ ObjToKeyedListEntry(
     Tcl_Obj     *objPtr,
     keylEntry_t *entryPtr
 ) {
-    int objc;
+    Tcl_Size objc;
     Tcl_Obj **objv;
     const char *key;
 
@@ -649,7 +647,7 @@ DupKeyedListInternalRep(
     keylIntObj_t *srcIntPtr = (keylIntObj_t *)
         srcPtr->internalRep.twoPtrValue.ptr1;
     keylIntObj_t *copyIntPtr;
-    int idx;
+    Tcl_Size idx;
 
     KEYL_REP_ASSERT (srcIntPtr);
 
@@ -731,8 +729,8 @@ SetKeyedListFromAny(
     Tcl_Obj    *objPtr
 ) {
     keylIntObj_t *keylIntPtr;
-    int idx;
-    int objc;
+    Tcl_Size idx;
+    Tcl_Size objc;
     Tcl_Obj **objv;
 
     if (Tcl_ListObjGetElements (interp, objPtr, &objc, &objv) != TCL_OK)
@@ -777,7 +775,7 @@ UpdateStringOfKeyedList(
     Tcl_Obj  *keylPtr
 ) {
 #define UPDATE_STATIC_SIZE 32
-    int idx;
+    Tcl_Size idx;
     Tcl_Obj **listObjv, *entryObjv [2], *tmpListObj;
     Tcl_Obj *staticListObjv [UPDATE_STATIC_SIZE];
     char *listStr;
@@ -862,7 +860,7 @@ TclX_KeyedListGet(
 ) {
     keylIntObj_t *keylIntPtr;
     const char *nextSubKey;
-    int findIdx;
+    Tcl_Size findIdx;
 
     if (keylPtr->typePtr != &keyedListType) {
         if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
@@ -877,7 +875,7 @@ TclX_KeyedListGet(
     /*
      * If not found, return status.
      */
-    if (findIdx < 0) {
+    if (findIdx == TCL_INDEX_NONE) {
         *valuePtrPtr = NULL;
         return TCL_BREAK;
     }
@@ -920,7 +918,8 @@ TclX_KeyedListSet(
 ) {
     keylIntObj_t *keylIntPtr;
     const char *nextSubKey;
-    int findIdx, status;
+    Tcl_Size findIdx;
+    int status;
     size_t keyLen;
     Tcl_Obj *newKeylPtr;
 
@@ -939,7 +938,7 @@ TclX_KeyedListSet(
      * If we are at the last subkey, either update or add an entry.
      */
     if (nextSubKey == NULL) {
-        if (findIdx < 0) {
+        if (findIdx == TCL_INDEX_NONE) {
             EnsureKeyedListSpace (keylIntPtr, 1);
             findIdx = keylIntPtr->numEntries;
             keylIntPtr->numEntries++;
@@ -965,7 +964,7 @@ TclX_KeyedListSet(
      * means we must build new subtree. Don't insert the new tree until we
      * come back without error.
      */
-    if (findIdx >= 0) {
+    if (findIdx != TCL_INDEX_NONE) {
         DupSharedKeyListChild (keylIntPtr, findIdx);
         status =
             TclX_KeyedListSet (interp,
@@ -1022,7 +1021,8 @@ TclX_KeyedListDelete(
 ) {
     keylIntObj_t *keylIntPtr, *subKeylIntPtr;
     const char *nextSubKey;
-    int findIdx, status;
+    Tcl_Size findIdx;
+    int status;
 
     if (keylPtr->typePtr != &keyedListType) {
         if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
@@ -1036,7 +1036,7 @@ TclX_KeyedListDelete(
     /*
      * If not found, return status.
      */
-    if (findIdx < 0) {
+    if (findIdx == TCL_INDEX_NONE) {
         KEYL_REP_ASSERT (keylIntPtr);
         return TCL_BREAK;
     }
@@ -1101,7 +1101,7 @@ TclX_KeyedListGetKeys(
     keylIntObj_t *keylIntPtr;
     Tcl_Obj *nameObjPtr, *listObjPtr;
     const char *nextSubKey;
-    int idx, findIdx;
+    Tcl_Size idx, findIdx;
 
     if (keylPtr->typePtr != &keyedListType) {
         if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
@@ -1116,7 +1116,7 @@ TclX_KeyedListGetKeys(
      */
     if ((key != NULL) && (key [0] != '\0')) {
         findIdx = FindKeyedListEntry (keylIntPtr, key, NULL, &nextSubKey);
-        if (findIdx < 0) {
+        if (findIdx == TCL_INDEX_NONE) {
             TclX_Assert (keylIntPtr->arraySize >= keylIntPtr->numEntries);
             return TCL_BREAK;
         }
@@ -1242,7 +1242,7 @@ Tcl_KeylsetObjCmd(
 ) {
     Tcl_Obj *keylVarPtr, *newVarObj;
     const char *key;
-    int idx;
+    Tcl_Size idx;
     (void)dummy;
 
     if ((objc < 4) || ((objc % 2) != 0)) {
@@ -1267,7 +1267,7 @@ Tcl_KeylsetObjCmd(
         newVarObj = NULL;
     }
 
-    for (idx = 2; idx < objc; idx += 2) {
+    for (idx = 2; idx < (Tcl_Size)objc; idx += 2) {
         key = Tcl_GetString(objv[idx]);
         if (ValidateKey(interp, key, objv[idx]->length, 1) == TCL_ERROR) {
             goto errorExit;
@@ -1306,7 +1306,8 @@ Tcl_KeyldelObjCmd(
 ) {
     Tcl_Obj *keylVarPtr, *keylPtr;
     const char *key;
-    int idx, status;
+    Tcl_Size idx;
+    int status;
     (void)dummy;
 
     if (objc < 3) {
@@ -1334,7 +1335,7 @@ Tcl_KeyldelObjCmd(
     }
     keylPtr = keylVarPtr;
 
-    for (idx = 2; idx < objc; idx++) {
+    for (idx = 2; idx < (Tcl_Size)objc; idx++) {
         key = Tcl_GetString(objv[idx]);
         if (ValidateKey(interp, key, objv[idx]->length, 1) == TCL_ERROR) {
             return TCL_ERROR;

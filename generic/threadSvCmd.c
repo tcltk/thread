@@ -1350,7 +1350,7 @@ SvArrayObjCmd(
 
         PsStore *psPtr;
         Tcl_HashEntry *hPtr;
-        size_t len;
+        Tcl_Size len;
         int isNew;
         char *psurl, *key = NULL, *val = NULL;
 
@@ -1366,8 +1366,7 @@ SvArrayObjCmd(
             goto cmdExit;
         }
 
-        psurl = Tcl_GetString(objv[3]);
-        len = objv[3]->length;
+        psurl = Tcl_GetStringFromObj(objv[3], &len);
         psPtr = GetPsStore(psurl);
 
         if (psPtr == NULL) {

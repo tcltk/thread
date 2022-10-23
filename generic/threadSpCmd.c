@@ -255,8 +255,7 @@ ThreadMutexObjCmd(
          */
 
         nameObj = GetName(mutexPtr->type, (void*)mutexPtr);
-        mutexName = Tcl_GetString(nameObj);
-        nameLen = nameObj->length;
+        mutexName = Tcl_GetStringFromObj(nameObj, &nameLen);
         AddMutex(mutexName, nameLen, mutexPtr);
         Tcl_SetObjResult(interp, nameObj);
         return TCL_OK;
@@ -359,7 +358,7 @@ ThreadRWMutexObjCmd(
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret;
-    size_t nameLen;
+    Tcl_Size nameLen;
     const char *mutexName;
     SpMutex *mutexPtr;
     Sp_ReadWriteMutex *rwPtr;
@@ -410,8 +409,8 @@ ThreadRWMutexObjCmd(
         mutexPtr->lock   = NULL; /* Will be auto-initialized */
 
         nameObj = GetName(mutexPtr->type, (void*)mutexPtr);
-        mutexName = Tcl_GetString(nameObj);
-        AddMutex(mutexName, nameObj->length, mutexPtr);
+        mutexName = Tcl_GetStringFromObj(nameObj, &nameLen);
+        AddMutex(mutexName, nameLen, mutexPtr);
         Tcl_SetObjResult(interp, nameObj);
         return TCL_OK;
     }
@@ -425,8 +424,7 @@ ThreadRWMutexObjCmd(
         return TCL_ERROR;
     }
 
-    mutexName = Tcl_GetString(objv[2]);
-    nameLen = objv[2]->length;
+    mutexName = Tcl_GetStringFromObj(objv[2], &nameLen);
 
     /*
      * Try mutex destroy
@@ -524,7 +522,7 @@ ThreadCondObjCmd(
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret, timeMsec = 0;
-    size_t nameLen;
+    Tcl_Size nameLen;
     const char *condvName, *mutexName;
     SpMutex *mutexPtr;
     SpCondv *condvPtr;
@@ -588,8 +586,7 @@ ThreadCondObjCmd(
         return TCL_ERROR;
     }
 
-    condvName = Tcl_GetString(objv[2]);
-    nameLen = objv[2]->length;
+    condvName = Tcl_GetStringFromObj(objv[2], &nameLen);
 
     /*
      * Try variable destroy.

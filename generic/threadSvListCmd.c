@@ -56,7 +56,7 @@ static Tcl_Mutex initMutex;
  */
 
 static Tcl_Obj*
-SvLsetFlat(Tcl_Interp *interp, Tcl_Obj *listPtr, int indexCount,
+SvLsetFlat(Tcl_Interp *interp, Tcl_Obj *listPtr, Tcl_Size indexCount,
            Tcl_Obj **indexArray, Tcl_Obj *valuePtr);
 
 
@@ -136,8 +136,8 @@ SvLpopObjCmd (
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    int ret, off, llen, iarg = 0;
-    size_t index = 0;
+    int ret, off, iarg = 0;
+    Tcl_Size llen, index = 0;
     Tcl_Obj *elPtr = NULL;
     Container *svObj = (Container*)arg;
 
@@ -168,7 +168,7 @@ SvLpopObjCmd (
             goto cmd_err;
         }
     }
-    if (index >= (size_t)llen) {
+    if (index + 1 >= llen + 1) {
         goto cmd_ok; /* Ignore out-of bounds, like Tcl does */
     }
     ret = Tcl_ListObjIndex(interp, svObj->tclObj, index, &elPtr);
@@ -216,8 +216,8 @@ SvLpushObjCmd (
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    int off, ret, flg, llen;
-    size_t index = 0;
+    int off, ret, flg;
+    Tcl_Size llen, index = 0;
     Tcl_Obj *args[1];
     Container *svObj = (Container*)arg;
 
@@ -247,7 +247,7 @@ SvLpushObjCmd (
         }
         if (index == TCL_INDEX_NONE) {
             index = 0;
-        } else if (index > (size_t)llen) {
+        } else if (index > llen) {
             index = llen;
         }
     }
@@ -350,9 +350,8 @@ SvLreplaceObjCmd(
     Tcl_Obj *const objv[]
 ) {
     const char *firstArg;
-    size_t argLen;
+    Tcl_Size argLen, first, last;
     int ret, off, llen, ndel, nargs, i, j;
-    size_t first, last;
     Tcl_Obj **args = NULL;
     Container *svObj = (Container*)arg;
 
@@ -383,8 +382,7 @@ SvLreplaceObjCmd(
         goto cmd_err;
     }
 
-    firstArg = Tcl_GetString(objv[off]);
-    argLen = objv[off]->length;
+    firstArg = Tcl_GetStringFromObj(objv[off], &argLen);
     if (first == TCL_INDEX_NONE)  {
         first = 0;
     }
@@ -531,8 +529,8 @@ SvLinsertObjCmd(
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    int off, ret, flg, llen, nargs, i, j;
-    size_t index = 0;
+    int off, ret, flg, nargs, i, j;
+    Tcl_Size llen, index = 0;
     Tcl_Obj **args;
     Container *svObj = (Container*)arg;
 
@@ -561,7 +559,7 @@ SvLinsertObjCmd(
     }
     if (index == TCL_INDEX_NONE) {
         index = 0;
-    } else if (index > (size_t)llen) {
+    } else if (index > llen) {
         index = llen;
     }
 
@@ -660,8 +658,8 @@ SvLsearchObjCmd(
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    size_t length;
-    int ret, off, listc, imode, ipatt, index, match, i;
+    int ret, off, imode, ipatt, match;
+    Tcl_Size index, length, i, listc;
     const char *patBytes;
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
@@ -703,9 +701,8 @@ SvLsearchObjCmd(
         goto cmd_err;
     }
 
-    index = -1;
-    patBytes = Tcl_GetString(objv[ipatt]);
-    length = objv[ipatt]->length;
+    index = TCL_INDEX_NONE;
+    patBytes = Tcl_GetStringFromObj(objv[ipatt], &length);
 
     for (i = 0; i < listc; i++) {
         match = 0;
@@ -734,7 +731,7 @@ SvLsearchObjCmd(
         }
     }
 
-    Tcl_SetObjResult(interp, Tcl_NewIntObj(index));
+    Tcl_SetObjResult(interp, Tcl_NewWideIntObj((index != TCL_INDEX_NONE) ? (Tcl_WideInt)(Tcl_WideUInt)index : -1));
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
 
@@ -767,8 +764,8 @@ SvLindexObjCmd(
     Tcl_Obj *const objv[]
 ) {
     Tcl_Obj **elPtrs;
-    int ret, off, llen;
-    size_t index;
+    int ret, off;
+    Tcl_Size llen, index;
     Container *svObj = (Container*)arg;
 
     /*
@@ -889,8 +886,7 @@ DupListObjShared(
     Tcl_Obj *srcPtr,           /* Object with internal rep to copy. */
     Tcl_Obj *copyPtr           /* Object with internal rep to set. */
 ) {
-    int i;
-    int llen;
+    Tcl_Size i, llen;
     Tcl_Obj *elObj, **newObjList;
     Tcl_Obj *buf[16];
 
@@ -928,12 +924,12 @@ static Tcl_Obj*
 SvLsetFlat(
      Tcl_Interp *interp,    /* Tcl interpreter */
      Tcl_Obj *listPtr,      /* Pointer to the list being modified */
-     int indexCount,        /* Number of index args */
+     Tcl_Size indexCount,   /* Number of index args */
      Tcl_Obj **indexArray,
      Tcl_Obj *valuePtr      /* Value arg to 'lset' */
 ) {
-    int elemCount, result, i;
-    size_t index;
+    Tcl_Size i, elemCount, index;
+	int result;
     Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
 
     /*

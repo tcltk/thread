@@ -375,8 +375,7 @@ TpoolPostObjCmd(
     }
 
     tpoolName = Tcl_GetString(objv[ii]);
-    script    = Tcl_GetString(objv[ii+1]);
-    len = objv[ii+1]->length;
+    script    = Tcl_GetStringFromObj(objv[ii+1], &len);
     tpoolPtr  = GetTpool(tpoolName);
     if (tpoolPtr == NULL) {
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
@@ -1528,7 +1527,7 @@ TpoolEval(
     TpoolResult *rPtr
 ) {
     int ret;
-    size_t reslen;
+    Tcl_Size reslen;
     const char *result;
     const char *errorCode, *errorInfo;
 
@@ -1550,8 +1549,7 @@ TpoolEval(
         }
     }
 
-    result = Tcl_GetString(Tcl_GetObjResult(interp));
-    reslen = Tcl_GetObjResult(interp)->length;
+    result = Tcl_GetStringFromObj(Tcl_GetObjResult(interp), &reslen);
 
     if (reslen == 0) {
         rPtr->result = threadEmptyResult;
