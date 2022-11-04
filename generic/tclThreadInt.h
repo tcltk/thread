@@ -59,7 +59,7 @@
 # endif
 #endif
 
-#if (TCL_MAJOR_VERSION < 9) && defined(USE_TCL_STUBS)
+#if (TCL_MAJOR_VERSION == 8) && defined(USE_TCL_STUBS)
 #undef Tcl_Free
 #define Tcl_Free(p) tclStubsPtr->tcl_Free((void *)(p))
 #undef Tcl_Realloc

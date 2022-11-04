@@ -1350,7 +1350,7 @@ SvArrayObjCmd(
 
         PsStore *psPtr;
         Tcl_HashEntry *hPtr;
-        Tcl_Size len;
+        size_t len;
         int isNew;
         char *psurl, *key = NULL, *val = NULL;
 

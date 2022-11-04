@@ -1527,7 +1527,7 @@ TpoolEval(
     TpoolResult *rPtr
 ) {
     int ret;
-    Tcl_Size reslen;
+    size_t reslen;
     const char *result;
     const char *errorCode, *errorInfo;
 

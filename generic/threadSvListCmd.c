@@ -56,7 +56,7 @@ static Tcl_Mutex initMutex;
  */
 
 static Tcl_Obj*
-SvLsetFlat(Tcl_Interp *interp, Tcl_Obj *listPtr, Tcl_Size indexCount,
+SvLsetFlat(Tcl_Interp *interp, Tcl_Obj *listPtr, size_t indexCount,
            Tcl_Obj **indexArray, Tcl_Obj *valuePtr);
 
 
@@ -124,11 +124,6 @@ Sv_RegisterListCommands(void)
  *-----------------------------------------------------------------------------
  */
 
-#if TCL_MAJOR_VERSION < 9
-#   undef size_t
-#   define size_t int
-#endif
-
 static int
 SvLpopObjCmd (
     void *arg,
@@ -137,7 +132,7 @@ SvLpopObjCmd (
     Tcl_Obj *const objv[]
 ) {
     int ret, off, iarg = 0;
-    Tcl_Size llen, index = 0;
+    size_t llen, index = 0;
     Tcl_Obj *elPtr = NULL;
     Container *svObj = (Container*)arg;
 
@@ -217,7 +212,7 @@ SvLpushObjCmd (
     Tcl_Obj *const objv[]
 ) {
     int off, ret, flg;
-    Tcl_Size llen, index = 0;
+    size_t llen, index = 0;
     Tcl_Obj *args[1];
     Container *svObj = (Container*)arg;
 
@@ -350,7 +345,7 @@ SvLreplaceObjCmd(
     Tcl_Obj *const objv[]
 ) {
     const char *firstArg;
-    Tcl_Size argLen, first, last;
+    size_t argLen, first, last;
     int ret, off, llen, ndel, nargs, i, j;
     Tcl_Obj **args = NULL;
     Container *svObj = (Container*)arg;
@@ -530,7 +525,7 @@ SvLinsertObjCmd(
     Tcl_Obj *const objv[]
 ) {
     int off, ret, flg, nargs, i, j;
-    Tcl_Size llen, index = 0;
+    size_t llen, index = 0;
     Tcl_Obj **args;
     Container *svObj = (Container*)arg;
 
@@ -659,7 +654,7 @@ SvLsearchObjCmd(
     Tcl_Obj *const objv[]
 ) {
     int ret, off, imode, ipatt, match;
-    Tcl_Size index, length, i, listc;
+    size_t index, length, i, listc;
     const char *patBytes;
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
@@ -765,7 +760,7 @@ SvLindexObjCmd(
 ) {
     Tcl_Obj **elPtrs;
     int ret, off;
-    Tcl_Size llen, index;
+    size_t llen, index;
     Container *svObj = (Container*)arg;
 
     /*
@@ -886,7 +881,7 @@ DupListObjShared(
     Tcl_Obj *srcPtr,           /* Object with internal rep to copy. */
     Tcl_Obj *copyPtr           /* Object with internal rep to set. */
 ) {
-    Tcl_Size i, llen;
+    size_t i, llen;
     Tcl_Obj *elObj, **newObjList;
     Tcl_Obj *buf[16];
 
@@ -924,11 +919,11 @@ static Tcl_Obj*
 SvLsetFlat(
      Tcl_Interp *interp,    /* Tcl interpreter */
      Tcl_Obj *listPtr,      /* Pointer to the list being modified */
-     Tcl_Size indexCount,   /* Number of index args */
+     size_t indexCount,   /* Number of index args */
      Tcl_Obj **indexArray,
      Tcl_Obj *valuePtr      /* Value arg to 'lset' */
 ) {
-    Tcl_Size i, elemCount, index;
+    size_t i, elemCount, index;
 	int result;
     Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
 
