@@ -117,7 +117,7 @@ MODULE_SCOPE const char *TpoolInit(Tcl_Interp *interp);
  */
 
 #define TCL_CMD(a,b,c) \
-  if (Tcl_CreateObjCommand((a),(b),(c),NULL, NULL) == NULL) \
+  if (Tcl_CreateObjCommand2((a),(b),(c),NULL, NULL) == NULL) \
     return NULL;
 
 #define OPT_CMP(a,b) \

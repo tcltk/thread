@@ -102,16 +102,16 @@ static char *threadEmptyResult = (char *)"";
  * Functions implementing Tcl commands
  */
 
-static Tcl_ObjCmdProc TpoolCreateObjCmd;
-static Tcl_ObjCmdProc TpoolPostObjCmd;
-static Tcl_ObjCmdProc TpoolWaitObjCmd;
-static Tcl_ObjCmdProc TpoolCancelObjCmd;
-static Tcl_ObjCmdProc TpoolGetObjCmd;
-static Tcl_ObjCmdProc TpoolReserveObjCmd;
-static Tcl_ObjCmdProc TpoolReleaseObjCmd;
-static Tcl_ObjCmdProc TpoolSuspendObjCmd;
-static Tcl_ObjCmdProc TpoolResumeObjCmd;
-static Tcl_ObjCmdProc TpoolNamesObjCmd;
+static Tcl_ObjCmdProc2 TpoolCreateObjCmd;
+static Tcl_ObjCmdProc2 TpoolPostObjCmd;
+static Tcl_ObjCmdProc2 TpoolWaitObjCmd;
+static Tcl_ObjCmdProc2 TpoolCancelObjCmd;
+static Tcl_ObjCmdProc2 TpoolGetObjCmd;
+static Tcl_ObjCmdProc2 TpoolReserveObjCmd;
+static Tcl_ObjCmdProc2 TpoolReleaseObjCmd;
+static Tcl_ObjCmdProc2 TpoolSuspendObjCmd;
+static Tcl_ObjCmdProc2 TpoolResumeObjCmd;
+static Tcl_ObjCmdProc2 TpoolNamesObjCmd;
 
 /*
  * Miscelaneous functions used within this file
@@ -196,7 +196,7 @@ static int
 TpoolCreateObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int ii, minw, maxw, idle;
@@ -300,7 +300,7 @@ TpoolCreateObjCmd(
     Tcl_MutexUnlock(&tpoolPtr->mutex);
 
     sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, TCL_AUTO_LENGTH));
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, TCL_INDEX_NONE));
 
     return TCL_OK;
 
@@ -333,12 +333,12 @@ static int
 TpoolPostObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_WideInt jobId = 0;
-    int ii, detached = 0, nowait = 0;
-    size_t len;
+    int detached = 0, nowait = 0;
+    size_t ii, len;
     const char *tpoolName, *script;
     TpoolResult *rPtr;
     ThreadPool *tpoolPtr;
@@ -369,7 +369,7 @@ TpoolPostObjCmd(
     /*
      * We expect exactly two arguments remaining after options
      */
-    if (objc - ii != 2)
+    if (objc != 2 + ii)
     {
         goto usage;
     }
@@ -505,7 +505,7 @@ static int
 TpoolWaitObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int ii, done;
@@ -622,7 +622,7 @@ static int
 TpoolCancelObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int ii;
@@ -720,7 +720,7 @@ static int
 TpoolGetObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int ret;
@@ -816,7 +816,7 @@ static int
 TpoolReserveObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int ret;
@@ -872,7 +872,7 @@ static int
 TpoolReleaseObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     size_t ret;
@@ -928,7 +928,7 @@ static int
 TpoolSuspendObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char *tpoolName;
@@ -979,7 +979,7 @@ static int
 TpoolResumeObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char *tpoolName;
@@ -1030,7 +1030,7 @@ static int
 TpoolNamesObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     ThreadPool *tpoolPtr;
@@ -1043,7 +1043,7 @@ TpoolNamesObjCmd(
     for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
         char buf[32];
         sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
-        Tcl_ListObjAppendElement(interp, listObj, Tcl_NewStringObj(buf, TCL_AUTO_LENGTH));
+        Tcl_ListObjAppendElement(interp, listObj, Tcl_NewStringObj(buf, TCL_INDEX_NONE));
     }
     Tcl_MutexUnlock(&listMutex);
     Tcl_SetObjResult(interp, listObj);
@@ -1093,7 +1093,7 @@ CreateWorker(
     Tcl_MutexLock(&startMutex);
     if (Tcl_CreateThread(&id, TpoolWorker, &result,
                          TCL_THREAD_STACK_DEFAULT, 0) != TCL_OK) {
-    	Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_AUTO_LENGTH));
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_INDEX_NONE));
         Tcl_MutexUnlock(&startMutex);
         return TCL_ERROR;
     }
@@ -1177,7 +1177,7 @@ TpoolWorker(
      */
 
     if (tpoolPtr->initScript) {
-        TpoolEval(interp, tpoolPtr->initScript, TCL_AUTO_LENGTH, rPtr);
+        TpoolEval(interp, tpoolPtr->initScript, TCL_INDEX_NONE, rPtr);
         if (rPtr->retcode != TCL_OK) {
             rPtr->retcode = 1;
             errMsg = Tcl_GetString(Tcl_GetObjResult(interp));
@@ -1267,7 +1267,7 @@ TpoolWorker(
      */
 
     if (tpoolPtr->exitScript) {
-        TpoolEval(interp, tpoolPtr->exitScript, TCL_AUTO_LENGTH, NULL);
+        TpoolEval(interp, tpoolPtr->exitScript, TCL_INDEX_NONE, NULL);
     }
 
     tpoolPtr->numWorkers--;
@@ -1583,14 +1583,14 @@ SetResult(
     if (rPtr->retcode == TCL_ERROR) {
         if (rPtr->errorCode) {
             if (interp) {
-                Tcl_SetObjErrorCode(interp,Tcl_NewStringObj(rPtr->errorCode, TCL_AUTO_LENGTH));
+                Tcl_SetObjErrorCode(interp,Tcl_NewStringObj(rPtr->errorCode, TCL_INDEX_NONE));
             }
             Tcl_Free(rPtr->errorCode);
             rPtr->errorCode = NULL;
         }
         if (rPtr->errorInfo) {
             if (interp) {
-            	Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(rPtr->errorInfo, TCL_AUTO_LENGTH));
+            	Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(rPtr->errorInfo, TCL_INDEX_NONE));
             }
             Tcl_Free(rPtr->errorInfo);
             rPtr->errorInfo = NULL;
@@ -1603,7 +1603,7 @@ SetResult(
             }
         } else {
             if (interp) {
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(rPtr->result, TCL_AUTO_LENGTH));
+                Tcl_SetObjResult(interp, Tcl_NewStringObj(rPtr->result, TCL_INDEX_NONE));
             }
             Tcl_Free(rPtr->result);
             rPtr->result = NULL;

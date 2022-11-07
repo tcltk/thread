@@ -282,25 +282,25 @@ UpdateStringOfKeyedList(Tcl_Obj *keylPtr);
 static int
 Tcl_KeylgetObjCmd(void        *clientData,
                                Tcl_Interp  *interp,
-                               int          objc,
+                               size_t objc,
                                Tcl_Obj     *const objv[]);
 
 static int
 Tcl_KeylsetObjCmd(void        *clientData,
                                Tcl_Interp  *interp,
-                               int  objc,
+                               size_t objc,
                                Tcl_Obj     *const objv[]);
 
 static int
 Tcl_KeyldelObjCmd(void        *clientData,
                                Tcl_Interp  *interp,
-                               int  objc,
+                               size_t objc,
                                Tcl_Obj     *const objv[]);
 
 static int
 Tcl_KeylkeysObjCmd(void        *clientData,
                                 Tcl_Interp  *interp,
-                                int  objc,
+                                size_t objc,
                                 Tcl_Obj     *const objv[]);
 
 /*
@@ -1133,7 +1133,7 @@ TclX_KeyedListGetKeys(
     listObjPtr = Tcl_NewListObj (0, NULL);
     for (idx = 0; idx < keylIntPtr->numEntries; idx++) {
         nameObjPtr = Tcl_NewStringObj (keylIntPtr->entries [idx].key,
-                                       -1);
+                                       TCL_INDEX_NONE);
         if (Tcl_ListObjAppendElement (interp, listObjPtr,
                                       nameObjPtr) != TCL_OK) {
             Tcl_DecrRefCount (nameObjPtr);
@@ -1156,7 +1156,7 @@ static int
 Tcl_KeylgetObjCmd(
     void        *clientData,
     Tcl_Interp  *interp,
-    int          objc,
+    size_t       objc,
     Tcl_Obj     *const objv[]
 ) {
     Tcl_Obj *keylPtr, *valuePtr;
@@ -1237,7 +1237,7 @@ static int
 Tcl_KeylsetObjCmd(
     void        *dummy,
     Tcl_Interp  *interp,
-    int          objc,
+    size_t       objc,
     Tcl_Obj     *const objv[]
 ) {
     Tcl_Obj *keylVarPtr, *newVarObj;
@@ -1301,7 +1301,7 @@ static int
 Tcl_KeyldelObjCmd(
     void        *dummy,
     Tcl_Interp  *interp,
-    int          objc,
+    size_t       objc,
     Tcl_Obj     *const objv[]
 ) {
     Tcl_Obj *keylVarPtr, *keylPtr;
@@ -1365,7 +1365,7 @@ static int
 Tcl_KeylkeysObjCmd(
     void        *dummy,
     Tcl_Interp  *interp,
-    int          objc,
+    size_t       objc,
     Tcl_Obj     *const objv[]
 ) {
     Tcl_Obj *keylPtr, *listObjPtr;
@@ -1430,25 +1430,25 @@ TclX_KeyedListInit(
     Tcl_DecrRefCount(listobj);
 
     if (0) {
-    Tcl_CreateObjCommand (interp,
+    Tcl_CreateObjCommand2(interp,
                           "keylget",
                           Tcl_KeylgetObjCmd,
                           NULL,
                           NULL);
 
-    Tcl_CreateObjCommand (interp,
+    Tcl_CreateObjCommand2(interp,
                           "keylset",
                           Tcl_KeylsetObjCmd,
                           NULL,
                           NULL);
 
-    Tcl_CreateObjCommand (interp,
+    Tcl_CreateObjCommand2(interp,
                           "keyldel",
                           Tcl_KeyldelObjCmd,
                           NULL,
                           NULL);
 
-    Tcl_CreateObjCommand (interp,
+    Tcl_CreateObjCommand2(interp,
                           "keylkeys",
                           Tcl_KeylkeysObjCmd,
                           NULL,

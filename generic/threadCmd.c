@@ -347,24 +347,24 @@ ThreadCancel(Tcl_Interp *interp,
  * Functions implementing Tcl commands
  */
 
-static Tcl_ObjCmdProc ThreadCreateObjCmd;
-static Tcl_ObjCmdProc ThreadReserveObjCmd;
-static Tcl_ObjCmdProc ThreadReleaseObjCmd;
-static Tcl_ObjCmdProc ThreadSendObjCmd;
-static Tcl_ObjCmdProc ThreadBroadcastObjCmd;
-static Tcl_ObjCmdProc ThreadUnwindObjCmd;
-static Tcl_ObjCmdProc ThreadExitObjCmd;
-static Tcl_ObjCmdProc ThreadIdObjCmd;
-static Tcl_ObjCmdProc ThreadNamesObjCmd;
-static Tcl_ObjCmdProc ThreadWaitObjCmd;
-static Tcl_ObjCmdProc ThreadExistsObjCmd;
-static Tcl_ObjCmdProc ThreadConfigureObjCmd;
-static Tcl_ObjCmdProc ThreadErrorProcObjCmd;
-static Tcl_ObjCmdProc ThreadJoinObjCmd;
-static Tcl_ObjCmdProc ThreadTransferObjCmd;
-static Tcl_ObjCmdProc ThreadDetachObjCmd;
-static Tcl_ObjCmdProc ThreadAttachObjCmd;
-static Tcl_ObjCmdProc ThreadCancelObjCmd;
+static Tcl_ObjCmdProc2 ThreadCreateObjCmd;
+static Tcl_ObjCmdProc2 ThreadReserveObjCmd;
+static Tcl_ObjCmdProc2 ThreadReleaseObjCmd;
+static Tcl_ObjCmdProc2 ThreadSendObjCmd;
+static Tcl_ObjCmdProc2 ThreadBroadcastObjCmd;
+static Tcl_ObjCmdProc2 ThreadUnwindObjCmd;
+static Tcl_ObjCmdProc2 ThreadExitObjCmd;
+static Tcl_ObjCmdProc2 ThreadIdObjCmd;
+static Tcl_ObjCmdProc2 ThreadNamesObjCmd;
+static Tcl_ObjCmdProc2 ThreadWaitObjCmd;
+static Tcl_ObjCmdProc2 ThreadExistsObjCmd;
+static Tcl_ObjCmdProc2 ThreadConfigureObjCmd;
+static Tcl_ObjCmdProc2 ThreadErrorProcObjCmd;
+static Tcl_ObjCmdProc2 ThreadJoinObjCmd;
+static Tcl_ObjCmdProc2 ThreadTransferObjCmd;
+static Tcl_ObjCmdProc2 ThreadDetachObjCmd;
+static Tcl_ObjCmdProc2 ThreadAttachObjCmd;
+static Tcl_ObjCmdProc2 ThreadCancelObjCmd;
 
 #ifndef STRINGIFY
 #  define STRINGIFY(x) STRINGIFY1(x)
@@ -401,7 +401,7 @@ ThreadInit(
 	    /* If threadMutex==NULL here, it means that Tcl_MutexLock() is
 	     * a dummy function, which is the case in unthreaded Tcl */
 	    const char *msg = "Tcl core wasn't compiled for threading";
-	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, TCL_INDEX_NONE));
 	    return NULL;
 	}
 	Tcl_MutexUnlock(&threadMutex);
@@ -535,6 +535,12 @@ Thread_Init(
     }
 
     if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
+#if TCL_MAJOR_VERSION > 8
+	if (info.isNativeObjectProc == 2) {
+	    Tcl_CreateObjCommand2(interp, "::thread::build-info",
+		    info.objProc2, (void *)version, NULL);
+	} else
+#endif
 	Tcl_CreateObjCommand(interp, "::thread::build-info",
 		info.objProc, (void *)version, NULL);
     }
@@ -594,7 +600,7 @@ static int
 ThreadCreateObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int argc, rsrv = 0;
@@ -660,7 +666,7 @@ static int
 ThreadReserveObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId = NULL;
@@ -703,7 +709,7 @@ static int
 ThreadReleaseObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int wait = 0;
@@ -753,7 +759,7 @@ static int
 ThreadUnwindObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     (void)dummy;
@@ -790,7 +796,7 @@ static int
 ThreadExitObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int status = 666;
@@ -837,7 +843,7 @@ static int
 ThreadIdObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char thrHandle[THREAD_HNDLMAXLEN];
@@ -851,7 +857,7 @@ ThreadIdObjCmd(
     }
 
     ThreadGetHandle(Tcl_GetCurrentThread(), thrHandle);
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(thrHandle, TCL_AUTO_LENGTH));
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(thrHandle, TCL_INDEX_NONE));
 
     return TCL_OK;
 }
@@ -879,7 +885,7 @@ static int
 ThreadNamesObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int ii, length;
@@ -952,7 +958,7 @@ static int
 ThreadSendObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     size_t size;
@@ -1010,7 +1016,7 @@ ThreadSendObjCmd(
             /*
              * FIXME: Do something for callbacks to self
              */
-            Tcl_SetObjResult(interp, Tcl_NewStringObj("can't notify self", TCL_AUTO_LENGTH));
+            Tcl_SetObjResult(interp, Tcl_NewStringObj("can't notify self", TCL_INDEX_NONE));
             return TCL_ERROR;
         }
 
@@ -1088,7 +1094,7 @@ static int
 ThreadBroadcastObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int ii, nthreads;
@@ -1176,7 +1182,7 @@ static int
 ThreadWaitObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     (void)dummy;
@@ -1214,7 +1220,7 @@ static int
 ThreadErrorProcObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     size_t len;
@@ -1230,7 +1236,7 @@ ThreadErrorProcObjCmd(
     Tcl_MutexLock(&threadMutex);
     if (objc == 1) {
         if (errorProcString) {
-        	Tcl_SetObjResult(interp, Tcl_NewStringObj(errorProcString, TCL_AUTO_LENGTH));
+        	Tcl_SetObjResult(interp, Tcl_NewStringObj(errorProcString, TCL_INDEX_NONE));
         }
     } else {
         if (errorProcString) {
@@ -1292,7 +1298,7 @@ static int
 ThreadJoinObjCmd(
     void *dummy,                /* Not used. */
     Tcl_Interp *interp,         /* Current interpreter. */
-    int         objc,           /* Number of arguments. */
+    size_t      objc,           /* Number of arguments. */
     Tcl_Obj    *const objv[]    /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
@@ -1337,7 +1343,7 @@ static int
 ThreadTransferObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
@@ -1387,7 +1393,7 @@ static int
 ThreadDetachObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_Channel chan;
@@ -1433,7 +1439,7 @@ static int
 ThreadAttachObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char *chanName;
@@ -1479,7 +1485,7 @@ static int
 ThreadExistsObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
@@ -1520,7 +1526,7 @@ static int
 ThreadConfigureObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char *option, *value;
@@ -1592,7 +1598,7 @@ static int
 ThreadCancelObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    int         objc,          /* Number of arguments. */
+    size_t      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
@@ -1651,7 +1657,7 @@ ThreadSendEval(
     ThreadSendData *sendPtr = (ThreadSendData *)clientData;
     char *script = (char*)sendPtr->clientData;
 
-    return Tcl_EvalEx(interp, script, TCL_AUTO_LENGTH, TCL_EVAL_GLOBAL);
+    return Tcl_EvalEx(interp, script, TCL_INDEX_NONE, TCL_EVAL_GLOBAL);
 }
 
 /*
@@ -1706,12 +1712,12 @@ ThreadClbkSetVar(
     if (resultPtr->code == TCL_ERROR) {
         if (resultPtr->errorCode) {
             Tcl_SetVar2Ex(interp, "errorCode", NULL,
-                Tcl_NewStringObj(resultPtr->errorCode, -1), TCL_GLOBAL_ONLY);
+                Tcl_NewStringObj(resultPtr->errorCode, TCL_INDEX_NONE), TCL_GLOBAL_ONLY);
             Tcl_Free(resultPtr->errorCode);
         }
         if (resultPtr->errorInfo) {
             Tcl_SetVar2Ex(interp, "errorInfo", NULL,
-                Tcl_NewStringObj(resultPtr->errorInfo, -1), TCL_GLOBAL_ONLY);
+                Tcl_NewStringObj(resultPtr->errorInfo, TCL_INDEX_NONE), TCL_GLOBAL_ONLY);
             Tcl_Free(resultPtr->errorInfo);
         }
         Tcl_SetObjResult(interp, valObj);
@@ -1788,7 +1794,7 @@ ThreadCreate(
     if (Tcl_CreateThread(&thrId, NewThread, &ctrl,
             stacksize, flags) != TCL_OK) {
         Tcl_MutexUnlock(&threadMutex);
-        Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_AUTO_LENGTH));
+        Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_INDEX_NONE));
         return TCL_ERROR;
     }
 
@@ -1815,7 +1821,7 @@ ThreadCreate(
     Tcl_ConditionFinalize(&ctrl.condWait);
 
     ThreadGetHandle(thrId, thrHandle);
-    Tcl_SetObjResult(interp, Tcl_NewStringObj(thrHandle, TCL_AUTO_LENGTH));
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(thrHandle, TCL_INDEX_NONE));
 
     return TCL_OK;
 }
@@ -1997,10 +2003,10 @@ ThreadErrorProc(
             return;
         }
         ThreadGetHandle(Tcl_GetCurrentThread(), buf);
-        Tcl_WriteChars(errChannel, "Error from thread ", TCL_AUTO_LENGTH);
-        Tcl_WriteChars(errChannel, buf, TCL_AUTO_LENGTH);
+        Tcl_WriteChars(errChannel, "Error from thread ", TCL_INDEX_NONE);
+        Tcl_WriteChars(errChannel, buf, TCL_INDEX_NONE);
         Tcl_WriteChars(errChannel, "\n", 1);
-        Tcl_WriteChars(errChannel, errorInfo, TCL_AUTO_LENGTH);
+        Tcl_WriteChars(errChannel, errorInfo, TCL_INDEX_NONE);
         Tcl_WriteChars(errChannel, "\n", 1);
 #endif
     } else {
@@ -2308,7 +2314,7 @@ ThreadCancel(
     }
 
     if (result != NULL) {
-        resultObj = Tcl_NewStringObj(result, TCL_AUTO_LENGTH);
+        resultObj = Tcl_NewStringObj(result, TCL_INDEX_NONE);
     }
 
     code = Tcl_CancelEval(tsdPtr->interp, resultObj, NULL, flags);
@@ -2406,10 +2412,10 @@ ThreadTransfer(
     TransferResult *resultPtr;
 
     if (!Tcl_IsChannelRegistered(interp, chan)) {
-    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is not registered here", TCL_AUTO_LENGTH));
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is not registered here", TCL_INDEX_NONE));
     }
     if (Tcl_IsChannelShared(chan)) {
-    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", TCL_AUTO_LENGTH));
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", TCL_INDEX_NONE));
         return TCL_ERROR;
     }
 
@@ -2562,10 +2568,10 @@ ThreadDetach(
     TransferResult *resultPtr;
 
     if (!Tcl_IsChannelRegistered(interp, chan)) {
-    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is not registered here", TCL_AUTO_LENGTH));
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is not registered here", TCL_INDEX_NONE));
     }
     if (Tcl_IsChannelShared(chan)) {
-    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", TCL_AUTO_LENGTH));
+    	Tcl_SetObjResult(interp, Tcl_NewStringObj("channel is shared", TCL_INDEX_NONE));
         return TCL_ERROR;
     }
 
@@ -2739,7 +2745,7 @@ ThreadSend(
             ThreadFreeProc(clbk);
         }
         if (inerror) {
-        	Tcl_SetObjResult(interp, Tcl_NewStringObj("thread is in error", TCL_AUTO_LENGTH));
+        	Tcl_SetObjResult(interp, Tcl_NewStringObj("thread is in error", TCL_INDEX_NONE));
         } else {
             ErrorNoSuchThread(interp, thrId);
         }
@@ -2859,7 +2865,7 @@ ThreadSend(
             Tcl_Free(resultPtr->errorCode);
         }
         if (resultPtr->errorInfo) {
-        	Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(resultPtr->errorInfo, TCL_AUTO_LENGTH));
+        	Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(resultPtr->errorInfo, TCL_INDEX_NONE));
             Tcl_Free(resultPtr->errorInfo);
         }
     }
@@ -3303,7 +3309,7 @@ ThreadSetResult(
         code      = TCL_ERROR;
         errorInfo = "";
         errorCode = "THREAD";
-        resultPtr->result = Tcl_NewStringObj("no target interp", -1);
+        resultPtr->result = Tcl_NewStringObj("no target interp", TCL_INDEX_NONE);
     } else {
         resultPtr->result = Sv_DuplicateObj(Tcl_GetObjResult(interp));
         if (code == TCL_ERROR) {
@@ -3746,7 +3752,7 @@ ThreadExitProc(
              * because the main thread is going to call free on it.
              */
 
-            resultPtr->result = Tcl_NewStringObj(diemsg, -1);
+            resultPtr->result = Tcl_NewStringObj(diemsg, TCL_INDEX_NONE);
             Tcl_IncrRefCount(resultPtr->result);
             resultPtr->code = TCL_ERROR;
             resultPtr->errorCode = resultPtr->errorInfo = NULL;

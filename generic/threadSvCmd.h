@@ -164,7 +164,7 @@ typedef struct SvCmdInfo {
     char *name;                 /* The short name of the command */
     char *cmdName;              /* Real (rewritten) name of the command */
     char *cmdName2;             /* Real AOL (rewritten) name of the command */
-    Tcl_ObjCmdProc *objProcPtr; /* The object-based command procedure */
+    Tcl_ObjCmdProc2 *objProcPtr; /* The object-based command procedure */
     Tcl_CmdDeleteProc *delProcPtr; /* Pointer to command delete function */
     struct SvCmdInfo *nextPtr;  /* Next in chain of registered commands */
     int aolSpecial;
@@ -192,7 +192,7 @@ typedef struct RegType {
  */
 
 MODULE_SCOPE void
-Sv_RegisterCommand(const char*,Tcl_ObjCmdProc*,Tcl_CmdDeleteProc*, int);
+Sv_RegisterCommand(const char*,Tcl_ObjCmdProc2*,Tcl_CmdDeleteProc*, int);
 
 MODULE_SCOPE void
 Sv_RegisterObjType(const Tcl_ObjType*, Tcl_DupInternalRepProc*);
@@ -201,7 +201,7 @@ MODULE_SCOPE void
 Sv_RegisterPsStore(const PsStore*);
 
 MODULE_SCOPE int
-Sv_GetContainer(Tcl_Interp*,int,Tcl_Obj*const objv[],Container**,int*,int);
+Sv_GetContainer(Tcl_Interp*,size_t,Tcl_Obj*const objv[],Container**,size_t*,int);
 
 MODULE_SCOPE int
 Sv_PutContainer(Tcl_Interp*, Container*, int);

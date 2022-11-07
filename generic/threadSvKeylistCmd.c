@@ -21,10 +21,10 @@
  * Wrapped keyed-list commands
  */
 
-static Tcl_ObjCmdProc SvKeylsetObjCmd;
-static Tcl_ObjCmdProc SvKeylgetObjCmd;
-static Tcl_ObjCmdProc SvKeyldelObjCmd;
-static Tcl_ObjCmdProc SvKeylkeysObjCmd;
+static Tcl_ObjCmdProc2 SvKeylsetObjCmd;
+static Tcl_ObjCmdProc2 SvKeylgetObjCmd;
+static Tcl_ObjCmdProc2 SvKeyldelObjCmd;
+static Tcl_ObjCmdProc2 SvKeylkeysObjCmd;
 
 /*
  * This mutex protects a static variable which tracks
@@ -89,10 +89,11 @@ static int
 SvKeylsetObjCmd(
     void *arg,                         /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    int objc,                          /* Number of arguments. */
+    size_t objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    int i, off, ret, flg;
+    int i, ret, flg;
+    size_t off;
     char *key;
     Tcl_Obj *val;
     Container *svObj = (Container*)arg;
@@ -108,7 +109,7 @@ SvKeylsetObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) < 2 || ((objc - off) % 2)) {
+    if (objc < 2 + off || ((objc - off) % 2)) {
         Tcl_WrongNumArgs(interp, off, objv, "key value ?key value ...?");
         goto cmd_err;
     }
@@ -148,10 +149,11 @@ static int
 SvKeylgetObjCmd(
     void *arg,                         /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    int objc,                          /* Number of arguments. */
+    size_t objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    int ret, flg, off;
+    int ret, flg;
+    size_t off;
     char *key;
     Tcl_Obj *varObjPtr = NULL, *valObjPtr = NULL;
     Container *svObj = (Container*)arg;
@@ -167,17 +169,17 @@ SvKeylgetObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) > 2) {
+    if (objc > 2 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "?key? ?var?");
         goto cmd_err;
     }
-    if ((objc - off) == 0) {
+    if (objc == off) {
         if (Sv_PutContainer(interp, svObj, SV_UNCHANGED) != TCL_OK) {
             return TCL_ERROR;
         }
         return SvKeylkeysObjCmd(arg, interp, objc, objv);
     }
-    if ((objc - off) == 2) {
+    if (objc == 2 + off) {
         varObjPtr = objv[off+1];
     } else {
         varObjPtr = NULL;
@@ -236,10 +238,11 @@ static int
 SvKeyldelObjCmd(
     void *arg,                         /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    int objc,                          /* Number of arguments. */
+    size_t objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    int i, off, ret;
+    size_t i, off;
+    int ret;
     char *key;
     Container *svObj = (Container*)arg;
 
@@ -253,7 +256,7 @@ SvKeyldelObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) < 1) {
+    if (objc < 1 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "key ?key ...?");
         goto cmd_err;
     }
@@ -295,10 +298,11 @@ static int
 SvKeylkeysObjCmd(
     void *arg,                         /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    int objc,                          /* Number of arguments. */
+    size_t objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    int ret, off;
+    int ret;
+    size_t off;
     char *key = NULL;
     Tcl_Obj *listObj = NULL;
     Container *svObj = (Container*)arg;
@@ -313,11 +317,11 @@ SvKeylkeysObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) > 1) {
+    if (objc > 1 + off) {
          Tcl_WrongNumArgs(interp, 1, objv, "?lkey?");
          goto cmd_err;
     }
-    if ((objc - off) == 1) {
+    if (objc == 1 + off) {
         key = Tcl_GetString(objv[off]);
     }
 

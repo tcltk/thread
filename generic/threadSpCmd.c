@@ -102,10 +102,10 @@ static SpBucket  varBuckets[NUMSPBUCKETS];  /* Maps condition variable
  * Functions implementing Tcl commands
  */
 
-static Tcl_ObjCmdProc ThreadMutexObjCmd;
-static Tcl_ObjCmdProc ThreadRWMutexObjCmd;
-static Tcl_ObjCmdProc ThreadCondObjCmd;
-static Tcl_ObjCmdProc ThreadEvalObjCmd;
+static Tcl_ObjCmdProc2 ThreadMutexObjCmd;
+static Tcl_ObjCmdProc2 ThreadRWMutexObjCmd;
+static Tcl_ObjCmdProc2 ThreadCondObjCmd;
+static Tcl_ObjCmdProc2 ThreadEvalObjCmd;
 
 /*
  * Forward declaration of functions used only within this file
@@ -179,7 +179,7 @@ static int
 ThreadMutexObjCmd(
     void *dummy,                  /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    int objc,                          /* Number of arguments. */
+    size_t objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret;
@@ -353,7 +353,7 @@ static int
 ThreadRWMutexObjCmd(
     void *dummy,                  /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    int objc,                          /* Number of arguments. */
+    size_t objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret;
@@ -517,7 +517,7 @@ static int
 ThreadCondObjCmd(
     void *dummy,                       /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    int objc,                          /* Number of arguments. */
+    size_t objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret, timeMsec = 0;
@@ -685,7 +685,7 @@ static int
 ThreadEvalObjCmd(
     void *dummy,                       /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    int objc,                          /* Number of arguments. */
+    size_t objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret, optx, internal;
@@ -726,7 +726,7 @@ ThreadEvalObjCmd(
     } else {
         internal = 0;
         optx = 3;
-        if ((objc - optx) < 1) {
+        if (objc < 1 + optx) {
             goto syntax;
         }
         mutexName = Tcl_GetString(objv[2]);
@@ -771,7 +771,7 @@ ThreadEvalObjCmd(
         /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
          * See Tcl bug #3562640 */
         sprintf(msg, "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
-        Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_AUTO_LENGTH));
+        Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_INDEX_NONE));
     }
 
     /*
@@ -810,15 +810,15 @@ static Tcl_Obj*
 GetName(int type, void *dummy)
 {
     char name[32];
-    unsigned int id;
-    static unsigned int idcounter;
+    size_t id;
+    static size_t idcounter;
     (void)dummy;
 
     Tcl_MutexLock(&initMutex);
     id = idcounter++;
     Tcl_MutexUnlock(&initMutex);
 
-    sprintf(name, "%cid%d", type, id);
+    sprintf(name, "%cid%" TCL_Z_MODIFIER "u", type, id);
 
     return Tcl_NewStringObj(name, -1);
 }
