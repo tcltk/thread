@@ -1267,7 +1267,7 @@ Tcl_KeylsetObjCmd(
         newVarObj = NULL;
     }
 
-    for (idx = 2; idx < (size_t)objc; idx += 2) {
+    for (idx = 2; idx < objc; idx += 2) {
         key = Tcl_GetString(objv[idx]);
         if (ValidateKey(interp, key, objv[idx]->length, 1) == TCL_ERROR) {
             goto errorExit;
@@ -1335,7 +1335,7 @@ Tcl_KeyldelObjCmd(
     }
     keylPtr = keylVarPtr;
 
-    for (idx = 2; idx < (size_t)objc; idx++) {
+    for (idx = 2; idx < objc; idx++) {
         key = Tcl_GetString(objv[idx]);
         if (ValidateKey(interp, key, objv[idx]->length, 1) == TCL_ERROR) {
             return TCL_ERROR;

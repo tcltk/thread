@@ -710,7 +710,7 @@ SvLsearchObjCmd(
 
         case LS_EXACT: {
             const char *bytes = Tcl_GetString(listv[i]);
-            if (length == (size_t)listv[i]->length) {
+            if (length == listv[i]->length) {
                 match = (memcmp(bytes, patBytes, length) == 0);
             }
             break;
@@ -787,7 +787,7 @@ SvLindexObjCmd(
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    if (index < (size_t)llen) {
+    if (index + 1 < llen + 1) {
         Tcl_SetObjResult(interp, Sv_DuplicateObj(elPtrs[index]));
     }
 
@@ -992,7 +992,7 @@ SvLsetFlat(
          * Check that the index is in range.
          */
 
-        if (index >= (size_t)elemCount) {
+        if (index >= elemCount) {
             Tcl_SetObjResult(interp,
                              Tcl_NewStringObj("list index out of range", TCL_INDEX_NONE));
             result = TCL_ERROR;
