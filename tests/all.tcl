@@ -9,7 +9,7 @@
 
 package require tcltest
 ::tcltest::loadTestedCommands
-package require -exact thread 2.9a1
+package require -exact thread 2.9b1
 
 set ::tcltest::testSingleFile false
 set ::tcltest::testsDirectory [file dir [info script]]
