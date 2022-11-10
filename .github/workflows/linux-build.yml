@@ -7,14 +7,14 @@ defaults:
     shell: bash
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         compiler:
           - "gcc"
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Environment
         run: |
           curl https://core.tcl-lang.org/tclconfig/tarball/main/tclconfig.tar.gz >tclconfig.tar.gz
