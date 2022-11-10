@@ -45,7 +45,7 @@ typedef struct {
     size_t version;
 } ThreadKeyedListObjType;
 
-MODULE_SCOPE ThreadKeyedListObjType keyedListType;
+MODULE_SCOPE const ThreadKeyedListObjType keyedListType;
 
 /*
  * Exported for usage in Sv_DuplicateObj. This is slightly

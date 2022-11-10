@@ -12,10 +12,8 @@
 #include "threadSvCmd.h"
 #include "threadSvListCmd.h"
 
-#if TCL_MAJOR_VERSION > 8
-#define tclSizeT size_t
-#elif defined(USE_TCL_STUBS)
-#define tclSizeT int
+#if defined(USE_TCL_STUBS)
+#define int int
 /*  Little hack to eliminate the need for "tclInt.h" here:
     Just copy a small portion of TclIntStubs, just
     enough to make it work */
@@ -156,7 +154,7 @@ SvLpopObjCmd (
     Tcl_Obj *const objv[]
 ) {
     int ret, off, llen, iarg = 0;
-    tclSizeT index = 0;
+    int index = 0;
     Tcl_Obj *elPtr = NULL;
     Container *svObj = (Container*)arg;
 
@@ -187,7 +185,7 @@ SvLpopObjCmd (
             goto cmd_err;
         }
     }
-    if ((index < 0) || (index >= (tclSizeT)llen)) {
+    if ((index < 0) || (index >= llen)) {
         goto cmd_ok; /* Ignore out-of bounds, like Tcl does */
     }
     ret = Tcl_ListObjIndex(interp, svObj->tclObj, index, &elPtr);
@@ -236,7 +234,7 @@ SvLpushObjCmd (
     Tcl_Obj *const objv[]
 ) {
     int off, ret, flg, llen;
-    tclSizeT index = 0;
+    int index = 0;
     Tcl_Obj *args[1];
     Container *svObj = (Container*)arg;
 
@@ -266,7 +264,7 @@ SvLpushObjCmd (
         }
         if ((index == TCL_INDEX_NONE) || (index < 0)) {
             index = 0;
-        } else if (index > (tclSizeT)llen) {
+        } else if (index > llen) {
             index = llen;
         }
     }
@@ -371,7 +369,7 @@ SvLreplaceObjCmd(
     const char *firstArg;
     size_t argLen;
     int ret, off, llen, ndel, nargs, i, j;
-    tclSizeT first, last;
+    int first, last;
     Tcl_Obj **args = NULL;
     Container *svObj = (Container*)arg;
 
@@ -407,11 +405,11 @@ SvLreplaceObjCmd(
     if ((first == TCL_INDEX_NONE) || (first < 0))  {
         first = 0;
     }
-    if (llen && first >= (tclSizeT)llen && strncmp(firstArg, "end", argLen)) {
+    if (llen && first >= llen && strncmp(firstArg, "end", argLen)) {
         Tcl_AppendResult(interp, "list doesn't have element ", firstArg, NULL);
         goto cmd_err;
     }
-    if (last + 1 >= (tclSizeT)llen + 1) {
+    if (last + 1 >= llen + 1) {
         last = llen - 1;
     }
     if (first + 1 <= last + 1) {
@@ -469,7 +467,7 @@ SvLrangeObjCmd(
     Tcl_Obj *const objv[]
 ) {
     int ret, off, llen, nargs, j;
-    tclSizeT first, last, i;
+    int first, last, i;
     Tcl_Obj **elPtrs, **args;
     Container *svObj = (Container*)arg;
 
@@ -502,7 +500,7 @@ SvLrangeObjCmd(
     if ((first == TCL_INDEX_NONE) || (first < 0))  {
         first = 0;
     }
-    if (last + 1 >= (tclSizeT)llen + 1) {
+    if (last + 1 >= llen + 1) {
         last = llen - 1;
     }
     if (first + 1 > last + 1) {
@@ -551,7 +549,7 @@ SvLinsertObjCmd(
     Tcl_Obj *const objv[]
 ) {
     int off, ret, flg, llen, nargs, i, j;
-    tclSizeT index = 0;
+    int index = 0;
     Tcl_Obj **args;
     Container *svObj = (Container*)arg;
 
@@ -580,7 +578,7 @@ SvLinsertObjCmd(
     }
     if ((index == TCL_INDEX_NONE) || (index < 0)) {
         index = 0;
-    } else if (index > (tclSizeT)llen) {
+    } else if (index > llen) {
         index = llen;
     }
 
@@ -787,7 +785,7 @@ SvLindexObjCmd(
 ) {
     Tcl_Obj **elPtrs;
     int ret, off, llen;
-    tclSizeT index;
+    int index;
     Container *svObj = (Container*)arg;
 
     /*
@@ -812,7 +810,7 @@ SvLindexObjCmd(
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    if ((index >= 0) && index < (tclSizeT)llen) {
+    if ((index >= 0) && index < llen) {
         Tcl_SetObjResult(interp, Sv_DuplicateObj(elPtrs[index]));
     }
 
@@ -951,7 +949,7 @@ SvLsetFlat(
      Tcl_Obj *valuePtr      /* Value arg to 'lset' */
 ) {
     int elemCount, result, i;
-    tclSizeT index;
+    int index;
     Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
 
     /*
@@ -1016,7 +1014,7 @@ SvLsetFlat(
          * Check that the index is in range.
          */
 
-        if ((index < 0) || index >= (tclSizeT)elemCount) {
+        if ((index < 0) || index >= elemCount) {
             Tcl_SetObjResult(interp,
                              Tcl_NewStringObj("list index out of range", -1));
             result = TCL_ERROR;
