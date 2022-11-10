@@ -40,7 +40,12 @@ MODULE_SCOPE int  TclX_KeyedListGetKeys(Tcl_Interp*, Tcl_Obj*, const char*, Tcl_
  * for usage in the thread shared variables code.
  */
 
-MODULE_SCOPE Tcl_ObjType keyedListType;
+typedef struct {
+    Tcl_ObjType objType;
+    size_t version;
+} ThreadKeyedListObjType;
+
+MODULE_SCOPE ThreadKeyedListObjType keyedListType;
 
 /*
  * Exported for usage in Sv_DuplicateObj. This is slightly

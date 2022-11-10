@@ -244,7 +244,7 @@ typedef struct {
  */
 #ifdef TCLX_DEBUG
 #   define KEYL_OBJ_ASSERT(keylAPtr) {\
-        TclX_Assert (keylAPtr->typePtr == &keyedListType); \
+        TclX_Assert (keylAPtr->typePtr == &keyedListType.objType); \
         ValidateKeyedList (keylAIntPtr); \
     }
 #   define KEYL_REP_ASSERT(keylAIntPtr) \
@@ -330,16 +330,16 @@ Tcl_KeylkeysObjCmd(void        *clientData,
                                 Tcl_Interp  *interp,
                                 int          objc,
                                  Tcl_Obj     *const objv[]);
-
 /*
  * Type definition.
  */
-Tcl_ObjType keyedListType = {
-    "keyedList",              /* name */
+ThreadKeyedListObjType keyedListType = {
+    {"keyedList",             /* name */
     FreeKeyedListInternalRep, /* freeIntRepProc */
     DupKeyedListInternalRep,  /* dupIntRepProc */
     UpdateStringOfKeyedList,  /* updateStringProc */
-    SetKeyedListFromAny       /* setFromAnyProc */
+    SetKeyedListFromAny},     /* setFromAnyProc */
+    0
 };
 
 
@@ -369,7 +369,7 @@ ValidateKeyedList (keylIntPtr)
         keylEntry_t *entryPtr = &(keylIntPtr->entries [idx]);
         TclX_Assert (entryPtr->key != NULL);
         TclX_Assert (entryPtr->valuePtr->refCount >= 1);
-        if (entryPtr->valuePtr->typePtr == &keyedListType) {
+        if (entryPtr->valuePtr->typePtr == &keyedListType.objType) {
             ValidateKeyedList (entryPtr->valuePtr->internalRep.twoPtrValue.ptr1);
         }
     }
@@ -695,7 +695,7 @@ DupKeyedListInternalRep(
     }
 
     copyPtr->internalRep.twoPtrValue.ptr1 = copyIntPtr;
-    copyPtr->typePtr = &keyedListType;
+    copyPtr->typePtr = &keyedListType.objType;
 
     KEYL_REP_ASSERT (copyIntPtr);
 }
@@ -738,7 +738,7 @@ DupKeyedListInternalRepShared (
     }
 
     copyPtr->internalRep.twoPtrValue.ptr1 = copyIntPtr;
-    copyPtr->typePtr = &keyedListType;
+    copyPtr->typePtr = &keyedListType.objType;
 
     KEYL_REP_ASSERT (copyIntPtr);
 }
@@ -781,7 +781,7 @@ SetKeyedListFromAny(
         (*objPtr->typePtr->freeIntRepProc) (objPtr);
     }
     objPtr->internalRep.twoPtrValue.ptr1 = keylIntPtr;
-    objPtr->typePtr = &keyedListType;
+    objPtr->typePtr = &keyedListType.objType;
 
     KEYL_REP_ASSERT (keylIntPtr);
     return TCL_OK;
@@ -859,7 +859,7 @@ TclX_NewKeyedListObj(void)
     keylIntObj_t *keylIntPtr = AllocKeyedListIntRep ();
 
     keylPtr->internalRep.twoPtrValue.ptr1 = keylIntPtr;
-    keylPtr->typePtr = &keyedListType;
+    keylPtr->typePtr = &keyedListType.objType;
     return keylPtr;
 }
 
@@ -891,7 +891,7 @@ TclX_KeyedListGet(
     const char *nextSubKey;
     int findIdx;
 
-    if (keylPtr->typePtr != &keyedListType) {
+    if (keylPtr->typePtr != &keyedListType.objType) {
         if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
             return TCL_ERROR;
         }
@@ -951,7 +951,7 @@ TclX_KeyedListSet(
     size_t keyLen;
     Tcl_Obj *newKeylPtr;
 
-    if (keylPtr->typePtr != &keyedListType) {
+    if (keylPtr->typePtr != &keyedListType.objType) {
         if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
             return TCL_ERROR;
         }
@@ -1051,7 +1051,7 @@ TclX_KeyedListDelete(
     const char *nextSubKey;
     int findIdx, status;
 
-    if (keylPtr->typePtr != &keyedListType) {
+    if (keylPtr->typePtr != &keyedListType.objType) {
         if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
             return TCL_ERROR;
         }
@@ -1130,7 +1130,7 @@ TclX_KeyedListGetKeys(
     const char *nextSubKey;
     int idx, findIdx;
 
-    if (keylPtr->typePtr != &keyedListType) {
+    if (keylPtr->typePtr != &keyedListType.objType) {
         if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
             return TCL_ERROR;
         }
@@ -1449,7 +1449,7 @@ TclX_KeyedListInit(
     Tcl_Interp *interp
 ) {
     Tcl_Obj *listobj;
-    Tcl_RegisterObjType(&keyedListType);
+    Tcl_RegisterObjType(&keyedListType.objType);
 
     listobj = Tcl_NewObj();
     listobj = Tcl_NewListObj(1, &listobj);

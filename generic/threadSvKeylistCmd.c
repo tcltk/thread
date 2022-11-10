@@ -61,7 +61,7 @@ Sv_RegisterKeylistCommands(void)
             Sv_RegisterCommand("keylget",  SvKeylgetObjCmd,  NULL, 0);
             Sv_RegisterCommand("keyldel",  SvKeyldelObjCmd,  NULL, 0);
             Sv_RegisterCommand("keylkeys", SvKeylkeysObjCmd, NULL, 0);
-            Sv_RegisterObjType(&keyedListType, DupKeyedListInternalRepShared);
+            Sv_RegisterObjType(&keyedListType.objType, DupKeyedListInternalRepShared);
             initialized = 1;
         }
         Tcl_MutexUnlock(&initMutex);
