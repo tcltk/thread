@@ -1058,16 +1058,18 @@ Sv_DuplicateObj(
      */
 
     if (objPtr->bytes == NULL) {
-        dupPtr->bytes = NULL;
+	if (dupPtr->bytes != Sv_tclEmptyStringRep) {
+	    dupPtr->bytes = NULL;
+	}
     } else if (objPtr->bytes != Sv_tclEmptyStringRep) {
-        /* A copy of TclInitStringRep macro */
-        dupPtr->bytes = (char*)ckalloc((unsigned)objPtr->length + 1);
-        if (objPtr->length > 0) {
-            memcpy((void*)dupPtr->bytes,(void*)objPtr->bytes,
-                   (unsigned)objPtr->length);
-        }
-        dupPtr->length = objPtr->length;
-        dupPtr->bytes[objPtr->length] = '\0';
+	/* A copy of TclInitStringRep macro */
+	dupPtr->bytes = (char*)ckalloc((unsigned)objPtr->length + 1);
+	if (objPtr->length > 0) {
+	    memcpy(dupPtr->bytes, objPtr->bytes,
+		    objPtr->length);
+	}
+	dupPtr->length = objPtr->length;
+	dupPtr->bytes[objPtr->length] = '\0';
     }
 
     return dupPtr;
