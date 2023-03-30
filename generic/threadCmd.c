@@ -339,13 +339,11 @@ static void
 ThreadCutChannel(Tcl_Interp *interp,
                                Tcl_Channel channel);
 
-#ifdef TCL_TIP285
 static int
 ThreadCancel(Tcl_Interp *interp,
                                Tcl_ThreadId thrId,
                                const char *result,
                                int flags);
-#endif
 
 /*
  * Functions implementing Tcl commands
@@ -368,10 +366,7 @@ static Tcl_ObjCmdProc ThreadJoinObjCmd;
 static Tcl_ObjCmdProc ThreadTransferObjCmd;
 static Tcl_ObjCmdProc ThreadDetachObjCmd;
 static Tcl_ObjCmdProc ThreadAttachObjCmd;
-
-#ifdef TCL_TIP285
 static Tcl_ObjCmdProc ThreadCancelObjCmd;
-#endif
 
 #ifndef STRINGIFY
 #  define STRINGIFY(x) STRINGIFY1(x)
@@ -436,9 +431,7 @@ ThreadInit(
     TCL_CMD(interp, THREAD_CMD_PREFIX"transfer",  ThreadTransferObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"detach",    ThreadDetachObjCmd);
     TCL_CMD(interp, THREAD_CMD_PREFIX"attach",    ThreadAttachObjCmd);
-#ifdef TCL_TIP285
     TCL_CMD(interp, THREAD_CMD_PREFIX"cancel",    ThreadCancelObjCmd);
-#endif
 
     /*
      * Add shared variable commands
@@ -1585,7 +1578,6 @@ ThreadConfigureObjCmd(
     return TCL_OK;
 }
 
-#ifdef TCL_TIP285
 /*
  *----------------------------------------------------------------------
  *
@@ -1642,7 +1634,6 @@ ThreadCancelObjCmd(
 
     return ThreadCancel(interp, thrId, result, flags);
 }
-#endif
 
 /*
  *----------------------------------------------------------------------
@@ -2287,7 +2278,6 @@ ThreadExistsInner(
     return NULL;
 }
 
-#ifdef TCL_TIP285
 /*
  *----------------------------------------------------------------------
  *
@@ -2339,7 +2329,6 @@ ThreadCancel(
     Tcl_MutexUnlock(&threadMutex);
     return code;
 }
-#endif
 
 /*
  *----------------------------------------------------------------------
@@ -2954,7 +2943,6 @@ ThreadWait(Tcl_Interp *interp)
 
         Tcl_DoOneEvent(TCL_ALL_EVENTS);
 
-#ifdef TCL_TIP285
         if (haveInterpCancel) {
 
             /*
@@ -2973,15 +2961,12 @@ ThreadWait(Tcl_Interp *interp)
                 break;
             }
         }
-#endif
-#ifdef TCL_TIP143
         if (haveInterpLimit) {
             if (Tcl_LimitExceeded(tsdPtr->interp)) {
                 code = TCL_ERROR;
                 break;
             }
         }
-#endif
 
         /*
          * Test stop condition under mutex since
@@ -2993,7 +2978,6 @@ ThreadWait(Tcl_Interp *interp)
         Tcl_MutexUnlock(&threadMutex);
     }
 
-#if defined(TCL_TIP143) || defined(TCL_TIP285)
     /*
      * If the event processing loop above was terminated due to a
      * script in progress being canceled or exceeding its limits,
@@ -3013,7 +2997,6 @@ ThreadWait(Tcl_Interp *interp)
         Tcl_AppendResult(interp, "Error from thread ", buf, "\n",
                 errorInfo, NULL);
     }
-#endif
 
     /*
      * Remove from the list of active threads, so nobody can post
