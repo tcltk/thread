@@ -2314,12 +2314,6 @@ ThreadCancel(
         return TCL_ERROR;
     }
 
-    if (!haveInterpCancel) {
-        Tcl_MutexUnlock(&threadMutex);
-        Tcl_AppendResult(interp, "not supported with this Tcl version", NULL);
-        return TCL_ERROR;
-    }
-
     if (result != NULL) {
         resultObj = Tcl_NewStringObj(result, TCL_INDEX_NONE);
     }
@@ -2943,29 +2937,24 @@ ThreadWait(Tcl_Interp *interp)
 
         Tcl_DoOneEvent(TCL_ALL_EVENTS);
 
-        if (haveInterpCancel) {
+        /*
+         * If the script has been unwound, bail out immediately. This does
+         * not follow the recommended guidelines for how extensions should
+         * handle the script cancellation functionality because this is
+         * not a "normal" extension. Most extensions do not have a command
+         * that simply enters an infinite Tcl event loop. Normal extensions
+         * should not specify the TCL_CANCEL_UNWIND when calling the
+         * Tcl_Canceled function to check if the command has been canceled.
+         */
 
-            /*
-             * If the script has been unwound, bail out immediately. This does
-             * not follow the recommended guidelines for how extensions should
-             * handle the script cancellation functionality because this is
-             * not a "normal" extension. Most extensions do not have a command
-             * that simply enters an infinite Tcl event loop. Normal extensions
-             * should not specify the TCL_CANCEL_UNWIND when calling the
-             * Tcl_Canceled function to check if the command has been canceled.
-             */
-
-            if (Tcl_Canceled(tsdPtr->interp,
-                    TCL_LEAVE_ERR_MSG | TCL_CANCEL_UNWIND) == TCL_ERROR) {
-                code = TCL_ERROR;
-                break;
-            }
+        if (Tcl_Canceled(tsdPtr->interp,
+                TCL_LEAVE_ERR_MSG | TCL_CANCEL_UNWIND) == TCL_ERROR) {
+            code = TCL_ERROR;
+            break;
         }
-        if (haveInterpLimit) {
-            if (Tcl_LimitExceeded(tsdPtr->interp)) {
-                code = TCL_ERROR;
-                break;
-            }
+        if (Tcl_LimitExceeded(tsdPtr->interp)) {
+            code = TCL_ERROR;
+            break;
         }
 
         /*
