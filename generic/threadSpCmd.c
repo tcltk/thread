@@ -179,7 +179,7 @@ static int
 ThreadMutexObjCmd(
     void *dummy,                  /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    size_t objc,                          /* Number of arguments. */
+    Tcl_Size objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret;
@@ -353,7 +353,7 @@ static int
 ThreadRWMutexObjCmd(
     void *dummy,                  /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    size_t objc,                          /* Number of arguments. */
+    Tcl_Size objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret;
@@ -517,7 +517,7 @@ static int
 ThreadCondObjCmd(
     void *dummy,                       /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    size_t objc,                          /* Number of arguments. */
+    Tcl_Size objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret, timeMsec = 0;
@@ -685,10 +685,11 @@ static int
 ThreadEvalObjCmd(
     void *dummy,                       /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    size_t objc,                          /* Number of arguments. */
+    Tcl_Size objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    int ret, optx, internal;
+    int ret, internal;
+    Tcl_Size optx;
     const char *mutexName;
     Tcl_Obj *scriptObj;
     SpMutex *mutexPtr = NULL;
@@ -820,7 +821,7 @@ GetName(int type, void *dummy)
 
     sprintf(name, "%cid%" TCL_Z_MODIFIER "u", type, id);
 
-    return Tcl_NewStringObj(name, -1);
+    return Tcl_NewStringObj(name, TCL_INDEX_NONE);
 }
 
 /*

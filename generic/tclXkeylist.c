@@ -85,7 +85,7 @@ TclX_IsNullObj (
     if (objPtr->typePtr == NULL) {
         return (objPtr->length == 0);
     } else if (objPtr->typePtr == listType) {
-        size_t length;
+        Tcl_Size length;
         Tcl_ListObjLength(NULL, objPtr, &length);
         return (length == 0);
     }
@@ -125,7 +125,7 @@ TclX_AppendObjResult(Tcl_Interp *interp, ...)
         if (string == NULL) {
             break;
         }
-        Tcl_AppendToObj (resultPtr, string, -1);
+        Tcl_AppendToObj (resultPtr, string, TCL_INDEX_NONE);
     }
     va_end(argList);
 }
@@ -282,25 +282,25 @@ UpdateStringOfKeyedList(Tcl_Obj *keylPtr);
 static int
 Tcl_KeylgetObjCmd(void        *clientData,
                                Tcl_Interp  *interp,
-                               size_t objc,
+                               Tcl_Size objc,
                                Tcl_Obj     *const objv[]);
 
 static int
 Tcl_KeylsetObjCmd(void        *clientData,
                                Tcl_Interp  *interp,
-                               size_t objc,
+                               Tcl_Size objc,
                                Tcl_Obj     *const objv[]);
 
 static int
 Tcl_KeyldelObjCmd(void        *clientData,
                                Tcl_Interp  *interp,
-                               size_t objc,
+                               Tcl_Size objc,
                                Tcl_Obj     *const objv[]);
 
 static int
 Tcl_KeylkeysObjCmd(void        *clientData,
                                 Tcl_Interp  *interp,
-                                size_t objc,
+                                Tcl_Size objc,
                                 Tcl_Obj     *const objv[]);
 
 /*
@@ -532,7 +532,7 @@ FindKeyedListEntry(
 
     keySeparPtr = strchr(key, '.');
     if (keySeparPtr != NULL) {
-        keyLen = keySeparPtr - key;
+        keyLen = (size_t)(keySeparPtr - key);
     } else {
         keyLen = strlen (key);
     }
@@ -581,7 +581,7 @@ ObjToKeyedListEntry(
     Tcl_Obj     *objPtr,
     keylEntry_t *entryPtr
 ) {
-    size_t objc;
+    Tcl_Size objc;
     Tcl_Obj **objv;
     const char *key;
 
@@ -690,7 +690,7 @@ DupKeyedListInternalRepShared (
     keylIntObj_t *srcIntPtr = (keylIntObj_t *)
         srcPtr->internalRep.twoPtrValue.ptr1;
     keylIntObj_t *copyIntPtr;
-    int idx;
+    size_t idx;
 
     KEYL_REP_ASSERT (srcIntPtr);
 
@@ -701,9 +701,9 @@ DupKeyedListInternalRepShared (
         Tcl_Alloc(copyIntPtr->arraySize * sizeof(keylEntry_t));
 
     for (idx = 0; idx < srcIntPtr->numEntries ; idx++) {
-        copyIntPtr->entries [idx].key =
+        copyIntPtr->entries[idx].key =
             ckstrdup (srcIntPtr->entries [idx].key);
-        copyIntPtr->entries [idx].valuePtr =
+        copyIntPtr->entries[idx].valuePtr =
             Sv_DuplicateObj (srcIntPtr->entries [idx].valuePtr);
         Tcl_IncrRefCount(copyIntPtr->entries [idx].valuePtr);
     }
@@ -731,7 +731,7 @@ SetKeyedListFromAny(
 ) {
     keylIntObj_t *keylIntPtr;
     size_t idx;
-    size_t objc;
+    Tcl_Size objc;
     Tcl_Obj **objv;
 
     if (Tcl_ListObjGetElements (interp, objPtr, &objc, &objv) != TCL_OK)
@@ -1157,7 +1157,7 @@ static int
 Tcl_KeylgetObjCmd(
     void        *clientData,
     Tcl_Interp  *interp,
-    size_t       objc,
+    Tcl_Size       objc,
     Tcl_Obj     *const objv[]
 ) {
     Tcl_Obj *keylPtr, *valuePtr;
@@ -1238,7 +1238,7 @@ static int
 Tcl_KeylsetObjCmd(
     void        *dummy,
     Tcl_Interp  *interp,
-    size_t       objc,
+    Tcl_Size       objc,
     Tcl_Obj     *const objv[]
 ) {
     Tcl_Obj *keylVarPtr, *newVarObj;
@@ -1302,7 +1302,7 @@ static int
 Tcl_KeyldelObjCmd(
     void        *dummy,
     Tcl_Interp  *interp,
-    size_t       objc,
+    Tcl_Size       objc,
     Tcl_Obj     *const objv[]
 ) {
     Tcl_Obj *keylVarPtr, *keylPtr;
@@ -1366,7 +1366,7 @@ static int
 Tcl_KeylkeysObjCmd(
     void        *dummy,
     Tcl_Interp  *interp,
-    size_t       objc,
+    Tcl_Size       objc,
     Tcl_Obj     *const objv[]
 ) {
     Tcl_Obj *keylPtr, *listObjPtr;

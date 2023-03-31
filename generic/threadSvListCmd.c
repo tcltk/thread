@@ -128,11 +128,11 @@ static int
 SvLpopObjCmd (
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
-    int ret, iarg = 0;
-    size_t off, llen, index = 0;
+    int ret;
+    Tcl_Size off, llen, index = 0, iarg = 0;
     Tcl_Obj *elPtr = NULL;
     Container *svObj = (Container*)arg;
 
@@ -208,11 +208,11 @@ static int
 SvLpushObjCmd (
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
     int ret, flg;
-    size_t off, llen, index = 0;
+    Tcl_Size off, llen, index = 0;
     Tcl_Obj *args[1];
     Container *svObj = (Container*)arg;
 
@@ -281,11 +281,11 @@ static int
 SvLappendObjCmd(
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
     int ret, flg;
-    size_t i, off;
+    Tcl_Size i, off;
     Tcl_Obj *dup;
     Container *svObj = (Container*)arg;
 
@@ -342,11 +342,11 @@ static int
 SvLreplaceObjCmd(
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
     const char *firstArg;
-    size_t off, llen, argLen, first, last, ndel, nargs, i, j;
+    Tcl_Size off, llen, argLen, first, last, ndel, nargs, i, j;
     int ret;
     Tcl_Obj **args = NULL;
     Container *svObj = (Container*)arg;
@@ -440,11 +440,11 @@ static int
 SvLrangeObjCmd(
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
     int ret;
-    size_t first, last, i, off, llen, nargs, j;
+    Tcl_Size first, last, i, off, llen, nargs, j;
     Tcl_Obj **elPtrs, **args;
     Container *svObj = (Container*)arg;
 
@@ -522,11 +522,11 @@ static int
 SvLinsertObjCmd(
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
     int ret, flg;
-    size_t off, nargs, i, j, llen, index = 0;
+    Tcl_Size off, nargs, i, j, llen, index = 0;
     Tcl_Obj **args;
     Container *svObj = (Container*)arg;
 
@@ -602,10 +602,10 @@ static int
 SvLlengthObjCmd(
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
-    size_t llen, off;
+    Tcl_Size llen, off;
     int ret;
     Container *svObj = (Container*)arg;
 
@@ -652,11 +652,11 @@ static int
 SvLsearchObjCmd(
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
-    int ret, imode, ipatt, match;
-    size_t off, index, length, i, listc;
+    int ret, match;
+    Tcl_Size off, index, length, i, listc, len, imode, ipatt;
     const char *patBytes;
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
@@ -709,8 +709,8 @@ SvLsearchObjCmd(
             break;
 
         case LS_EXACT: {
-            const char *bytes = Tcl_GetString(listv[i]);
-            if (length == listv[i]->length) {
+            const char *bytes = Tcl_GetStringFromObj(listv[i], &len);
+            if (length == len) {
                 match = (memcmp(bytes, patBytes, length) == 0);
             }
             break;
@@ -757,12 +757,12 @@ static int
 SvLindexObjCmd(
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
     Tcl_Obj **elPtrs;
     int ret;
-    size_t llen, index, off;
+    Tcl_Size llen, index, off;
     Container *svObj = (Container*)arg;
 
     /*
@@ -818,12 +818,12 @@ static int
 SvLsetObjCmd(
     void *arg,
     Tcl_Interp *interp,
-    size_t objc,
+    Tcl_Size objc,
     Tcl_Obj *const objv[]
 ) {
     Tcl_Obj *lPtr;
     int ret;
-    size_t argc, off;
+    Tcl_Size argc, off;
     Container *svObj = (Container*)arg;
 
     /*
@@ -884,7 +884,7 @@ DupListObjShared(
     Tcl_Obj *srcPtr,           /* Object with internal rep to copy. */
     Tcl_Obj *copyPtr           /* Object with internal rep to set. */
 ) {
-    size_t i, llen;
+    Tcl_Size i, llen;
     Tcl_Obj *elObj, **newObjList;
     Tcl_Obj *buf[16];
 
@@ -926,7 +926,7 @@ SvLsetFlat(
      Tcl_Obj **indexArray,
      Tcl_Obj *valuePtr      /* Value arg to 'lset' */
 ) {
-    size_t i, elemCount, index;
+    Tcl_Size i, elemCount, index;
 	int result;
     Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
 

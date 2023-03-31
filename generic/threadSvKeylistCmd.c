@@ -89,11 +89,11 @@ static int
 SvKeylsetObjCmd(
     void *arg,                         /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    size_t objc,                          /* Number of arguments. */
+    Tcl_Size objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    int i, ret, flg;
-    size_t off;
+    int ret, flg;
+    Tcl_Size i, off;
     char *key;
     Tcl_Obj *val;
     Container *svObj = (Container*)arg;
@@ -149,11 +149,11 @@ static int
 SvKeylgetObjCmd(
     void *arg,                         /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    size_t objc,                          /* Number of arguments. */
+    Tcl_Size objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret, flg;
-    size_t off;
+    Tcl_Size off;
     char *key;
     Tcl_Obj *varObjPtr = NULL, *valObjPtr = NULL;
     Container *svObj = (Container*)arg;
@@ -238,10 +238,10 @@ static int
 SvKeyldelObjCmd(
     void *arg,                         /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    size_t objc,                          /* Number of arguments. */
+    Tcl_Size objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
-    size_t i, off;
+    Tcl_Size i, off;
     int ret;
     char *key;
     Container *svObj = (Container*)arg;
@@ -298,11 +298,11 @@ static int
 SvKeylkeysObjCmd(
     void *arg,                         /* Not used. */
     Tcl_Interp *interp,                /* Current interpreter. */
-    size_t objc,                          /* Number of arguments. */
+    Tcl_Size objc,                          /* Number of arguments. */
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret;
-    size_t off;
+    Tcl_Size off;
     char *key = NULL;
     Tcl_Obj *listObj = NULL;
     Container *svObj = (Container*)arg;
