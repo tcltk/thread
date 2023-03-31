@@ -600,10 +600,11 @@ static int
 ThreadCreateObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
-    int argc, rsrv = 0;
+    Tcl_Size argc;
+    int rsrv = 0;
     const char *arg, *script;
     int flags = TCL_THREAD_NOFLAGS;
     (void)dummy;
@@ -666,7 +667,7 @@ static int
 ThreadReserveObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId = NULL;
@@ -709,7 +710,7 @@ static int
 ThreadReleaseObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int wait = 0;
@@ -759,7 +760,7 @@ static int
 ThreadUnwindObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     (void)dummy;
@@ -796,7 +797,7 @@ static int
 ThreadExitObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int status = 666;
@@ -843,7 +844,7 @@ static int
 ThreadIdObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char thrHandle[THREAD_HNDLMAXLEN];
@@ -885,10 +886,10 @@ static int
 ThreadNamesObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
-    int ii, length;
+    Tcl_Size ii, length;
     char *result, thrHandle[THREAD_HNDLMAXLEN];
     Tcl_ThreadId *thrIdArray;
     Tcl_DString threadNames;
@@ -958,11 +959,11 @@ static int
 ThreadSendObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
-    size_t size;
-    int cmd = 0, ret, ii = 0, flags = 0;
+    Tcl_Size size, ii = 0;
+    int cmd = 0, ret, flags = 0;
     Tcl_ThreadId thrId;
     const char *script, *arg;
     Tcl_Obj *var = NULL;
@@ -1005,8 +1006,8 @@ ThreadSendObjCmd(
         goto usage;
     }
 
-    script = Tcl_GetString(objv[ii]);
-    size = objv[ii]->length+1;
+    script = Tcl_GetStringFromObj(objv[ii], &size);
+    size++;
     if (++ii < objc) {
         var = objv[ii];
     }
@@ -1094,7 +1095,7 @@ static int
 ThreadBroadcastObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     int ii, nthreads;
@@ -1182,7 +1183,7 @@ static int
 ThreadWaitObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     (void)dummy;
@@ -1220,7 +1221,7 @@ static int
 ThreadErrorProcObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     size_t len;
@@ -1298,7 +1299,7 @@ static int
 ThreadJoinObjCmd(
     void *dummy,                /* Not used. */
     Tcl_Interp *interp,         /* Current interpreter. */
-    size_t      objc,           /* Number of arguments. */
+    Tcl_Size    objc,           /* Number of arguments. */
     Tcl_Obj    *const objv[]    /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
@@ -1343,7 +1344,7 @@ static int
 ThreadTransferObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
@@ -1393,7 +1394,7 @@ static int
 ThreadDetachObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_Channel chan;
@@ -1439,7 +1440,7 @@ static int
 ThreadAttachObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char *chanName;
@@ -1485,7 +1486,7 @@ static int
 ThreadExistsObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
@@ -1526,7 +1527,7 @@ static int
 ThreadConfigureObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     char *option, *value;
@@ -1598,7 +1599,7 @@ static int
 ThreadCancelObjCmd(
     void *dummy,               /* Not used. */
     Tcl_Interp *interp,        /* Current interpreter. */
-    size_t      objc,          /* Number of arguments. */
+    Tcl_Size    objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
     Tcl_ThreadId thrId;
