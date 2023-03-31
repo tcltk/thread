@@ -138,10 +138,4 @@ typedef struct {
     char *server;
 } NsThreadInterpData;
 
-#if defined(USE_TCL_STUBS)
-# undef Tcl_GetUnicodeFromObj
-# define Tcl_GetUnicodeFromObj ((((&(tclStubsPtr->tcl_PkgProvideEx))[378]) != ((&(tclStubsPtr->tcl_PkgProvideEx))[434])) ? \
-  ((void (*)(Tcl_Obj *, int *))((&(tclStubsPtr->tcl_PkgProvideEx))[434])) : ((void (*)(Tcl_Obj *, int *)) NULL))
-#endif
-
 #endif /* _TCL_THREAD_INT_H_ */
