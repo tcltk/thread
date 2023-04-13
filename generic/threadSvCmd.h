@@ -201,7 +201,7 @@ MODULE_SCOPE void
 Sv_RegisterPsStore(const PsStore*);
 
 MODULE_SCOPE int
-Sv_GetContainer(Tcl_Interp*,size_t,Tcl_Obj*const objv[],Container**,size_t*,int);
+Sv_GetContainer(Tcl_Interp*,Tcl_Size,Tcl_Obj*const objv[],Container**,Tcl_Size*,int);
 
 MODULE_SCOPE int
 Sv_PutContainer(Tcl_Interp*, Container*, int);

@@ -1112,8 +1112,8 @@ ThreadBroadcastObjCmd(
         return TCL_ERROR;
     }
 
-    script = Tcl_GetString(objv[1]);
-    size = objv[1]->length + 1;
+    script = Tcl_GetStringFromObj(objv[1], &size);
+    ++size;
 
     /*
      * Get the list of known threads. Note that this one may
@@ -1243,8 +1243,7 @@ ThreadErrorProcObjCmd(
         if (errorProcString) {
             Tcl_Free(errorProcString);
         }
-        proc = Tcl_GetString(objv[1]);
-        len = objv[1]->length;
+        proc = Tcl_GetStringFromObj(objv[1], &len);
         if (len == 0) {
             errorThreadId = NULL;
             errorProcString = NULL;
