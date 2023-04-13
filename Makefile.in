@@ -174,7 +174,7 @@ PKG_CFLAGS	= @PKG_CFLAGS@
 # you do not compile with a similar machine setup as the Tcl core was
 # compiled with.
 #DEFS		= $(TCL_DEFS) @DEFS@ $(PKG_CFLAGS)
-DEFS		= @DEFS@ $(PKG_CFLAGS)
+DEFS		= @DEFS@ $(PKG_CFLAGS) -DTCL_NO_DEPRECATED=1
 
 # Move pkgIndex.tcl to 'BINARIES' var if it is generated in the Makefile
 CONFIG_CLEAN_FILES = Makefile pkgIndex.tcl
