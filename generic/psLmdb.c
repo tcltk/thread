@@ -498,10 +498,9 @@ ps_lmdb_delete(
 static void
 ps_lmdb_free(
     void *handle,
-    void        *data)
+    TCL_UNUSED(void *))
 {
     LmdbCtx ctx = (LmdbCtx)handle;
-    (void)data;
 
     if (ctx->cur == NULL)
     {
