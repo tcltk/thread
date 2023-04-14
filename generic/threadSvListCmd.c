@@ -367,7 +367,7 @@ SvLreplaceObjCmd(
     Tcl_Obj *const objv[]
 ) {
     const char *firstArg;
-    size_t argLen;
+    Tcl_Size argLen;
     int ret, off, llen, ndel, nargs, i, j;
     int first, last;
     Tcl_Obj **args = NULL;
@@ -400,8 +400,7 @@ SvLreplaceObjCmd(
         goto cmd_err;
     }
 
-    firstArg = Tcl_GetString(objv[off]);
-    argLen = objv[off]->length;
+    firstArg = Tcl_GetStringFromObj(objv[off], &argLen);
     if ((first == TCL_INDEX_NONE) || (first < 0))  {
         first = 0;
     }
@@ -677,13 +676,13 @@ SvLsearchObjCmd(
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    size_t length;
+    Tcl_Size length;
     int ret, off, listc, mode, imode, ipatt, index, match, i;
     const char *patBytes;
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
 
-    static const char *modes[] = {"-exact", "-glob", "-regexp", NULL};
+    static const char *const modes[] = {"-exact", "-glob", "-regexp", NULL};
     enum {LS_EXACT, LS_GLOB, LS_REGEXP};
 
     mode = LS_GLOB;
@@ -721,8 +720,7 @@ SvLsearchObjCmd(
     }
 
     index = -1;
-    patBytes = Tcl_GetString(objv[ipatt]);
-    length = objv[ipatt]->length;
+    patBytes = Tcl_GetStringFromObj(objv[ipatt], &length);
 
     for (i = 0; i < listc; i++) {
         match = 0;
@@ -733,8 +731,8 @@ SvLsearchObjCmd(
 
         case LS_EXACT: {
             const char *bytes = Tcl_GetString(listv[i]);
-            if (length == (size_t)listv[i]->length) {
-                match = (memcmp(bytes, patBytes, length) == 0);
+            if (length == listv[i]->length) {
+                match = (memcmp(bytes, patBytes, (size_t)length) == 0);
             }
             break;
         }

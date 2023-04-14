@@ -1226,7 +1226,7 @@ SvArrayObjCmd(
     Tcl_Obj **lobjv = NULL;
     Container *svObj, *elObj = NULL;
 
-    static const char *opts[] = {
+    static const char *const opts[] = {
         "set",  "reset", "get", "names", "size", "exists", "isbound",
         "bind", "unbind", NULL
     };
@@ -1444,7 +1444,7 @@ SvArrayObjCmd(
 
 static int
 SvUnsetObjCmd(
-              void *dummy,                        /* Not used. */
+              TCL_UNUSED(void *),                 /* Not used. */
               Tcl_Interp *interp,                 /* Current interpreter. */
               int objc,                           /* Number of arguments. */
               Tcl_Obj *const objv[])              /* Argument objects. */
@@ -1452,7 +1452,6 @@ SvUnsetObjCmd(
     int ii;
     const char *arrayName;
     Array *arrayPtr;
-    (void)dummy;
 
     if (objc < 2) {
         Tcl_WrongNumArgs(interp, 1, objv, "array ?key ...?");
@@ -2031,7 +2030,7 @@ SvMoveObjCmd(
 
 static int
 SvLockObjCmd(
-             void *dummy,                        /* Not used. */
+             TCL_UNUSED(void *),                 /* Not used. */
              Tcl_Interp *interp,                 /* Current interpreter. */
              int objc,                           /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
@@ -2040,7 +2039,6 @@ SvLockObjCmd(
     Tcl_Obj *scriptObj;
     Bucket *bucketPtr;
     Array *arrayPtr = NULL;
-    (void)dummy;
 
     /*
      * Syntax:
@@ -2108,13 +2106,12 @@ SvLockObjCmd(
  */
 static int
 SvHandlersObjCmd(
-             void *dummy,                        /* Not used. */
+             TCL_UNUSED(void *),                 /* Not used. */
              Tcl_Interp *interp,                 /* Current interpreter. */
              int objc,                           /* Number of arguments. */
              Tcl_Obj *const objv[])              /* Argument objects. */
 {
     PsStore *tmpPtr = NULL;
-    (void)dummy;
 
     /*
      * Syntax:
@@ -2349,7 +2346,8 @@ SvInit (
  */
 
 static void
-SvFinalize (void *dummy)
+SvFinalize (
+    TCL_UNUSED(void *))
 {
     int i;
     SvCmdInfo *cmdPtr;
@@ -2357,7 +2355,6 @@ SvFinalize (void *dummy)
 
     Tcl_HashEntry *hashPtr;
     Tcl_HashSearch search;
-    (void)dummy;
 
     /*
      * Decrement number of threads. Proceed only if I was the last one. The

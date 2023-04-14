@@ -347,10 +347,9 @@ ps_gdbm_delete(
  */
 static void
 ps_gdbm_free(
-    void *handle,
+    TCL_UNUSED(void *),
     void        *data)
 {
-    (void)handle;
     free(data);
 }
 
@@ -372,9 +371,8 @@ ps_gdbm_free(
  */
 static const char*
 ps_gdbm_geterr(
-    void *handle)
+    TCL_UNUSED(void *))
 {
-    (void)handle;
     /*
      * The problem with gdbm interface is that it uses the global
      * gdbm_errno variable which is not per-thread nor mutex
