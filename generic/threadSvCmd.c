@@ -518,7 +518,7 @@ AcquireContainer(
         PsStore *psPtr = arrayPtr->psPtr;
         if (psPtr) {
             char *val = NULL;
-            size_t len = 0;
+            Tcl_Size len = 0;
             if (psPtr->psGet(psPtr->psHandle, key, &val, &len) == 0) {
                 tclObj = Tcl_NewStringObj(val, len);
                 psPtr->psFree(psPtr->psHandle, val);
@@ -562,7 +562,7 @@ ReleaseContainer(
                  int mode)
 {
     const PsStore *psPtr = svObj->arrayPtr->psPtr;
-    size_t len;
+    Tcl_Size len;
     char *key, *val;
 
     switch (mode) {
@@ -1352,7 +1352,7 @@ SvArrayObjCmd(
 
         PsStore *psPtr;
         Tcl_HashEntry *hPtr;
-        size_t len;
+        Tcl_Size len;
         int isNew;
         char *psurl, *key = NULL, *val = NULL;
 
