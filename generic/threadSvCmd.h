@@ -84,10 +84,10 @@
 
 typedef void *(ps_open_proc)(const char*);
 
-typedef int (ps_get_proc)   (void *, const char*, char**, size_t*);
-typedef int (ps_put_proc)   (void *, const char*, char*, size_t);
-typedef int (ps_first_proc) (void *, char**, char**, size_t*);
-typedef int (ps_next_proc)  (void *, char**, char**, size_t*);
+typedef int (ps_get_proc)   (void *, const char*, char**, Tcl_Size*);
+typedef int (ps_put_proc)   (void *, const char*, char*, Tcl_Size);
+typedef int (ps_first_proc) (void *, char**, char**, Tcl_Size*);
+typedef int (ps_next_proc)  (void *, char**, char**, Tcl_Size*);
 typedef int (ps_delete_proc)(void *, const char*);
 typedef int (ps_close_proc) (void *);
 typedef void(ps_free_proc)  (void *, void*);

@@ -183,7 +183,7 @@ ThreadMutexObjCmd(
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret;
-    size_t nameLen;
+    Tcl_Size nameLen;
     const char *mutexName;
     char type;
     SpMutex *mutexPtr;
@@ -356,7 +356,7 @@ ThreadRWMutexObjCmd(
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret;
-    size_t nameLen;
+    Tcl_Size nameLen;
     const char *mutexName;
     SpMutex *mutexPtr;
     Sp_ReadWriteMutex *rwPtr;
@@ -519,7 +519,7 @@ ThreadCondObjCmd(
     Tcl_Obj *const objv[]              /* Argument objects. */
 ) {
     int ret, timeMsec = 0;
-    size_t nameLen;
+    Tcl_Size nameLen;
     const char *condvName, *mutexName;
     SpMutex *mutexPtr;
     SpCondv *condvPtr;

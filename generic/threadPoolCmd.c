@@ -339,7 +339,7 @@ TpoolPostObjCmd(
 ) {
     Tcl_WideInt jobId = 0;
     int detached = 0, nowait = 0;
-    size_t ii, len;
+    Tcl_Size ii, len;
     const char *tpoolName, *script;
     TpoolResult *rPtr;
     ThreadPool *tpoolPtr;
@@ -1517,7 +1517,7 @@ TpoolEval(
     TpoolResult *rPtr
 ) {
     int ret;
-    size_t reslen;
+    Tcl_Size reslen;
     const char *result;
     const char *errorCode, *errorInfo;
 
