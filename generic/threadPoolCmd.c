@@ -508,8 +508,8 @@ TpoolWaitObjCmd(
     Tcl_Size      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
-    int ii, done;
-    int wObjc;
+    int done;
+    Tcl_Size ii, wObjc;
     Tcl_WideInt jobId;
     char *tpoolName;
     Tcl_Obj *listVar = NULL;
@@ -624,8 +624,7 @@ TpoolCancelObjCmd(
     Tcl_Size      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
-    int ii;
-    int wObjc;
+    Tcl_Size ii, wObjc;
     Tcl_WideInt jobId;
     char *tpoolName;
     Tcl_Obj *listVar = NULL;

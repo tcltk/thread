@@ -56,7 +56,7 @@ static Tcl_Mutex initMutex;
  */
 
 static Tcl_Obj*
-SvLsetFlat(Tcl_Interp *interp, Tcl_Obj *listPtr, size_t indexCount,
+SvLsetFlat(Tcl_Interp *interp, Tcl_Obj *listPtr, Tcl_Size indexCount,
            Tcl_Obj **indexArray, Tcl_Obj *valuePtr);
 
 
@@ -922,7 +922,7 @@ static Tcl_Obj*
 SvLsetFlat(
      Tcl_Interp *interp,    /* Tcl interpreter */
      Tcl_Obj *listPtr,      /* Pointer to the list being modified */
-     size_t indexCount,   /* Number of index args */
+     Tcl_Size indexCount,   /* Number of index args */
      Tcl_Obj **indexArray,
      Tcl_Obj *valuePtr      /* Value arg to 'lset' */
 ) {
