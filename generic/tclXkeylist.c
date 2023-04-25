@@ -237,7 +237,7 @@ ValidateKeyedList(keylIntObj_t *keylIntPtr);
 static int
 ValidateKey(Tcl_Interp *interp,
                          const char *key,
-                         size_t keyLen,
+                         Tcl_Size keyLen,
                          int isPath);
 
 static keylIntObj_t *
@@ -365,12 +365,12 @@ static int
 ValidateKey(
     Tcl_Interp *interp,
     const char *key,
-    size_t keyLen,
+    Tcl_Size keyLen,
     int isPath
 ) {
     const char *keyp;
 
-    if (strlen(key) != keyLen) {
+    if (strlen(key) != (size_t)keyLen) {
         Tcl_ResetResult(interp);
         Tcl_AppendStringsToObj(Tcl_GetObjResult(interp),
                                 "keyed list key may not be a ",
