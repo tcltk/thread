@@ -770,7 +770,7 @@ ThreadEvalObjCmd(
         char msg[32 + TCL_INTEGER_SPACE];
         /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
          * See Tcl bug #3562640 */
-        sprintf(msg, "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
+        snprintf(msg, sizeof(msg), "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
         Tcl_AddErrorInfo(interp, msg);
     }
 
@@ -819,7 +819,7 @@ GetName(
     id = idcounter++;
     Tcl_MutexUnlock(&initMutex);
 
-    sprintf(name, "%cid%d", type, id);
+    snprintf(name, sizeof(name), "%cid%d", type, id);
 
     return Tcl_NewStringObj(name, -1);
 }
