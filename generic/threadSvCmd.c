@@ -1187,7 +1187,7 @@ SvObjObjCmd(
      * Format the command name
      */
 
-    sprintf(buf, "::%p", (int*)svObj);
+    snprintf(buf, sizeof(buf), "::%p", (int*)svObj);
     svObj->aolSpecial = (arg != NULL);
     Tcl_CreateObjCommand(interp, buf, SvObjDispatchObjCmd, svObj, NULL);
     Tcl_ResetResult(interp);
@@ -2076,7 +2076,7 @@ SvLockObjCmd(
         char msg[32 + TCL_INTEGER_SPACE];
         /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
          * See Tcl bug #3562640 */
-        sprintf(msg, "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
+        snprintf(msg, sizeof(msg), "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
         Tcl_AddErrorInfo(interp, msg);
     }
 

@@ -3426,7 +3426,7 @@ ThreadGetOption(
         if (len == 0) {
             Tcl_DStringAppendElement(dsPtr, "-eventmark");
         }
-        sprintf(buf, "%d", tsdPtr->maxEventsCount);
+        snprintf(buf, sizeof(buf), "%d", tsdPtr->maxEventsCount);
         Tcl_DStringAppendElement(dsPtr, buf);
         if (len != 0) {
             Tcl_MutexUnlock(&threadMutex);
@@ -3853,7 +3853,7 @@ ThreadGetHandle(
     Tcl_ThreadId thrId,
     char *handlePtr
 ) {
-    sprintf(handlePtr, THREAD_HNDLPREFIX "%p", thrId);
+    snprintf(handlePtr, THREAD_HNDLMAXLEN, THREAD_HNDLPREFIX "%p", thrId);
 }
 
 /*

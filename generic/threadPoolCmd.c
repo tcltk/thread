@@ -299,7 +299,7 @@ TpoolCreateObjCmd(
     }
     Tcl_MutexUnlock(&tpoolPtr->mutex);
 
-    sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
+    snprintf(buf, sizeof(buf), "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
     Tcl_SetObjResult(interp, Tcl_NewStringObj(buf, -1));
 
     return TCL_OK;
@@ -1041,7 +1041,7 @@ TpoolNamesObjCmd(
     Tcl_MutexLock(&listMutex);
     for (tpoolPtr = tpoolList; tpoolPtr; tpoolPtr = tpoolPtr->nextPtr) {
         char buf[32];
-        sprintf(buf, "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
+        snprintf(buf, sizeof(buf), "%s%p", TPOOL_HNDLPREFIX, tpoolPtr);
         Tcl_ListObjAppendElement(interp, listObj, Tcl_NewStringObj(buf,-1));
     }
     Tcl_MutexUnlock(&listMutex);
