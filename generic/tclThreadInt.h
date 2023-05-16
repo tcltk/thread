@@ -48,6 +48,10 @@
 #   endif
 #endif
 
+#if defined(_WIN32) && defined(_MSC_VER) && _MSC_VER < 1900
+#  define snprintf _snprintf
+#endif
+
 /*
  * For linking against NaviServer/AOLserver require V4 at least
  */
