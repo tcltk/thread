@@ -86,7 +86,7 @@ TclX_IsNullObj (
     if (objPtr->typePtr == NULL) {
         return (objPtr->length == 0);
     } else if (objPtr->typePtr == listType) {
-        int length;
+        Tcl_Size length;
         Tcl_ListObjLength(NULL, objPtr, &length);
         return (length == 0);
     }

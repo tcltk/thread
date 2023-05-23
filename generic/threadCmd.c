@@ -243,7 +243,7 @@ ThreadInit(Tcl_Interp *interp);
 static int
 ThreadCreate(Tcl_Interp *interp,
                                const char *script,
-                               int stacksize,
+                               TCL_HASH_TYPE stacksize,
                                int flags,
                                int preserve);
 static int
@@ -406,7 +406,7 @@ ThreadInit(
 	    /* If threadMutex==NULL here, it means that Tcl_MutexLock() is
 	     * a dummy function, which is the case in unthreaded Tcl */
 	    const char *msg = "Tcl core wasn't compiled for threading";
-	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, -1));
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj(msg, TCL_INDEX_NONE));
 	    return NULL;
 	}
 	Tcl_GetVersion(&major, &minor, NULL, NULL);
@@ -1150,7 +1150,7 @@ ThreadBroadcastObjCmd(
 	}
 	sendPtr  = (ThreadSendData *)ckalloc(sizeof(ThreadSendData));
 	*sendPtr = job;
-	sendPtr->clientData = memcpy(ckalloc(size), script, size);
+	sendPtr->clientData = memcpy(ckalloc(size), script, (size_t)size);
 	ThreadSend(interp, thrIdArray[ii], sendPtr, NULL, THREAD_SEND_HEAD);
     }
 
@@ -1763,7 +1763,7 @@ static int
 ThreadCreate(
     Tcl_Interp *interp,        /* Current interpreter. */
     const char *script,        /* Script to evaluate */
-    int         stacksize,     /* Zero for default size */
+    TCL_HASH_TYPE stacksize,   /* Zero for default size */
     int         flags,         /* Zero for no flags */
     int         preserve       /* If true, reserve the thread */
 ) {

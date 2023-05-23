@@ -68,6 +68,7 @@
 
 #if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 7) && !defined(Tcl_Size)
 #    define Tcl_Size int
+#    define TCL_HASH_TYPE unsigned
 #endif
 
 #ifndef JOIN

@@ -100,7 +100,7 @@ typedef const char* (ps_geterr_proc)(void *);
 
 typedef struct PsStore {
     const char *type;          /* Type identifier of the persistent storage */
-    void *psHandle;       /* Handle to the opened storage */
+    void *psHandle;            /* Handle to the opened storage */
     ps_open_proc   *psOpen;    /* Function to open the persistent key store */
     ps_get_proc    *psGet;     /* Function to retrieve value bound to key */
     ps_put_proc    *psPut;     /* Function to store user key and value */
@@ -149,7 +149,7 @@ typedef struct Container {
     Tcl_HashEntry *entryPtr;   /* Entry in array table. */
     Tcl_HashEntry *handlePtr;  /* Entry in handles table */
     Tcl_Obj *tclObj;           /* Tcl object to hold shared values */
-    int epoch;                 /* Track object changes */
+    Tcl_Size epoch;            /* Track object changes */
     char *chunkAddr;           /* Address of one chunk of object containers */
     struct Container *nextPtr; /* Next object container in the free list */
     int aolSpecial;
@@ -200,7 +200,7 @@ MODULE_SCOPE void
 Sv_RegisterPsStore(const PsStore*);
 
 MODULE_SCOPE int
-Sv_GetContainer(Tcl_Interp*,int,Tcl_Obj*const objv[],Container**,int*,int);
+Sv_GetContainer(Tcl_Interp*,Tcl_Size,Tcl_Obj*const objv[],Container**,Tcl_Size*,int);
 
 MODULE_SCOPE int
 Sv_PutContainer(Tcl_Interp*, Container*, int);
