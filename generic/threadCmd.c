@@ -241,7 +241,7 @@ ThreadInit(Tcl_Interp *interp);
 static int
 ThreadCreate(Tcl_Interp *interp,
                                const char *script,
-                               int stacksize,
+                               TCL_HASH_TYPE stacksize,
                                int flags,
                                int preserve);
 static int
@@ -1756,7 +1756,7 @@ static int
 ThreadCreate(
     Tcl_Interp *interp,        /* Current interpreter. */
     const char *script,        /* Script to evaluate */
-    int         stacksize,     /* Zero for default size */
+    TCL_HASH_TYPE stacksize,   /* Zero for default size */
     int         flags,         /* Zero for no flags */
     int         preserve       /* If true, reserve the thread */
 ) {

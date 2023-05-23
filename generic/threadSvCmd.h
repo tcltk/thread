@@ -150,7 +150,7 @@ typedef struct Container {
     Tcl_HashEntry *entryPtr;   /* Entry in array table. */
     Tcl_HashEntry *handlePtr;  /* Entry in handles table */
     Tcl_Obj *tclObj;           /* Tcl object to hold shared values */
-    int epoch;                 /* Track object changes */
+    Tcl_Size epoch;            /* Track object changes */
     char *chunkAddr;           /* Address of one chunk of object containers */
     struct Container *nextPtr; /* Next object container in the free list */
     int aolSpecial;
