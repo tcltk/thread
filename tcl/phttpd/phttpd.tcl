@@ -109,7 +109,7 @@ proc phttpd::create {port args} {
         }
         set opts [array names Httpd]
         foreach {arg val} $args {
-            if {[lsearch $opts $arg] == -1} {
+            if {[lsearch $opts $arg] < 0} {
                 error "unknown option \"$arg\""
             }
             set Httpd($arg) $val

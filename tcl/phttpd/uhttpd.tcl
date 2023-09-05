@@ -83,7 +83,7 @@ proc uhttpd::create {port args} {
         }
         set opts [array names Httpd]
         foreach {arg val} $args {
-            if {[lsearch $opts $arg] == -1} {
+            if {[lsearch $opts $arg] < 0} {
                 error "unknown option \"$arg\""
             }
             set Httpd($arg) $val
@@ -135,7 +135,7 @@ proc uhttpd::Read {s} {
     if {[catch {gets $s line} readCount] || [eof $s]} {
         return [Done $s]
     }
-    if {$readCount == -1} {
+    if {$readCount < 0} {
         return ;# Insufficient data on non-blocking socket !
     }
     if {![info exists data(state)]} {

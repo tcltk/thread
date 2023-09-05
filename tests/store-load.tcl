@@ -38,7 +38,7 @@ while {[gets $fd line] >  0} {
         continue
     }
     set tab [string first {	} $line]
-    if {$tab == -1} {
+    if {$tab < 0} {
         continue
     }
 
