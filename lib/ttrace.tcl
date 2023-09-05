@@ -187,10 +187,10 @@ namespace eval ttrace {
     }
 
     proc update {{from -1}} {
-        if {$from == -1} {
+        if {$from < 0} {
             variable epoch [_set ttrace lastepoch]
         } else {
-            if {[lsearch [_set ttrace epochlist] $from] == -1} {
+            if {[lsearch [_set ttrace epochlist] $from] < 0} {
                 error "no such epoch: $from"
             }
             variable epoch $from
@@ -224,14 +224,14 @@ namespace eval ttrace {
 
     proc preload {cmd} {
         variable preloads
-        if {[lsearch $preloads $cmd] == -1} {
+        if {[lsearch $preloads $cmd] < 0} {
             lappend preloads $cmd
         }
     }
 
     proc atenable {cmd arglist body} {
         variable enables
-        if {[lsearch $enables $cmd] == -1} {
+        if {[lsearch $enables $cmd] < 0} {
             lappend enables $cmd
             set cmd [namespace current]::enable::_$cmd
             proc $cmd $arglist $body
@@ -241,7 +241,7 @@ namespace eval ttrace {
 
     proc atdisable {cmd arglist body} {
         variable disables
-        if {[lsearch $disables $cmd] == -1} {
+        if {[lsearch $disables $cmd] < 0} {
             lappend disables $cmd
             set cmd [namespace current]::disable::_$cmd
             proc $cmd $arglist $body
@@ -251,7 +251,7 @@ namespace eval ttrace {
 
     proc addtrace {cmd arglist body} {
         variable tracers
-        if {[lsearch $tracers $cmd] == -1} {
+        if {[lsearch $tracers $cmd] < 0} {
             lappend tracers $cmd
             set tracer [namespace current]::trace::_$cmd
             proc $tracer $arglist $body
@@ -264,7 +264,7 @@ namespace eval ttrace {
 
     proc addscript {cmd body} {
         variable scripts
-        if {[lsearch $scripts $cmd] == -1} {
+        if {[lsearch $scripts $cmd] < 0} {
             lappend scripts $cmd
             set cmd [namespace current]::script::_$cmd
             proc $cmd args $body
@@ -274,7 +274,7 @@ namespace eval ttrace {
 
     proc addresolver {cmd arglist body} {
         variable resolvers
-        if {[lsearch $resolvers $cmd] == -1} {
+        if {[lsearch $resolvers $cmd] < 0} {
             lappend resolvers $cmd
             set cmd [namespace current]::resolve::$cmd
             proc $cmd $arglist $body
