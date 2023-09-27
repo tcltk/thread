@@ -539,11 +539,10 @@ Thread_Init(
 	if (info.isNativeObjectProc == 2) {
 	    Tcl_CreateObjCommand2(interp, "::thread::build-info",
 		    info.objProc2, (void *)version, NULL);
-	}
-#else
+	} else
+#endif
 	Tcl_CreateObjCommand(interp, "::thread::build-info",
 		info.objProc, (void *)version, NULL);
-#endif
     }
     Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
     return Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
