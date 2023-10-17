@@ -283,6 +283,17 @@ This command passes a [arg script] to all threads created by the
 package for execution. It does not wait for response from any of
 the threads.
 
+[para]
+
+The sending thread (the one executing the thread::broadcast command) does
+not send the script to itself.
+
+[para]
+
+Each receiving thread is directed to place evaluation of the send script
+at the head of its event queue, stepping in front of any other events
+awaiting processing.
+
 [call [cmd thread::wait]]
 
 This enters the event loop so a thread can receive messages from
