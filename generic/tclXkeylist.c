@@ -159,7 +159,7 @@ TclX_WrongArgs(
                             NULL);
 
     if (*string != '\0') {
-        Tcl_AppendStringsToObj (resultPtr, " ", string, NULL);
+        Tcl_AppendStringsToObj (resultPtr, " ", string, (void *)NULL);
     }
     return TCL_ERROR;
 }

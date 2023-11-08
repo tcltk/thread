@@ -193,7 +193,7 @@ SvKeylgetObjCmd(
         if (varObjPtr) {
             Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
         } else {
-            Tcl_AppendResult (interp, "key \"", key, "\" not found", NULL);
+            Tcl_AppendResult (interp, "key \"", key, "\" not found", (void *)NULL);
             goto cmd_err;
         }
     } else {
@@ -261,7 +261,7 @@ SvKeyldelObjCmd(
         key = Tcl_GetString(objv[i]);
         ret = TclX_KeyedListDelete(interp, svObj->tclObj, key);
         if (ret == TCL_BREAK) {
-            Tcl_AppendResult(interp, "key \"", key, "\" not found", NULL);
+            Tcl_AppendResult(interp, "key \"", key, "\" not found", (void *)NULL);
         }
         if (ret == TCL_BREAK || ret == TCL_ERROR) {
             goto cmd_err;
@@ -324,7 +324,7 @@ SvKeylkeysObjCmd(
     ret = TclX_KeyedListGetKeys(interp, svObj->tclObj, key, &listObj);
 
     if (key && ret == TCL_BREAK) {
-        Tcl_AppendResult(interp, "key \"", key, "\" not found", NULL);
+        Tcl_AppendResult(interp, "key \"", key, "\" not found", (void *)NULL);
     }
     if (ret == TCL_BREAK || ret == TCL_ERROR) {
         goto cmd_err;

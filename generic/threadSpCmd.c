@@ -283,10 +283,10 @@ ThreadMutexObjCmd(
             if (ret == -1) {
             notfound:
                 Tcl_AppendResult(interp, "no such mutex \"", mutexName,
-                                 "\"", NULL);
+                                 "\"", (void *)NULL);
                 return TCL_ERROR;
             } else {
-                Tcl_AppendResult(interp, "mutex is in use", NULL);
+                Tcl_AppendResult(interp, "mutex is in use", (void *)NULL);
                 return TCL_ERROR;
             }
         }
@@ -304,7 +304,7 @@ ThreadMutexObjCmd(
     if (!IsExclusive(mutexPtr) && !IsRecursive(mutexPtr)) {
         PutMutex(mutexPtr);
         Tcl_AppendResult(interp, "wrong mutex type, must be either"
-                         " exclusive or recursive", NULL);
+                         " exclusive or recursive", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -313,14 +313,14 @@ ThreadMutexObjCmd(
         if (!SpMutexLock(mutexPtr)) {
             PutMutex(mutexPtr);
             Tcl_AppendResult(interp, "locking the same exclusive mutex "
-                             "twice from the same thread", NULL);
+                             "twice from the same thread", (void *)NULL);
             return TCL_ERROR;
         }
         break;
     case m_UNLOCK:
         if (!SpMutexUnlock(mutexPtr)) {
             PutMutex(mutexPtr);
-            Tcl_AppendResult(interp, "mutex is not locked", NULL);
+            Tcl_AppendResult(interp, "mutex is not locked", (void *)NULL);
             return TCL_ERROR;
         }
         break;
@@ -436,10 +436,10 @@ ThreadRWMutexObjCmd(
             if (ret == -1) {
             notfound:
                 Tcl_AppendResult(interp, "no such mutex \"", mutexName,
-                                 "\"", NULL);
+                                 "\"", (void *)NULL);
                 return TCL_ERROR;
             } else {
-                Tcl_AppendResult(interp, "mutex is in use", NULL);
+                Tcl_AppendResult(interp, "mutex is in use", (void *)NULL);
                 return TCL_ERROR;
             }
         }
@@ -456,7 +456,7 @@ ThreadRWMutexObjCmd(
     }
     if (!IsReadWrite(mutexPtr)) {
         PutMutex(mutexPtr);
-        Tcl_AppendResult(interp, "wrong mutex type, must be readwrite", NULL);
+        Tcl_AppendResult(interp, "wrong mutex type, must be readwrite", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -468,7 +468,7 @@ ThreadRWMutexObjCmd(
         if (!Sp_ReadWriteMutexRLock(rwPtr)) {
             PutMutex(mutexPtr);
             Tcl_AppendResult(interp, "read-locking already write-locked mutex ",
-                             "from the same thread", NULL);
+                             "from the same thread", (void *)NULL);
             return TCL_ERROR;
         }
         break;
@@ -476,14 +476,14 @@ ThreadRWMutexObjCmd(
         if (!Sp_ReadWriteMutexWLock(rwPtr)) {
             PutMutex(mutexPtr);
             Tcl_AppendResult(interp, "write-locking the same read-write "
-                             "mutex twice from the same thread", NULL);
+                             "mutex twice from the same thread", (void *)NULL);
             return TCL_ERROR;
         }
         break;
     case w_UNLOCK:
         if (!Sp_ReadWriteMutexUnlock(rwPtr)) {
             PutMutex(mutexPtr);
-            Tcl_AppendResult(interp, "mutex is not locked", NULL);
+            Tcl_AppendResult(interp, "mutex is not locked", (void *)NULL);
             return TCL_ERROR;
         }
         break;
@@ -598,10 +598,10 @@ ThreadCondObjCmd(
             if (ret == -1) {
             notfound:
                 Tcl_AppendResult(interp, "no such condition variable \"",
-                                 condvName, "\"", NULL);
+                                 condvName, "\"", (void *)NULL);
                 return TCL_ERROR;
             } else {
-                Tcl_AppendResult(interp, "condition variable is in use", NULL);
+                Tcl_AppendResult(interp, "condition variable is in use", (void *)NULL);
                 return TCL_ERROR;
             }
         }
@@ -642,14 +642,14 @@ ThreadCondObjCmd(
         mutexPtr  = GetMutex(mutexName, objv[3]->length);
         if (mutexPtr == NULL) {
             PutCondv(condvPtr);
-            Tcl_AppendResult(interp, "no such mutex \"",mutexName,"\"", NULL);
+            Tcl_AppendResult(interp, "no such mutex \"",mutexName,"\"", (void *)NULL);
             return TCL_ERROR;
         }
         if (!IsExclusive(mutexPtr)
             || SpCondvWait(condvPtr, mutexPtr, timeMsec) == 0) {
             PutCondv(condvPtr);
             PutMutex(mutexPtr);
-            Tcl_AppendResult(interp, "mutex not locked or wrong type", NULL);
+            Tcl_AppendResult(interp, "mutex not locked or wrong type", (void *)NULL);
             return TCL_ERROR;
         }
         PutMutex(mutexPtr);
@@ -732,17 +732,17 @@ ThreadEvalObjCmd(
         mutexName = Tcl_GetString(objv[2]);
         mutexPtr  = GetMutex(mutexName, objv[2]->length);
         if (mutexPtr == NULL) {
-            Tcl_AppendResult(interp, "no such mutex \"",mutexName,"\"", NULL);
+            Tcl_AppendResult(interp, "no such mutex \"",mutexName,"\"", (void *)NULL);
             return TCL_ERROR;
         }
         if (IsReadWrite(mutexPtr)) {
             Tcl_AppendResult(interp, "wrong mutex type, must be exclusive "
-                             "or recursive", NULL);
+                             "or recursive", (void *)NULL);
             return TCL_ERROR;
         }
         if (!SpMutexLock(mutexPtr)) {
             Tcl_AppendResult(interp, "locking the same exclusive mutex "
-                             "twice from the same thread", NULL);
+                             "twice from the same thread", (void *)NULL);
             return TCL_ERROR;
         }
     }

@@ -342,7 +342,7 @@ Sv_GetContainer(
         *retObj = AcquireContainer(arrayPtr, Tcl_GetString(objv[2]), flags);
         if (*retObj == NULL) {
             UnlockArray(arrayPtr);
-            Tcl_AppendResult(interp, "no key ", array, "(", key, ")", NULL);
+            Tcl_AppendResult(interp, "no key ", array, "(", key, ")", (void *)NULL);
             return TCL_BREAK;
         }
     } else {
@@ -736,7 +736,7 @@ LockArray(
             UNLOCK_BUCKET(bucketPtr);
             if (!(flags & FLAGS_NOERRMSG)) {
                 Tcl_AppendResult(interp, "\"", array,
-                                 "\" is not a thread shared array", NULL);
+                                 "\" is not a thread shared array", (void *)NULL);
             }
             return NULL;
         }
@@ -1122,7 +1122,7 @@ SvObjDispatchObjCmd(
         }
     }
 
-    Tcl_AppendResult(interp, "invalid command name \"", cmdName, "\"", NULL);
+    Tcl_AppendResult(interp, "invalid command name \"", cmdName, "\"", (void *)NULL);
     return TCL_ERROR;
 }
 
@@ -1284,7 +1284,7 @@ SvArrayObjCmd(
         }
         if (lobjc & 1) {
             Tcl_AppendResult(interp, "list must have an even number"
-                    " of elements", NULL);
+                    " of elements", (void *)NULL);
             ret = TCL_ERROR;
             goto cmdExit;
         }
@@ -1363,7 +1363,7 @@ SvArrayObjCmd(
         }
 
         if (arrayPtr && arrayPtr->psPtr) {
-            Tcl_AppendResult(interp, "array is already bound", NULL);
+            Tcl_AppendResult(interp, "array is already bound", (void *)NULL);
             ret = TCL_ERROR;
             goto cmdExit;
         }
@@ -1374,7 +1374,7 @@ SvArrayObjCmd(
 
         if (psPtr == NULL) {
             Tcl_AppendResult(interp, "can't open persistent storage on \"",
-                             psurl, "\"", NULL);
+                             psurl, "\"", (void *)NULL);
             ret = TCL_ERROR;
             goto cmdExit;
         }
@@ -1407,7 +1407,7 @@ SvArrayObjCmd(
 
     } else if (index == AUNBIND) {
         if (!arrayPtr || !arrayPtr->psPtr) {
-            Tcl_AppendResult(interp, "shared variable is not bound", NULL);
+            Tcl_AppendResult(interp, "shared variable is not bound", (void *)NULL);
             ret = TCL_ERROR;
             goto cmdExit;
         }
@@ -1481,7 +1481,7 @@ SvUnsetObjCmd(
                 }
             } else {
                 UnlockArray(arrayPtr);
-                Tcl_AppendResult(interp,"no key ",arrayName,"(",key,")",NULL);
+                Tcl_AppendResult(interp,"no key ",arrayName,"(",key,")",(void *)NULL);
                 return TCL_ERROR;
             }
         }
@@ -1985,7 +1985,7 @@ SvMoveObjCmd(
     hPtr = Tcl_CreateHashEntry(&svObj->arrayPtr->vars, toKey, &isNew);
 
     if (!isNew) {
-        Tcl_AppendResult(interp, "key \"", toKey, "\" exists", NULL);
+        Tcl_AppendResult(interp, "key \"", toKey, "\" exists", (void *)NULL);
         goto cmd_err;
     }
     if (svObj->entryPtr) {

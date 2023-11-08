@@ -405,7 +405,7 @@ SvLreplaceObjCmd(
         first = 0;
     }
     if (llen && first >= llen && strncmp(firstArg, "end", argLen)) {
-        Tcl_AppendResult(interp, "list doesn't have element ", firstArg, NULL);
+        Tcl_AppendResult(interp, "list doesn't have element ", firstArg, (void *)NULL);
         goto cmd_err;
     }
     if (last + 1 >= llen + 1) {
