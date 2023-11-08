@@ -23,6 +23,10 @@
 #include "threadSvCmd.h"
 #include "threadUuid.h"
 
+#if (TCL_MAJOR_VERSION == 8) && (TCL_MINOR_VERSION < 7) && !defined(TCL_HASH_TYPE)
+#    define TCL_HASH_TYPE unsigned
+#endif
+
 /*
  * Provide package version in build contexts which do not provide
  * -DPACKAGE_VERSION, like building a shell with the Thread object
