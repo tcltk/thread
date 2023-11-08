@@ -2331,7 +2331,7 @@ ThreadJoin(
     } else {
 	char thrHandle[THREAD_HNDLMAXLEN];
 	ThreadGetHandle(thrId, thrHandle);
-	Tcl_AppendResult(interp, "cannot join thread ", thrHandle, NULL);
+	Tcl_AppendResult(interp, "cannot join thread ", thrHandle, (void *)NULL);
     }
 
     return ret;
@@ -2495,13 +2495,13 @@ ThreadTransfer(
 	Tcl_SpliceChannel(chan);
 	Tcl_RegisterChannel(interp, chan);
 	Tcl_UnregisterChannel((Tcl_Interp *) NULL, chan);
-	Tcl_AppendResult(interp, "transfer failed: ", NULL);
+	Tcl_AppendResult(interp, "transfer failed: ", (void *)NULL);
 
 	if (resultPtr->resultMsg) {
-	    Tcl_AppendResult(interp, resultPtr->resultMsg, NULL);
+	    Tcl_AppendResult(interp, resultPtr->resultMsg, (void *)NULL);
 	    Tcl_Free(resultPtr->resultMsg);
 	} else {
-	    Tcl_AppendResult(interp, "for reasons unknown", NULL);
+	    Tcl_AppendResult(interp, "for reasons unknown", (void *)NULL);
 	}
 	Tcl_Free(resultPtr);
 
@@ -2644,7 +2644,7 @@ ThreadAttach(
 		&& !resPtr->dstThreadId) {
 	    if (Tcl_IsChannelExisting(chanName)) {
 		Tcl_MutexUnlock(&threadMutex);
-		Tcl_AppendResult(interp, "channel already exists", NULL);
+		Tcl_AppendResult(interp, "channel already exists", (void *)NULL);
 		return TCL_ERROR;
 	    }
 	    SpliceOut(resPtr, transferList);
@@ -2657,7 +2657,7 @@ ThreadAttach(
     Tcl_MutexUnlock(&threadMutex);
 
     if (found == 0) {
-	Tcl_AppendResult(interp, "channel not detached", NULL);
+	Tcl_AppendResult(interp, "channel not detached", (void *)NULL);
 	return TCL_ERROR;
     }
 
@@ -2960,7 +2960,7 @@ ThreadWait(Tcl_Interp *interp)
 
 	ThreadGetHandle(Tcl_GetCurrentThread(), buf);
 	Tcl_AppendResult(interp, "Error from thread ", buf, "\n",
-		errorInfo, NULL);
+		errorInfo, (void *)NULL);
     }
 
     /*
@@ -3394,7 +3394,7 @@ ThreadGetOption(
     if (len != 0) {
 	Tcl_AppendResult(interp, "bad option \"", option,
 			 "\", should be one of -eventmark, "
-			 "-unwindonerror or -errorstate", NULL);
+			 "-unwindonerror or -errorstate", (void *)NULL);
 	Tcl_MutexUnlock(&threadMutex);
 	return TCL_ERROR;
     }
@@ -3439,7 +3439,7 @@ ThreadSetOption(
 	&& !strncmp(option,"-eventmark", len)) {
 	if (sscanf(value, "%d", &tsdPtr->maxEventsCount) != 1) {
 	    Tcl_AppendResult(interp, "expected integer but got \"",
-			     value, "\"", NULL);
+			     value, "\"", (void *)NULL);
 	    Tcl_MutexUnlock(&threadMutex);
 	    return TCL_ERROR;
 	}
@@ -3814,7 +3814,7 @@ ThreadGetId(
     }
 
     Tcl_AppendResult(interp, "invalid thread handle \"",
-		     thrHandle, "\"", NULL);
+		     thrHandle, "\"", (void *)NULL);
     return TCL_ERROR;
 }
 
@@ -3844,7 +3844,7 @@ ErrorNoSuchThread(
 
     ThreadGetHandle(thrId, thrHandle);
     Tcl_AppendResult(interp, "thread \"", thrHandle,
-		     "\" does not exist", NULL);
+		     "\" does not exist", (void *)NULL);
 }
 
 /*

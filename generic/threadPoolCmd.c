@@ -379,7 +379,7 @@ TpoolPostObjCmd(
     tpoolPtr  = GetTpool(tpoolName);
     if (tpoolPtr == NULL) {
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
-                         "\"", NULL);
+                         "\"", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -538,7 +538,7 @@ TpoolWaitObjCmd(
     tpoolPtr  = GetTpool(tpoolName);
     if (tpoolPtr == NULL) {
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
-                         "\"", NULL);
+                         "\"", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -650,7 +650,7 @@ TpoolCancelObjCmd(
     tpoolPtr  = GetTpool(tpoolName);
     if (tpoolPtr == NULL) {
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
-                         "\"", NULL);
+                         "\"", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -751,7 +751,7 @@ TpoolGetObjCmd(
     tpoolPtr  = GetTpool(tpoolName);
     if (tpoolPtr == NULL) {
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
-                         "\"", NULL);
+                         "\"", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -765,13 +765,13 @@ TpoolGetObjCmd(
     hPtr = Tcl_FindHashEntry(&tpoolPtr->jobsDone, (void *)(size_t)jobId);
     if (hPtr == NULL) {
         Tcl_MutexUnlock(&tpoolPtr->mutex);
-        Tcl_AppendResult(interp, "no such job", NULL);
+        Tcl_AppendResult(interp, "no such job", (void *)NULL);
         return TCL_ERROR;
     }
     rPtr = (TpoolResult*)Tcl_GetHashValue(hPtr);
     if (rPtr->result == NULL) {
         Tcl_MutexUnlock(&tpoolPtr->mutex);
-        Tcl_AppendResult(interp, "job not completed", NULL);
+        Tcl_AppendResult(interp, "job not completed", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -835,7 +835,7 @@ TpoolReserveObjCmd(
     if (tpoolPtr == NULL) {
         Tcl_MutexUnlock(&listMutex);
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
-                         "\"", NULL);
+                         "\"", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -890,7 +890,7 @@ TpoolReleaseObjCmd(
     if (tpoolPtr == NULL) {
         Tcl_MutexUnlock(&listMutex);
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
-                         "\"", NULL);
+                         "\"", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -942,7 +942,7 @@ TpoolSuspendObjCmd(
 
     if (tpoolPtr == NULL) {
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
-                         "\"", NULL);
+                         "\"", (void *)NULL);
         return TCL_ERROR;
     }
 
@@ -992,7 +992,7 @@ TpoolResumeObjCmd(
 
     if (tpoolPtr == NULL) {
         Tcl_AppendResult(interp, "can not find threadpool \"", tpoolName,
-                         "\"", NULL);
+                         "\"", (void *)NULL);
         return TCL_ERROR;
     }
 
