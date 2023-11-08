@@ -1240,7 +1240,11 @@ TKIMPLIBNAME	= tk$(TK_VERSION)$(SUFX).lib
 TKLIBNAME	= tcl9tk$(TK_VERSION)$(SUFX).$(EXT)
 TKIMPLIBNAME	= tcl9tk$(TK_VERSION)$(SUFX).lib
 !endif
+!if $(TK_MAJOR_VERSION) == 8
 TKSTUBLIBNAME	= tkstub$(TK_VERSION).lib
+!else
+TKSTUBLIBNAME	= tkstub.lib
+!endif
 
 !if $(DOING_TK)
 WISH 		= $(OUT_DIR)\$(WISHNAME)
@@ -1529,6 +1533,10 @@ INCLUDES = $(INCLUDES) -I"$(GENERICDIR)" -I"$(WIN_DIR)" -I"$(COMPATDIR)"
 
 # cflags contains generic flags used for building practically all object files
 cflags = -nologo -c $(COMPILERFLAGS) $(carch) $(cwarn) -Fp$(TMP_DIR)^\ $(cdebug)
+
+!if $(TCL_MAJOR_VERSION) == 8 && $(TCL_MINOR_VERSION) < 7
+cflags = $(cflags) -DTcl_Size=int
+!endif
 
 # appcflags contains $(cflags) and flags for building the application
 # object files (e.g. tclsh, or wish) pkgcflags contains $(cflags) plus
