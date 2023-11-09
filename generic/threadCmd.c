@@ -115,7 +115,7 @@ typedef struct ThreadCtrl {
 typedef struct ThreadEventResult {
     Tcl_Condition done;                   /* Set when the script completes */
     int code;                             /* Return value of the function */
-    Tcl_Obj *result;                      /* Result from the function */
+    char *result;                         /* Result from the function */
     char *errorInfo;                      /* Copy of errorInfo variable */
     char *errorCode;                      /* Copy of errorCode variable */
     Tcl_ThreadId srcThreadId;             /* Id of sender, if it dies */
@@ -1671,7 +1671,12 @@ ThreadClbkSetVar(
      * We will use it to fill-in the result variable.
      */
 
-    valObj = resultPtr->result;
+    valObj = Tcl_NewStringObj(resultPtr->result, -1);
+    Tcl_IncrRefCount(valObj);
+
+    if (resultPtr->result != threadEmptyResult) {
+        ckfree(resultPtr->result);
+    }
 
     /*
      * Set the result variable
@@ -1717,19 +1722,19 @@ static int ThreadClbkCommand(Tcl_Interp *interp, void *clientData)
     ThreadEventResult *resultPtr = &clbkPtr->result;
 
     if (resultPtr->code == TCL_ERROR) {
-	Tcl_SetObjResult(interp, resultPtr->result);
+	Tcl_SetObjResult(interp, Tcl_NewStringObj(resultPtr->result, TCL_INDEX_NONE));
 	Tcl_BackgroundError(interp);
 	goto cleanup;
     }
 
     if ((status = Tcl_ListObjAppendElement(
-	interp, script, resultPtr->result)) != TCL_OK) {
+	interp, script, Tcl_NewStringObj(resultPtr->result, TCL_INDEX_NONE))) != TCL_OK) {
 	goto cleanup;
     }
     status = Tcl_GlobalEvalObj(interp, script);
 
 cleanup:
-    Tcl_DecrRefCount(resultPtr->result);
+    ckfree(resultPtr->result);
     return status;
 }
 
@@ -2848,14 +2853,16 @@ ThreadSend(
     }
 
     code = resultPtr->code;
-    Tcl_SetObjResult(interp, resultPtr->result);
+    Tcl_SetObjResult(interp, Tcl_NewStringObj(resultPtr->result, -1));
 
     /*
      * Cleanup
      */
 
     Tcl_ConditionFinalize(&resultPtr->done);
-    Tcl_DecrRefCount(resultPtr->result);
+    if (resultPtr->result != threadEmptyResult) {
+        ckfree(resultPtr->result);
+    }
     Tcl_Free(resultPtr);
 
     return code;
@@ -3082,7 +3089,9 @@ ThreadReserve(
 		}
 		SpliceOut(resultPtr, resultList);
 		Tcl_ConditionFinalize(&resultPtr->done);
-		Tcl_DecrRefCount(resultPtr->result);
+		if (resultPtr->result != threadEmptyResult) {
+		    ckfree(resultPtr->result); /* Will be ignored anyway */
+		}
 		Tcl_Free(resultPtr);
 	    }
 	}
@@ -3276,16 +3285,22 @@ ThreadSetResult(
     int code,
     ThreadEventResult *resultPtr
 ) {
-    const char *errorCode, *errorInfo;
+    const char *errorCode, *errorInfo, *result;
     size_t size;
 
     if (interp == NULL) {
 	code      = TCL_ERROR;
 	errorInfo = "";
 	errorCode = "THREAD";
-	resultPtr->result = Tcl_NewStringObj("no target interp", TCL_INDEX_NONE);
+	result    = "no target interp!";
+	size    = strlen(result);
+	resultPtr->result = (size) ?
+	    memcpy(ckalloc(1+size), result, 1+size) : threadEmptyResult;
     } else {
-	resultPtr->result = Sv_DuplicateObj(Tcl_GetObjResult(interp));
+	result = Tcl_GetString(Tcl_GetObjResult(interp));
+	size = Tcl_GetObjResult(interp)->length;
+	resultPtr->result = (size) ?
+		memcpy(ckalloc(1+size), result, 1+size) : threadEmptyResult;
 	if (code == TCL_ERROR) {
 	    errorCode = Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
 	    errorInfo = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
@@ -3294,7 +3309,6 @@ ThreadSetResult(
 	    errorInfo = NULL;
 	}
     }
-    Tcl_IncrRefCount(resultPtr->result);
 
     resultPtr->code = code;
 
@@ -3723,8 +3737,7 @@ ThreadExitProc(
 	     * because the main thread is going to call free on it.
 	     */
 
-	    resultPtr->result = Tcl_NewStringObj(diemsg, TCL_INDEX_NONE);
-	    Tcl_IncrRefCount(resultPtr->result);
+	    resultPtr->result = strcpy(ckalloc(1+strlen(diemsg)), diemsg);
 	    resultPtr->code = TCL_ERROR;
 	    resultPtr->errorCode = resultPtr->errorInfo = NULL;
 	    Tcl_ConditionNotify(&resultPtr->done);
