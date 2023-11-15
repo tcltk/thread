@@ -22,8 +22,10 @@ if {![package vsatisfies [package provide Tcl] 9.0]
 # about a thread-disabled interp, instead of the message
 # "can't find package thread".
 
-package ifneeded [string tolower @PACKAGE_NAME@] @PACKAGE_VERSION@ [list load [file join $dir @PKG_LIB_FILE@] [string totitle @PACKAGE_NAME@]]
-package ifneeded [string totitle @PACKAGE_NAME@] @PACKAGE_VERSION@ [list package require -exact [string tolower @PACKAGE_NAME@] @PACKAGE_VERSION@]
+package ifneeded [string tolower @PACKAGE_NAME@] @PACKAGE_VERSION@ \
+    [list load [file join $dir @PKG_LIB_FILE@] [string totitle @PACKAGE_NAME@]]
+package ifneeded [string totitle @PACKAGE_NAME@] @PACKAGE_VERSION@ \
+    [list package require -exact [string tolower @PACKAGE_NAME@] @PACKAGE_VERSION@]
 
 # package ttrace uses some support machinery.
 
@@ -44,7 +46,8 @@ package ifneeded ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
 	::ttrace::update
     }
 }} $dir]
-package ifneeded Ttrace @PACKAGE_VERSION@ [list package require -exact ttrace @PACKAGE_VERSION@]
+package ifneeded Ttrace @PACKAGE_VERSION@ \
+    [list package require -exact ttrace @PACKAGE_VERSION@]
 
 
 
