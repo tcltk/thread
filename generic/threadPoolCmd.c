@@ -33,10 +33,10 @@ typedef struct ThreadPool {
     int suspend;                    /* Set to 1 to suspend pool processing */
     char *initScript;               /* Script to initialize worker thread */
     char *exitScript;               /* Script to cleanup the worker */
-    size_t minWorkers;              /* Minimum number or worker threads */
-    size_t maxWorkers;              /* Maximum number of worker threads */
-    size_t numWorkers;              /* Current number of worker threads */
-    size_t idleWorkers;             /* Number of idle workers */
+    Tcl_WideInt minWorkers;         /* Minimum number or worker threads */
+    Tcl_WideInt maxWorkers;         /* Maximum number of worker threads */
+    Tcl_WideInt numWorkers;         /* Current number of worker threads */
+    Tcl_WideInt idleWorkers;        /* Number of idle workers */
     size_t refCount;                /* Reference counter for reserve/release */
     Tcl_Mutex mutex;                /* Pool mutex */
     Tcl_Condition cond;             /* Pool condition variable */
@@ -199,7 +199,7 @@ TpoolCreateObjCmd(
     Tcl_Size      objc,          /* Number of arguments. */
     Tcl_Obj    *const objv[]   /* Argument objects. */
 ) {
-    Tcl_Size ii;
+    Tcl_WideInt ii;
     Tcl_WideInt minw, maxw;
     int idle;
     char buf[64], *exs = NULL, *cmd = NULL;
@@ -271,8 +271,8 @@ TpoolCreateObjCmd(
     tpoolPtr = (ThreadPool *)Tcl_Alloc(sizeof(ThreadPool));
     memset(tpoolPtr, 0, sizeof(ThreadPool));
 
-    tpoolPtr->minWorkers  = (size_t)minw;
-    tpoolPtr->maxWorkers  = (size_t)maxw;
+    tpoolPtr->minWorkers  = minw;
+    tpoolPtr->maxWorkers  = maxw;
     tpoolPtr->idleTime    = idle;
     tpoolPtr->initScript  = cmd;
     tpoolPtr->exitScript  = exs;
