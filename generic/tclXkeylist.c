@@ -730,7 +730,7 @@ SetKeyedListFromAny(
     Tcl_Obj    *objPtr
 ) {
     keylIntObj_t *keylIntPtr;
-    size_t idx;
+    Tcl_Size idx;
     Tcl_Size objc;
     Tcl_Obj **objv;
 
@@ -1243,7 +1243,7 @@ Tcl_KeylsetObjCmd(
 ) {
     Tcl_Obj *keylVarPtr, *newVarObj;
     const char *key;
-    size_t idx;
+    Tcl_Size idx;
     (void)dummy;
 
     if ((objc < 4) || ((objc % 2) != 0)) {
@@ -1307,7 +1307,7 @@ Tcl_KeyldelObjCmd(
 ) {
     Tcl_Obj *keylVarPtr, *keylPtr;
     const char *key;
-    size_t idx;
+    Tcl_Size idx;
     int status;
     (void)dummy;
 
