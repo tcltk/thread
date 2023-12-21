@@ -34,6 +34,10 @@ AC_CONFIG_AUX_DIR(tclconfig)
 #--------------------------------------------------------------------
 
 TEA_PATH_TCLCONFIG
+if test x"${with_tcl8}" != x; then
+with_tcl8=""
+AC_MSG_WARN([--with-tcl8 option ignored])
+fi
 TEA_LOAD_TCLCONFIG
 
 if test "${TCL_MAJOR_VERSION}" -eq 8; then
