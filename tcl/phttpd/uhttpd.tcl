@@ -15,7 +15,7 @@
 # Example:
 #
 #    # tclsh8.6
-#    % source uhttpd.tcl
+#    % source -encoding utf-8 uhttpd.tcl
 #    % uhttpd::create 5000
 #    % vwait forever
 #

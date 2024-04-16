@@ -14,7 +14,7 @@
 # Example:
 #
 #    # tclsh8.6
-#    % source cmdsrv.tcl
+#    % source -encoding utf-8 cmdsrv.tcl
 #    % cmdsrv::create 5000 -idletime 60
 #    % vwait forever
 #
@@ -64,7 +64,7 @@ proc cmdsrv::create {port args} {
 
     array set data {
         -idletime 300000
-        -initcmd  {source cmdsrv.tcl}
+        -initcmd  {source -encoding utf-8 cmdsrv.tcl}
     }
 
     #

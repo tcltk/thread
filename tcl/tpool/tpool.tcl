@@ -107,7 +107,7 @@ proc tpool::create {args} {
         -exitcmd    ""
     }
 
-    tsv::set $tpid -initcmd  "source $thisScript"
+    tsv::set $tpid -initcmd  "source -encoding utf-8 $thisScript"
 
     #
     # Override with user-supplied data
