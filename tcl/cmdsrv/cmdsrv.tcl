@@ -13,7 +13,7 @@
 #
 # Example:
 #
-#    # tclsh8.6
+#    # tclsh9.0
 #    % source cmdsrv.tcl
 #    % cmdsrv::create 5000 -idletime 60
 #    % vwait forever

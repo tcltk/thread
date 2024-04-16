@@ -765,8 +765,6 @@ ThreadEvalObjCmd(
 
     if (ret == TCL_ERROR) {
         char msg[32 + TCL_INTEGER_SPACE];
-        /* Next line generates a Deprecation warning when compiled with Tcl 8.6.
-         * See Tcl bug #3562640 */
         snprintf(msg, sizeof(msg), "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
         Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_INDEX_NONE));
     }

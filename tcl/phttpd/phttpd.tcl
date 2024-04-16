@@ -14,7 +14,7 @@
 #
 # Example:
 #
-#    # tclsh8.6
+#    # tclsh9.0
 #    % source phttpd.tcl
 #    % phttpd::create 5000
 #    % vwait forever
