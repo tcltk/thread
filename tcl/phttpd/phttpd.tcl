@@ -15,7 +15,7 @@
 # Example:
 #
 #    # tclsh8.6
-#    % source phttpd.tcl
+#    % source -encoding utf-8 phttpd.tcl
 #    % phttpd::create 5000
 #    % vwait forever
 #
@@ -42,7 +42,7 @@ package require thread 2.9
 #
 
 if {0} {
-    eval [set TCL_TPOOL {source ../tpool/tpool.tcl}]
+    eval [set TCL_TPOOL {source -encoding utf-8 ../tpool/tpool.tcl}]
 }
 
 namespace eval phttpd {
@@ -124,12 +124,12 @@ proc phttpd::create {port args} {
         #
         # Using the internal C-based thread pool
         #
-        set initcmd "source ../phttpd/phttpd.tcl"
+        set initcmd "source -encoding utf-8 ../phttpd/phttpd.tcl"
     } else {
         #
         # Using the Tcl-level hand-crafted thread pool
         #
-        append initcmd "source ../phttpd/phttpd.tcl" \n $::TCL_TPOOL
+        append initcmd "source -encoding utf-8 ../phttpd/phttpd.tcl" \n $::TCL_TPOOL
     }
 
     set Httpd(tpid) [tpool::create -maxworkers 8 -initcmd $initcmd]

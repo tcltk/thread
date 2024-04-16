@@ -31,13 +31,13 @@ package ifneeded Thread @PACKAGE_VERSION@ [list package require -exact thread @P
 package ifneeded ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
     if {[info exists ::env(TCL_THREAD_LIBRARY)] &&
 	[file readable $::env(TCL_THREAD_LIBRARY)/ttrace.tcl]} {
-	source $::env(TCL_THREAD_LIBRARY)/ttrace.tcl
+	source -encoding utf-8 $::env(TCL_THREAD_LIBRARY)/ttrace.tcl
     } elseif {[file readable [file join $dir .. lib ttrace.tcl]]} {
-	source [file join $dir .. lib ttrace.tcl]
+	source -encoding utf-8 [file join $dir .. lib ttrace.tcl]
     } elseif {[file readable [file join $dir ttrace.tcl]]} {
-	source [file join $dir ttrace.tcl]
+	source -encoding utf-8 [file join $dir ttrace.tcl]
     } elseif {![catch {zipfs mount //zipfs:/lib/thread [file join $dir @PKG_LIB_FILE@]}]} {
-	source //zipfs:/lib/thread/thread_library/ttrace.tcl
+	source -encoding utf-8 //zipfs:/lib/thread/thread_library/ttrace.tcl
     }
     if {[namespace which ::ttrace::update] ne ""} {
 	::ttrace::update
