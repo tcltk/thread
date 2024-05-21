@@ -33,15 +33,15 @@ int Ns_ModuleVersion = 1;
  */
 
 static int
-NsThread_Init (Tcl_Interp *interp, void *cd)
+NsThread_Init(Tcl_Interp *interp, const void *cd)
 {
-    NsThreadInterpData *md = (NsThreadInterpData*)cd;
+    NsThreadInterpData *md = (NsThreadInterpData *)cd;
     int ret = Thread_Init(interp);
 
     if (ret != TCL_OK) {
-        Ns_Log(Warning, "can't load module %s: %s", md->modname,
-                Tcl_GetString(Tcl_GetObjResult(interp)));
-        return TCL_ERROR;
+	Ns_Log(Warning, "can't load module %s: %s", md->modname,
+		Tcl_GetString(Tcl_GetObjResult(interp)));
+	return TCL_ERROR;
     }
     Tcl_SetAssocData(interp, "thread:nsd", NULL, md);
 
@@ -69,11 +69,11 @@ Ns_ModuleInit(char *srv, char *mod)
 {
     NsThreadInterpData *md = NULL;
 
-    md = (NsThreadInterpData*)ns_malloc(sizeof(NsThreadInterpData));
-    md->modname = strcpy(ns_malloc(strlen(mod)+1), mod);
-    md->server  = strcpy(ns_malloc(strlen(srv)+1), srv);
+    md = (NsThreadInterpData *)ns_malloc(sizeof(NsThreadInterpData));
+    md->modname = strcpy(ns_malloc(strlen(mod) + 1), mod);
+    md->server  = strcpy(ns_malloc(strlen(srv) + 1), srv);
 
-    return Ns_TclRegisterTrace(srv, NsThread_Init, (void*)md, NS_TCL_TRACE_CREATE);
+    return Ns_TclRegisterTrace(srv, NsThread_Init, md, NS_TCL_TRACE_CREATE);
 }
 
 #endif /* NS_AOLSERVER */
