@@ -928,7 +928,7 @@ SvLsetFlat(
 ) {
     Tcl_Size i, elemCount, index;
     int result;
-    Tcl_Obj **elemPtrs, *subListPtr;
+    Tcl_Obj **elemPtrs;
     Tcl_Obj *pendingInvalidates[10]; /* Assumed max nesting depth */
     Tcl_Obj **pendingInvalidatesPtr = pendingInvalidates;
     Tcl_Size numPendingInvalidates = 0;
@@ -1016,9 +1016,7 @@ SvLsetFlat(
             break;
         }
 
-
-        subListPtr = elemPtrs[index];
-        listPtr = subListPtr;
+        listPtr = elemPtrs[index];
     }
 
     /*
@@ -1041,8 +1039,6 @@ SvLsetFlat(
          * representations of all ancestors of the modified sublist.
          */
 	while (numPendingInvalidates > 0) {
-	    Tcl_Obj *objPtr;
-
 	    --numPendingInvalidates;
 	    Tcl_InvalidateStringRep(pendingInvalidatesPtr[numPendingInvalidates]);
 	}
