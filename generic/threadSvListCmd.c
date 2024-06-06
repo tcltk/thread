@@ -1002,6 +1002,12 @@ SvLsetFlat(
         }
 
         /*
+         * Remember list of Tcl_Objs that need invalidation of string reps.
+         */
+        pendingInvalidatesPtr[numPendingInvalidates] = listPtr;
+        ++numPendingInvalidates;
+
+        /*
          * Break the loop after extracting the innermost sublist
          */
 
@@ -1010,12 +1016,6 @@ SvLsetFlat(
             break;
         }
 
-        /*
-         * Extract the appropriate sublist and chain it onto the linked
-         * list of Tcl_Obj's whose string reps must be spoilt.
-         */
-        pendingInvalidatesPtr[numPendingInvalidates] = listPtr;
-        ++numPendingInvalidates;
 
         subListPtr = elemPtrs[index];
         listPtr = subListPtr;
