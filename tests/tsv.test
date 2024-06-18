@@ -104,15 +104,9 @@ foreach backend $backends {
     file delete -force $db
 }
 
-test tsv-bug-c2dfd8b7ea {tsv::lset crash} -constraints crash -setup {
-    set tid [thread::create]
-} -cleanup {
-    thread::join $tid
-} -body {
-    thread::send $tid {
-        tsv::linsert mytsv mylist 0 A {X Y}
-        tsv::lset mytsv mylist end 1 P
-    }
-}
+test tsv-bug-c2dfd8b7ea {tsv::lset crash} -body {
+    tsv::linsert mytsv mylist 0 A {X Y}
+    tsv::lset mytsv mylist end 1 P
+} -result {A {X P}}
 
 ::tcltest::cleanupTests

@@ -927,8 +927,12 @@ SvLsetFlat(
      Tcl_Obj *valuePtr      /* Value arg to 'lset' */
 ) {
     Tcl_Size i, elemCount, index;
-	int result;
-    Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
+    int result;
+    Tcl_Obj **elemPtrs;
+    Tcl_Obj *pendingInvalidates[10]; /* Assumed max nesting depth */
+    Tcl_Obj **pendingInvalidatesPtr = pendingInvalidates;
+    Tcl_Size numPendingInvalidates = 0;
+     
 
     /*
      * Determine whether the index arg designates a list
@@ -955,12 +959,12 @@ SvLsetFlat(
         return valuePtr;
     }
 
-    /*
-     * Anchor the linked list of Tcl_Obj's whose string reps must be
-     * invalidated if the operation succeeds.
-     */
-
-    chainPtr = NULL;
+    /* Allocate if static array for pending invalidations is too small */
+    if (indexCount > (Tcl_Size) (sizeof(pendingInvalidates) /
+                            sizeof(pendingInvalidates[0]))) {
+	pendingInvalidatesPtr =
+	    (Tcl_Obj **) Tcl_Alloc(indexCount * sizeof(*pendingInvalidatesPtr));
+    }
 
     /*
      * Handle each index arg by diving into the appropriate sublist
@@ -977,8 +981,6 @@ SvLsetFlat(
             break;
         }
 
-        listPtr->internalRep.twoPtrValue.ptr2 = (void*)chainPtr;
-
         /*
          * Determine the index of the requested element.
          */
@@ -992,12 +994,18 @@ SvLsetFlat(
          * Check that the index is in range.
          */
 
-        if (index >= elemCount) {
+        if (index < 0 || index >= elemCount) {
             Tcl_SetObjResult(interp,
                              Tcl_NewStringObj("list index out of range", TCL_INDEX_NONE));
             result = TCL_ERROR;
             break;
         }
+
+        /*
+         * Remember list of Tcl_Objs that need invalidation of string reps.
+         */
+        pendingInvalidatesPtr[numPendingInvalidates] = listPtr;
+        ++numPendingInvalidates;
 
         /*
          * Break the loop after extracting the innermost sublist
@@ -1008,17 +1016,13 @@ SvLsetFlat(
             break;
         }
 
-        /*
-         * Extract the appropriate sublist and chain it onto the linked
-         * list of Tcl_Obj's whose string reps must be spoilt.
-         */
-
-        subListPtr = elemPtrs[index];
-        chainPtr = listPtr;
-        listPtr = subListPtr;
+        listPtr = elemPtrs[index];
     }
 
-    /* Store the result in the list element */
+    /*
+     * At this point listPtr holds the sublist (which could even be the
+     * top level list) whose element is to be modified.
+     */
 
     if (result == TCL_OK) {
         result = Tcl_ListObjGetElements(interp,listPtr,&elemCount,&elemPtrs);
@@ -1030,19 +1034,22 @@ SvLsetFlat(
     }
 
     if (result == TCL_OK) {
-        listPtr->internalRep.twoPtrValue.ptr2 = (void*)chainPtr;
-        /* Spoil all the string reps */
-        while (listPtr != NULL) {
-            subListPtr = (Tcl_Obj*)listPtr->internalRep.twoPtrValue.ptr2;
-            Tcl_InvalidateStringRep(listPtr);
-            listPtr->internalRep.twoPtrValue.ptr2 = NULL;
-            listPtr = subListPtr;
-        }
-
-        return valuePtr;
+        /*
+         * Since modification was successful, we need to invalidate string
+         * representations of all ancestors of the modified sublist.
+         */
+	while (numPendingInvalidates > 0) {
+	    --numPendingInvalidates;
+	    Tcl_InvalidateStringRep(pendingInvalidatesPtr[numPendingInvalidates]);
+	}
     }
 
-    return NULL;
+    if (pendingInvalidatesPtr != pendingInvalidates) {
+	Tcl_Free(pendingInvalidatesPtr);
+    }
+
+    /* Note return only matters as non-NULL vs NULL */
+    return result == TCL_OK ? valuePtr : NULL;
 }
 
 /* EOF $RCSfile: threadSvListCmd.c,v $ */
