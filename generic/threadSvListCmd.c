@@ -147,13 +147,13 @@ Sv_RegisterListCommands(void)
 
 static int
 SvLpopObjCmd (
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    int ret, off, llen, iarg = 0;
-    int index = 0;
+    int ret;
+    int off, llen, index = 0, iarg = 0;
     Tcl_Obj *elPtr = NULL;
     Container *svObj = (Container*)arg;
 
@@ -167,11 +167,11 @@ SvLpopObjCmd (
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) > 1) {
+    if (objc > 1 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "?index?");
         goto cmd_err;
     }
-    if ((objc - off) == 1) {
+    if (objc == 1 + off) {
         iarg = off;
     }
     ret = Tcl_ListObjLength(interp, svObj->tclObj, &llen);
@@ -227,13 +227,13 @@ SvLpopObjCmd (
 
 static int
 SvLpushObjCmd (
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    int off, ret, flg, llen;
-    int index = 0;
+    int ret, flg;
+    int off, llen, index = 0;
     Tcl_Obj *args[1];
     Container *svObj = (Container*)arg;
 
@@ -248,7 +248,7 @@ SvLpushObjCmd (
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) < 1) {
+    if (objc < 1 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "element ?index?");
         goto cmd_err;
     }
@@ -256,7 +256,7 @@ SvLpushObjCmd (
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    if ((objc - off) == 2) {
+    if (objc == 2 + off) {
         ret = Tcl_GetIntForIndex(interp, objv[off+1], llen, &index);
         if (ret != TCL_OK) {
             goto cmd_err;
@@ -300,12 +300,13 @@ SvLpushObjCmd (
 
 static int
 SvLappendObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    int i, ret, flg, off;
+    int ret, flg;
+    int i, off;
     Tcl_Obj *dup;
     Container *svObj = (Container*)arg;
 
@@ -320,7 +321,7 @@ SvLappendObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) < 1) {
+    if (objc < 1 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "value ?value ...?");
         goto cmd_err;
     }
@@ -360,15 +361,14 @@ SvLappendObjCmd(
 
 static int
 SvLreplaceObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
     const char *firstArg;
-    size_t argLen;
-    int ret, off, llen, ndel, nargs, i, j;
-    int first, last;
+    int off, llen, argLen, first, last, ndel, nargs, i, j;
+    int ret;
     Tcl_Obj **args = NULL;
     Container *svObj = (Container*)arg;
 
@@ -382,7 +382,7 @@ SvLreplaceObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) < 2) {
+    if (objc < 2 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "first last ?element ...?");
         goto cmd_err;
     }
@@ -399,13 +399,12 @@ SvLreplaceObjCmd(
         goto cmd_err;
     }
 
-    firstArg = Tcl_GetString(objv[off]);
-    argLen = objv[off]->length;
+    firstArg = Tcl_GetStringFromObj(objv[off], &argLen);
     if (first < 0)  {
         first = 0;
     }
     if (llen && first >= llen && strncmp(firstArg, "end", argLen)) {
-        Tcl_AppendResult(interp, "list doesn't have element ", firstArg, NULL);
+        Tcl_AppendResult(interp, "list doesn't have element ", firstArg, (void *)NULL);
         goto cmd_err;
     }
     if (last >= llen) {
@@ -417,7 +416,7 @@ SvLreplaceObjCmd(
         ndel = 0;
     }
 
-    nargs = objc - (off + 2);
+    nargs = objc - off - 2;
     if (nargs) {
         args = (Tcl_Obj**)ckalloc(nargs * sizeof(Tcl_Obj*));
         for(i = off + 2, j = 0; i < objc; i++, j++) {
@@ -460,13 +459,13 @@ SvLreplaceObjCmd(
 
 static int
 SvLrangeObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    int ret, off, llen, nargs, j;
-    int first, last, i;
+    int ret;
+    int first, last, i, off, llen, nargs, j;
     Tcl_Obj **elPtrs, **args;
     Container *svObj = (Container*)arg;
 
@@ -480,7 +479,7 @@ SvLrangeObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) != 2) {
+    if (objc != 2 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "first last");
         goto cmd_err;
     }
@@ -507,7 +506,7 @@ SvLrangeObjCmd(
     }
 
     nargs = last - first + 1;
-    args  = (Tcl_Obj**)ckalloc(nargs * sizeof(Tcl_Obj*));
+    args  = (Tcl_Obj **)ckalloc(nargs * sizeof(Tcl_Obj *));
     for (i = first, j = 0; i <= last; i++, j++) {
         args[j] = Sv_DuplicateObj(elPtrs[i]);
     }
@@ -542,13 +541,13 @@ SvLrangeObjCmd(
 
 static int
 SvLinsertObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    int off, ret, flg, llen, nargs, i, j;
-    int index = 0;
+    int ret, flg;
+    int off, nargs, i, j, llen, index = 0;
     Tcl_Obj **args;
     Container *svObj = (Container*)arg;
 
@@ -563,7 +562,7 @@ SvLinsertObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) < 2) {
+    if (objc < 2 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "index element ?element ...?");
         goto cmd_err;
     }
@@ -582,7 +581,7 @@ SvLinsertObjCmd(
     }
 
     nargs = objc - off - 1;
-    args  = (Tcl_Obj**)ckalloc(nargs * sizeof(Tcl_Obj*));
+    args  = (Tcl_Obj **)ckalloc(nargs * sizeof(Tcl_Obj *));
     for (i = off + 1, j = 0; i < objc; i++, j++) {
          args[j] = Sv_DuplicateObj(objv[i]);
     }
@@ -622,12 +621,13 @@ SvLinsertObjCmd(
 
 static int
 SvLlengthObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    int llen, off, ret;
+    int llen, off;
+    int ret;
     Container *svObj = (Container*)arg;
 
     /*
@@ -671,13 +671,13 @@ SvLlengthObjCmd(
 
 static int
 SvLsearchObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
-    size_t length;
-    int ret, off, listc, mode, imode, ipatt, index, match, i;
+    int ret, match, mode;
+    int off, index, length, i, listc, imode, ipatt;
     const char *patBytes;
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
@@ -697,10 +697,10 @@ SvLsearchObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) == 2) {
+    if (objc == 2 + off) {
         imode = off;
         ipatt = off + 1;
-    } else if ((objc - off) == 1) {
+    } else if (objc == 1 + off) {
         imode = 0;
         ipatt = off;
     } else {
@@ -720,8 +720,7 @@ SvLsearchObjCmd(
     }
 
     index = -1;
-    patBytes = Tcl_GetString(objv[ipatt]);
-    length = objv[ipatt]->length;
+    patBytes = Tcl_GetStringFromObj(objv[ipatt], &length);
 
     for (i = 0; i < listc; i++) {
         match = 0;
@@ -731,8 +730,9 @@ SvLsearchObjCmd(
             break;
 
         case LS_EXACT: {
-            const char *bytes = Tcl_GetString(listv[i]);
-            if (length == (size_t)listv[i]->length) {
+            int len;
+            const char *bytes = Tcl_GetStringFromObj(listv[i], &len);
+            if (length == len) {
                 match = (memcmp(bytes, patBytes, length) == 0);
             }
             break;
@@ -777,14 +777,14 @@ SvLsearchObjCmd(
 
 static int
 SvLindexObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
     Tcl_Obj **elPtrs;
-    int ret, off, llen;
-    int index;
+    int ret;
+    int llen, index, off;
     Container *svObj = (Container*)arg;
 
     /*
@@ -797,7 +797,7 @@ SvLindexObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) != 1) {
+    if (objc != 1 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "index");
         goto cmd_err;
     }
@@ -838,13 +838,14 @@ SvLindexObjCmd(
 
 static int
 SvLsetObjCmd(
-    ClientData arg,
+    void *arg,
     Tcl_Interp *interp,
     int objc,
     Tcl_Obj *const objv[]
 ) {
     Tcl_Obj *lPtr;
-    int ret, argc, off;
+    int ret;
+    int argc, off;
     Container *svObj = (Container*)arg;
 
     /*
@@ -857,7 +858,7 @@ SvLsetObjCmd(
     if (ret != TCL_OK) {
         return TCL_ERROR;
     }
-    if ((objc - off) < 2) {
+    if (objc < 2 + off) {
         Tcl_WrongNumArgs(interp, off, objv, "index ?index...? value");
         goto cmd_err;
     }
@@ -910,7 +911,7 @@ DupListObjShared(
     Tcl_Obj *buf[16];
 
     Tcl_ListObjLength(NULL, srcPtr, &llen);
-    newObjList = (llen > 16) ? (Tcl_Obj**)ckalloc(llen*sizeof(Tcl_Obj*)) : &buf[0];
+    newObjList = (llen > 16) ? (Tcl_Obj**)ckalloc(llen*sizeof(Tcl_Obj *)) : &buf[0];
 
     for (i = 0; i < llen; i++) {
 	Tcl_ListObjIndex(NULL, srcPtr, i, &elObj);
@@ -947,9 +948,13 @@ SvLsetFlat(
      Tcl_Obj **indexArray,
      Tcl_Obj *valuePtr      /* Value arg to 'lset' */
 ) {
-    int elemCount, result, i;
-    int index;
-    Tcl_Obj **elemPtrs, *chainPtr, *subListPtr;
+    int i, elemCount, index;
+    int result;
+    Tcl_Obj **elemPtrs;
+    Tcl_Obj *pendingInvalidates[10]; /* Assumed max nesting depth */
+    Tcl_Obj **pendingInvalidatesPtr = pendingInvalidates;
+    int numPendingInvalidates = 0;
+     
 
     /*
      * Determine whether the index arg designates a list
@@ -976,12 +981,12 @@ SvLsetFlat(
         return valuePtr;
     }
 
-    /*
-     * Anchor the linked list of Tcl_Obj's whose string reps must be
-     * invalidated if the operation succeeds.
-     */
-
-    chainPtr = NULL;
+    /* Allocate if static array for pending invalidations is too small */
+    if (indexCount > (int) (sizeof(pendingInvalidates) /
+                            sizeof(pendingInvalidates[0]))) {
+	pendingInvalidatesPtr =
+	    (Tcl_Obj **)ckalloc(indexCount * sizeof(*pendingInvalidatesPtr));
+    }
 
     /*
      * Handle each index arg by diving into the appropriate sublist
@@ -997,8 +1002,6 @@ SvLsetFlat(
         if (result != TCL_OK) {
             break;
         }
-
-        listPtr->internalRep.twoPtrValue.ptr2 = (void*)chainPtr;
 
         /*
          * Determine the index of the requested element.
@@ -1021,6 +1024,12 @@ SvLsetFlat(
         }
 
         /*
+         * Remember list of Tcl_Objs that need invalidation of string reps.
+         */
+        pendingInvalidatesPtr[numPendingInvalidates] = listPtr;
+        ++numPendingInvalidates;
+
+        /*
          * Break the loop after extracting the innermost sublist
          */
 
@@ -1029,17 +1038,13 @@ SvLsetFlat(
             break;
         }
 
-        /*
-         * Extract the appropriate sublist and chain it onto the linked
-         * list of Tcl_Obj's whose string reps must be spoilt.
-         */
-
-        subListPtr = elemPtrs[index];
-        chainPtr = listPtr;
-        listPtr = subListPtr;
+        listPtr = elemPtrs[index];
     }
 
-    /* Store the result in the list element */
+    /*
+     * At this point listPtr holds the sublist (which could even be the
+     * top level list) whose element is to be modified.
+     */
 
     if (result == TCL_OK) {
         result = Tcl_ListObjGetElements(interp,listPtr,&elemCount,&elemPtrs);
@@ -1051,19 +1056,22 @@ SvLsetFlat(
     }
 
     if (result == TCL_OK) {
-        listPtr->internalRep.twoPtrValue.ptr2 = (void*)chainPtr;
-        /* Spoil all the string reps */
-        while (listPtr != NULL) {
-            subListPtr = (Tcl_Obj*)listPtr->internalRep.twoPtrValue.ptr2;
-            Tcl_InvalidateStringRep(listPtr);
-            listPtr->internalRep.twoPtrValue.ptr2 = NULL;
-            listPtr = subListPtr;
-        }
-
-        return valuePtr;
+        /*
+         * Since modification was successful, we need to invalidate string
+         * representations of all ancestors of the modified sublist.
+         */
+	while (numPendingInvalidates > 0) {
+	    --numPendingInvalidates;
+	    Tcl_InvalidateStringRep(pendingInvalidatesPtr[numPendingInvalidates]);
+	}
     }
 
-    return NULL;
+    if (pendingInvalidatesPtr != pendingInvalidates) {
+	ckfree(pendingInvalidatesPtr);
+    }
+
+    /* Note return only matters as non-NULL vs NULL */
+    return result == TCL_OK ? valuePtr : NULL;
 }
 
 /* EOF $RCSfile: threadSvListCmd.c,v $ */
