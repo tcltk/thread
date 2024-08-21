@@ -708,7 +708,7 @@ SvLsearchObjCmd(
 	    break;
 
 	case LS_EXACT: {
-	    int len;
+	    Tcl_Size len;
 	    const char *bytes = Tcl_GetStringFromObj(listv[i], &len);
 	    if (length == len) {
 		match = (memcmp(bytes, patBytes, length) == 0);
