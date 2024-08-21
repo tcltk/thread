@@ -247,7 +247,7 @@ ps_lmdb_get(
      void *handle,
      const char *keyptr,
      char  **dataptrptr,
-     size_t     *lenptr)
+     Tcl_Size *lenptr)
 {
     LmdbCtx ctx = (LmdbCtx)handle;
     MDB_val key, data;
@@ -302,7 +302,7 @@ ps_lmdb_first(
     void *handle,
     char   **keyptrptr,
     char  **dataptrptr,
-    size_t     *lenptr)
+    Tcl_Size *lenptr)
 {
     LmdbCtx ctx = (LmdbCtx)handle;
     MDB_val key, data;
@@ -355,7 +355,7 @@ static int ps_lmdb_next(
     void *handle,
     char   **keyptrptr,
     char  **dataptrptr,
-    size_t     *lenptr)
+    Tcl_Size *lenptr)
 {
     LmdbCtx ctx = (LmdbCtx)handle;
     MDB_val key, data;
@@ -398,7 +398,7 @@ ps_lmdb_put(
     void *handle,
     const char *keyptr,
     char      *dataptr,
-    size_t         len)
+    Tcl_Size len)
 {
     LmdbCtx ctx = (LmdbCtx)handle;
     MDB_val key, data;

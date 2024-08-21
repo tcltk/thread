@@ -144,7 +144,7 @@ ps_gdbm_get(
      void *handle,
      const char   *key,
      char **dataptrptr,
-     size_t    *lenptr)
+     Tcl_Size *lenptr)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey;
@@ -184,7 +184,7 @@ ps_gdbm_first(
     void *handle,
     char   **keyptrptr,
     char  **dataptrptr,
-    size_t     *lenptr)
+    Tcl_Size *lenptr)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey;
@@ -225,7 +225,7 @@ static int ps_gdbm_next(
     void *handle,
     char   **keyptrptr,
     char  **dataptrptr,
-    size_t     *lenptr)
+    Tcl_Size *lenptr)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey, dnext;
@@ -273,7 +273,7 @@ ps_gdbm_put(
     void *handle,
     const char   *key,
     char     *dataptr,
-    size_t        len)
+    Tcl_Size len)
 {
     GDBM_FILE dbf = (GDBM_FILE)handle;
     datum drec, dkey;
