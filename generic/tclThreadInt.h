@@ -120,16 +120,16 @@ MODULE_SCOPE const char *TpoolInit(Tcl_Interp *interp);
 #define SpliceIn(a,b)                          \
     (a)->nextPtr = (b);                        \
     if ((b) != NULL)                           \
-        (b)->prevPtr = (a);                    \
+	(b)->prevPtr = (a);                    \
     (a)->prevPtr = NULL, (b) = (a)
 
 #define SpliceOut(a,b)                         \
     if ((a)->prevPtr != NULL)                  \
-        (a)->prevPtr->nextPtr = (a)->nextPtr;  \
+	(a)->prevPtr->nextPtr = (a)->nextPtr;  \
     else                                       \
-        (b) = (a)->nextPtr;                    \
+	(b) = (a)->nextPtr;                    \
     if ((a)->nextPtr != NULL)                  \
-        (a)->nextPtr->prevPtr = (a)->prevPtr
+	(a)->nextPtr->prevPtr = (a)->prevPtr
 
 /*
  * Utility macros

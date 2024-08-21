@@ -154,7 +154,7 @@ ps_gdbm_get(
 
     drec = gdbm_fetch(dbf, dkey);
     if (drec.dptr == NULL) {
-        return 1;
+	return 1;
     }
 
     *dataptrptr = drec.dptr;
@@ -191,11 +191,11 @@ ps_gdbm_first(
 
     dkey = gdbm_firstkey(dbf);
     if (dkey.dptr == NULL) {
-        return 1;
+	return 1;
     }
     drec = gdbm_fetch(dbf, dkey);
     if (drec.dptr == NULL) {
-        return 1;
+	return 1;
     }
 
     *dataptrptr = drec.dptr;
@@ -237,11 +237,11 @@ static int ps_gdbm_next(
     free(*keyptrptr), *keyptrptr = NULL;
 
     if (dnext.dptr == NULL) {
-        return 1;
+	return 1;
     }
     drec = gdbm_fetch(dbf, dnext);
     if (drec.dptr == NULL) {
-        return 1;
+	return 1;
     }
 
     *dataptrptr = drec.dptr;
@@ -287,7 +287,7 @@ ps_gdbm_put(
 
     ret = gdbm_store(dbf, dkey, drec, GDBM_REPLACE);
     if (ret == -1) {
-        return -1;
+	return -1;
     }
 
     return 0;
@@ -324,7 +324,7 @@ ps_gdbm_delete(
 
     ret = gdbm_delete(dbf, dkey);
     if (ret == -1) {
-        return -1;
+	return -1;
     }
 
     return 0;

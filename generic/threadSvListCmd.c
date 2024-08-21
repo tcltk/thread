@@ -932,7 +932,7 @@ SvLsetFlat(
     Tcl_Obj *pendingInvalidates[10]; /* Assumed max nesting depth */
     Tcl_Obj **pendingInvalidatesPtr = pendingInvalidates;
     Tcl_Size numPendingInvalidates = 0;
-     
+
 
     /*
      * Determine whether the index arg designates a list
@@ -941,7 +941,7 @@ SvLsetFlat(
 
     if (indexCount == 1 &&
 	Tcl_ListObjGetElements(interp, indexArray[0], &indexCount,
-			       &indexArray) != TCL_OK) {
+		&indexArray) != TCL_OK) {
 	/*
 	 * Index arg designates something that is neither an index
 	 * nor a well formed list.
@@ -960,8 +960,8 @@ SvLsetFlat(
     }
 
     /* Allocate if static array for pending invalidations is too small */
-    if (indexCount > (Tcl_Size) (sizeof(pendingInvalidates) /
-			    sizeof(pendingInvalidates[0]))) {
+    if (indexCount > (Tcl_Size)(sizeof(pendingInvalidates) /
+	    sizeof(pendingInvalidates[0]))) {
 	pendingInvalidatesPtr =
 	    (Tcl_Obj **)Tcl_Alloc(indexCount * sizeof(*pendingInvalidatesPtr));
     }

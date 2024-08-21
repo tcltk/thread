@@ -130,7 +130,7 @@ static void SvFinalize(void *);
 static PsStore* GetPsStore(const char *handle);
 
 static int SvObjDispatchObjCmd(void *arg,
-            Tcl_Interp *interp, Tcl_Size objc, Tcl_Obj *const objv[]);
+	    Tcl_Interp *interp, Tcl_Size objc, Tcl_Obj *const objv[]);
 
 /*
  *-----------------------------------------------------------------------------
@@ -150,10 +150,10 @@ static int SvObjDispatchObjCmd(void *arg,
 
 void
 Sv_RegisterCommand(
-                   const char *cmdName,                /* Name of command to register */
-                   Tcl_ObjCmdProc2 *objProc,            /* Object-based command procedure */
-                   Tcl_CmdDeleteProc *delProc,         /* Command delete procedure */
-                   int aolSpecial)
+		   const char *cmdName,                /* Name of command to register */
+		   Tcl_ObjCmdProc2 *objProc,            /* Object-based command procedure */
+		   Tcl_CmdDeleteProc *delProc,         /* Command delete procedure */
+		   int aolSpecial)
 {
     size_t len = strlen(cmdName) + strlen(TSV_CMD_PREFIX) + 1;
     size_t len2 = strlen(cmdName) + strlen(TSV_CMD2_PREFIX) + 1;
@@ -188,11 +188,11 @@ Sv_RegisterCommand(
 
     Tcl_MutexLock(&svMutex);
     if (svCmdInfo == NULL) {
-        svCmdInfo = newCmd;
-        newCmd->nextPtr = NULL;
+	svCmdInfo = newCmd;
+	newCmd->nextPtr = NULL;
     } else {
-        newCmd->nextPtr = svCmdInfo;
-        svCmdInfo = newCmd;
+	newCmd->nextPtr = svCmdInfo;
+	svCmdInfo = newCmd;
     }
     Tcl_MutexUnlock(&svMutex);
 
@@ -221,8 +221,8 @@ Sv_RegisterCommand(
 
 void
 Sv_RegisterObjType(
-                   const Tcl_ObjType *typePtr,               /* Type of object to register */
-                   Tcl_DupInternalRepProc *dupProc)    /* Custom object duplicator */
+		   const Tcl_ObjType *typePtr,               /* Type of object to register */
+		   Tcl_DupInternalRepProc *dupProc)    /* Custom object duplicator */
 {
     RegType *newType = (RegType *)Tcl_Alloc(sizeof(RegType));
 
@@ -273,11 +273,11 @@ Sv_RegisterPsStore(const PsStore *psStorePtr)
 
     Tcl_MutexLock(&svMutex);
     if (psStore == NULL) {
-        psStore = psPtr;
-        psStore->nextPtr = NULL;
+	psStore = psPtr;
+	psStore->nextPtr = NULL;
     } else {
-        psPtr->nextPtr = psStore;
-        psStore = psPtr;
+	psPtr->nextPtr = psStore;
+	psStore = psPtr;
     }
     Tcl_MutexUnlock(&svMutex);
 }
@@ -305,55 +305,55 @@ Sv_RegisterPsStore(const PsStore *psStorePtr)
 
 int
 Sv_GetContainer(
-                Tcl_Interp *interp,                 /* Current interpreter. */
-                Tcl_Size objc,                      /* Number of arguments */
-                Tcl_Obj *const objv[],              /* Argument objects. */
-                Container **retObj,                 /* OUT: shared object container */
-                Tcl_Size *offset,                   /* Shift in argument list */
-                int flags)                          /* Options for locking shared array */
+		Tcl_Interp *interp,                 /* Current interpreter. */
+		Tcl_Size objc,                      /* Number of arguments */
+		Tcl_Obj *const objv[],              /* Argument objects. */
+		Container **retObj,                 /* OUT: shared object container */
+		Tcl_Size *offset,                   /* Shift in argument list */
+		int flags)                          /* Options for locking shared array */
 {
     const char *array, *key;
 
     if (*retObj == NULL) {
-        Array *arrayPtr = NULL;
+	Array *arrayPtr = NULL;
 
-        /*
-         * Parse mandatory arguments: <cmd> array key
-         */
+	/*
+	 * Parse mandatory arguments: <cmd> array key
+	 */
 
-        if (objc < 3) {
-            Tcl_WrongNumArgs(interp, 1, objv, "array key ?args?");
-            return TCL_ERROR;
-        }
+	if (objc < 3) {
+	    Tcl_WrongNumArgs(interp, 1, objv, "array key ?args?");
+	    return TCL_ERROR;
+	}
 
-        array = Tcl_GetString(objv[1]);
-        key   = Tcl_GetString(objv[2]);
+	array = Tcl_GetString(objv[1]);
+	key   = Tcl_GetString(objv[2]);
 
-        *offset = 3; /* Consumed three arguments: cmd, array, key */
+	*offset = 3; /* Consumed three arguments: cmd, array, key */
 
-        /*
-         * Lock the shared array and locate the shared object
-         */
+	/*
+	 * Lock the shared array and locate the shared object
+	 */
 
-        arrayPtr = LockArray(interp, array, flags);
-        if (arrayPtr == NULL) {
-            return TCL_BREAK;
-        }
-        *retObj = AcquireContainer(arrayPtr, Tcl_GetString(objv[2]), flags);
-        if (*retObj == NULL) {
-            UnlockArray(arrayPtr);
-            Tcl_AppendResult(interp, "no key ", array, "(", key, ")", (void *)NULL);
-            return TCL_BREAK;
-        }
+	arrayPtr = LockArray(interp, array, flags);
+	if (arrayPtr == NULL) {
+	    return TCL_BREAK;
+	}
+	*retObj = AcquireContainer(arrayPtr, Tcl_GetString(objv[2]), flags);
+	if (*retObj == NULL) {
+	    UnlockArray(arrayPtr);
+	    Tcl_AppendResult(interp, "no key ", array, "(", key, ")", (void *)NULL);
+	    return TCL_BREAK;
+	}
     } else {
-        Tcl_HashTable *handles = &((*retObj)->bucketPtr->handles);
-        LOCK_CONTAINER(*retObj);
-        if (Tcl_FindHashEntry(handles, (char*)(*retObj)) == NULL) {
-            UNLOCK_CONTAINER(*retObj);
-            Tcl_SetObjResult(interp, Tcl_NewStringObj("key has been deleted", TCL_INDEX_NONE));
-            return TCL_BREAK;
-        }
-        *offset = 2; /* Consumed two arguments: object, cmd */
+	Tcl_HashTable *handles = &((*retObj)->bucketPtr->handles);
+	LOCK_CONTAINER(*retObj);
+	if (Tcl_FindHashEntry(handles, (char*)(*retObj)) == NULL) {
+	    UNLOCK_CONTAINER(*retObj);
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj("key has been deleted", TCL_INDEX_NONE));
+	    return TCL_BREAK;
+	}
+	*offset = 2; /* Consumed two arguments: object, cmd */
     }
 
     return TCL_OK;
@@ -377,9 +377,9 @@ Sv_GetContainer(
 
 int
 Sv_PutContainer(
-                Tcl_Interp *interp,               /* For error reporting; might be NULL */
-                Container *svObj,                 /* Shared object container */
-                int mode)                         /* One of SV_XXX modes */
+		Tcl_Interp *interp,               /* For error reporting; might be NULL */
+		Container *svObj,                 /* Shared object container */
+		int mode)                         /* One of SV_XXX modes */
 {
     int ret;
 
@@ -432,22 +432,22 @@ GetPsStore(const char *handle)
      */
 
     for (i = 0; i < NUMBUCKETS; i++) {
-        Tcl_HashSearch search;
-        Tcl_HashEntry *hPtr;
-        Bucket *bucketPtr = &buckets[i];
-        LOCK_BUCKET(bucketPtr);
-        hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
-        while (hPtr) {
-            Array *arrayPtr = (Array*)Tcl_GetHashValue(hPtr);
-            if (arrayPtr->bindAddr && arrayPtr->psPtr) {
-                if (strcmp(arrayPtr->bindAddr, handle) == 0) {
-                    UNLOCK_BUCKET(bucketPtr);
-                    return NULL; /* Array already bound */
-                }
-            }
-            hPtr = Tcl_NextHashEntry(&search);
-        }
-        UNLOCK_BUCKET(bucketPtr);
+	Tcl_HashSearch search;
+	Tcl_HashEntry *hPtr;
+	Bucket *bucketPtr = &buckets[i];
+	LOCK_BUCKET(bucketPtr);
+	hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
+	while (hPtr) {
+	    Array *arrayPtr = (Array*)Tcl_GetHashValue(hPtr);
+	    if (arrayPtr->bindAddr && arrayPtr->psPtr) {
+		if (strcmp(arrayPtr->bindAddr, handle) == 0) {
+		    UNLOCK_BUCKET(bucketPtr);
+		    return NULL; /* Array already bound */
+		}
+	    }
+	    hPtr = Tcl_NextHashEntry(&search);
+	}
+	UNLOCK_BUCKET(bucketPtr);
     }
 
     /*
@@ -455,10 +455,10 @@ GetPsStore(const char *handle)
      */
 
     if (delimiter == NULL) {
-        addr = NULL;
+	addr = NULL;
     } else {
-        *delimiter = 0;
-        addr = delimiter + 1;
+	*delimiter = 0;
+	addr = delimiter + 1;
     }
 
     /*
@@ -468,20 +468,20 @@ GetPsStore(const char *handle)
 
     Tcl_MutexLock(&svMutex);
     for (tmpPtr = psStore; tmpPtr; tmpPtr = tmpPtr->nextPtr) {
-        if (strcmp(tmpPtr->type, type) == 0) {
-            tmpPtr->psHandle = tmpPtr->psOpen(addr);
-            if (tmpPtr->psHandle) {
-                psPtr = (PsStore *)Tcl_Alloc(sizeof(PsStore));
-                *psPtr = *tmpPtr;
-                psPtr->nextPtr = NULL;
-            }
-            break;
-        }
+	if (strcmp(tmpPtr->type, type) == 0) {
+	    tmpPtr->psHandle = tmpPtr->psOpen(addr);
+	    if (tmpPtr->psHandle) {
+		psPtr = (PsStore *)Tcl_Alloc(sizeof(PsStore));
+		*psPtr = *tmpPtr;
+		psPtr->nextPtr = NULL;
+	    }
+	    break;
+	}
     }
     Tcl_MutexUnlock(&svMutex);
 
     if (delimiter) {
-        *delimiter = ':';
+	*delimiter = ':';
     }
 
     return psPtr;
@@ -506,32 +506,32 @@ GetPsStore(const char *handle)
 
 static Container *
 AcquireContainer(
-                 Array *arrayPtr,
-                 const char *key,
-                 int flags)
+		 Array *arrayPtr,
+		 const char *key,
+		 int flags)
 {
     int isNew;
     Tcl_Obj *tclObj = NULL;
     Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&arrayPtr->vars, key);
 
     if (hPtr == NULL) {
-        PsStore *psPtr = arrayPtr->psPtr;
-        if (psPtr) {
-            char *val = NULL;
-            Tcl_Size len = 0;
-            if (psPtr->psGet(psPtr->psHandle, key, &val, &len) == 0) {
-                tclObj = Tcl_NewStringObj(val, len);
-                psPtr->psFree(psPtr->psHandle, val);
-            }
-        }
-        if (!(flags & FLAGS_CREATEVAR) && tclObj == NULL) {
-            return NULL;
-        }
-        if (tclObj == NULL) {
-            tclObj = Tcl_NewObj();
-        }
-        hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &isNew);
-        Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, tclObj));
+	PsStore *psPtr = arrayPtr->psPtr;
+	if (psPtr) {
+	    char *val = NULL;
+	    Tcl_Size len = 0;
+	    if (psPtr->psGet(psPtr->psHandle, key, &val, &len) == 0) {
+		tclObj = Tcl_NewStringObj(val, len);
+		psPtr->psFree(psPtr->psHandle, val);
+	    }
+	}
+	if (!(flags & FLAGS_CREATEVAR) && tclObj == NULL) {
+	    return NULL;
+	}
+	if (tclObj == NULL) {
+	    tclObj = Tcl_NewObj();
+	}
+	hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &isNew);
+	Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, tclObj));
     }
 
     return (Container*)Tcl_GetHashValue(hPtr);
@@ -557,9 +557,9 @@ AcquireContainer(
 
 static int
 ReleaseContainer(
-                 Tcl_Interp *interp,
-                 Container *svObj,
-                 int mode)
+		 Tcl_Interp *interp,
+		 Container *svObj,
+		 int mode)
 {
     const PsStore *psPtr = svObj->arrayPtr->psPtr;
     Tcl_Size len;
@@ -569,16 +569,16 @@ ReleaseContainer(
     case SV_UNCHANGED: return TCL_OK;
     case SV_ERROR:     return TCL_ERROR;
     case SV_CHANGED:
-        if (psPtr) {
-            key = (char *)Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
-            val = Tcl_GetStringFromObj(svObj->tclObj, &len);
-            if (psPtr->psPut(psPtr->psHandle, key, val, len) == -1) {
-                const char *err = psPtr->psError(psPtr->psHandle);
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
-                return TCL_ERROR;
-            }
-        }
-        return TCL_OK;
+	if (psPtr) {
+	    key = (char *)Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
+	    val = Tcl_GetStringFromObj(svObj->tclObj, &len);
+	    if (psPtr->psPut(psPtr->psHandle, key, val, len) == -1) {
+		const char *err = psPtr->psError(psPtr->psHandle);
+		Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
+		return TCL_ERROR;
+	    }
+	}
+	return TCL_OK;
     }
 
     return TCL_ERROR; /* Should never be reached */
@@ -603,14 +603,14 @@ ReleaseContainer(
 
 static Container *
 CreateContainer(
-                Array *arrayPtr,
-                Tcl_HashEntry *entryPtr,
-                Tcl_Obj *tclObj)
+		Array *arrayPtr,
+		Tcl_HashEntry *entryPtr,
+		Tcl_Obj *tclObj)
 {
     Container *svObj;
 
     if (arrayPtr->bucketPtr->freeCt == NULL) {
-        SvAllocateContainers(arrayPtr->bucketPtr);
+	SvAllocateContainers(arrayPtr->bucketPtr);
     }
 
     svObj = arrayPtr->bucketPtr->freeCt;
@@ -623,7 +623,7 @@ CreateContainer(
     svObj->handlePtr = NULL;
 
     if (svObj->tclObj) {
-        Tcl_IncrRefCount(svObj->tclObj);
+	Tcl_IncrRefCount(svObj->tclObj);
     }
 
     return svObj;
@@ -649,23 +649,23 @@ CreateContainer(
 
 static int
 DeleteContainer(
-                Container *svObj)
+		Container *svObj)
 {
     if (svObj->tclObj) {
-        Tcl_DecrRefCount(svObj->tclObj);
+	Tcl_DecrRefCount(svObj->tclObj);
     }
     if (svObj->handlePtr) {
-        Tcl_DeleteHashEntry(svObj->handlePtr);
+	Tcl_DeleteHashEntry(svObj->handlePtr);
     }
     if (svObj->entryPtr) {
-        PsStore *psPtr = svObj->arrayPtr->psPtr;
-        if (psPtr) {
-            char *key = (char *)Tcl_GetHashKey(&svObj->arrayPtr->vars,svObj->entryPtr);
-            if (psPtr->psDelete(psPtr->psHandle, key) == -1) {
-                return TCL_ERROR;
-            }
-        }
-        Tcl_DeleteHashEntry(svObj->entryPtr);
+	PsStore *psPtr = svObj->arrayPtr->psPtr;
+	if (psPtr) {
+	    char *key = (char *)Tcl_GetHashKey(&svObj->arrayPtr->vars,svObj->entryPtr);
+	    if (psPtr->psDelete(psPtr->psHandle, key) == -1) {
+		return TCL_ERROR;
+	    }
+	}
+	Tcl_DeleteHashEntry(svObj->entryPtr);
     }
 
     svObj->arrayPtr  = NULL;
@@ -698,9 +698,9 @@ DeleteContainer(
 
 static Array *
 LockArray(
-          Tcl_Interp *interp,                 /* Interpreter to leave result. */
-          const char *array,                  /* Name of array to lock */
-          int flags)                          /* FLAGS_CREATEARRAY/FLAGS_NOERRMSG*/
+	  Tcl_Interp *interp,                 /* Interpreter to leave result. */
+	  const char *array,                  /* Name of array to lock */
+	  int flags)                          /* FLAGS_CREATEARRAY/FLAGS_NOERRMSG*/
 {
     const char *p;
     size_t result, i;
@@ -714,8 +714,8 @@ LockArray(
     p = array;
     result = 0;
     while (*p++) {
-        i = (unsigned char)*p;
-        result += (result << 3) + i;
+	i = (unsigned char)*p;
+	result += (result << 3) + i;
     }
     i = (result % NUMBUCKETS);
     bucketPtr = &buckets[i];
@@ -727,18 +727,18 @@ LockArray(
 
     LOCK_BUCKET(bucketPtr); /* Note: no matching unlock below ! */
     if (flags & FLAGS_CREATEARRAY) {
-        arrayPtr = CreateArray(bucketPtr, array);
+	arrayPtr = CreateArray(bucketPtr, array);
     } else {
-        Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&bucketPtr->arrays, array);
-        if (hPtr == NULL) {
-            UNLOCK_BUCKET(bucketPtr);
-            if (!(flags & FLAGS_NOERRMSG)) {
-                Tcl_AppendResult(interp, "\"", array,
-                                 "\" is not a thread shared array", (void *)NULL);
-            }
-            return NULL;
-        }
-        arrayPtr = (Array*)Tcl_GetHashValue(hPtr);
+	Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&bucketPtr->arrays, array);
+	if (hPtr == NULL) {
+	    UNLOCK_BUCKET(bucketPtr);
+	    if (!(flags & FLAGS_NOERRMSG)) {
+		Tcl_AppendResult(interp, "\"", array,
+				 "\" is not a thread shared array", (void *)NULL);
+	    }
+	    return NULL;
+	}
+	arrayPtr = (Array*)Tcl_GetHashValue(hPtr);
     }
 
     return arrayPtr;
@@ -767,10 +767,10 @@ FlushArray(Array *arrayPtr)                    /* Name of array to flush */
     Tcl_HashSearch search;
 
     for (hPtr = Tcl_FirstHashEntry(&arrayPtr->vars, &search); hPtr;
-         hPtr = Tcl_NextHashEntry(&search)) {
-        if (DeleteContainer((Container*)Tcl_GetHashValue(hPtr)) != TCL_OK) {
-            return TCL_ERROR;
-        }
+	 hPtr = Tcl_NextHashEntry(&search)) {
+	if (DeleteContainer((Container*)Tcl_GetHashValue(hPtr)) != TCL_OK) {
+	    return TCL_ERROR;
+	}
     }
 
     return TCL_OK;
@@ -794,8 +794,8 @@ FlushArray(Array *arrayPtr)                    /* Name of array to flush */
 
 static Array *
 CreateArray(
-            Bucket *bucketPtr,
-            const char *arrayName)
+	    Bucket *bucketPtr,
+	    const char *arrayName)
 {
     int isNew;
     Array *arrayPtr;
@@ -803,7 +803,7 @@ CreateArray(
 
     hPtr = Tcl_CreateHashEntry(&bucketPtr->arrays, arrayName, &isNew);
     if (!isNew) {
-        return (Array*)Tcl_GetHashValue(hPtr);
+	return (Array*)Tcl_GetHashValue(hPtr);
     }
 
     arrayPtr = (Array *)Tcl_Alloc(sizeof(Array));
@@ -839,19 +839,19 @@ UnbindArray(Tcl_Interp *interp, Array *arrayPtr)
 {
     PsStore *psPtr = arrayPtr->psPtr;
     if (arrayPtr->bindAddr) {
-        Tcl_Free(arrayPtr->bindAddr);
-        arrayPtr->bindAddr = NULL;
+	Tcl_Free(arrayPtr->bindAddr);
+	arrayPtr->bindAddr = NULL;
     }
     if (psPtr) {
-        if (psPtr->psClose(psPtr->psHandle) == -1) {
-            if (interp) {
-                const char *err = psPtr->psError(psPtr->psHandle);
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
-            }
-            return TCL_ERROR;
-        }
-        Tcl_Free(arrayPtr->psPtr), arrayPtr->psPtr = NULL;
-        arrayPtr->psPtr = NULL;
+	if (psPtr->psClose(psPtr->psHandle) == -1) {
+	    if (interp) {
+		const char *err = psPtr->psError(psPtr->psHandle);
+		Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
+	    }
+	    return TCL_ERROR;
+	}
+	Tcl_Free(arrayPtr->psPtr), arrayPtr->psPtr = NULL;
+	arrayPtr->psPtr = NULL;
     }
     return TCL_OK;
 }
@@ -860,15 +860,15 @@ static int
 DeleteArray(Tcl_Interp *interp, Array *arrayPtr)
 {
     if (FlushArray(arrayPtr) == -1) {
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
     if (arrayPtr->psPtr) {
-        if (UnbindArray(interp, arrayPtr) != TCL_OK) {
-            return TCL_ERROR;
-        };
+	if (UnbindArray(interp, arrayPtr) != TCL_OK) {
+	    return TCL_ERROR;
+	};
     }
     if (arrayPtr->entryPtr) {
-        Tcl_DeleteHashEntry(arrayPtr->entryPtr);
+	Tcl_DeleteHashEntry(arrayPtr->entryPtr);
     }
 
     Tcl_DeleteHashTable(&arrayPtr->vars);
@@ -911,9 +911,9 @@ SvAllocateContainers(Bucket *bucketPtr)
     objPtr->chunkAddr = basePtr; /* Mark chunk address for reclaim */
 
     for (i = 0; i < OBJS_TO_ALLOC_EACH_TIME; i++) {
-        objPtr->nextPtr = prevPtr;
-        prevPtr = objPtr;
-        objPtr = (Container*)(((char*)objPtr) + objSizePlusPadding);
+	objPtr->nextPtr = prevPtr;
+	prevPtr = objPtr;
+	objPtr = (Container*)(((char*)objPtr) + objSizePlusPadding);
     }
     bucketPtr->freeCt = prevPtr;
 }
@@ -941,13 +941,13 @@ SvFinalizeContainers(Bucket *bucketPtr)
    Container *tmpPtr, *objPtr = bucketPtr->freeCt;
 
     while (objPtr) {
-        if (objPtr->chunkAddr == (char*)objPtr) {
-            tmpPtr = objPtr->nextPtr;
-            Tcl_Free(objPtr);
-            objPtr = tmpPtr;
-        } else {
-            objPtr = objPtr->nextPtr;
-        }
+	if (objPtr->chunkAddr == (char*)objPtr) {
+	    tmpPtr = objPtr->nextPtr;
+	    Tcl_Free(objPtr);
+	    objPtr = tmpPtr;
+	} else {
+	    objPtr = objPtr->nextPtr;
+	}
     }
 }
 #endif /* SV_FINALIZE */
@@ -1003,52 +1003,52 @@ Sv_DuplicateObj(
      */
 
     if (objPtr->typePtr != NULL) {
-        if (objPtr->typePtr->dupIntRepProc == NULL) {
-            dupPtr->internalRep = objPtr->internalRep;
-            dupPtr->typePtr = objPtr->typePtr;
-            Tcl_InvalidateStringRep(dupPtr);
-        } else {
-            if (   objPtr->typePtr == booleanObjTypePtr    \
-                || objPtr->typePtr == byteArrayObjTypePtr  \
-                || objPtr->typePtr == doubleObjTypePtr     \
-                || objPtr->typePtr == intObjTypePtr        \
-                || objPtr->typePtr == wideIntObjTypePtr    \
-                || objPtr->typePtr == stringObjTypePtr) {
-               /*
-                * Cover all "safe" obj types (see header comment)
-                */
-              (*objPtr->typePtr->dupIntRepProc)(objPtr, dupPtr);
-              if (dupPtr->typePtr != NULL) {
-                  Tcl_InvalidateStringRep(dupPtr);
-              }
-            } else {
-                int found = 0;
-                RegType *regPtr;
-               /*
-                * Cover special registered types. Assume not
-                * very many of those, so this sequential walk
-                * should be fast enough.
-                */
-                for (regPtr = regType; regPtr; regPtr = regPtr->nextPtr) {
-                    if (objPtr->typePtr == regPtr->typePtr) {
-                        (*regPtr->dupIntRepProc)(objPtr, dupPtr);
-                        if (dupPtr->typePtr != NULL) {
-                            Tcl_InvalidateStringRep(dupPtr);
-                        }
-                        found = 1;
-                        break;
-                    }
-                }
-               /*
-                * Assure at least string rep of the source
-                * is present, which will be copied below.
-                */
-                if (found == 0 && objPtr->bytes == NULL
-                    && objPtr->typePtr->updateStringProc != NULL) {
-                    (*objPtr->typePtr->updateStringProc)(objPtr);
-                }
-            }
-        }
+	if (objPtr->typePtr->dupIntRepProc == NULL) {
+	    dupPtr->internalRep = objPtr->internalRep;
+	    dupPtr->typePtr = objPtr->typePtr;
+	    Tcl_InvalidateStringRep(dupPtr);
+	} else {
+	    if (   objPtr->typePtr == booleanObjTypePtr    \
+		|| objPtr->typePtr == byteArrayObjTypePtr  \
+		|| objPtr->typePtr == doubleObjTypePtr     \
+		|| objPtr->typePtr == intObjTypePtr        \
+		|| objPtr->typePtr == wideIntObjTypePtr    \
+		|| objPtr->typePtr == stringObjTypePtr) {
+	       /*
+		* Cover all "safe" obj types (see header comment)
+		*/
+	      (*objPtr->typePtr->dupIntRepProc)(objPtr, dupPtr);
+	      if (dupPtr->typePtr != NULL) {
+		  Tcl_InvalidateStringRep(dupPtr);
+	      }
+	    } else {
+		int found = 0;
+		RegType *regPtr;
+	       /*
+		* Cover special registered types. Assume not
+		* very many of those, so this sequential walk
+		* should be fast enough.
+		*/
+		for (regPtr = regType; regPtr; regPtr = regPtr->nextPtr) {
+		    if (objPtr->typePtr == regPtr->typePtr) {
+			(*regPtr->dupIntRepProc)(objPtr, dupPtr);
+			if (dupPtr->typePtr != NULL) {
+			    Tcl_InvalidateStringRep(dupPtr);
+			}
+			found = 1;
+			break;
+		    }
+		}
+	       /*
+		* Assure at least string rep of the source
+		* is present, which will be copied below.
+		*/
+		if (found == 0 && objPtr->bytes == NULL
+		    && objPtr->typePtr->updateStringProc != NULL) {
+		    (*objPtr->typePtr->updateStringProc)(objPtr);
+		}
+	    }
+	}
     }
 
     /*
@@ -1092,17 +1092,17 @@ Sv_DuplicateObj(
 
 static int
 SvObjDispatchObjCmd(
-                    void *arg,                     /* Pointer to object container. */
-                    Tcl_Interp *interp,                 /* Current interpreter. */
-                    Tcl_Size objc,                           /* Number of arguments. */
-                    Tcl_Obj *const objv[])              /* Argument objects. */
+		    void *arg,                     /* Pointer to object container. */
+		    Tcl_Interp *interp,                 /* Current interpreter. */
+		    Tcl_Size objc,                           /* Number of arguments. */
+		    Tcl_Obj *const objv[])              /* Argument objects. */
 {
     const char *cmdName;
     SvCmdInfo *cmdPtr;
 
     if (objc < 2) {
-        Tcl_WrongNumArgs(interp, 1, objv, "args");
-        return TCL_ERROR;
+	Tcl_WrongNumArgs(interp, 1, objv, "args");
+	return TCL_ERROR;
     }
 
     cmdName = Tcl_GetString(objv[1]);
@@ -1115,9 +1115,9 @@ SvObjDispatchObjCmd(
      */
 
     for (cmdPtr = svCmdInfo; cmdPtr; cmdPtr = cmdPtr->nextPtr) {
-        if (!strcmp(cmdPtr->name, cmdName)) {
-            return (*cmdPtr->objProcPtr)(arg, interp, objc, objv);
-        }
+	if (!strcmp(cmdPtr->name, cmdName)) {
+	    return (*cmdPtr->objProcPtr)(arg, interp, objc, objv);
+	}
     }
 
     Tcl_AppendResult(interp, "invalid command name \"", cmdName, "\"", (void *)NULL);
@@ -1142,10 +1142,10 @@ SvObjDispatchObjCmd(
 
 static int
 SvObjObjCmd(
-            void *arg,                     /* != NULL if aolSpecial */
-            Tcl_Interp *interp,                 /* Current interpreter. */
-            Tcl_Size objc,                   /* Number of arguments. */
-            Tcl_Obj *const objv[])              /* Argument objects. */
+	    void *arg,                     /* != NULL if aolSpecial */
+	    Tcl_Interp *interp,                 /* Current interpreter. */
+	    Tcl_Size objc,                   /* Number of arguments. */
+	    Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int isNew, ret, flg;
     Tcl_Size off;
@@ -1160,26 +1160,26 @@ SvObjObjCmd(
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     switch (ret) {
     case TCL_BREAK: /* Shared array was not found */
-        if (objc != off) {
-            val = objv[off];
-        }
-        Tcl_ResetResult(interp);
-        flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
-        ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
-        if (ret != TCL_OK) {
-            return TCL_ERROR;
-        }
-        Tcl_DecrRefCount(svObj->tclObj);
-        svObj->tclObj = Sv_DuplicateObj(val ? val : Tcl_NewObj());
-        Tcl_IncrRefCount(svObj->tclObj);
-        break;
+	if (objc != off) {
+	    val = objv[off];
+	}
+	Tcl_ResetResult(interp);
+	flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
+	ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
+	if (ret != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	Tcl_DecrRefCount(svObj->tclObj);
+	svObj->tclObj = Sv_DuplicateObj(val ? val : Tcl_NewObj());
+	Tcl_IncrRefCount(svObj->tclObj);
+	break;
     case TCL_ERROR:
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
 
     if (svObj->handlePtr == NULL) {
-        Tcl_HashTable *handles = &svObj->arrayPtr->bucketPtr->handles;
-        svObj->handlePtr = Tcl_CreateHashEntry(handles, (char*)svObj, &isNew);
+	Tcl_HashTable *handles = &svObj->arrayPtr->bucketPtr->handles;
+	svObj->handlePtr = Tcl_CreateHashEntry(handles, (char*)svObj, &isNew);
     }
 
     /*
@@ -1214,10 +1214,10 @@ SvObjObjCmd(
 
 static int
 SvArrayObjCmd(
-              void *arg,                     /* Pointer to object container. */
-              Tcl_Interp *interp,                 /* Current interpreter. */
-              Tcl_Size objc,                   /* Number of arguments. */
-              Tcl_Obj *const objv[])              /* Argument objects. */
+	      void *arg,                     /* Pointer to object container. */
+	      Tcl_Interp *interp,                 /* Current interpreter. */
+	      Tcl_Size objc,                   /* Number of arguments. */
+	      Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret = TCL_OK;
     Tcl_Size i, argx = 0, lobjc = 0;
@@ -1227,198 +1227,198 @@ SvArrayObjCmd(
     Container *svObj, *elObj = NULL;
 
     static const char *const opts[] = {
-        "set",  "reset", "get", "names", "size", "exists", "isbound",
-        "bind", "unbind", NULL
+	"set",  "reset", "get", "names", "size", "exists", "isbound",
+	"bind", "unbind", NULL
     };
     enum options {
-        ASET,   ARESET,  AGET,  ANAMES,  ASIZE,  AEXISTS, AISBOUND,
-        ABIND,  AUNBIND
+	ASET,   ARESET,  AGET,  ANAMES,  ASIZE,  AEXISTS, AISBOUND,
+	ABIND,  AUNBIND
     } index;
 
     svObj = (Container*)arg;
 
     if (objc < 3) {
-        Tcl_WrongNumArgs(interp, 1, objv, "option array");
-        return TCL_ERROR;
+	Tcl_WrongNumArgs(interp, 1, objv, "option array");
+	return TCL_ERROR;
     }
 
     arrayName = Tcl_GetString(objv[2]);
     arrayPtr  = LockArray(interp, arrayName, FLAGS_NOERRMSG);
 
     if (objc > 3) {
-        argx = 3;
+	argx = 3;
     }
 
     Tcl_ResetResult(interp);
 
     if (Tcl_GetIndexFromObjStruct(interp,objv[1],opts, sizeof(char *),"option",0,&index) != TCL_OK) {
-        ret = TCL_ERROR;
+	ret = TCL_ERROR;
 
     } else if (index == AEXISTS) {
-        Tcl_SetIntObj(Tcl_GetObjResult(interp), arrayPtr!=0);
+	Tcl_SetIntObj(Tcl_GetObjResult(interp), arrayPtr!=0);
 
     } else if (index == AISBOUND) {
-        if (arrayPtr == NULL) {
-            Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
-        } else {
-            Tcl_SetIntObj(Tcl_GetObjResult(interp), arrayPtr->psPtr!=0);
-        }
+	if (arrayPtr == NULL) {
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
+	} else {
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), arrayPtr->psPtr!=0);
+	}
 
     } else if (index == ASIZE) {
-        if (arrayPtr == NULL) {
-            Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
-        } else {
-            Tcl_SetWideIntObj(Tcl_GetObjResult(interp), (Tcl_WideInt)arrayPtr->vars.numEntries);
-        }
+	if (arrayPtr == NULL) {
+	    Tcl_SetIntObj(Tcl_GetObjResult(interp), 0);
+	} else {
+	    Tcl_SetWideIntObj(Tcl_GetObjResult(interp), (Tcl_WideInt)arrayPtr->vars.numEntries);
+	}
 
     } else if (index == ASET || index == ARESET) {
-        if (argx == (objc - 1)) {
-            if (argx && Tcl_ListObjGetElements(interp, objv[argx], &lobjc,
-                    &lobjv) != TCL_OK) {
-                ret = TCL_ERROR;
-                goto cmdExit;
-            }
-        } else {
-            lobjc = objc - 3;
-            lobjv = (Tcl_Obj**)objv + 3;
-        }
-        if (lobjc & 1) {
-            Tcl_AppendResult(interp, "list must have an even number"
-                    " of elements", (void *)NULL);
-            ret = TCL_ERROR;
-            goto cmdExit;
-        }
-        if (arrayPtr == NULL) {
-            arrayPtr = LockArray(interp, arrayName, FLAGS_CREATEARRAY);
-        }
-        if (index == ARESET) {
-            ret = FlushArray(arrayPtr);
-            if (ret != TCL_OK) {
-                if (arrayPtr->psPtr) {
-                    PsStore *psPtr = arrayPtr->psPtr;
-                    const char *err = psPtr->psError(psPtr->psHandle);
-                    Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
-                }
-                goto cmdExit;
-            }
-        }
-        for (i = 0; i < lobjc; i += 2) {
-            const char *key = Tcl_GetString(lobjv[i]);
-            elObj = AcquireContainer(arrayPtr, key, FLAGS_CREATEVAR);
-            Tcl_DecrRefCount(elObj->tclObj);
-            elObj->tclObj = Sv_DuplicateObj(lobjv[i+1]);
-            Tcl_IncrRefCount(elObj->tclObj);
-            if (ReleaseContainer(interp, elObj, SV_CHANGED) != TCL_OK) {
-                ret = TCL_ERROR;
-                goto cmdExit;
-            }
-        }
+	if (argx == (objc - 1)) {
+	    if (argx && Tcl_ListObjGetElements(interp, objv[argx], &lobjc,
+		    &lobjv) != TCL_OK) {
+		ret = TCL_ERROR;
+		goto cmdExit;
+	    }
+	} else {
+	    lobjc = objc - 3;
+	    lobjv = (Tcl_Obj**)objv + 3;
+	}
+	if (lobjc & 1) {
+	    Tcl_AppendResult(interp, "list must have an even number"
+		    " of elements", (void *)NULL);
+	    ret = TCL_ERROR;
+	    goto cmdExit;
+	}
+	if (arrayPtr == NULL) {
+	    arrayPtr = LockArray(interp, arrayName, FLAGS_CREATEARRAY);
+	}
+	if (index == ARESET) {
+	    ret = FlushArray(arrayPtr);
+	    if (ret != TCL_OK) {
+		if (arrayPtr->psPtr) {
+		    PsStore *psPtr = arrayPtr->psPtr;
+		    const char *err = psPtr->psError(psPtr->psHandle);
+		    Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
+		}
+		goto cmdExit;
+	    }
+	}
+	for (i = 0; i < lobjc; i += 2) {
+	    const char *key = Tcl_GetString(lobjv[i]);
+	    elObj = AcquireContainer(arrayPtr, key, FLAGS_CREATEVAR);
+	    Tcl_DecrRefCount(elObj->tclObj);
+	    elObj->tclObj = Sv_DuplicateObj(lobjv[i+1]);
+	    Tcl_IncrRefCount(elObj->tclObj);
+	    if (ReleaseContainer(interp, elObj, SV_CHANGED) != TCL_OK) {
+		ret = TCL_ERROR;
+		goto cmdExit;
+	    }
+	}
 
     } else if (index == AGET || index == ANAMES) {
-        if (arrayPtr) {
-            Tcl_HashSearch search;
-            Tcl_Obj *resObj = Tcl_NewListObj(0, NULL);
-            const char *pattern = (argx == 0) ? NULL : Tcl_GetString(objv[argx]);
-            Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
-            while (hPtr) {
-                char *key = (char *)Tcl_GetHashKey(&arrayPtr->vars, hPtr);
-                if (pattern == NULL || Tcl_StringCaseMatch(key, pattern, 0)) {
-                    Tcl_ListObjAppendElement(interp, resObj,
-                            Tcl_NewStringObj(key, TCL_INDEX_NONE));
-                    if (index == AGET) {
-                        elObj = (Container*)Tcl_GetHashValue(hPtr);
-                        Tcl_ListObjAppendElement(interp, resObj,
-                                Sv_DuplicateObj(elObj->tclObj));
-                    }
-                }
-                hPtr = Tcl_NextHashEntry(&search);
-            }
-            Tcl_SetObjResult(interp, resObj);
-        }
+	if (arrayPtr) {
+	    Tcl_HashSearch search;
+	    Tcl_Obj *resObj = Tcl_NewListObj(0, NULL);
+	    const char *pattern = (argx == 0) ? NULL : Tcl_GetString(objv[argx]);
+	    Tcl_HashEntry *hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
+	    while (hPtr) {
+		char *key = (char *)Tcl_GetHashKey(&arrayPtr->vars, hPtr);
+		if (pattern == NULL || Tcl_StringCaseMatch(key, pattern, 0)) {
+		    Tcl_ListObjAppendElement(interp, resObj,
+			    Tcl_NewStringObj(key, TCL_INDEX_NONE));
+		    if (index == AGET) {
+			elObj = (Container*)Tcl_GetHashValue(hPtr);
+			Tcl_ListObjAppendElement(interp, resObj,
+				Sv_DuplicateObj(elObj->tclObj));
+		    }
+		}
+		hPtr = Tcl_NextHashEntry(&search);
+	    }
+	    Tcl_SetObjResult(interp, resObj);
+	}
 
     } else if (index == ABIND) {
 
-        /*
-         * This is more complex operation, requiring some clarification.
-         *
-         * When binding an already existing array, we walk the array
-         * first and store all key/value pairs found there in the
-         * persistent storage. Then we proceed with the below.
-         *
-         * When binding an non-existent array, we open the persistent
-         * storage and cache all key/value pairs found there into tne
-         * newly created shared array.
-         */
+	/*
+	 * This is more complex operation, requiring some clarification.
+	 *
+	 * When binding an already existing array, we walk the array
+	 * first and store all key/value pairs found there in the
+	 * persistent storage. Then we proceed with the below.
+	 *
+	 * When binding an non-existent array, we open the persistent
+	 * storage and cache all key/value pairs found there into tne
+	 * newly created shared array.
+	 */
 
-        PsStore *psPtr;
-        Tcl_HashEntry *hPtr;
-        Tcl_Size len;
-        int isNew;
-        char *psurl, *key = NULL, *val = NULL;
+	PsStore *psPtr;
+	Tcl_HashEntry *hPtr;
+	Tcl_Size len;
+	int isNew;
+	char *psurl, *key = NULL, *val = NULL;
 
-        if (objc < 4) {
-            Tcl_WrongNumArgs(interp, 2, objv, "array handle");
-            ret = TCL_ERROR;
-            goto cmdExit;
-        }
+	if (objc < 4) {
+	    Tcl_WrongNumArgs(interp, 2, objv, "array handle");
+	    ret = TCL_ERROR;
+	    goto cmdExit;
+	}
 
-        if (arrayPtr && arrayPtr->psPtr) {
-            Tcl_AppendResult(interp, "array is already bound", (void *)NULL);
-            ret = TCL_ERROR;
-            goto cmdExit;
-        }
+	if (arrayPtr && arrayPtr->psPtr) {
+	    Tcl_AppendResult(interp, "array is already bound", (void *)NULL);
+	    ret = TCL_ERROR;
+	    goto cmdExit;
+	}
 
-        psurl = Tcl_GetStringFromObj(objv[3], &len);
-        psPtr = GetPsStore(psurl);
+	psurl = Tcl_GetStringFromObj(objv[3], &len);
+	psPtr = GetPsStore(psurl);
 
-        if (psPtr == NULL) {
-            Tcl_AppendResult(interp, "can't open persistent storage on \"",
-                             psurl, "\"", (void *)NULL);
-            ret = TCL_ERROR;
-            goto cmdExit;
-        }
-        if (arrayPtr) {
-            Tcl_HashSearch search;
-            hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
-            arrayPtr->psPtr = psPtr;
-            arrayPtr->bindAddr = strcpy((char *)Tcl_Alloc(len+1), psurl);
-            while (hPtr) {
-                svObj = (Container *)Tcl_GetHashValue(hPtr);
-                if (ReleaseContainer(interp, svObj, SV_CHANGED) != TCL_OK) {
-                    ret = TCL_ERROR;
-                    goto cmdExit;
-                }
-                hPtr = Tcl_NextHashEntry(&search);
-            }
-        } else {
-            arrayPtr = LockArray(interp, arrayName, FLAGS_CREATEARRAY);
-            arrayPtr->psPtr = psPtr;
-            arrayPtr->bindAddr = strcpy((char *)Tcl_Alloc(len+1), psurl);
-        }
-        if (!psPtr->psFirst(psPtr->psHandle, &key, &val, &len)) {
-            do {
-                Tcl_Obj * tclObj = Tcl_NewStringObj(val, len);
-                hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &isNew);
-                Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, tclObj));
-                psPtr->psFree(psPtr->psHandle, val);
-            } while (!psPtr->psNext(psPtr->psHandle, &key, &val, &len));
-        }
+	if (psPtr == NULL) {
+	    Tcl_AppendResult(interp, "can't open persistent storage on \"",
+			     psurl, "\"", (void *)NULL);
+	    ret = TCL_ERROR;
+	    goto cmdExit;
+	}
+	if (arrayPtr) {
+	    Tcl_HashSearch search;
+	    hPtr = Tcl_FirstHashEntry(&arrayPtr->vars,&search);
+	    arrayPtr->psPtr = psPtr;
+	    arrayPtr->bindAddr = strcpy((char *)Tcl_Alloc(len+1), psurl);
+	    while (hPtr) {
+		svObj = (Container *)Tcl_GetHashValue(hPtr);
+		if (ReleaseContainer(interp, svObj, SV_CHANGED) != TCL_OK) {
+		    ret = TCL_ERROR;
+		    goto cmdExit;
+		}
+		hPtr = Tcl_NextHashEntry(&search);
+	    }
+	} else {
+	    arrayPtr = LockArray(interp, arrayName, FLAGS_CREATEARRAY);
+	    arrayPtr->psPtr = psPtr;
+	    arrayPtr->bindAddr = strcpy((char *)Tcl_Alloc(len+1), psurl);
+	}
+	if (!psPtr->psFirst(psPtr->psHandle, &key, &val, &len)) {
+	    do {
+		Tcl_Obj * tclObj = Tcl_NewStringObj(val, len);
+		hPtr = Tcl_CreateHashEntry(&arrayPtr->vars, key, &isNew);
+		Tcl_SetHashValue(hPtr, CreateContainer(arrayPtr, hPtr, tclObj));
+		psPtr->psFree(psPtr->psHandle, val);
+	    } while (!psPtr->psNext(psPtr->psHandle, &key, &val, &len));
+	}
 
     } else if (index == AUNBIND) {
-        if (!arrayPtr || !arrayPtr->psPtr) {
-            Tcl_AppendResult(interp, "shared variable is not bound", (void *)NULL);
-            ret = TCL_ERROR;
-            goto cmdExit;
-        }
-        if (UnbindArray(interp, arrayPtr) != TCL_OK) {
-            ret = TCL_ERROR;
-            goto cmdExit;
-        }
+	if (!arrayPtr || !arrayPtr->psPtr) {
+	    Tcl_AppendResult(interp, "shared variable is not bound", (void *)NULL);
+	    ret = TCL_ERROR;
+	    goto cmdExit;
+	}
+	if (UnbindArray(interp, arrayPtr) != TCL_OK) {
+	    ret = TCL_ERROR;
+	    goto cmdExit;
+	}
     }
 
  cmdExit:
     if (arrayPtr) {
-        UnlockArray(arrayPtr);
+	UnlockArray(arrayPtr);
     }
 
     return ret;
@@ -1443,48 +1443,48 @@ SvArrayObjCmd(
 
 static int
 SvUnsetObjCmd(
-              TCL_UNUSED(void *),                 /* Not used. */
-              Tcl_Interp *interp,                 /* Current interpreter. */
-              Tcl_Size objc,                   /* Number of arguments. */
-              Tcl_Obj *const objv[])              /* Argument objects. */
+	      TCL_UNUSED(void *),                 /* Not used. */
+	      Tcl_Interp *interp,                 /* Current interpreter. */
+	      Tcl_Size objc,                   /* Number of arguments. */
+	      Tcl_Obj *const objv[])              /* Argument objects. */
 {
     Tcl_Size ii;
     const char *arrayName;
     Array *arrayPtr;
 
     if (objc < 2) {
-        Tcl_WrongNumArgs(interp, 1, objv, "array ?key ...?");
-        return TCL_ERROR;
+	Tcl_WrongNumArgs(interp, 1, objv, "array ?key ...?");
+	return TCL_ERROR;
     }
 
     arrayName = Tcl_GetString(objv[1]);
     arrayPtr  = LockArray(interp, arrayName, 0);
 
     if (arrayPtr == NULL) {
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
     if (objc == 2) {
-        UnlockArray(arrayPtr);
-        if (DeleteArray(interp, arrayPtr) != TCL_OK) {
-            return TCL_ERROR;
-        }
+	UnlockArray(arrayPtr);
+	if (DeleteArray(interp, arrayPtr) != TCL_OK) {
+	    return TCL_ERROR;
+	}
     } else {
-        for (ii = 2; ii < objc; ii++) {
-            const char *key = Tcl_GetString(objv[ii]);
-            Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&arrayPtr->vars, key);
-            if (hPtr) {
-                if (DeleteContainer((Container*)Tcl_GetHashValue(hPtr))
-                    != TCL_OK) {
-                    UnlockArray(arrayPtr);
-                    return TCL_ERROR;
-                }
-            } else {
-                UnlockArray(arrayPtr);
-                Tcl_AppendResult(interp,"no key ",arrayName,"(",key,")",(void *)NULL);
-                return TCL_ERROR;
-            }
-        }
-        UnlockArray(arrayPtr);
+	for (ii = 2; ii < objc; ii++) {
+	    const char *key = Tcl_GetString(objv[ii]);
+	    Tcl_HashEntry *hPtr = Tcl_FindHashEntry(&arrayPtr->vars, key);
+	    if (hPtr) {
+		if (DeleteContainer((Container*)Tcl_GetHashValue(hPtr))
+		    != TCL_OK) {
+		    UnlockArray(arrayPtr);
+		    return TCL_ERROR;
+		}
+	    } else {
+		UnlockArray(arrayPtr);
+		Tcl_AppendResult(interp,"no key ",arrayName,"(",key,")",(void *)NULL);
+		return TCL_ERROR;
+	    }
+	}
+	UnlockArray(arrayPtr);
     }
 
     return TCL_OK;
@@ -1509,10 +1509,10 @@ SvUnsetObjCmd(
 
 static int
 SvNamesObjCmd(
-              void *arg,                     /* != NULL if aolSpecial */
-              Tcl_Interp *interp,                 /* Current interpreter. */
-              Tcl_Size objc,                   /* Number of arguments. */
-              Tcl_Obj *const objv[])              /* Argument objects. */
+	      void *arg,                     /* != NULL if aolSpecial */
+	      Tcl_Interp *interp,                 /* Current interpreter. */
+	      Tcl_Size objc,                   /* Number of arguments. */
+	      Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int i;
     const char *pattern = NULL;
@@ -1521,29 +1521,29 @@ SvNamesObjCmd(
     Tcl_Obj *resObj;
 
     if (objc > 2) {
-        Tcl_WrongNumArgs(interp, 1, objv, "?pattern?");
-        return TCL_ERROR;
+	Tcl_WrongNumArgs(interp, 1, objv, "?pattern?");
+	return TCL_ERROR;
     }
     if (objc == 2) {
-        pattern = Tcl_GetString(objv[1]);
+	pattern = Tcl_GetString(objv[1]);
     }
 
     resObj = Tcl_NewListObj(0, NULL);
 
     for (i = 0; i < NUMBUCKETS; i++) {
-        Bucket *bucketPtr = &buckets[i];
-        LOCK_BUCKET(bucketPtr);
-        hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
-        while (hPtr) {
-            char *key = (char *)Tcl_GetHashKey(&bucketPtr->arrays, hPtr);
-            if ((arg==NULL || (*key != '.')) /* Hide .<name> arrays for AOL*/ &&
-                (pattern == NULL || Tcl_StringCaseMatch(key, pattern, 0))) {
-                Tcl_ListObjAppendElement(interp, resObj,
-                        Tcl_NewStringObj(key, TCL_INDEX_NONE));
-            }
-            hPtr = Tcl_NextHashEntry(&search);
-        }
-        UNLOCK_BUCKET(bucketPtr);
+	Bucket *bucketPtr = &buckets[i];
+	LOCK_BUCKET(bucketPtr);
+	hPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
+	while (hPtr) {
+	    char *key = (char *)Tcl_GetHashKey(&bucketPtr->arrays, hPtr);
+	    if ((arg==NULL || (*key != '.')) /* Hide .<name> arrays for AOL*/ &&
+		(pattern == NULL || Tcl_StringCaseMatch(key, pattern, 0))) {
+		Tcl_ListObjAppendElement(interp, resObj,
+			Tcl_NewStringObj(key, TCL_INDEX_NONE));
+	    }
+	    hPtr = Tcl_NextHashEntry(&search);
+	}
+	UNLOCK_BUCKET(bucketPtr);
     }
 
     Tcl_SetObjResult(interp, resObj);
@@ -1570,10 +1570,10 @@ SvNamesObjCmd(
 
 static int
 SvGetObjCmd(
-            void *arg,                     /* Pointer to object container. */
-            Tcl_Interp *interp,                 /* Current interpreter. */
-            Tcl_Size objc,                   /* Number of arguments. */
-            Tcl_Obj *const objv[])              /* Argument objects. */
+	    void *arg,                     /* Pointer to object container. */
+	    Tcl_Interp *interp,                 /* Current interpreter. */
+	    Tcl_Size objc,                   /* Number of arguments. */
+	    Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret;
     Tcl_Size off;
@@ -1589,26 +1589,26 @@ SvGetObjCmd(
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     switch (ret) {
     case TCL_BREAK:
-        if (objc == off) {
-            return TCL_ERROR;
-        } else {
-            Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
-            return TCL_OK;
-        }
+	if (objc == off) {
+	    return TCL_ERROR;
+	} else {
+	    Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
+	    return TCL_OK;
+	}
     case TCL_ERROR:
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
 
     res = Sv_DuplicateObj(svObj->tclObj);
 
     if (objc == off) {
-        Tcl_SetObjResult(interp, res);
+	Tcl_SetObjResult(interp, res);
     } else {
-        if (Tcl_ObjSetVar2(interp, objv[off], NULL, res, 0) == NULL) {
-            Tcl_DecrRefCount(res);
-            goto cmd_err;
-        }
-        Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
+	if (Tcl_ObjSetVar2(interp, objv[off], NULL, res, 0) == NULL) {
+	    Tcl_DecrRefCount(res);
+	    goto cmd_err;
+	}
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
     }
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
@@ -1636,10 +1636,10 @@ SvGetObjCmd(
 
 static int
 SvExistsObjCmd(
-               void *arg,                     /* Pointer to object container. */
-               Tcl_Interp *interp,                 /* Current interpreter. */
-               Tcl_Size objc,                   /* Number of arguments. */
-               Tcl_Obj *const objv[])              /* Argument objects. */
+	       void *arg,                     /* Pointer to object container. */
+	       Tcl_Interp *interp,                 /* Current interpreter. */
+	       Tcl_Size objc,                   /* Number of arguments. */
+	       Tcl_Obj *const objv[])              /* Argument objects. */
 {
     Tcl_Size off;
     int ret;
@@ -1654,10 +1654,10 @@ SvExistsObjCmd(
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     switch (ret) {
     case TCL_BREAK: /* Array/key not found */
-        Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
-        return TCL_OK;
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
+	return TCL_OK;
     case TCL_ERROR:
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
 
     Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
@@ -1684,10 +1684,10 @@ SvExistsObjCmd(
 
 static int
 SvSetObjCmd(
-            void *arg,                     /* Pointer to object container */
-            Tcl_Interp *interp,                 /* Current interpreter. */
-            Tcl_Size objc,                   /* Number of arguments. */
-            Tcl_Obj *const objv[])              /* Argument objects. */
+	    void *arg,                     /* Pointer to object container */
+	    Tcl_Interp *interp,                 /* Current interpreter. */
+	    Tcl_Size objc,                   /* Number of arguments. */
+	    Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret, flg, mode;
     Tcl_Size off;
@@ -1703,29 +1703,29 @@ SvSetObjCmd(
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     switch (ret) {
     case TCL_BREAK:
-        if (objc == off) {
-            return TCL_ERROR;
-        } else {
-            Tcl_ResetResult(interp);
-            flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
-            ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
-            if (ret != TCL_OK) {
-                return TCL_ERROR;
-            }
-        }
-        break;
+	if (objc == off) {
+	    return TCL_ERROR;
+	} else {
+	    Tcl_ResetResult(interp);
+	    flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
+	    ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
+	    if (ret != TCL_OK) {
+		return TCL_ERROR;
+	    }
+	}
+	break;
     case TCL_ERROR:
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
     if (objc != off) {
-        val = objv[off];
-        Tcl_DecrRefCount(svObj->tclObj);
-        svObj->tclObj = Sv_DuplicateObj(val);
-        Tcl_IncrRefCount(svObj->tclObj);
-        mode = SV_CHANGED;
+	val = objv[off];
+	Tcl_DecrRefCount(svObj->tclObj);
+	svObj->tclObj = Sv_DuplicateObj(val);
+	Tcl_IncrRefCount(svObj->tclObj);
+	mode = SV_CHANGED;
     } else {
-        val = Sv_DuplicateObj(svObj->tclObj);
-        mode = SV_UNCHANGED;
+	val = Sv_DuplicateObj(svObj->tclObj);
+	mode = SV_UNCHANGED;
     }
 
     Tcl_SetObjResult(interp, val);
@@ -1752,10 +1752,10 @@ SvSetObjCmd(
 
 static int
 SvIncrObjCmd(
-             void *arg,                     /* Pointer to object container */
-             Tcl_Interp *interp,                 /* Current interpreter. */
-             Tcl_Size objc,                   /* Number of arguments. */
-             Tcl_Obj *const objv[])              /* Argument objects. */
+	     void *arg,                     /* Pointer to object container */
+	     Tcl_Interp *interp,                 /* Current interpreter. */
+	     Tcl_Size objc,                   /* Number of arguments. */
+	     Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret, flg, isNew = 0;
     Tcl_Size off;
@@ -1770,30 +1770,30 @@ SvIncrObjCmd(
 
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
-        if (ret != TCL_BREAK) {
-            return TCL_ERROR;
-        }
-        flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
-        Tcl_ResetResult(interp);
-        ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
-        if (ret != TCL_OK) {
-            return TCL_ERROR;
-        }
-        isNew = 1;
+	if (ret != TCL_BREAK) {
+	    return TCL_ERROR;
+	}
+	flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
+	Tcl_ResetResult(interp);
+	ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
+	if (ret != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	isNew = 1;
     }
     if ((objc != off)) {
-        ret = Tcl_GetWideIntFromObj(interp, objv[off], &incrValue);
-        if (ret != TCL_OK) {
-            goto cmd_err;
-        }
+	ret = Tcl_GetWideIntFromObj(interp, objv[off], &incrValue);
+	if (ret != TCL_OK) {
+	    goto cmd_err;
+	}
     }
     if (isNew) {
-        currValue = 0;
+	currValue = 0;
     } else {
-        ret = Tcl_GetWideIntFromObj(interp, svObj->tclObj, &currValue);
-        if (ret != TCL_OK) {
-            goto cmd_err;
-        }
+	ret = Tcl_GetWideIntFromObj(interp, svObj->tclObj, &currValue);
+	if (ret != TCL_OK) {
+	    goto cmd_err;
+	}
     }
 
     incrValue += currValue;
@@ -1826,10 +1826,10 @@ SvIncrObjCmd(
 
 static int
 SvAppendObjCmd(
-               void *arg,                     /* Pointer to object container */
-               Tcl_Interp *interp,                 /* Current interpreter. */
-               Tcl_Size objc,                   /* Number of arguments. */
-               Tcl_Obj *const objv[])              /* Argument objects. */
+	       void *arg,                     /* Pointer to object container */
+	       Tcl_Interp *interp,                 /* Current interpreter. */
+	       Tcl_Size objc,                   /* Number of arguments. */
+	       Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int flg, ret;
     Tcl_Size i, off;
@@ -1844,14 +1844,14 @@ SvAppendObjCmd(
     flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
     if (ret != TCL_OK) {
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
     if (objc < 1 + off) {
-        Tcl_WrongNumArgs(interp, off, objv, "value ?value ...?");
-        goto cmd_err;
+	Tcl_WrongNumArgs(interp, off, objv, "value ?value ...?");
+	goto cmd_err;
     }
     for (i = off; i < objc; ++i) {
-        Tcl_AppendObjToObj(svObj->tclObj, Sv_DuplicateObj(objv[i]));
+	Tcl_AppendObjToObj(svObj->tclObj, Sv_DuplicateObj(objv[i]));
     }
 
     Tcl_SetObjResult(interp, Sv_DuplicateObj(svObj->tclObj));
@@ -1881,10 +1881,10 @@ SvAppendObjCmd(
 
 static int
 SvPopObjCmd(
-            void *arg,                     /* Pointer to object container */
-            Tcl_Interp *interp,                 /* Current interpreter. */
-            Tcl_Size objc,                   /* Number of arguments. */
-            Tcl_Obj *const objv[])              /* Argument objects. */
+	    void *arg,                     /* Pointer to object container */
+	    Tcl_Interp *interp,                 /* Current interpreter. */
+	    Tcl_Size objc,                   /* Number of arguments. */
+	    Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret;
     Tcl_Size off;
@@ -1903,14 +1903,14 @@ SvPopObjCmd(
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     switch (ret) {
     case TCL_BREAK:
-        if (objc == off) {
-            return TCL_ERROR;
-        } else {
-            Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
-            return TCL_OK;
-        }
+	if (objc == off) {
+	    return TCL_ERROR;
+	} else {
+	    Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
+	    return TCL_OK;
+	}
     case TCL_ERROR:
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
 
     arrayPtr = svObj->arrayPtr;
@@ -1919,23 +1919,23 @@ SvPopObjCmd(
     svObj->tclObj = NULL;
 
     if (DeleteContainer(svObj) != TCL_OK) {
-        if (svObj->arrayPtr->psPtr) {
-            PsStore *psPtr = svObj->arrayPtr->psPtr;
-            const char *err = psPtr->psError(psPtr->psHandle);
-            Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
-        }
-        ret = TCL_ERROR;
-        goto cmd_exit;
+	if (svObj->arrayPtr->psPtr) {
+	    PsStore *psPtr = svObj->arrayPtr->psPtr;
+	    const char *err = psPtr->psError(psPtr->psHandle);
+	    Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
+	}
+	ret = TCL_ERROR;
+	goto cmd_exit;
     }
 
     if (objc == off) {
-        Tcl_SetObjResult(interp, retObj);
+	Tcl_SetObjResult(interp, retObj);
     } else {
-        if (Tcl_ObjSetVar2(interp, objv[off], NULL, retObj, 0) == NULL) {
-            ret = TCL_ERROR;
-            goto cmd_exit;
-        }
-        Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
+	if (Tcl_ObjSetVar2(interp, objv[off], NULL, retObj, 0) == NULL) {
+	    ret = TCL_ERROR;
+	    goto cmd_exit;
+	}
+	Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
     }
 
   cmd_exit:
@@ -1965,10 +1965,10 @@ SvPopObjCmd(
 
 static int
 SvMoveObjCmd(
-             void *arg,                     /* Pointer to object container. */
-             Tcl_Interp *interp,                 /* Current interpreter. */
-             Tcl_Size objc,                   /* Number of arguments. */
-             Tcl_Obj *const objv[])              /* Argument objects. */
+	     void *arg,                     /* Pointer to object container. */
+	     Tcl_Interp *interp,                 /* Current interpreter. */
+	     Tcl_Size objc,                   /* Number of arguments. */
+	     Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret, isNew;
     Tcl_Size off;
@@ -1984,27 +1984,27 @@ SvMoveObjCmd(
 
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
 
     toKey = Tcl_GetString(objv[off]);
     hPtr = Tcl_CreateHashEntry(&svObj->arrayPtr->vars, toKey, &isNew);
 
     if (!isNew) {
-        Tcl_AppendResult(interp, "key \"", toKey, "\" exists", (void *)NULL);
-        goto cmd_err;
+	Tcl_AppendResult(interp, "key \"", toKey, "\" exists", (void *)NULL);
+	goto cmd_err;
     }
     if (svObj->entryPtr) {
-        char *key = (char *)Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
-        if (svObj->arrayPtr->psPtr) {
-            PsStore *psPtr = svObj->arrayPtr->psPtr;
-            if (psPtr->psDelete(psPtr->psHandle, key) == -1) {
-                const char *err = psPtr->psError(psPtr->psHandle);
-                Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
-                return TCL_ERROR;
-            }
-        }
-        Tcl_DeleteHashEntry(svObj->entryPtr);
+	char *key = (char *)Tcl_GetHashKey(&svObj->arrayPtr->vars, svObj->entryPtr);
+	if (svObj->arrayPtr->psPtr) {
+	    PsStore *psPtr = svObj->arrayPtr->psPtr;
+	    if (psPtr->psDelete(psPtr->psHandle, key) == -1) {
+		const char *err = psPtr->psError(psPtr->psHandle);
+		Tcl_SetObjResult(interp, Tcl_NewStringObj(err, TCL_INDEX_NONE));
+		return TCL_ERROR;
+	    }
+	}
+	Tcl_DeleteHashEntry(svObj->entryPtr);
     }
 
     svObj->entryPtr = hPtr;
@@ -2036,10 +2036,10 @@ SvMoveObjCmd(
 
 static int
 SvLockObjCmd(
-             TCL_UNUSED(void *),                 /* Not used. */
-             Tcl_Interp *interp,                 /* Current interpreter. */
-             Tcl_Size objc,                   /* Number of arguments. */
-             Tcl_Obj *const objv[])              /* Argument objects. */
+	     TCL_UNUSED(void *),                 /* Not used. */
+	     Tcl_Interp *interp,                 /* Current interpreter. */
+	     Tcl_Size objc,                   /* Number of arguments. */
+	     Tcl_Obj *const objv[])              /* Argument objects. */
 {
     int ret;
     Tcl_Obj *scriptObj;
@@ -2053,8 +2053,8 @@ SvLockObjCmd(
      */
 
     if (objc < 3) {
-        Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
-        return TCL_ERROR;
+	Tcl_WrongNumArgs(interp, 1, objv, "array arg ?arg...?");
+	return TCL_ERROR;
     }
 
     arrayPtr  = LockArray(interp, Tcl_GetString(objv[1]), FLAGS_CREATEARRAY);
@@ -2068,18 +2068,18 @@ SvLockObjCmd(
      */
 
     if (objc == 3) {
-        scriptObj = Tcl_DuplicateObj(objv[2]);
+	scriptObj = Tcl_DuplicateObj(objv[2]);
     } else {
-        scriptObj = Tcl_ConcatObj(objc-2, objv + 2);
+	scriptObj = Tcl_ConcatObj(objc-2, objv + 2);
     }
 
     Tcl_AllowExceptions(interp);
     ret = Tcl_EvalObjEx(interp, scriptObj, TCL_EVAL_DIRECT);
 
     if (ret == TCL_ERROR) {
-        char msg[32 + TCL_INTEGER_SPACE];
-        snprintf(msg, sizeof(msg), "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
-        Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_INDEX_NONE));
+	char msg[32 + TCL_INTEGER_SPACE];
+	snprintf(msg, sizeof(msg), "\n    (\"eval\" body line %d)", Tcl_GetErrorLine(interp));
+	Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(msg, TCL_INDEX_NONE));
     }
 
     /*
@@ -2110,10 +2110,10 @@ SvLockObjCmd(
  */
 static int
 SvHandlersObjCmd(
-             TCL_UNUSED(void *),                 /* Not used. */
-             Tcl_Interp *interp,                 /* Current interpreter. */
-             Tcl_Size objc,                           /* Number of arguments. */
-             Tcl_Obj *const objv[])              /* Argument objects. */
+	     TCL_UNUSED(void *),                 /* Not used. */
+	     Tcl_Interp *interp,                 /* Current interpreter. */
+	     Tcl_Size objc,                           /* Number of arguments. */
+	     Tcl_Obj *const objv[])              /* Argument objects. */
 {
     PsStore *tmpPtr = NULL;
 
@@ -2124,14 +2124,14 @@ SvHandlersObjCmd(
      */
 
     if (objc != 1) {
-        Tcl_WrongNumArgs(interp, 1, objv, NULL);
-        return TCL_ERROR;
+	Tcl_WrongNumArgs(interp, 1, objv, NULL);
+	return TCL_ERROR;
     }
 
     Tcl_ResetResult(interp);
     Tcl_MutexLock(&svMutex);
     for (tmpPtr = psStore; tmpPtr; tmpPtr = tmpPtr->nextPtr) {
-        Tcl_AppendElement(interp, tmpPtr->type);
+	Tcl_AppendElement(interp, tmpPtr->type);
     }
     Tcl_MutexUnlock(&svMutex);
 
@@ -2161,25 +2161,25 @@ SvRegisterStdCommands(void)
     static int initialized = 0;
 
     if (initialized == 0) {
-        Tcl_MutexLock(&initMutex);
-        if (initialized == 0) {
-            Sv_RegisterCommand("var",      SvObjObjCmd,      NULL, 1);
-            Sv_RegisterCommand("object",   SvObjObjCmd,      NULL, 1);
-            Sv_RegisterCommand("set",      SvSetObjCmd,      NULL, 0);
-            Sv_RegisterCommand("unset",    SvUnsetObjCmd,    NULL, 0);
-            Sv_RegisterCommand("get",      SvGetObjCmd,      NULL, 0);
-            Sv_RegisterCommand("incr",     SvIncrObjCmd,     NULL, 0);
-            Sv_RegisterCommand("exists",   SvExistsObjCmd,   NULL, 0);
-            Sv_RegisterCommand("append",   SvAppendObjCmd,   NULL, 0);
-            Sv_RegisterCommand("array",    SvArrayObjCmd,    NULL, 0);
-            Sv_RegisterCommand("names",    SvNamesObjCmd,    NULL, 0);
-            Sv_RegisterCommand("pop",      SvPopObjCmd,      NULL, 0);
-            Sv_RegisterCommand("move",     SvMoveObjCmd,     NULL, 0);
-            Sv_RegisterCommand("lock",     SvLockObjCmd,     NULL, 0);
-            Sv_RegisterCommand("handlers", SvHandlersObjCmd, NULL, 0);
-            initialized = 1;
-        }
-        Tcl_MutexUnlock(&initMutex);
+	Tcl_MutexLock(&initMutex);
+	if (initialized == 0) {
+	    Sv_RegisterCommand("var",      SvObjObjCmd,      NULL, 1);
+	    Sv_RegisterCommand("object",   SvObjObjCmd,      NULL, 1);
+	    Sv_RegisterCommand("set",      SvSetObjCmd,      NULL, 0);
+	    Sv_RegisterCommand("unset",    SvUnsetObjCmd,    NULL, 0);
+	    Sv_RegisterCommand("get",      SvGetObjCmd,      NULL, 0);
+	    Sv_RegisterCommand("incr",     SvIncrObjCmd,     NULL, 0);
+	    Sv_RegisterCommand("exists",   SvExistsObjCmd,   NULL, 0);
+	    Sv_RegisterCommand("append",   SvAppendObjCmd,   NULL, 0);
+	    Sv_RegisterCommand("array",    SvArrayObjCmd,    NULL, 0);
+	    Sv_RegisterCommand("names",    SvNamesObjCmd,    NULL, 0);
+	    Sv_RegisterCommand("pop",      SvPopObjCmd,      NULL, 0);
+	    Sv_RegisterCommand("move",     SvMoveObjCmd,     NULL, 0);
+	    Sv_RegisterCommand("lock",     SvLockObjCmd,     NULL, 0);
+	    Sv_RegisterCommand("handlers", SvHandlersObjCmd, NULL, 0);
+	    initialized = 1;
+	}
+	Tcl_MutexUnlock(&initMutex);
     }
 }
 
@@ -2275,11 +2275,11 @@ SvInit (
      */
 
     for (cmdPtr = svCmdInfo; cmdPtr; cmdPtr = cmdPtr->nextPtr) {
-        Tcl_CreateObjCommand2(interp, cmdPtr->cmdName, cmdPtr->objProcPtr,
-                NULL, NULL);
+	Tcl_CreateObjCommand2(interp, cmdPtr->cmdName, cmdPtr->objProcPtr,
+		NULL, NULL);
 #ifdef NS_AOLSERVER
-        Tcl_CreateObjCommand2(interp, cmdPtr->cmdName2, cmdPtr->objProcPtr,
-                (void *)(size_t)cmdPtr->aolSpecial, NULL);
+	Tcl_CreateObjCommand2(interp, cmdPtr->cmdName2, cmdPtr->objProcPtr,
+		(void *)(size_t)cmdPtr->aolSpecial, NULL);
 #endif
     }
 
@@ -2288,39 +2288,39 @@ SvInit (
      */
 
     if (buckets == NULL) {
-        Tcl_MutexLock(&bucketsMutex);
-        if (buckets == NULL) {
-            buckets = (Bucket *)Tcl_Alloc(sizeof(Bucket) * NUMBUCKETS);
+	Tcl_MutexLock(&bucketsMutex);
+	if (buckets == NULL) {
+	    buckets = (Bucket *)Tcl_Alloc(sizeof(Bucket) * NUMBUCKETS);
 
-            for (i = 0; i < NUMBUCKETS; ++i) {
-                bucketPtr = &buckets[i];
-                memset(bucketPtr, 0, sizeof(Bucket));
-                Tcl_InitHashTable(&bucketPtr->arrays, TCL_STRING_KEYS);
-                Tcl_InitHashTable(&bucketPtr->handles, TCL_ONE_WORD_KEYS);
-            }
+	    for (i = 0; i < NUMBUCKETS; ++i) {
+		bucketPtr = &buckets[i];
+		memset(bucketPtr, 0, sizeof(Bucket));
+		Tcl_InitHashTable(&bucketPtr->arrays, TCL_STRING_KEYS);
+		Tcl_InitHashTable(&bucketPtr->handles, TCL_ONE_WORD_KEYS);
+	    }
 
-            /*
-             * There is no other way to get Sv_tclEmptyStringRep
-             * pointer value w/o this trick.
-             */
+	    /*
+	     * There is no other way to get Sv_tclEmptyStringRep
+	     * pointer value w/o this trick.
+	     */
 
-            {
-                Tcl_Obj *dummy = Tcl_NewObj();
-                Sv_tclEmptyStringRep = dummy->bytes;
-                Tcl_DecrRefCount(dummy);
-            }
+	    {
+		Tcl_Obj *dummy = Tcl_NewObj();
+		Sv_tclEmptyStringRep = dummy->bytes;
+		Tcl_DecrRefCount(dummy);
+	    }
 
-            /*
-             * Register persistent store handlers
-             */
+	    /*
+	     * Register persistent store handlers
+	     */
 #ifdef HAVE_GDBM
-            Sv_RegisterGdbmStore();
+	    Sv_RegisterGdbmStore();
 #endif
 #ifdef HAVE_LMDB
-            Sv_RegisterLmdbStore();
+	    Sv_RegisterLmdbStore();
 #endif
-        }
-        Tcl_MutexUnlock(&bucketsMutex);
+	}
+	Tcl_MutexUnlock(&bucketsMutex);
     }
 
     return NULL;
@@ -2370,7 +2370,7 @@ SvFinalize (
     Tcl_MutexLock(&nofThreadsMutex);
     if (nofThreads > 1)
     {
-        goto done;
+	goto done;
     }
 
     /*
@@ -2378,31 +2378,31 @@ SvFinalize (
      */
 
     if (buckets != NULL) {
-        Tcl_MutexLock(&bucketsMutex);
-        if (buckets != NULL) {
-            for (i = 0; i < NUMBUCKETS; ++i) {
-                Bucket *bucketPtr = &buckets[i];
-                hashPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
-                while (hashPtr != NULL) {
-                    Array *arrayPtr = (Array*)Tcl_GetHashValue(hashPtr);
-                    UnlockArray(arrayPtr);
-                    /* unbind array before delete (avoid flush of persistent storage) */
-                    UnbindArray(NULL, arrayPtr);
-                    /* flush, delete etc. */
-                    DeleteArray(NULL, arrayPtr);
-                    hashPtr = Tcl_NextHashEntry(&search);
-                }
-                if (bucketPtr->lock) {
-                    Sp_RecursiveMutexFinalize(&bucketPtr->lock);
-                }
-                SvFinalizeContainers(bucketPtr);
-                Tcl_DeleteHashTable(&bucketPtr->handles);
-                Tcl_DeleteHashTable(&bucketPtr->arrays);
-            }
-            Tcl_Free(buckets), buckets = NULL;
-        }
-        buckets = NULL;
-        Tcl_MutexUnlock(&bucketsMutex);
+	Tcl_MutexLock(&bucketsMutex);
+	if (buckets != NULL) {
+	    for (i = 0; i < NUMBUCKETS; ++i) {
+		Bucket *bucketPtr = &buckets[i];
+		hashPtr = Tcl_FirstHashEntry(&bucketPtr->arrays, &search);
+		while (hashPtr != NULL) {
+		    Array *arrayPtr = (Array*)Tcl_GetHashValue(hashPtr);
+		    UnlockArray(arrayPtr);
+		    /* unbind array before delete (avoid flush of persistent storage) */
+		    UnbindArray(NULL, arrayPtr);
+		    /* flush, delete etc. */
+		    DeleteArray(NULL, arrayPtr);
+		    hashPtr = Tcl_NextHashEntry(&search);
+		}
+		if (bucketPtr->lock) {
+		    Sp_RecursiveMutexFinalize(&bucketPtr->lock);
+		}
+		SvFinalizeContainers(bucketPtr);
+		Tcl_DeleteHashTable(&bucketPtr->handles);
+		Tcl_DeleteHashTable(&bucketPtr->arrays);
+	    }
+	    Tcl_Free(buckets), buckets = NULL;
+	}
+	buckets = NULL;
+	Tcl_MutexUnlock(&bucketsMutex);
     }
 
     Tcl_MutexLock(&svMutex);
@@ -2412,13 +2412,13 @@ SvFinalize (
      */
 
     if (svCmdInfo != NULL) {
-        cmdPtr = svCmdInfo;
-        while (cmdPtr) {
-            SvCmdInfo *tmpPtr = cmdPtr->nextPtr;
-            Tcl_Free(cmdPtr);
-            cmdPtr = tmpPtr;
-        }
-        svCmdInfo = NULL;
+	cmdPtr = svCmdInfo;
+	while (cmdPtr) {
+	    SvCmdInfo *tmpPtr = cmdPtr->nextPtr;
+	    Tcl_Free(cmdPtr);
+	    cmdPtr = tmpPtr;
+	}
+	svCmdInfo = NULL;
     }
 
     /*
@@ -2426,13 +2426,13 @@ SvFinalize (
      */
 
     if (regType != NULL) {
-        regPtr = regType;
-        while (regPtr) {
-            RegType *tmpPtr = regPtr->nextPtr;
-            Tcl_Free(regPtr);
-            regPtr = tmpPtr;
-        }
-        regType = NULL;
+	regPtr = regType;
+	while (regPtr) {
+	    RegType *tmpPtr = regPtr->nextPtr;
+	    Tcl_Free(regPtr);
+	    regPtr = tmpPtr;
+	}
+	regType = NULL;
     }
 
     Tcl_MutexUnlock(&svMutex);
