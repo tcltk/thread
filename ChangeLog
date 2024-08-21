@@ -327,7 +327,7 @@
 
 2010-04-01 Zoran Vasiljevic <zv@archiware.com>
 
-        * generic/tclXkeylist.c: Removed declaration of global TclX keylist
+	* generic/tclXkeylist.c: Removed declaration of global TclX keylist
 	commands.
 
 2010-03-30 Zoran Vasiljevic <zv@archiware.com>
@@ -346,17 +346,17 @@
 
 2010-03-19   Jan Nijtmans <nijtmans@users.sourceforge.net>
 
-        * generic/threadSpCmd.c: Silence gcc warning: dereferencing
-        * .cvsignore:            type-punned pointer will break
+	* generic/threadSpCmd.c: Silence gcc warning: dereferencing
+	* .cvsignore:            type-punned pointer will break
 				 strict-aliasing rules.
-        * configure:             Regenerated using latest TEA
+	* configure:             Regenerated using latest TEA
 
 2009-08-19 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadPoolCmd.c: Implemented [tpool::suspend]
 	* doc/tpool.man:           and [tpool::resume] commands
-	                           as per [RFE #2835615].
-	                           Also fixed [Bug #2833864].
+				   as per [RFE #2835615].
+				   Also fixed [Bug #2833864].
 
 2009-07-22   Jan Nijtmans <nijtmans@users.sourceforge.net>
 
@@ -612,7 +612,7 @@
 
 	* generic/tclXkeylist.c: made some calls static
 	  so they do not interfere for static linking with
-          certain extensions.
+	  certain extensions.
 
 2005-08-08 Zoran Vasiljevic <zv@archiware.com>
 
@@ -718,7 +718,7 @@
 	* lib/ttrace.tcl: added [ttrace::config] to control
 	some runtime options. The only option it allows now
 	is "-doepochs". This is a boolean flag turning the
-        epoch generation off/on.
+	epoch generation off/on.
 	Also, improved handling of XOTcl introspections in
 	regard to namespaced objects/classes.
 
@@ -731,7 +731,7 @@
 
 2005-01-03 Zoran Vasiljevic <zv@archiware.com>
 
-        **** RELEASE: 2.6.1 Tagged ****
+	**** RELEASE: 2.6.1 Tagged ****
 
 	* aolserver.m4:
 	* configure.in:
@@ -755,7 +755,7 @@
 
 2004-12-23 Zoran Vasiljevic <zv@archiware.com>
 
-        **** RELEASE: 2.6 Tagged ****
+	**** RELEASE: 2.6 Tagged ****
 
 	* tcl/cmdsrv/cmdsrv.tcl: example command server listens on
 	loopback interface (127.0.0.1) only
@@ -797,7 +797,7 @@
 	* tests/thread.tcl: Disabled all tests handling channel transfer
 	for Windows ports until core is capable of handling this correctly.
 
-        * generic/threadSpCmd.c: Fixed segmentation problems observed on
+	* generic/threadSpCmd.c: Fixed segmentation problems observed on
 	Windows ports and related to notification of an uninitialized
 	condition variable(s). This closes Bug #1051068 (wrongly posted
 	under Tcl Patches at SF).
@@ -912,8 +912,8 @@
 2004-01-31 Zoran Vasiljevic <zv@archiware.com>
 
 	* generic/threadCmd.c: fixed incorrect handling of return
-        codes from the scripts passed to threads. We were wrongly
-        triggering error for non-error return codes such as TCL_RETURN,
+	codes from the scripts passed to threads. We were wrongly
+	triggering error for non-error return codes such as TCL_RETURN,
 	TCL_BREAK, TCL_CONTINUE etc. Now we trigger error only for
 	TCL_ERROR and return other codes (as-is) to the caller.
 	This also fixes the Tcl Bug #884549.
@@ -1037,13 +1037,13 @@
 
 2003-04-29 Zoran Vasiljevic <zv@archiware.com>
 
-        Tagged interim 2.5.2 release.
+	Tagged interim 2.5.2 release.
 
 	* configure.in
 	* configure: Added quick fix for autoconf issues
-        related to $srcdir and building of the package
-        from the top-level dir instead of unix/win subdir.
-        Thanks to Mo DeJong for the fix.
+	related to $srcdir and building of the package
+	from the top-level dir instead of unix/win subdir.
+	Thanks to Mo DeJong for the fix.
 
 2003-04-10 Zoran Vasiljevic <zv@archiware.com>
 
@@ -1150,7 +1150,7 @@
 	* generic/threadPoolCmd.c: fixed one missing mutex unlock
 	in the ThreadRelease.
 
-        * tcl/tpool/tpool.tcl: implemented missing API calls found
+	* tcl/tpool/tpool.tcl: implemented missing API calls found
  	in the C-level implementation.
 
 	* tcl/phttpd/phttpd.tcl: simplified switching to Tcl-level
@@ -1173,7 +1173,7 @@
 	prefix for mutex/cond commands.
 
 	* generic/threadCmd.c: rewritten to use SpliceIn/SpliceOut
-        macros instead of hand-fiddling with linked lists.
+	macros instead of hand-fiddling with linked lists.
 
 	* generic/threadPoolCmd.c: new file
 
@@ -1275,12 +1275,12 @@
 
 2002-07-20  Mo DeJong  <mdejong@users.sourceforge.net>
 
-        * generic/threadSvCmd.c (Sv_tclEmptyStringRep, Sv_Init):
-        Avoid linking to the tclEmptyStringRep variable defined
-        in Tcl since this makes it very difficult to load
-        the Thread package into an executable that has
-        also loaded Tcl. The previous approach used a hack
-        under Windows, we now use this same hack on all systems.
+	* generic/threadSvCmd.c (Sv_tclEmptyStringRep, Sv_Init):
+	Avoid linking to the tclEmptyStringRep variable defined
+	in Tcl since this makes it very difficult to load
+	the Thread package into an executable that has
+	also loaded Tcl. The previous approach used a hack
+	under Windows, we now use this same hack on all systems.
 	[Tcl patch 584123]
 
 2002-07-19  Zoran Vasiljevic <zv@archiware.com>
@@ -1319,7 +1319,7 @@
 
 2002-07-05  Zoran Vasiljevic <zv@archiware.com>
 
-        * tclconfig/tcl.m4: fixed reference to MINGW so we can
+	* tclconfig/tcl.m4: fixed reference to MINGW so we can
 	compile w/o MSVC under windows.
 
 2002-07-03  Zoran Vasiljevic <zv@archiware.com>
@@ -1498,29 +1498,29 @@
 
 2002-01-02  Zoran Vasiljevic <zv@archiware.com>
 
-        * generic/threadSvListCmd.* (new): added for the new implementation
-        of the thread-shared-variable (tsv) interface.
-        * generic/threadSvCmd.c: now uses shared Tcl objects instead of strings
-        for storing data in shared arrays. This improves performance on large
-        shared data structures.
-        Added new tsv::* syntax, per request. This replaces older thread::sv_*
-        interface. Older commands are still present but will be removed as
-        soon we hit the 3.0 version.
-        * generic/threadCmd.c: revamped to support asynchronous backfiring
-        of scripts so we can vwait on the results of thread processing.
-        This also corrected the bug #464340. Affected command is thread::send.
-        * doc/thread.n: added docs for all thread::* and tsv::* commands.
-        This fixes #416850 bug report. The html/tmml files are still out of date.
-        * configure: built with autoconf 2.52
-        * config/config.guess (new): needed for the new configure
-        * config/config.sub (new): needed for the new configure
-        * Makefile.in: added lines for new generic/threadSvListCmd.c
-        * configure.in: moving to 2.4 version.
-        * unix/threadUnix.c: removed traces of ThreadKill. It is still not clear
-        wether we should implement this functionality or not.
-        * win/threadWin.c: see above.
-        * pkgIndex.tcl.in: fixed to correctly handle version for different Tcl core
-        versions.
+	* generic/threadSvListCmd.* (new): added for the new implementation
+	of the thread-shared-variable (tsv) interface.
+	* generic/threadSvCmd.c: now uses shared Tcl objects instead of strings
+	for storing data in shared arrays. This improves performance on large
+	shared data structures.
+	Added new tsv::* syntax, per request. This replaces older thread::sv_*
+	interface. Older commands are still present but will be removed as
+	soon we hit the 3.0 version.
+	* generic/threadCmd.c: revamped to support asynchronous backfiring
+	of scripts so we can vwait on the results of thread processing.
+	This also corrected the bug #464340. Affected command is thread::send.
+	* doc/thread.n: added docs for all thread::* and tsv::* commands.
+	This fixes #416850 bug report. The html/tmml files are still out of date.
+	* configure: built with autoconf 2.52
+	* config/config.guess (new): needed for the new configure
+	* config/config.sub (new): needed for the new configure
+	* Makefile.in: added lines for new generic/threadSvListCmd.c
+	* configure.in: moving to 2.4 version.
+	* unix/threadUnix.c: removed traces of ThreadKill. It is still not clear
+	wether we should implement this functionality or not.
+	* win/threadWin.c: see above.
+	* pkgIndex.tcl.in: fixed to correctly handle version for different Tcl core
+	versions.
 
 2001-09-05  David Gravereaux <davygrvy@pobox.com>
 
@@ -1688,8 +1688,8 @@
 2000-10-16  Zoran Vasiljevic <zv@munich.com>
 
 	* generic/threadSvCmd.c ThreadSvUnsetObjCmd(): deadlocked.
-        Forgot to release shared-array lock which resulted in
-        deadlock after first successful unset of the variable.
+	Forgot to release shared-array lock which resulted in
+	deadlock after first successful unset of the variable.
 
 2000-08-29  David Gravereaux <davygrvy@ajubasolutions.com>
 
@@ -1805,19 +1805,19 @@
 	  Added "thread::exists" command.
 
 	  Moved most of internal functions in threadCmd.c to statics,
-          except the Thread*ObjCmd().
+	  except the Thread*ObjCmd().
 
 	  Changed behaviour of "thread::exit". It now simply flips the
-          bit to signal thread stuck in thread::wait to gracefuly exit.
-          Consequence: command now does not trigger error on thread exit.
-          Also, thread event queue is now properly cleared.
-          ThreadWait() and ThreadStop() are newly added to support this.
-          Also the ThreadSpecificData has one more integer: "stopped"
+	  bit to signal thread stuck in thread::wait to gracefuly exit.
+	  Consequence: command now does not trigger error on thread exit.
+	  Also, thread event queue is now properly cleared.
+	  ThreadWait() and ThreadStop() are newly added to support this.
+	  Also the ThreadSpecificData has one more integer: "stopped"
 
 	  Replaced ref's to obsolete Tcl_GlobalEval() with Tcl_EvalEx().
 
 	  Fixed broken 'thread::create -joinable script';
-          was missing initialization of script variable
+	  was missing initialization of script variable
 
 	  Added calls to initialize new commands in threadSpCmd.c
 	  and threadSvCmd.c files.

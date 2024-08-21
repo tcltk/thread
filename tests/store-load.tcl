@@ -7,12 +7,12 @@ if {[llength $argv] != 3} {
     puts "Usage: $argv0 handle path times"
     puts {
     handle
-        A persistent storage handle (see [tsv::array bind] manpage).
+	A persistent storage handle (see [tsv::array bind] manpage).
     path
-        The path to file containing lines in the form of "key<tab>val", where
-        key is a single-word and val is everyting else.
+	The path to file containing lines in the form of "key<tab>val", where
+	key is a single-word and val is everyting else.
     times
-        The number of times to reload the data from persistent storage.
+	The number of times to reload the data from persistent storage.
 
     This script reads lines of data from <path> and stores them into the
     persistent storage described by <handle>. Values for duplicate keys are
@@ -35,18 +35,18 @@ set start [clock milliseconds]
 set pairs 0
 while {[gets $fd line] >  0} {
     if {[string index $line 0] eq {#}} {
-        continue
+	continue
     }
     set tab [string first {	} $line]
     if {$tab < 0} {
-        continue
+	continue
     }
 
     set k [string range $line 0 $tab-1]
     set v [string range $line $tab+1 end]
 
     if {![tsv::exists a $k]} {
-        incr pairs
+	incr pairs
     }
 
     tsv::lappend a $k $v

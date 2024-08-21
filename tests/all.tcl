@@ -9,7 +9,7 @@
 
 package require tcltest
 ::tcltest::loadTestedCommands
-package require -exact thread 3.0b4
+package require -exact thread 3.0b5
 
 set ::tcltest::testSingleFile false
 set ::tcltest::testsDirectory [file dir [info script]]
@@ -47,7 +47,7 @@ foreach file [lsort [::tcltest::getMatchingFiles]] {
     set tail [file tail $file]
     puts stdout $tail
     if {[catch {source $file} msg]} {
-        puts stdout $msg
+	puts stdout $msg
     }
 }
 

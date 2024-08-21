@@ -17,7 +17,7 @@ dnl	to configure the system for the local environment.
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
-AC_INIT([thread],[3.0b4])
+AC_INIT([thread],[3.0b5])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -100,15 +100,15 @@ NS_PATH_AOLSERVER
 #-----------------------------------------------------------------------
 
 TEA_ADD_SOURCES([generic/threadNs.c           \
-                 generic/threadCmd.c          \
-                 generic/threadSvCmd.c        \
-                 generic/threadSpCmd.c        \
-                 generic/threadPoolCmd.c      \
-                 generic/psGdbm.c             \
-                 generic/psLmdb.c             \
-                 generic/threadSvListCmd.c    \
-                 generic/threadSvKeylistCmd.c \
-                 generic/tclXkeylist.c        \
+		 generic/threadCmd.c          \
+		 generic/threadSvCmd.c        \
+		 generic/threadSpCmd.c        \
+		 generic/threadPoolCmd.c      \
+		 generic/psGdbm.c             \
+		 generic/psLmdb.c             \
+		 generic/threadSvListCmd.c    \
+		 generic/threadSvKeylistCmd.c \
+		 generic/tclXkeylist.c        \
 ])
 
 TEA_ADD_HEADERS([generic/tclThread.h])
