@@ -163,7 +163,7 @@ SvLpopObjCmd (
             goto cmd_err;
         }
     }
-    if (index + 1 >= llen + 1) {
+    if ((index < 0) || (index >= llen)) {
         goto cmd_ok; /* Ignore out-of bounds, like Tcl does */
     }
     ret = Tcl_ListObjIndex(interp, svObj->tclObj, index, &elPtr);
@@ -240,7 +240,7 @@ SvLpushObjCmd (
         if (ret != TCL_OK) {
             goto cmd_err;
         }
-        if (index == TCL_INDEX_NONE) {
+        if (index < 0) {
             index = 0;
         } else if (index > llen) {
             index = llen;
@@ -379,17 +379,17 @@ SvLreplaceObjCmd(
     }
 
     firstArg = Tcl_GetStringFromObj(objv[off], &argLen);
-    if (first == TCL_INDEX_NONE)  {
+    if (first < 0)  {
         first = 0;
     }
     if (llen && first >= llen && strncmp(firstArg, "end", argLen)) {
         Tcl_AppendResult(interp, "list doesn't have element ", firstArg, (void *)NULL);
         goto cmd_err;
     }
-    if (last + 1 >= llen + 1) {
+    if (last >= llen) {
         last = llen - 1;
     }
-    if (first + 1 <= last + 1) {
+    if (first <= last) {
         ndel = last - first + 1;
     } else {
         ndel = 0;
@@ -474,13 +474,13 @@ SvLrangeObjCmd(
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    if (first == TCL_INDEX_NONE)  {
+    if (first < 0)  {
         first = 0;
     }
-    if (last + 1 >= llen + 1) {
+    if (last >= llen) {
         last = llen - 1;
     }
-    if (first + 1 > last + 1) {
+    if (first > last) {
         goto cmd_ok;
     }
 
@@ -553,13 +553,13 @@ SvLinsertObjCmd(
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    if (index == TCL_INDEX_NONE) {
+    if (index < 0) {
         index = 0;
     } else if (index > llen) {
         index = llen;
     }
 
-    nargs = objc - (off + 1);
+    nargs = objc - off - 1;
     args  = (Tcl_Obj **)Tcl_Alloc(nargs * sizeof(Tcl_Obj *));
     for (i = off + 1, j = 0; i < objc; i++, j++) {
          args[j] = Sv_DuplicateObj(objv[i]);
@@ -656,7 +656,7 @@ SvLsearchObjCmd(
     Tcl_Obj *const objv[]
 ) {
     int ret, match;
-    Tcl_Size off, index, length, i, listc, len, imode, ipatt;
+    Tcl_Size off, index, length, i, listc, imode, ipatt;
     const char *patBytes;
     Tcl_Obj **listv;
     Container *svObj = (Container*)arg;
@@ -709,9 +709,10 @@ SvLsearchObjCmd(
             break;
 
         case LS_EXACT: {
+            int len;
             const char *bytes = Tcl_GetStringFromObj(listv[i], &len);
             if (length == len) {
-                match = (memcmp(bytes, patBytes, (size_t)length) == 0);
+                match = (memcmp(bytes, patBytes, length) == 0);
             }
             break;
         }
@@ -787,7 +788,7 @@ SvLindexObjCmd(
     if (ret != TCL_OK) {
         goto cmd_err;
     }
-    if (index + 1 < llen + 1) {
+    if ((index >= 0) && (index < llen)) {
         Tcl_SetObjResult(interp, Sv_DuplicateObj(elPtrs[index]));
     }
 
@@ -963,7 +964,7 @@ SvLsetFlat(
     if (indexCount > (Tcl_Size) (sizeof(pendingInvalidates) /
                             sizeof(pendingInvalidates[0]))) {
 	pendingInvalidatesPtr =
-	    (Tcl_Obj **) Tcl_Alloc(indexCount * sizeof(*pendingInvalidatesPtr));
+	    (Tcl_Obj **)Tcl_Alloc(indexCount * sizeof(*pendingInvalidatesPtr));
     }
 
     /*
@@ -994,7 +995,7 @@ SvLsetFlat(
          * Check that the index is in range.
          */
 
-        if (index < 0 || index >= elemCount) {
+        if ((index < 0) || (index >= elemCount)) {
             Tcl_SetObjResult(interp,
                              Tcl_NewStringObj("list index out of range", TCL_INDEX_NONE));
             result = TCL_ERROR;
