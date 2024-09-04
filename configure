@@ -639,26 +639,24 @@ ac_includes_default="\
 
 ac_header_c_list=
 ac_subst_vars='LTLIBOBJS
-LIBOBJS
-THREAD_ZIP_FILE
-ZIPFS_BUILD
 INSTALL_MSGS
 INSTALL_LIBRARIES
+THREAD_ZIP_FILE
+ZIPFS_BUILD
+ZIP_INSTALL_OBJS
 ZIP_PROG_VFSSEARCH
 ZIP_PROG_OPTIONS
 ZIP_PROG
-TCL_ZIPFS_FLAG
-TCL_ZIPFS_SUPPORT
-TCL_ZIP_FILE
+MACHER_PROG
 TCLSH_PROG
 VC_MANIFEST_EMBED_EXE
 VC_MANIFEST_EMBED_DLL
 RANLIB_STUB
+PKG_STUB_LIB_FILE
 MAKE_STUB_LIB
 MAKE_STATIC_LIB
 MAKE_SHARED_LIB
 MAKE_LIB
-TCL_DBGX
 LDFLAGS_DEFAULT
 CFLAGS_DEFAULT
 LD_LIBRARY_PATH_VAR
@@ -666,9 +664,12 @@ SHLIB_CFLAGS
 SHLIB_LD_LIBS
 SHLIB_LD
 STLIB_LD
+LDFLAGS_OPTIMIZE
+LDFLAGS_DEBUG
 CFLAGS_WARNING
 CFLAGS_OPTIMIZE
 CFLAGS_DEBUG
+LIBOBJS
 RC
 AR
 STUBS_BUILD
@@ -715,7 +716,8 @@ PKG_HEADERS
 PKG_TCL_SOURCES
 PKG_STUB_OBJECTS
 PKG_STUB_SOURCES
-PKG_STUB_LIB_FILE
+PKG_LIB_FILE9
+PKG_LIB_FILE8
 PKG_LIB_FILE
 EXEEXT
 CYGPATH
@@ -762,6 +764,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_tcl
+with_tcl8
 with_gdbm
 with_lmdb
 with_naviserver
@@ -1417,6 +1420,7 @@ Optional Packages:
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-tcl              directory containing tcl configuration
                           (tclConfig.sh)
+  --with-tcl8             Compile for Tcl8 in Tcl9 environment
   --with-gdbm             link with optional GDBM support
   --with-lmdb             link with optional LMDB support
   --with-naviserver       directory with NaviServer/AOLserver distribution
@@ -2591,7 +2595,7 @@ printf "%s\n" "$as_me: configuring ${PACKAGE_NAME} ${PACKAGE_VERSION}" >&6;}
 
     # This package name must be replaced statically for AC_SUBST to work
 
-    # Substitute STUB_LIB_FILE in case package creates a stub library too.
+
 
 
     # We AC_SUBST these here to ensure they are subst'ed,
@@ -2632,6 +2636,9 @@ printf "%s\n" "$as_me: WARNING: can't find uname command" >&2;}
 	    else
 		if test "`uname -s`" = "AIX" ; then
 		    tcl_cv_sys_version=AIX-`uname -v`.`uname -r`
+		fi
+		if test "`uname -s`" = "NetBSD" -a -f /etc/debian_version ; then
+		    tcl_cv_sys_version=NetBSD-Debian
 		fi
 	    fi
 	fi
@@ -2678,6 +2685,13 @@ printf "%s\n" "$tcl_cv_sys_version" >&6; }
 if test ${with_tcl+y}
 then :
   withval=$with_tcl; with_tclconfig="${withval}"
+fi
+
+
+# Check whether --with-tcl8 was given.
+if test ${with_tcl8+y}
+then :
+  withval=$with_tcl8; with_tcl8="${withval}"
 fi
 
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Tcl configuration" >&5
@@ -2737,7 +2751,6 @@ printf "%s\n" "$as_me: WARNING: --with-tcl argument should refer to directory co
 		for i in `ls -d ~/Library/Frameworks 2>/dev/null` \
 			`ls -d /Library/Frameworks 2>/dev/null` \
 			`ls -d /Network/Library/Frameworks 2>/dev/null` \
-			`ls -d /System/Library/Frameworks 2>/dev/null` \
 			`ls -d /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/Library/Frameworks/Tcl.framework 2>/dev/null` \
 			`ls -d /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/Network/Library/Frameworks/Tcl.framework 2>/dev/null` \
 			`ls -d /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Tcl.framework 2>/dev/null` \
@@ -2772,10 +2785,16 @@ printf "%s\n" "$as_me: WARNING: --with-tcl argument should refer to directory co
 			`ls -d /usr/pkg/lib 2>/dev/null` \
 			`ls -d /usr/lib 2>/dev/null` \
 			`ls -d /usr/lib64 2>/dev/null` \
+			`ls -d /usr/lib/tcl9.0 2>/dev/null` \
+			`ls -d /usr/lib/tcl8.7 2>/dev/null` \
 			`ls -d /usr/lib/tcl8.6 2>/dev/null` \
 			`ls -d /usr/lib/tcl8.5 2>/dev/null` \
+			`ls -d /usr/local/lib/tcl9.0 2>/dev/null` \
+			`ls -d /usr/local/lib/tcl8.7 2>/dev/null` \
 			`ls -d /usr/local/lib/tcl8.6 2>/dev/null` \
 			`ls -d /usr/local/lib/tcl8.5 2>/dev/null` \
+			`ls -d /usr/local/lib/tcl/tcl9.0 2>/dev/null` \
+			`ls -d /usr/local/lib/tcl/tcl8.7 2>/dev/null` \
 			`ls -d /usr/local/lib/tcl/tcl8.6 2>/dev/null` \
 			`ls -d /usr/local/lib/tcl/tcl8.5 2>/dev/null` \
 			; do
@@ -3856,17 +3875,13 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 printf %s "checking for existence of ${TCL_BIN_DIR}/tclConfig.sh... " >&6; }
 
     if test -f "${TCL_BIN_DIR}/tclConfig.sh" ; then
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: loading" >&5
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: loading" >&5
 printf "%s\n" "loading" >&6; }
 	. "${TCL_BIN_DIR}/tclConfig.sh"
     else
-        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: could not find ${TCL_BIN_DIR}/tclConfig.sh" >&5
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: could not find ${TCL_BIN_DIR}/tclConfig.sh" >&5
 printf "%s\n" "could not find ${TCL_BIN_DIR}/tclConfig.sh" >&6; }
     fi
-
-    # eval is required to do the TCL_DBGX substitution
-    eval "TCL_LIB_FILE=\"${TCL_LIB_FILE}\""
-    eval "TCL_STUB_LIB_FILE=\"${TCL_STUB_LIB_FILE}\""
 
     # If the TCL_BIN_DIR is the build directory (not the install directory),
     # then set the common variable name to the value of the build variables.
@@ -3875,9 +3890,9 @@ printf "%s\n" "could not find ${TCL_BIN_DIR}/tclConfig.sh" >&6; }
     # instead of TCL_BUILD_LIB_SPEC since it will work with both an
     # installed and uninstalled version of Tcl.
     if test -f "${TCL_BIN_DIR}/Makefile" ; then
-        TCL_LIB_SPEC="${TCL_BUILD_LIB_SPEC}"
-        TCL_STUB_LIB_SPEC="${TCL_BUILD_STUB_LIB_SPEC}"
-        TCL_STUB_LIB_PATH="${TCL_BUILD_STUB_LIB_PATH}"
+	TCL_LIB_SPEC="${TCL_BUILD_LIB_SPEC}"
+	TCL_STUB_LIB_SPEC="${TCL_BUILD_STUB_LIB_SPEC}"
+	TCL_STUB_LIB_PATH="${TCL_BUILD_STUB_LIB_PATH}"
     elif test "`uname -s`" = "Darwin"; then
 	# If Tcl was built as a framework, attempt to use the libraries
 	# from the framework at the given location so that linking works
@@ -3900,12 +3915,6 @@ printf "%s\n" "could not find ${TCL_BIN_DIR}/tclConfig.sh" >&6; }
 		;;
 	esac
     fi
-
-    # eval is required to do the TCL_DBGX substitution
-    eval "TCL_LIB_FLAG=\"${TCL_LIB_FLAG}\""
-    eval "TCL_LIB_SPEC=\"${TCL_LIB_SPEC}\""
-    eval "TCL_STUB_LIB_FLAG=\"${TCL_STUB_LIB_FLAG}\""
-    eval "TCL_STUB_LIB_SPEC=\"${TCL_STUB_LIB_SPEC}\""
 
 
 
@@ -5197,6 +5206,12 @@ printf "%s\n" "$tcl_cv_cc_pipe" >&6; }
 	fi
     fi
 
+    if test "${TCL_MAJOR_VERSION}" -lt 9 -a "${TCL_MINOR_VERSION}" -lt 7; then
+
+printf "%s\n" "#define Tcl_Size int" >>confdefs.h
+
+	fi
+
     #--------------------------------------------------------------------
     # Common compiler flag setup
     #--------------------------------------------------------------------
@@ -5432,9 +5447,7 @@ printf "%s\n" "$ac_cv_c_bigendian" >&6; }
    no)
       ;; #(
    universal)
-
-printf "%s\n" "#define AC_APPLE_UNIVERSAL_BUILD 1" >>confdefs.h
-
+     #
      ;; #(
    *)
      as_fn_error $? "unknown endianness
@@ -5721,7 +5734,7 @@ printf "%s\n" "found NaviServer/AOLserver in $NS_DIR" >&6; }
     for i in $vars; do
 	if test "${TEA_PLATFORM}" = "windows" -a "$GCC" = "yes" ; then
 	    # Convert foo.lib to -lfoo for GCC.  No-op if not *.lib
-	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.lib$/-l\1/i'`
+	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.[lL][iI][bB]$/-l\1/'`
 	fi
 	PKG_LIBS="$PKG_LIBS $i"
     done
@@ -6338,7 +6351,7 @@ fi
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: shared" >&5
 printf "%s\n" "shared" >&6; }
 	SHARED_BUILD=1
-        STUBS_BUILD=1
+	STUBS_BUILD=1
     else
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: static" >&5
 printf "%s\n" "static" >&6; }
@@ -6346,11 +6359,11 @@ printf "%s\n" "static" >&6; }
 
 printf "%s\n" "#define STATIC_BUILD 1" >>confdefs.h
 
-        if test "$stubs_ok" = "yes" ; then
-          STUBS_BUILD=1
-        else
-          STUBS_BUILD=0
-        fi
+	if test "$stubs_ok" = "yes" ; then
+	  STUBS_BUILD=1
+	else
+	  STUBS_BUILD=0
+	fi
     fi
     if test "${STUBS_BUILD}" = "1" ; then
 
@@ -6610,6 +6623,9 @@ printf "%s\n" "$as_me: WARNING: can't find uname command" >&2;}
 		if test "`uname -s`" = "AIX" ; then
 		    tcl_cv_sys_version=AIX-`uname -v`.`uname -r`
 		fi
+		if test "`uname -s`" = "NetBSD" -a -f /etc/debian_version ; then
+		    tcl_cv_sys_version=NetBSD-Debian
+		fi
 	    fi
 	fi
      ;;
@@ -6770,73 +6786,51 @@ fi
     case $system in
 	# TEA specific:
 	windows)
-	    # This is a 2-stage check to make sure we have the 64-bit SDK
-	    # We have to know where the SDK is installed.
-	    # This magic is based on MS Platform SDK for Win2003 SP1 - hobbs
-	    # MACHINE is IX86 for LINK, but this is used by the manifest,
-	    # which requires x86|amd64|ia64.
 	    MACHINE="X86"
 	    if test "$do64bit" != "no" ; then
-		if test "x${MSSDK}x" = "xx" ; then
-		    MSSDK="C:/Progra~1/Microsoft Platform SDK"
-		fi
-		MSSDK=`echo "$MSSDK" | sed -e  's!\\\!/!g'`
-		PATH64=""
 		case "$do64bit" in
 		    amd64|x64|yes)
 			MACHINE="AMD64" ; # default to AMD64 64-bit build
-			PATH64="${MSSDK}/Bin/Win64/x86/AMD64"
+			;;
+		    arm64|aarch64)
+			MACHINE="ARM64"
 			;;
 		    ia64)
 			MACHINE="IA64"
-			PATH64="${MSSDK}/Bin/Win64"
 			;;
 		esac
-		if test "$GCC" != "yes" -a ! -d "${PATH64}" ; then
-		    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Could not find 64-bit $MACHINE SDK to enable 64bit mode" >&5
-printf "%s\n" "$as_me: WARNING: Could not find 64-bit $MACHINE SDK to enable 64bit mode" >&2;}
-		    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: Ensure latest Platform SDK is installed" >&5
-printf "%s\n" "$as_me: WARNING: Ensure latest Platform SDK is installed" >&2;}
-		    do64bit="no"
-		else
-		    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result:    Using 64-bit $MACHINE mode" >&5
-printf "%s\n" "   Using 64-bit $MACHINE mode" >&6; }
-		    do64bit_ok="yes"
-		fi
 	    fi
 
 	    if test "$GCC" != "yes" ; then
-	        if test "${SHARED_BUILD}" = "0" ; then
+		if test "${SHARED_BUILD}" = "0" ; then
 		    runtime=-MT
-	        else
+		else
 		    runtime=-MD
-	        fi
-	        case "x`echo \${VisualStudioVersion}`" in
-	            x1[4-9]*)
-		        lflags="${lflags} -nodefaultlib:libucrt.lib"
+		fi
+		case "x`echo \${VisualStudioVersion}`" in
+		    x1[4-9]*)
+			lflags="${lflags} -nodefaultlib:libucrt.lib"
 
     vars="ucrt.lib"
     for i in $vars; do
 	if test "${TEA_PLATFORM}" = "windows" -a "$GCC" = "yes" ; then
 	    # Convert foo.lib to -lfoo for GCC.  No-op if not *.lib
-	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.lib$/-l\1/i'`
+	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.[lL][iI][bB]$/-l\1/'`
 	fi
 	PKG_LIBS="$PKG_LIBS $i"
     done
 
 
-	            ;;
-	            *)
-	            ;;
-	        esac
+		    ;;
+		    *)
+		    ;;
+		esac
 
-                if test "$do64bit" != "no" ; then
-		    # All this magic is necessary for the Win64 SDK RC1 - hobbs
-		    CC="\"${PATH64}/cl.exe\""
-		    CFLAGS="${CFLAGS} -I\"${MSSDK}/Include\" -I\"${MSSDK}/Include/crt\" -I\"${MSSDK}/Include/crt/sys\""
-		    RC="\"${MSSDK}/bin/rc.exe\""
-		    lflags="${lflags} -nologo -MACHINE:${MACHINE} -LIBPATH:\"${MSSDK}/Lib/${MACHINE}\""
-		    LINKBIN="\"${PATH64}/link.exe\""
+		if test "$do64bit" != "no" ; then
+		    CC="cl.exe"
+		    RC="rc.exe"
+		    lflags="${lflags} -nologo -MACHINE:${MACHINE} "
+		    LINKBIN="link.exe"
 		    CFLAGS_DEBUG="-nologo -Zi -Od -W3 ${runtime}d"
 		    CFLAGS_OPTIMIZE="-nologo -O2 -W2 ${runtime}"
 		    # Avoid 'unresolved external symbol __security_cookie'
@@ -6846,7 +6840,7 @@ printf "%s\n" "   Using 64-bit $MACHINE mode" >&6; }
     for i in $vars; do
 	if test "${TEA_PLATFORM}" = "windows" -a "$GCC" = "yes" ; then
 	    # Convert foo.lib to -lfoo for GCC.  No-op if not *.lib
-	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.lib$/-l\1/i'`
+	    i=`echo "$i" | sed -e 's/^\([^-].*\)\.[lL][iI][bB]$/-l\1/'`
 	fi
 	PKG_LIBS="$PKG_LIBS $i"
     done
@@ -7011,14 +7005,21 @@ printf "%s\n" "$ac_cv_cross" >&6; }
 		      if test "$ac_cv_cross" = "yes"; then
 			case "$do64bit" in
 			    amd64|x64|yes)
-				CC="x86_64-w64-mingw32-gcc"
+				CC="x86_64-w64-mingw32-${CC}"
 				LD="x86_64-w64-mingw32-ld"
 				AR="x86_64-w64-mingw32-ar"
 				RANLIB="x86_64-w64-mingw32-ranlib"
 				RC="x86_64-w64-mingw32-windres"
 			    ;;
+			    arm64|aarch64)
+				CC="aarch64-w64-mingw32-clang"
+				LD="aarch64-w64-mingw32-ld"
+				AR="aarch64-w64-mingw32-ar"
+				RANLIB="aarch64-w64-mingw32-ranlib"
+				RC="aarch64-w64-mingw32-windres"
+			    ;;
 			    *)
-				CC="i686-w64-mingw32-gcc"
+				CC="i686-w64-mingw32-${CC}"
 				LD="i686-w64-mingw32-ld"
 				AR="i686-w64-mingw32-ar"
 				RANLIB="i686-w64-mingw32-ranlib"
@@ -7050,7 +7051,7 @@ printf "%s\n" "$ac_cv_cross" >&6; }
 	    TCL_LIB_VERSIONS_OK=nodots
     	    ;;
 	AIX-*)
-	    if test "${TCL_THREADS}" = "1" -a "$GCC" != "yes"
+	    if test "$GCC" != "yes"
 then :
 
 		# AIX requires the _r compiler when gcc isn't being used
@@ -7105,15 +7106,15 @@ then :
 		if test "$GCC" = yes
 then :
 
-		    CC_SEARCH_FLAGS='-Wl,-R,${LIB_RUNTIME_DIR}'
+		    CC_SEARCH_FLAGS='"-Wl,-R,${LIB_RUNTIME_DIR}"'
 
 else case e in #(
   e)
-		    CC_SEARCH_FLAGS='-R${LIB_RUNTIME_DIR}'
+		    CC_SEARCH_FLAGS='"-R${LIB_RUNTIME_DIR}"'
 		 ;;
 esac
 fi
-		LD_SEARCH_FLAGS='-R ${LIB_RUNTIME_DIR}'
+		LD_SEARCH_FLAGS='-R "${LIB_RUNTIME_DIR}"'
 
 else case e in #(
   e)
@@ -7130,7 +7131,7 @@ else case e in #(
 esac
 fi
 		SHLIB_LD="${SHLIB_LD} ${SHLIB_LD_FLAGS}"
-		CC_SEARCH_FLAGS='-L${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-L${LIB_RUNTIME_DIR}"'
 		LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
 	     ;;
 esac
@@ -7195,6 +7196,13 @@ then :
 fi
 
 	    ;;
+	BSD/OS-2.1*|BSD/OS-3*)
+	    SHLIB_CFLAGS=""
+	    SHLIB_LD="shlicc -r"
+	    SHLIB_SUFFIX=".so"
+	    CC_SEARCH_FLAGS=""
+	    LD_SEARCH_FLAGS=""
+	    ;;
 	BSD/OS-4.*)
 	    SHLIB_CFLAGS="-export-dynamic -fPIC"
 	    SHLIB_LD='${CC} -shared'
@@ -7206,10 +7214,18 @@ fi
 	CYGWIN_*)
 	    SHLIB_CFLAGS=""
 	    SHLIB_LD='${CC} -shared'
-	    SHLIB_LD_LIBS="${SHLIB_LD_LIBS} -Wl,--out-implib,\$@.a"
 	    SHLIB_SUFFIX=".dll"
+	    SHLIB_LD_LIBS="${SHLIB_LD_LIBS} -Wl,--out-implib,\$@.a"
 	    EXEEXT=".exe"
 	    do64bit_ok=yes
+	    CC_SEARCH_FLAGS=""
+	    LD_SEARCH_FLAGS=""
+	    ;;
+	dgux*)
+	    SHLIB_CFLAGS="-K PIC"
+	    SHLIB_LD='${CC} -G'
+	    SHLIB_LD_LIBS=""
+	    SHLIB_SUFFIX=".so"
 	    CC_SEARCH_FLAGS=""
 	    LD_SEARCH_FLAGS=""
 	    ;;
@@ -7280,10 +7296,6 @@ printf "%s\n" "#define _XOPEN_SOURCE_EXTENDED 1" >>confdefs.h
 then :
 
 		SHLIB_SUFFIX=".so"
-		# Use newer C++ library for C++ extensions
-		#if test "$GCC" != "yes" ; then
-		#   CPPFLAGS="-AA"
-		#fi
 
 else case e in #(
   e)
@@ -7345,9 +7357,11 @@ fi
 	    if test "$tcl_ok" = yes
 then :
 
+		SHLIB_CFLAGS="+z"
+		SHLIB_LD="ld -b"
 		LDFLAGS="$LDFLAGS -Wl,-E"
-		CC_SEARCH_FLAGS='-Wl,+s,+b,${LIB_RUNTIME_DIR}:.'
-		LD_SEARCH_FLAGS='+s +b ${LIB_RUNTIME_DIR}:.'
+		CC_SEARCH_FLAGS='"-Wl,+s,+b,${LIB_RUNTIME_DIR}:."'
+		LD_SEARCH_FLAGS='+s +b "${LIB_RUNTIME_DIR}:."'
 		LD_LIBRARY_PATH_VAR="SHLIB_PATH"
 
 fi
@@ -7360,10 +7374,6 @@ then :
 else case e in #(
   e)
 		CFLAGS="$CFLAGS -z"
-		# Users may want PA-RISC 1.1/2.0 portable code - needs HP cc
-		#CFLAGS="$CFLAGS +DAportable"
-		SHLIB_CFLAGS="+z"
-		SHLIB_LD="ld -b"
 	     ;;
 esac
 fi
@@ -7383,7 +7393,7 @@ then :
 			    if test $doRpath = yes
 then :
 
-				CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+				CC_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
 fi
 			    LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
 			    ;;
@@ -7403,6 +7413,88 @@ esac
 fi
 
 fi ;;
+	HP-UX-*.08.*|HP-UX-*.09.*|HP-UX-*.10.*)
+	    SHLIB_SUFFIX=".sl"
+	    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for shl_load in -ldld" >&5
+printf %s "checking for shl_load in -ldld... " >&6; }
+if test ${ac_cv_lib_dld_shl_load+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldld  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char shl_load (void);
+int
+main (void)
+{
+return shl_load ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_dld_shl_load=yes
+else case e in #(
+  e) ac_cv_lib_dld_shl_load=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dld_shl_load" >&5
+printf "%s\n" "$ac_cv_lib_dld_shl_load" >&6; }
+if test "x$ac_cv_lib_dld_shl_load" = xyes
+then :
+  tcl_ok=yes
+else case e in #(
+  e) tcl_ok=no ;;
+esac
+fi
+
+	    if test "$tcl_ok" = yes
+then :
+
+		SHLIB_CFLAGS="+z"
+		SHLIB_LD="ld -b"
+		SHLIB_LD_LIBS=""
+		LDFLAGS="$LDFLAGS -Wl,-E"
+		CC_SEARCH_FLAGS='"-Wl,+s,+b,${LIB_RUNTIME_DIR}:."'
+		LD_SEARCH_FLAGS='+s +b "${LIB_RUNTIME_DIR}:."'
+		LD_LIBRARY_PATH_VAR="SHLIB_PATH"
+
+fi ;;
+	IRIX-5.*)
+	    SHLIB_CFLAGS=""
+	    SHLIB_LD="ld -shared -rdata_shared"
+	    SHLIB_SUFFIX=".so"
+	    case " $LIBOBJS " in
+  *" mkstemp.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS mkstemp.$ac_objext"
+ ;;
+esac
+
+	    if test $doRpath = yes
+then :
+
+		CC_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
+		LD_SEARCH_FLAGS='-rpath "${LIB_RUNTIME_DIR}"'
+fi
+	    ;;
 	IRIX-6.*)
 	    SHLIB_CFLAGS=""
 	    SHLIB_LD="ld -n32 -shared -rdata_shared"
@@ -7410,8 +7502,8 @@ fi ;;
 	    if test $doRpath = yes
 then :
 
-		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
-		LD_SEARCH_FLAGS='-rpath ${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
+		LD_SEARCH_FLAGS='-rpath "${LIB_RUNTIME_DIR}"'
 fi
 	    if test "$GCC" = yes
 then :
@@ -7442,8 +7534,8 @@ fi
 	    if test $doRpath = yes
 then :
 
-		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
-		LD_SEARCH_FLAGS='-rpath ${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
+		LD_SEARCH_FLAGS='-rpath "${LIB_RUNTIME_DIR}"'
 fi
 
 	    # Check to enable 64-bit flags for compiler/linker
@@ -7451,25 +7543,25 @@ fi
 	    if test "$do64bit" = yes
 then :
 
-	        if test "$GCC" = yes
+		if test "$GCC" = yes
 then :
 
-	            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: 64bit mode not supported by gcc" >&5
+		    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: 64bit mode not supported by gcc" >&5
 printf "%s\n" "$as_me: WARNING: 64bit mode not supported by gcc" >&2;}
 
 else case e in #(
   e)
-	            do64bit_ok=yes
-	            SHLIB_LD="ld -64 -shared -rdata_shared"
-	            CFLAGS="$CFLAGS -64"
-	            LDFLAGS_ARCH="-64"
-	         ;;
+		    do64bit_ok=yes
+		    SHLIB_LD="ld -64 -shared -rdata_shared"
+		    CFLAGS="$CFLAGS -64"
+		    LDFLAGS_ARCH="-64"
+		 ;;
 esac
 fi
 
 fi
 	    ;;
-	Linux*|GNU*|NetBSD-Debian)
+	Linux*|GNU*|NetBSD-Debian|DragonFly-*|FreeBSD-*)
 	    SHLIB_CFLAGS="-fPIC"
 	    SHLIB_SUFFIX=".so"
 
@@ -7479,10 +7571,24 @@ fi
 	    # TEA specific: use LDFLAGS_DEFAULT instead of LDFLAGS
 	    SHLIB_LD='${CC} ${CFLAGS} ${LDFLAGS_DEFAULT} -shared'
 	    LDFLAGS="$LDFLAGS -Wl,--export-dynamic"
+
+	    case $system in
+	    DragonFly-*|FreeBSD-*)
+		if test "${TCL_THREADS}" = "1"
+then :
+
+		    # The -pthread needs to go in the LDFLAGS, not LIBS
+		    LIBS=`echo $LIBS | sed s/-pthread//`
+		    CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+		    LDFLAGS="$LDFLAGS $PTHREAD_LIBS"
+fi
+	    ;;
+	    esac
+
 	    if test $doRpath = yes
 then :
 
-		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
 fi
 	    LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
 	    if test "`uname -m`" = "alpha"
@@ -7556,8 +7662,8 @@ fi
 	    if test $doRpath = yes
 then :
 
-		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
-		LD_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
+		LD_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
 fi
 	    ;;
 	OpenBSD-*)
@@ -7575,21 +7681,16 @@ fi
 	    if test $doRpath = yes
 then :
 
-		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
 fi
 	    LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
 	    SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.so${SHLIB_VERSION}'
-	    LDFLAGS="-Wl,-export-dynamic"
+	    LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
 	    CFLAGS_OPTIMIZE="-O2"
-	    if test "${TCL_THREADS}" = "1"
-then :
-
-		# On OpenBSD:	Compile with -pthread
-		#		Don't link with -lpthread
-		LIBS=`echo $LIBS | sed s/-lpthread//`
-		CFLAGS="$CFLAGS -pthread"
-
-fi
+	    # On OpenBSD:	Compile with -pthread
+	    #		Don't link with -lpthread
+	    LIBS=`echo $LIBS | sed s/-lpthread//`
+	    CFLAGS="$CFLAGS -pthread"
 	    # OpenBSD doesn't do version numbers with dots.
 	    UNSHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.a'
 	    TCL_LIB_VERSIONS_OK=nodots
@@ -7603,49 +7704,13 @@ fi
 	    if test $doRpath = yes
 then :
 
-		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
 fi
 	    LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
-	    if test "${TCL_THREADS}" = "1"
-then :
-
-		# The -pthread needs to go in the CFLAGS, not LIBS
-		LIBS=`echo $LIBS | sed s/-pthread//`
-		CFLAGS="$CFLAGS -pthread"
-	    	LDFLAGS="$LDFLAGS -pthread"
-
-fi
-	    ;;
-	DragonFly-*|FreeBSD-*)
-	    # This configuration from FreeBSD Ports.
-	    SHLIB_CFLAGS="-fPIC"
-	    SHLIB_LD="${CC} -shared"
-	    SHLIB_LD_LIBS="${SHLIB_LD_LIBS} -Wl,-soname,\$@"
-	    SHLIB_SUFFIX=".so"
-	    LDFLAGS=""
-	    if test $doRpath = yes
-then :
-
-		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
-		LD_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
-fi
-	    if test "${TCL_THREADS}" = "1"
-then :
-
-		# The -pthread needs to go in the LDFLAGS, not LIBS
-		LIBS=`echo $LIBS | sed s/-pthread//`
-		CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
-		LDFLAGS="$LDFLAGS $PTHREAD_LIBS"
-fi
-	    case $system in
-	    FreeBSD-3.*)
-		# Version numbers are dot-stripped by system policy.
-		TCL_TRIM_DOTS=`echo ${PACKAGE_VERSION} | tr -d .`
-		UNSHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}.a'
-		SHARED_LIB_SUFFIX='${TCL_TRIM_DOTS}\$\{DBGX\}.so.1'
-		TCL_LIB_VERSIONS_OK=nodots
-		;;
-	    esac
+	    # The -pthread needs to go in the CFLAGS, not LIBS
+	    LIBS=`echo $LIBS | sed s/-pthread//`
+	    CFLAGS="$CFLAGS -pthread"
+	    LDFLAGS="$LDFLAGS -pthread"
 	    ;;
 	Darwin-*)
 	    CFLAGS_OPTIMIZE="-Os"
@@ -7982,11 +8047,11 @@ printf "%s\n" "#define _OE_SOCKETS 1" >>confdefs.h
 	    if test "$SHARED_BUILD" = 1
 then :
 
-	        SHLIB_LD='ld -shared -expect_unresolved "*"'
+		SHLIB_LD='ld -shared -expect_unresolved "*"'
 
 else case e in #(
   e)
-	        SHLIB_LD='ld -non_shared -expect_unresolved "*"'
+		SHLIB_LD='ld -non_shared -expect_unresolved "*"'
 	     ;;
 esac
 fi
@@ -7994,7 +8059,7 @@ fi
 	    if test $doRpath = yes
 then :
 
-		CC_SEARCH_FLAGS='-Wl,-rpath,${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-rpath,${LIB_RUNTIME_DIR}"'
 		LD_SEARCH_FLAGS='-rpath ${LIB_RUNTIME_DIR}'
 fi
 	    if test "$GCC" = yes
@@ -8006,25 +8071,20 @@ else case e in #(
 esac
 fi
 	    # see pthread_intro(3) for pthread support on osf1, k.furukawa
-	    if test "${TCL_THREADS}" = 1
+	    CFLAGS="$CFLAGS -DHAVE_PTHREAD_ATTR_SETSTACKSIZE"
+	    CFLAGS="$CFLAGS -DTCL_THREAD_STACK_MIN=PTHREAD_STACK_MIN*64"
+	    LIBS=`echo $LIBS | sed s/-lpthreads//`
+	    if test "$GCC" = yes
 then :
 
-		CFLAGS="$CFLAGS -DHAVE_PTHREAD_ATTR_SETSTACKSIZE"
-		CFLAGS="$CFLAGS -DTCL_THREAD_STACK_MIN=PTHREAD_STACK_MIN*64"
-		LIBS=`echo $LIBS | sed s/-lpthreads//`
-		if test "$GCC" = yes
-then :
-
-		    LIBS="$LIBS -lpthread -lmach -lexc"
+		LIBS="$LIBS -lpthread -lmach -lexc"
 
 else case e in #(
   e)
-		    CFLAGS="$CFLAGS -pthread"
-		    LDFLAGS="$LDFLAGS -pthread"
-		 ;;
+		CFLAGS="$CFLAGS -pthread"
+		LDFLAGS="$LDFLAGS -pthread"
+	     ;;
 esac
-fi
-
 fi
 	    ;;
 	QNX-6*)
@@ -8076,13 +8136,13 @@ printf "%s\n" "#define _POSIX_PTHREAD_SEMANTICS 1" >>confdefs.h
 then :
 
 		SHLIB_LD='${CC} -shared'
-		CC_SEARCH_FLAGS='-Wl,-R,${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-R,${LIB_RUNTIME_DIR}"'
 		LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
 
 else case e in #(
   e)
 		SHLIB_LD="/usr/ccs/bin/ld -G -z text"
-		CC_SEARCH_FLAGS='-R ${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='-R "${LIB_RUNTIME_DIR}"'
 		LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
 	     ;;
 esac
@@ -8197,7 +8257,7 @@ fi
 then :
 
 		SHLIB_LD='${CC} -shared'
-		CC_SEARCH_FLAGS='-Wl,-R,${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-R,${LIB_RUNTIME_DIR}"'
 		LD_SEARCH_FLAGS=${CC_SEARCH_FLAGS}
 		if test "$do64bit_ok" = yes
 then :
@@ -8238,8 +8298,8 @@ else case e in #(
 		    *)
 			SHLIB_LD='/usr/ccs/bin/ld -G -z text';;
 		esac
-		CC_SEARCH_FLAGS='-Wl,-R,${LIB_RUNTIME_DIR}'
-		LD_SEARCH_FLAGS='-R ${LIB_RUNTIME_DIR}'
+		CC_SEARCH_FLAGS='"-Wl,-R,${LIB_RUNTIME_DIR}"'
+		LD_SEARCH_FLAGS='-R "${LIB_RUNTIME_DIR}"'
 	     ;;
 esac
 fi
@@ -8280,7 +8340,7 @@ esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-	        LDFLAGS=$hold_ldflags ;;
+		LDFLAGS=$hold_ldflags ;;
 esac
 fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $tcl_cv_ld_Bexport" >&5
@@ -8546,6 +8606,17 @@ printf "%s\n" "#define HAVE_CAST_TO_UNION 1" >>confdefs.h
 
 	fi
 
+	ac_fn_c_check_header_compile "$LINENO" "stdbool.h" "ac_cv_header_stdbool_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdbool_h" = xyes
+then :
+
+printf "%s\n" "#define HAVE_STDBOOL_H 1" >>confdefs.h
+
+fi
+
+
+
+
 
 
 
@@ -8617,8 +8688,9 @@ printf "%s\n" "#define _ISOC99_SOURCE 1" >>confdefs.h
 	tcl_flags="$tcl_flags _ISOC99_SOURCE"
     fi
 
+    if test "${TCL_MAJOR_VERSION}" -ne 8 ; then
 
-    if test ${tcl_cv_flag__largefile64_source+y}
+    if test ${tcl_cv_flag__file_offset_bits+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
@@ -8628,32 +8700,32 @@ else case e in #(
 int
 main (void)
 {
-struct stat64 buf; int i = stat64("/", &buf);
+switch (0) { case 0: case (sizeof(off_t)==sizeof(long long)): ; }
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  tcl_cv_flag__largefile64_source=no
+  tcl_cv_flag__file_offset_bits=no
 else case e in #(
   e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#define _LARGEFILE64_SOURCE 1
+#define _FILE_OFFSET_BITS 64
 #include <sys/stat.h>
 int
 main (void)
 {
-struct stat64 buf; int i = stat64("/", &buf);
+switch (0) { case 0: case (sizeof(off_t)==sizeof(long long)): ; }
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
 then :
-  tcl_cv_flag__largefile64_source=yes
+  tcl_cv_flag__file_offset_bits=yes
 else case e in #(
-  e) tcl_cv_flag__largefile64_source=no ;;
+  e) tcl_cv_flag__file_offset_bits=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
@@ -8663,66 +8735,14 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
 esac
 fi
 
-    if test "x${tcl_cv_flag__largefile64_source}" = "xyes" ; then
+    if test "x${tcl_cv_flag__file_offset_bits}" = "xyes" ; then
 
-printf "%s\n" "#define _LARGEFILE64_SOURCE 1" >>confdefs.h
+printf "%s\n" "#define _FILE_OFFSET_BITS 64" >>confdefs.h
 
-	tcl_flags="$tcl_flags _LARGEFILE64_SOURCE"
+	tcl_flags="$tcl_flags _FILE_OFFSET_BITS"
     fi
 
-
-    if test ${tcl_cv_flag__largefile_source64+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/stat.h>
-int
-main (void)
-{
-char *p = (char *)open64;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  tcl_cv_flag__largefile_source64=no
-else case e in #(
-  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#define _LARGEFILE_SOURCE64 1
-#include <sys/stat.h>
-int
-main (void)
-{
-char *p = (char *)open64;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"
-then :
-  tcl_cv_flag__largefile_source64=yes
-else case e in #(
-  e) tcl_cv_flag__largefile_source64=no ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
-esac
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
-esac
-fi
-
-    if test "x${tcl_cv_flag__largefile_source64}" = "xyes" ; then
-
-printf "%s\n" "#define _LARGEFILE_SOURCE64 1" >>confdefs.h
-
-	tcl_flags="$tcl_flags _LARGEFILE_SOURCE64"
     fi
-
     if test "x${tcl_flags}" = "x" ; then
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: none" >&5
 printf "%s\n" "none" >&6; }
@@ -8760,18 +8780,18 @@ else case e in #(
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-	# See if we should use long anyway  Note that we substitute in the
+	# See if we could use long anyway  Note that we substitute in the
 	# type that is our current guess for a 64-bit type inside this check
 	# program, so it should be modified only carefully...
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 int
 main (void)
 {
 switch (0) {
-            case 1: case (sizeof(${tcl_type_64bit})==sizeof(long)): ;
-        }
+	    case 1: case (sizeof(${tcl_type_64bit})==sizeof(long)): ;
+	}
   ;
   return 0;
 }
@@ -8788,8 +8808,8 @@ fi
 
 printf "%s\n" "#define TCL_WIDE_INT_IS_LONG 1" >>confdefs.h
 
-	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: using long" >&5
-printf "%s\n" "using long" >&6; }
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
     elif test "${tcl_cv_type_64bit}" = "__int64" \
 		-a "${TEA_PLATFORM}" = "windows" ; then
 	# TEA specific: We actually want to use the default tcl.h checks in
@@ -8804,6 +8824,79 @@ printf "%s\n" "#define TCL_WIDE_INT_TYPE ${tcl_cv_type_64bit}" >>confdefs.h
 printf "%s\n" "${tcl_cv_type_64bit}" >&6; }
 
 	# Now check for auxiliary declarations
+    if test "${TCL_MAJOR_VERSION}" -ne 8 ; then
+	    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for 64-bit time_t" >&5
+printf %s "checking for 64-bit time_t... " >&6; }
+if test ${tcl_cv_time_t_64+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+		cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+int
+main (void)
+{
+switch (0) {case 0: case (sizeof(time_t)==sizeof(long long)): ;}
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  tcl_cv_time_t_64=yes
+else case e in #(
+  e) tcl_cv_time_t_64=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $tcl_cv_time_t_64" >&5
+printf "%s\n" "$tcl_cv_time_t_64" >&6; }
+	    if test "x${tcl_cv_time_t_64}" = "xno" ; then
+		# Note that _TIME_BITS=64 requires _FILE_OFFSET_BITS=64
+		# which SC_TCL_EARLY_FLAGS has defined if necessary.
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if _TIME_BITS=64 enables 64-bit time_t" >&5
+printf %s "checking if _TIME_BITS=64 enables 64-bit time_t... " >&6; }
+if test ${tcl_cv__time_bits+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+		    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#define _TIME_BITS 64
+#include <sys/types.h>
+int
+main (void)
+{
+switch (0) {case 0: case (sizeof(time_t)==sizeof(long long)): ;}
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  tcl_cv__time_bits=yes
+else case e in #(
+  e) tcl_cv__time_bits=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $tcl_cv__time_bits" >&5
+printf "%s\n" "$tcl_cv__time_bits" >&6; }
+		if test "x${tcl_cv__time_bits}" = "xyes" ; then
+
+printf "%s\n" "#define _TIME_BITS 64" >>confdefs.h
+
+		fi
+	    fi
+	fi
+
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for struct dirent64" >&5
 printf %s "checking for struct dirent64... " >&6; }
 if test ${tcl_cv_struct_dirent64+y}
@@ -8838,6 +8931,44 @@ printf "%s\n" "$tcl_cv_struct_dirent64" >&6; }
 	if test "x${tcl_cv_struct_dirent64}" = "xyes" ; then
 
 printf "%s\n" "#define HAVE_STRUCT_DIRENT64 1" >>confdefs.h
+
+	fi
+
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for DIR64" >&5
+printf %s "checking for DIR64... " >&6; }
+if test ${tcl_cv_DIR64+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/types.h>
+#include <dirent.h>
+int
+main (void)
+{
+struct dirent64 *p; DIR64 d = opendir64(".");
+	    p = readdir64(d); rewinddir64(d); closedir64(d);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  tcl_cv_DIR64=yes
+else case e in #(
+  e) tcl_cv_DIR64=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $tcl_cv_DIR64" >&5
+printf "%s\n" "$tcl_cv_DIR64" >&6; }
+	if test "x${tcl_cv_DIR64}" = "xyes" ; then
+
+printf "%s\n" "#define HAVE_DIR64 1" >>confdefs.h
 
 	fi
 
@@ -8922,8 +9053,8 @@ esac
 fi
 
 			if test "x${tcl_cv_type_off64_t}" = "xyes" && \
-	        test "x${ac_cv_func_lseek64}" = "xyes" && \
-	        test "x${ac_cv_func_open64}" = "xyes" ; then
+		test "x${ac_cv_func_lseek64}" = "xyes" && \
+		test "x${ac_cv_func_open64}" = "xyes" ; then
 
 printf "%s\n" "#define HAVE_TYPE_OFF64_T 1" >>confdefs.h
 
@@ -8954,12 +9085,14 @@ else case e in #(
 esac
 fi
 
-    DBGX=""
     if test "$tcl_ok" = "no"; then
 	CFLAGS_DEFAULT="${CFLAGS_OPTIMIZE} -DNDEBUG"
 	LDFLAGS_DEFAULT="${LDFLAGS_OPTIMIZE}"
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
+
+printf "%s\n" "#define TCL_CFG_OPTIMIZED 1" >>confdefs.h
+
     else
 	CFLAGS_DEFAULT="${CFLAGS_DEBUG}"
 	LDFLAGS_DEFAULT="${LDFLAGS_DEBUG}"
@@ -8968,11 +9101,6 @@ printf "%s\n" "no" >&6; }
 printf "%s\n" "yes (standard debugging)" >&6; }
 	fi
     fi
-    # TEA specific:
-    if test "${TEA_PLATFORM}" != "windows" ; then
-	LDFLAGS_DEFAULT="${LDFLAGS}"
-    fi
-
 
 
 
@@ -9148,7 +9276,7 @@ printf "%s\n" "$ac_cv_path_EGREP_TRADITIONAL" >&6; }
 
     if test "${TEA_PLATFORM}" = "windows" -a "$GCC" != "yes"; then
 	MAKE_STATIC_LIB="\${STLIB_LD} -out:\$@ \$(PKG_OBJECTS)"
-	MAKE_SHARED_LIB="\${SHLIB_LD} \${SHLIB_LD_LIBS} \${LDFLAGS_DEFAULT} -out:\$@ \$(PKG_OBJECTS)"
+	MAKE_SHARED_LIB="\${SHLIB_LD} \${LDFLAGS} \${LDFLAGS_DEFAULT} -out:\$@ \$(PKG_OBJECTS) \${SHLIB_LD_LIBS}"
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -9175,7 +9303,7 @@ rm -rf conftest*
 	MAKE_STUB_LIB="\${STLIB_LD} -nodefaultlib -out:\$@ \$(PKG_STUB_OBJECTS)"
     else
 	MAKE_STATIC_LIB="\${STLIB_LD} \$@ \$(PKG_OBJECTS)"
-	MAKE_SHARED_LIB="\${SHLIB_LD} -o \$@ \$(PKG_OBJECTS) \${SHLIB_LD_LIBS}"
+	MAKE_SHARED_LIB="\${SHLIB_LD} \${LDFLAGS} \${LDFLAGS_DEFAULT} -o \$@ \$(PKG_OBJECTS) \${SHLIB_LD_LIBS}"
 	MAKE_STUB_LIB="\${STLIB_LD} \$@ \$(PKG_STUB_OBJECTS)"
     fi
 
@@ -9191,6 +9319,16 @@ rm -rf conftest*
     # substituted. (@@@ Might not be necessary anymore)
     #--------------------------------------------------------------------
 
+    PACKAGE_LIB_PREFIX8="${PACKAGE_LIB_PREFIX}"
+    PACKAGE_LIB_PREFIX9="${PACKAGE_LIB_PREFIX}tcl9"
+    if test "${TCL_MAJOR_VERSION}" -gt 8 -a x"${with_tcl8}" = x; then
+	PACKAGE_LIB_PREFIX="${PACKAGE_LIB_PREFIX9}"
+    else
+	PACKAGE_LIB_PREFIX="${PACKAGE_LIB_PREFIX8}"
+
+printf "%s\n" "#define TCL_MAJOR_VERSION 8" >>confdefs.h
+
+    fi
     if test "${TEA_PLATFORM}" = "windows" ; then
 	if test "${SHARED_BUILD}" = "1" ; then
 	    # We force the unresolved linking of symbols that are really in
@@ -9202,15 +9340,23 @@ rm -rf conftest*
 	    if test "$GCC" = "yes"; then
 		SHLIB_LD_LIBS="${SHLIB_LD_LIBS} -static-libgcc"
 	    fi
+	    eval eval "PKG_LIB_FILE8=${PACKAGE_LIB_PREFIX8}${PACKAGE_NAME}${SHARED_LIB_SUFFIX}"
+	    eval eval "PKG_LIB_FILE9=${PACKAGE_LIB_PREFIX9}${PACKAGE_NAME}${SHARED_LIB_SUFFIX}"
 	    eval eval "PKG_LIB_FILE=${PACKAGE_LIB_PREFIX}${PACKAGE_NAME}${SHARED_LIB_SUFFIX}"
 	else
-	    eval eval "PKG_LIB_FILE=${PACKAGE_LIB_PREFIX}${PACKAGE_NAME}${UNSHARED_LIB_SUFFIX}"
 	    if test "$GCC" = "yes"; then
-		PKG_LIB_FILE=lib${PKG_LIB_FILE}
+		PACKAGE_LIB_PREFIX=lib${PACKAGE_LIB_PREFIX}
 	    fi
+	    eval eval "PKG_LIB_FILE8=${PACKAGE_LIB_PREFIX8}${PACKAGE_NAME}${UNSHARED_LIB_SUFFIX}"
+	    eval eval "PKG_LIB_FILE9=${PACKAGE_LIB_PREFIX9}${PACKAGE_NAME}${UNSHARED_LIB_SUFFIX}"
+	    eval eval "PKG_LIB_FILE=${PACKAGE_LIB_PREFIX}${PACKAGE_NAME}${UNSHARED_LIB_SUFFIX}"
 	fi
 	# Some packages build their own stubs libraries
-	eval eval "PKG_STUB_LIB_FILE=${PACKAGE_LIB_PREFIX}${PACKAGE_NAME}stub${UNSHARED_LIB_SUFFIX}"
+	if test "${TCL_MAJOR_VERSION}" -gt 8 -a x"${with_tcl8}" = x; then
+	    eval eval "PKG_STUB_LIB_FILE=${PACKAGE_LIB_PREFIX8}${PACKAGE_NAME}stub.a"
+	else
+	    eval eval "PKG_STUB_LIB_FILE=${PACKAGE_LIB_PREFIX8}${PACKAGE_NAME}stub${UNSHARED_LIB_SUFFIX}"
+	fi
 	if test "$GCC" = "yes"; then
 	    PKG_STUB_LIB_FILE=lib${PKG_STUB_LIB_FILE}
 	fi
@@ -9224,13 +9370,21 @@ rm -rf conftest*
 	    if test x"${TK_BIN_DIR}" != x ; then
 		SHLIB_LD_LIBS="${SHLIB_LD_LIBS} ${TK_STUB_LIB_SPEC}"
 	    fi
+	    eval eval "PKG_LIB_FILE8=lib${PACKAGE_LIB_PREFIX8}${PACKAGE_NAME}${SHARED_LIB_SUFFIX}"
+	    eval eval "PKG_LIB_FILE9=lib${PACKAGE_LIB_PREFIX9}${PACKAGE_NAME}${SHARED_LIB_SUFFIX}"
 	    eval eval "PKG_LIB_FILE=lib${PACKAGE_LIB_PREFIX}${PACKAGE_NAME}${SHARED_LIB_SUFFIX}"
 	    RANLIB=:
 	else
+	    eval eval "PKG_LIB_FILE8=lib${PACKAGE_LIB_PREFIX8}${PACKAGE_NAME}${UNSHARED_LIB_SUFFIX}"
+	    eval eval "PKG_LIB_FILE9=lib${PACKAGE_LIB_PREFIX9}${PACKAGE_NAME}${UNSHARED_LIB_SUFFIX}"
 	    eval eval "PKG_LIB_FILE=lib${PACKAGE_LIB_PREFIX}${PACKAGE_NAME}${UNSHARED_LIB_SUFFIX}"
 	fi
 	# Some packages build their own stubs libraries
-	eval eval "PKG_STUB_LIB_FILE=lib${PACKAGE_LIB_PREFIX}${PACKAGE_NAME}stub${UNSHARED_LIB_SUFFIX}"
+	if test "${TCL_MAJOR_VERSION}" -gt 8 -a x"${with_tcl8}" = x; then
+	    eval eval "PKG_STUB_LIB_FILE=lib${PACKAGE_LIB_PREFIX8}${PACKAGE_NAME}stub.a"
+	else
+	    eval eval "PKG_STUB_LIB_FILE=lib${PACKAGE_LIB_PREFIX8}${PACKAGE_NAME}stub${UNSHARED_LIB_SUFFIX}"
+	fi
     fi
 
     # These are escaped so that only CFLAGS is picked up at configure time.
@@ -9243,6 +9397,8 @@ rm -rf conftest*
 
 
 
+
+    # Substitute STUB_LIB_FILE in case package creates a stub library too.
 
 
 
@@ -9261,37 +9417,37 @@ rm -rf conftest*
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for tclsh" >&5
 printf %s "checking for tclsh... " >&6; }
     if test -f "${TCL_BIN_DIR}/Makefile" ; then
-        # tclConfig.sh is in Tcl build directory
-        if test "${TEA_PLATFORM}" = "windows"; then
-          if test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}${EXEEXT}" ; then
-            TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}${EXEEXT}"
-          elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}s${EXEEXT}" ; then
-            TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}s${EXEEXT}"
-          elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}t${EXEEXT}" ; then
-            TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}t${EXEEXT}"
-          elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}st${EXEEXT}" ; then
-            TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}st${EXEEXT}"
-          fi
-        else
-            TCLSH_PROG="${TCL_BIN_DIR}/tclsh"
-        fi
+	# tclConfig.sh is in Tcl build directory
+	if test "${TEA_PLATFORM}" = "windows"; then
+	  if test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${EXEEXT}" ; then
+	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${EXEEXT}"
+	  elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}s${EXEEXT}" ; then
+	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}s${EXEEXT}"
+	  elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}t${EXEEXT}" ; then
+	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}t${EXEEXT}"
+	  elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}st${EXEEXT}" ; then
+	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}st${EXEEXT}"
+	  fi
+	else
+	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh"
+	fi
     else
-        # tclConfig.sh is in install location
-        if test "${TEA_PLATFORM}" = "windows"; then
-            TCLSH_PROG="tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${TCL_DBGX}${EXEEXT}"
-        else
-            TCLSH_PROG="tclsh${TCL_MAJOR_VERSION}.${TCL_MINOR_VERSION}${TCL_DBGX}"
-        fi
-        list="`ls -d ${TCL_BIN_DIR}/../bin 2>/dev/null` \
-              `ls -d ${TCL_BIN_DIR}/..     2>/dev/null` \
-              `ls -d ${TCL_PREFIX}/bin     2>/dev/null`"
-        for i in $list ; do
-            if test -f "$i/${TCLSH_PROG}" ; then
-                REAL_TCL_BIN_DIR="`cd "$i"; pwd`/"
-                break
-            fi
-        done
-        TCLSH_PROG="${REAL_TCL_BIN_DIR}${TCLSH_PROG}"
+	# tclConfig.sh is in install location
+	if test "${TEA_PLATFORM}" = "windows"; then
+	    TCLSH_PROG="tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${EXEEXT}"
+	else
+	    TCLSH_PROG="tclsh${TCL_MAJOR_VERSION}.${TCL_MINOR_VERSION}"
+	fi
+	list="`ls -d ${TCL_BIN_DIR}/../bin 2>/dev/null` \
+	      `ls -d ${TCL_BIN_DIR}/..     2>/dev/null` \
+	      `ls -d ${TCL_PREFIX}/bin     2>/dev/null`"
+	for i in $list ; do
+	    if test -f "$i/${TCLSH_PROG}" ; then
+		REAL_TCL_BIN_DIR="`cd "$i"; pwd`/"
+		break
+	    fi
+	done
+	TCLSH_PROG="${REAL_TCL_BIN_DIR}${TCLSH_PROG}"
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: ${TCLSH_PROG}" >&5
 printf "%s\n" "${TCLSH_PROG}" >&6; }
@@ -9316,87 +9472,84 @@ if test "$tcl_ok" = "yes" -a "x$enable_framework" != "xyes"; then
     # Find a native zip implementation
     #
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for zipfs support" >&5
-printf %s "checking for zipfs support... " >&6; }
+    MACHER_PROG=""
     ZIP_PROG=""
     ZIP_PROG_OPTIONS=""
     ZIP_PROG_VFSSEARCH=""
-    INSTALL_MSGS=""
-    # If our native tclsh processes the "install" command line option
-    # we can use it to mint zip files
-    if $TCLSH_PROG install
-then :
+    ZIP_INSTALL_OBJS=""
 
-      ZIP_PROG=${TCLSH_PROG}
-      ZIP_PROG_OPTIONS="install mkzip"
-      ZIP_PROG_VFSSEARCH="."
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Can use Native Tclsh for Zip encoding" >&5
-printf "%s\n" "Can use Native Tclsh for Zip encoding" >&6; }
-
-fi
-    if test "x$ZIP_PROG" = "x" ; then
-        if test ${ac_cv_path_zip+y}
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for macher" >&5
+printf %s "checking for macher... " >&6; }
+    if test ${ac_cv_path_macher+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
   e)
-        search_path=`echo ${PATH} | sed -e 's/:/ /g'`
-        for dir in $search_path ; do
-            for j in `ls -r $dir/zip 2> /dev/null` \
-                `ls -r $dir/zip 2> /dev/null` ; do
-            if test x"$ac_cv_path_zip" = x ; then
-                if test -f "$j" ; then
-                ac_cv_path_zip=$j
-                break
-                fi
-            fi
-            done
-        done
-         ;;
+    search_path=`echo ${PATH} | sed -e 's/:/ /g'`
+    for dir in $search_path ; do
+	for j in `ls -r $dir/macher 2> /dev/null` \
+	    `ls -r $dir/macher 2> /dev/null` ; do
+	if test x"$ac_cv_path_macher" = x ; then
+	    if test -f "$j" ; then
+	    ac_cv_path_macher=$j
+	    break
+	    fi
+	fi
+	done
+    done
+     ;;
 esac
 fi
 
-        if test -f "$ac_cv_path_zip" ; then
-            ZIP_PROG="$ac_cv_path_zip "
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ZIP_PROG" >&5
+    if test -f "$ac_cv_path_macher" ; then
+	MACHER_PROG="$ac_cv_path_macher"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MACHER_PROG" >&5
+printf "%s\n" "$MACHER_PROG" >&6; }
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Found macher in environment" >&5
+printf "%s\n" "Found macher in environment" >&6; }
+    fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for zip" >&5
+printf %s "checking for zip... " >&6; }
+    if test ${ac_cv_path_zip+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+    search_path=`echo ${PATH} | sed -e 's/:/ /g'`
+    for dir in $search_path ; do
+	for j in `ls -r $dir/zip 2> /dev/null` \
+	    `ls -r $dir/zip 2> /dev/null` ; do
+	if test x"$ac_cv_path_zip" = x ; then
+	    if test -f "$j" ; then
+	    ac_cv_path_zip=$j
+	    break
+	    fi
+	fi
+	done
+    done
+     ;;
+esac
+fi
+
+    if test -f "$ac_cv_path_zip" ; then
+	ZIP_PROG="$ac_cv_path_zip"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ZIP_PROG" >&5
 printf "%s\n" "$ZIP_PROG" >&6; }
-            ZIP_PROG_OPTIONS="-rq"
-            ZIP_PROG_VFSSEARCH="."
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Found INFO Zip in environment" >&5
+	ZIP_PROG_OPTIONS="-rq"
+	ZIP_PROG_VFSSEARCH="*"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: Found INFO Zip in environment" >&5
 printf "%s\n" "Found INFO Zip in environment" >&6; }
-            # Use standard arguments for zip
-        fi
-    fi
-    if test "x$ZIP_PROG" = "x" ; then
-	    # It is not an error if an installed version of Zip can't be located.
-        ZIP_PROG=""
-        ZIP_PROG_OPTIONS=""
-        ZIP_PROG_VFSSEARCH=""
-        TCL_ZIPFS_SUPPORT=0
-        TCL_ZIPFS_FLAG=
+	# Use standard arguments for zip
     else
-        # ZIPFS Support
-       eval "TCL_ZIP_FILE=\"${TCL_ZIP_FILE}\""
-       if test ${TCL_ZIP_FILE} = "" ; then
-          TCL_ZIPFS_SUPPORT=0
-          TCL_ZIPFS_FLAG=
-          INSTALL_LIBRARIES=install-libraries
-          INSTALL_MSGS=install-msgs
-       else
-           if test ${SHARED_BUILD} = 1 ; then
-              TCL_ZIPFS_SUPPORT=1
-              INSTALL_LIBRARIES=install-libraries-zipfs-shared
-           else
-              TCL_ZIPFS_SUPPORT=2
-              INSTALL_LIBRARIES=install-libraries-zipfs-static
-           fi
-          TCL_ZIPFS_FLAG=-DTCL_ZIPFS_SUPPORT
-       fi
+	# It is not an error if an installed version of Zip can't be located.
+	# We can use the locally distributed minizip instead
+	ZIP_PROG="./minizip${EXEEXT_FOR_BUILD}"
+	ZIP_PROG_OPTIONS="-o -r"
+	ZIP_PROG_VFSSEARCH="*"
+	ZIP_INSTALL_OBJS="minizip${EXEEXT_FOR_BUILD}"
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: No zip found on PATH. Building minizip" >&5
+printf "%s\n" "No zip found on PATH. Building minizip" >&6; }
     fi
-
-
-
-
 
 
 
@@ -9590,7 +9743,6 @@ done
 LIBOBJS=$ac_libobjs
 
 LTLIBOBJS=$ac_ltlibobjs
-
 
 
 CFLAGS="${CFLAGS} ${CPPFLAGS}"; CPPFLAGS=""
