@@ -312,7 +312,7 @@ const Tcl_ObjType keyedListType = {
     DupKeyedListInternalRep,  /* dupIntRepProc */
     UpdateStringOfKeyedList,  /* updateStringProc */
     NULL,                     /* setFromAnyProc */
-    TCL_OBJTYPE_V0
+    0
 };
 
 
