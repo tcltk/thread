@@ -100,15 +100,15 @@ NS_PATH_AOLSERVER
 #-----------------------------------------------------------------------
 
 TEA_ADD_SOURCES([generic/threadNs.c           \
-                 generic/threadCmd.c          \
-                 generic/threadSvCmd.c        \
-                 generic/threadSpCmd.c        \
-                 generic/threadPoolCmd.c      \
-                 generic/psGdbm.c             \
-                 generic/psLmdb.c             \
-                 generic/threadSvListCmd.c    \
-                 generic/threadSvKeylistCmd.c \
-                 generic/tclXkeylist.c        \
+		 generic/threadCmd.c          \
+		 generic/threadSvCmd.c        \
+		 generic/threadSpCmd.c        \
+		 generic/threadPoolCmd.c      \
+		 generic/psGdbm.c             \
+		 generic/psLmdb.c             \
+		 generic/threadSvListCmd.c    \
+		 generic/threadSvKeylistCmd.c \
+		 generic/tclXkeylist.c        \
 ])
 
 TEA_ADD_HEADERS([generic/tclThread.h])

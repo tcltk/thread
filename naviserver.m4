@@ -31,26 +31,26 @@ AC_DEFUN(NS_PATH_AOLSERVER, [
 
     AC_CACHE_VAL(ac_cv_c_naviserver,[
     if test x"${with_naviserver}" != x ; then
-        if test -f "${with_naviserver}/include/ns.h" ; then
-            ac_cv_c_naviserver=`(cd ${with_naviserver}; pwd)`
-        else
-            AC_MSG_ERROR([${with_naviserver} directory doesn't contain ns.h])
-        fi
+	if test -f "${with_naviserver}/include/ns.h" ; then
+	    ac_cv_c_naviserver=`(cd ${with_naviserver}; pwd)`
+	else
+	    AC_MSG_ERROR([${with_naviserver} directory doesn't contain ns.h])
+	fi
     fi
     ])
     if test x"${ac_cv_c_naviserver}" = x ; then
-        AC_MSG_RESULT([none found])
+	AC_MSG_RESULT([none found])
     else
-        NS_DIR=${ac_cv_c_naviserver}
-        AC_MSG_RESULT([found NaviServer/AOLserver in $NS_DIR])
-        NS_INCLUDES="-I\"${NS_DIR}/include\""
-        if test "`uname -s`" = Darwin ; then
-            aollibs=`ls ${NS_DIR}/lib/libns* 2>/dev/null`
-            if test x"$aollibs" != x ; then
-                NS_LIBS="-L\"${NS_DIR}/lib\" -lnsd -lnsthread"
-            fi
-        fi
-        AC_DEFINE(NS_AOLSERVER)
+	NS_DIR=${ac_cv_c_naviserver}
+	AC_MSG_RESULT([found NaviServer/AOLserver in $NS_DIR])
+	NS_INCLUDES="-I\"${NS_DIR}/include\""
+	if test "`uname -s`" = Darwin ; then
+	    aollibs=`ls ${NS_DIR}/lib/libns* 2>/dev/null`
+	    if test x"$aollibs" != x ; then
+		NS_LIBS="-L\"${NS_DIR}/lib\" -lnsd -lnsthread"
+	    fi
+	fi
+	AC_DEFINE(NS_AOLSERVER)
     fi
 ])
 

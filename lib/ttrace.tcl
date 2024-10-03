@@ -46,30 +46,30 @@ namespace eval ttrace {
 
     # Setup some compatibility wrappers
     if {[info commands nsv_set] != ""} {
-        variable tvers 0
-        variable mutex ns_mutex
-        variable elock [$mutex create traceepochmutex]
-        # Import the underlying API; faster than recomputing
-        interp alias {} [namespace current]::_array   {} nsv_array
-        interp alias {} [namespace current]::_incr    {} nsv_incr
-        interp alias {} [namespace current]::_lappend {} nsv_lappend
-        interp alias {} [namespace current]::_names   {} nsv_names
-        interp alias {} [namespace current]::_set     {} nsv_set
-        interp alias {} [namespace current]::_unset   {} nsv_unset
+	variable tvers 0
+	variable mutex ns_mutex
+	variable elock [$mutex create traceepochmutex]
+	# Import the underlying API; faster than recomputing
+	interp alias {} [namespace current]::_array   {} nsv_array
+	interp alias {} [namespace current]::_incr    {} nsv_incr
+	interp alias {} [namespace current]::_lappend {} nsv_lappend
+	interp alias {} [namespace current]::_names   {} nsv_names
+	interp alias {} [namespace current]::_set     {} nsv_set
+	interp alias {} [namespace current]::_unset   {} nsv_unset
     } elseif {![catch {
-        variable tvers [package require Thread]
+	variable tvers [package require Thread]
     }]} {
-        variable mutex thread::mutex
-        variable elock [$mutex create]
-        # Import the underlying API; faster than recomputing
-        interp alias {} [namespace current]::_array   {} tsv::array
-        interp alias {} [namespace current]::_incr    {} tsv::incr
-        interp alias {} [namespace current]::_lappend {} tsv::lappend
-        interp alias {} [namespace current]::_names   {} tsv::names
-        interp alias {} [namespace current]::_set     {} tsv::set
-        interp alias {} [namespace current]::_unset   {} tsv::unset
+	variable mutex thread::mutex
+	variable elock [$mutex create]
+	# Import the underlying API; faster than recomputing
+	interp alias {} [namespace current]::_array   {} tsv::array
+	interp alias {} [namespace current]::_incr    {} tsv::incr
+	interp alias {} [namespace current]::_lappend {} tsv::lappend
+	interp alias {} [namespace current]::_names   {} tsv::names
+	interp alias {} [namespace current]::_set     {} tsv::set
+	interp alias {} [namespace current]::_unset   {} tsv::unset
     } else {
-        error "requires NaviServer/AOLserver or Tcl threading extension"
+	error "requires NaviServer/AOLserver or Tcl threading extension"
     }
 
     # Keep in sync with the Thread package
@@ -100,371 +100,371 @@ namespace eval ttrace {
 
     # Initialize ttrace shared state
     if {[_array exists ttrace] == 0} {
-        _set ttrace lastepoch $epoch
-        _set ttrace epochlist ""
+	_set ttrace lastepoch $epoch
+	_set ttrace epochlist ""
     }
 
     # Initially, allow creation of epochs
     set config(-doepochs) 1
 
     proc eval {cmd args} {
-        enable
-        set code [catch {uplevel 1 [concat $cmd $args]} result]
-        disable
-        if {$code == 0} {
-            if {[llength [info commands ns_ictl]]} {
-                ns_ictl save [getscript]
-            } else {
-                thread::broadcast {
-                    package require Ttrace
-                    ttrace::update
-                }
-            }
-        }
-        return -code $code \
-            -errorinfo $::errorInfo -errorcode $::errorCode $result
+	enable
+	set code [catch {uplevel 1 [concat $cmd $args]} result]
+	disable
+	if {$code == 0} {
+	    if {[llength [info commands ns_ictl]]} {
+		ns_ictl save [getscript]
+	    } else {
+		thread::broadcast {
+		    package require Ttrace
+		    ttrace::update
+		}
+	    }
+	}
+	return -code $code \
+	    -errorinfo $::errorInfo -errorcode $::errorCode $result
     }
 
     proc config {args} {
-        variable config
-        if {[llength $args] == 0} {
-            array get config
-        } elseif {[llength $args] == 1} {
-            set opt [lindex $args 0]
-            set config($opt)
-        } else {
-            set opt [lindex $args 0]
-            set val [lindex $args 1]
-            set config($opt) $val
-        }
+	variable config
+	if {[llength $args] == 0} {
+	    array get config
+	} elseif {[llength $args] == 1} {
+	    set opt [lindex $args 0]
+	    set config($opt)
+	} else {
+	    set opt [lindex $args 0]
+	    set val [lindex $args 1]
+	    set config($opt) $val
+	}
     }
 
     proc enable {} {
-        variable config
-        variable tracers
-        variable enables
-        variable enabled
-        incr enabled 1
-        if {$enabled > 1} {
-            return
-        }
-        if {$config(-doepochs) != 0} {
-            variable epoch [_newepoch]
-        }
-        set nsp [namespace current]
-        foreach enabler $enables {
-            enable::_$enabler
-        }
-        foreach trace $tracers {
-            if {[info commands $trace] != ""} {
-                trace add execution $trace leave ${nsp}::trace::_$trace
-            }
-        }
+	variable config
+	variable tracers
+	variable enables
+	variable enabled
+	incr enabled 1
+	if {$enabled > 1} {
+	    return
+	}
+	if {$config(-doepochs) != 0} {
+	    variable epoch [_newepoch]
+	}
+	set nsp [namespace current]
+	foreach enabler $enables {
+	    enable::_$enabler
+	}
+	foreach trace $tracers {
+	    if {[info commands $trace] != ""} {
+		trace add execution $trace leave ${nsp}::trace::_$trace
+	    }
+	}
     }
 
     proc disable {} {
-        variable enabled
-        variable tracers
-        variable disables
-        incr enabled -1
-        if {$enabled > 0} {
-            return
-        }
-        set nsp [namespace current]
-        foreach disabler $disables {
-            disable::_$disabler
-        }
-        foreach trace $tracers {
-            if {[info commands $trace] != ""} {
-                trace remove execution $trace leave ${nsp}::trace::_$trace
-            }
-        }
+	variable enabled
+	variable tracers
+	variable disables
+	incr enabled -1
+	if {$enabled > 0} {
+	    return
+	}
+	set nsp [namespace current]
+	foreach disabler $disables {
+	    disable::_$disabler
+	}
+	foreach trace $tracers {
+	    if {[info commands $trace] != ""} {
+		trace remove execution $trace leave ${nsp}::trace::_$trace
+	    }
+	}
     }
 
     proc isenabled {} {
-        variable enabled
-        expr {$enabled > 0}
+	variable enabled
+	expr {$enabled > 0}
     }
 
     proc update {{from -1}} {
-        if {$from < 0} {
-            variable epoch [_set ttrace lastepoch]
-        } else {
-            if {[lsearch [_set ttrace epochlist] $from] < 0} {
-                error "no such epoch: $from"
-            }
-            variable epoch $from
-        }
-        uplevel 1 [getscript]
+	if {$from < 0} {
+	    variable epoch [_set ttrace lastepoch]
+	} else {
+	    if {[lsearch [_set ttrace epochlist] $from] < 0} {
+		error "no such epoch: $from"
+	    }
+	    variable epoch $from
+	}
+	uplevel 1 [getscript]
     }
 
     proc getscript {} {
-        variable preloads
-        variable epoch
-        variable scripts
-        append script [_serializensp] \n
-        append script "::namespace eval [namespace current] {" \n
-        append script "::namespace export unknown" \n
-        append script "_useepoch $epoch" \n
-        append script "}" \n
-        foreach cmd $preloads {
-            append script [_serializeproc $cmd] \n
-        }
-        foreach maker $scripts {
-            append script [script::_$maker]
-        }
-        return $script
+	variable preloads
+	variable epoch
+	variable scripts
+	append script [_serializensp] \n
+	append script "::namespace eval [namespace current] {" \n
+	append script "::namespace export unknown" \n
+	append script "_useepoch $epoch" \n
+	append script "}" \n
+	foreach cmd $preloads {
+	    append script [_serializeproc $cmd] \n
+	}
+	foreach maker $scripts {
+	    append script [script::_$maker]
+	}
+	return $script
     }
 
     proc cleanup {args} {
-        foreach cmd [info commands resolve::cleaner_*] {
-            uplevel 1 $cmd $args
-        }
+	foreach cmd [info commands resolve::cleaner_*] {
+	    uplevel 1 $cmd $args
+	}
     }
 
     proc preload {cmd} {
-        variable preloads
-        if {[lsearch $preloads $cmd] < 0} {
-            lappend preloads $cmd
-        }
+	variable preloads
+	if {[lsearch $preloads $cmd] < 0} {
+	    lappend preloads $cmd
+	}
     }
 
     proc atenable {cmd arglist body} {
-        variable enables
-        if {[lsearch $enables $cmd] < 0} {
-            lappend enables $cmd
-            set cmd [namespace current]::enable::_$cmd
-            proc $cmd $arglist $body
-            return $cmd
-        }
+	variable enables
+	if {[lsearch $enables $cmd] < 0} {
+	    lappend enables $cmd
+	    set cmd [namespace current]::enable::_$cmd
+	    proc $cmd $arglist $body
+	    return $cmd
+	}
     }
 
     proc atdisable {cmd arglist body} {
-        variable disables
-        if {[lsearch $disables $cmd] < 0} {
-            lappend disables $cmd
-            set cmd [namespace current]::disable::_$cmd
-            proc $cmd $arglist $body
-            return $cmd
-        }
+	variable disables
+	if {[lsearch $disables $cmd] < 0} {
+	    lappend disables $cmd
+	    set cmd [namespace current]::disable::_$cmd
+	    proc $cmd $arglist $body
+	    return $cmd
+	}
     }
 
     proc addtrace {cmd arglist body} {
-        variable tracers
-        if {[lsearch $tracers $cmd] < 0} {
-            lappend tracers $cmd
-            set tracer [namespace current]::trace::_$cmd
-            proc $tracer $arglist $body
-            if {[isenabled]} {
-                trace add execution $cmd leave $tracer
-            }
-            return $tracer
-        }
+	variable tracers
+	if {[lsearch $tracers $cmd] < 0} {
+	    lappend tracers $cmd
+	    set tracer [namespace current]::trace::_$cmd
+	    proc $tracer $arglist $body
+	    if {[isenabled]} {
+		trace add execution $cmd leave $tracer
+	    }
+	    return $tracer
+	}
     }
 
     proc addscript {cmd body} {
-        variable scripts
-        if {[lsearch $scripts $cmd] < 0} {
-            lappend scripts $cmd
-            set cmd [namespace current]::script::_$cmd
-            proc $cmd args $body
-            return $cmd
-        }
+	variable scripts
+	if {[lsearch $scripts $cmd] < 0} {
+	    lappend scripts $cmd
+	    set cmd [namespace current]::script::_$cmd
+	    proc $cmd args $body
+	    return $cmd
+	}
     }
 
     proc addresolver {cmd arglist body} {
-        variable resolvers
-        if {[lsearch $resolvers $cmd] < 0} {
-            lappend resolvers $cmd
-            set cmd [namespace current]::resolve::$cmd
-            proc $cmd $arglist $body
-            return $cmd
-        }
+	variable resolvers
+	if {[lsearch $resolvers $cmd] < 0} {
+	    lappend resolvers $cmd
+	    set cmd [namespace current]::resolve::$cmd
+	    proc $cmd $arglist $body
+	    return $cmd
+	}
     }
 
     proc addcleanup {body} {
-        variable cleancnt
-        set cmd [namespace current]::resolve::cleaner_[incr cleancnt]
-        proc $cmd args $body
-        return $cmd
+	variable cleancnt
+	set cmd [namespace current]::resolve::cleaner_[incr cleancnt]
+	proc $cmd args $body
+	return $cmd
     }
 
     proc addentry {cmd var val} {
-        variable epoch
-        _set ${epoch}-$cmd $var $val
+	variable epoch
+	_set ${epoch}-$cmd $var $val
     }
 
     proc delentry {cmd var} {
-        variable epoch
-        set ei $::errorInfo
-        set ec $::errorCode
-        catch {_unset ${epoch}-$cmd $var}
-        set ::errorInfo $ei
-        set ::errorCode $ec
+	variable epoch
+	set ei $::errorInfo
+	set ec $::errorCode
+	catch {_unset ${epoch}-$cmd $var}
+	set ::errorInfo $ei
+	set ::errorCode $ec
     }
 
     proc getentry {cmd var} {
-        variable epoch
-        set ei $::errorInfo
-        set ec $::errorCode
-        if {[catch {_set ${epoch}-$cmd $var} val]} {
-            set ::errorInfo $ei
-            set ::errorCode $ec
-            set val ""
-        }
-        return $val
+	variable epoch
+	set ei $::errorInfo
+	set ec $::errorCode
+	if {[catch {_set ${epoch}-$cmd $var} val]} {
+	    set ::errorInfo $ei
+	    set ::errorCode $ec
+	    set val ""
+	}
+	return $val
     }
 
     proc getentries {cmd {pattern *}} {
-        variable epoch
-        _array names ${epoch}-$cmd $pattern
+	variable epoch
+	_array names ${epoch}-$cmd $pattern
     }
 
     proc unknown {args} {
-        set cmd [lindex $args 0]
-        if {[uplevel 1 ttrace::_resolve [list $cmd]]} {
-            set c [catch {uplevel 1 $cmd [lrange $args 1 end]} r]
-        } else {
-            set c [catch {uplevel 1 ::tcl::unknown $args} r]
-        }
-        return -code $c -errorcode $::errorCode -errorinfo $::errorInfo $r
+	set cmd [lindex $args 0]
+	if {[uplevel 1 ttrace::_resolve [list $cmd]]} {
+	    set c [catch {uplevel 1 $cmd [lrange $args 1 end]} r]
+	} else {
+	    set c [catch {uplevel 1 ::tcl::unknown $args} r]
+	}
+	return -code $c -errorcode $::errorCode -errorinfo $::errorInfo $r
     }
 
     proc _resolve {cmd} {
-        variable resolvers
-        foreach resolver $resolvers {
-            if {[uplevel 1 [info comm resolve::$resolver] [list $cmd]]} {
-                return 1
-            }
-        }
-        return 0
+	variable resolvers
+	foreach resolver $resolvers {
+	    if {[uplevel 1 [info comm resolve::$resolver] [list $cmd]]} {
+		return 1
+	    }
+	}
+	return 0
     }
 
     proc _getthread {} {
-        if {[info commands ns_thread] == ""} {
-            thread::id
-        } else {
-            ns_thread getid
-        }
+	if {[info commands ns_thread] == ""} {
+	    thread::id
+	} else {
+	    ns_thread getid
+	}
     }
 
     proc _getthreads {} {
-        if {[info commands ns_thread] == ""} {
-            return [thread::names]
-        } else {
-            foreach entry [ns_info threads] {
-                lappend threads [lindex $entry 2]
-            }
-            return $threads
-        }
+	if {[info commands ns_thread] == ""} {
+	    return [thread::names]
+	} else {
+	    foreach entry [ns_info threads] {
+		lappend threads [lindex $entry 2]
+	    }
+	    return $threads
+	}
     }
 
     proc _newepoch {} {
-        variable elock
-        variable mutex
-        $mutex lock $elock
-        set old [_set ttrace lastepoch]
-        set new [_incr ttrace lastepoch]
-        _lappend ttrace $new [_getthread]
-        if {$old >= 0} {
-            _copyepoch $old $new
-            _delepochs
-        }
-        _lappend ttrace epochlist $new
-        $mutex unlock $elock
-        return $new
+	variable elock
+	variable mutex
+	$mutex lock $elock
+	set old [_set ttrace lastepoch]
+	set new [_incr ttrace lastepoch]
+	_lappend ttrace $new [_getthread]
+	if {$old >= 0} {
+	    _copyepoch $old $new
+	    _delepochs
+	}
+	_lappend ttrace epochlist $new
+	$mutex unlock $elock
+	return $new
     }
 
     proc _copyepoch {old new} {
-        foreach var [_names $old-*] {
-            set cmd [lindex [split $var -] 1]
-            _array reset $new-$cmd [_array get $var]
-        }
+	foreach var [_names $old-*] {
+	    set cmd [lindex [split $var -] 1]
+	    _array reset $new-$cmd [_array get $var]
+	}
     }
 
     proc _delepochs {} {
-        set tlist [_getthreads]
-        set elist ""
-        foreach epoch [_set ttrace epochlist] {
-            if {[_dropepoch $epoch $tlist] == 0} {
-                lappend elist $epoch
-            } else {
-                _unset ttrace $epoch
-            }
-        }
-        _set ttrace epochlist $elist
+	set tlist [_getthreads]
+	set elist ""
+	foreach epoch [_set ttrace epochlist] {
+	    if {[_dropepoch $epoch $tlist] == 0} {
+		lappend elist $epoch
+	    } else {
+		_unset ttrace $epoch
+	    }
+	}
+	_set ttrace epochlist $elist
     }
 
     proc _dropepoch {epoch threads} {
-        set self [_getthread]
-        foreach tid [_set ttrace $epoch] {
-            if {$tid != $self && [lsearch $threads $tid] >= 0} {
-                lappend alive $tid
-            }
-        }
-        if {[info exists alive]} {
-            _set ttrace $epoch $alive
-            return 0
-        } else {
-            foreach var [_names $epoch-*] {
-                _unset $var
-            }
-            return 1
-        }
+	set self [_getthread]
+	foreach tid [_set ttrace $epoch] {
+	    if {$tid != $self && [lsearch $threads $tid] >= 0} {
+		lappend alive $tid
+	    }
+	}
+	if {[info exists alive]} {
+	    _set ttrace $epoch $alive
+	    return 0
+	} else {
+	    foreach var [_names $epoch-*] {
+		_unset $var
+	    }
+	    return 1
+	}
     }
 
     proc _useepoch {epoch} {
-        if {$epoch >= 0} {
-            set tid [_getthread]
-            if {[lsearch [_set ttrace $epoch] $tid] == -1} {
-                _lappend ttrace $epoch $tid
-            }
-        }
+	if {$epoch >= 0} {
+	    set tid [_getthread]
+	    if {[lsearch [_set ttrace $epoch] $tid] == -1} {
+		_lappend ttrace $epoch $tid
+	    }
+	}
     }
 
     proc _serializeproc {cmd} {
-        set dargs [info args $cmd]
-        set pbody [info body $cmd]
-        set pargs ""
-        foreach arg $dargs {
-            if {![info default $cmd $arg def]} {
-                lappend pargs $arg
-            } else {
-                lappend pargs [list $arg $def]
-            }
-        }
-        set nsp [namespace qual $cmd]
-        if {$nsp == ""} {
-            set nsp "::"
-        }
-        append res [list ::namespace eval $nsp] " {" \n
-        append res [list ::proc [namespace tail $cmd] $pargs $pbody] \n
-        append res "}" \n
+	set dargs [info args $cmd]
+	set pbody [info body $cmd]
+	set pargs ""
+	foreach arg $dargs {
+	    if {![info default $cmd $arg def]} {
+		lappend pargs $arg
+	    } else {
+		lappend pargs [list $arg $def]
+	    }
+	}
+	set nsp [namespace qual $cmd]
+	if {$nsp == ""} {
+	    set nsp "::"
+	}
+	append res [list ::namespace eval $nsp] " {" \n
+	append res [list ::proc [namespace tail $cmd] $pargs $pbody] \n
+	append res "}" \n
     }
 
     proc _serializensp {{nsp ""} {result _}} {
-        upvar $result res
-        if {$nsp == ""} {
-            set nsp [namespace current]
-        }
-        append res [list ::namespace eval $nsp] " {" \n
-        foreach var [info vars ${nsp}::*] {
-            set vname [namespace tail $var]
-            if {[array exists $var] == 0} {
-                append res [list ::variable $vname [set $var]] \n
-            } else {
-                append res [list ::variable $vname] \n
-                append res [list ::array set $vname [array get $var]] \n
-            }
-        }
-        foreach cmd [info procs ${nsp}::*] {
-            append res [_serializeproc $cmd] \n
-        }
-        append res "}" \n
-        foreach nn [namespace children $nsp] {
-            _serializensp $nn res
-        }
-        return $res
+	upvar $result res
+	if {$nsp == ""} {
+	    set nsp [namespace current]
+	}
+	append res [list ::namespace eval $nsp] " {" \n
+	foreach var [info vars ${nsp}::*] {
+	    set vname [namespace tail $var]
+	    if {[array exists $var] == 0} {
+		append res [list ::variable $vname [set $var]] \n
+	    } else {
+		append res [list ::variable $vname] \n
+		append res [list ::array set $vname [array get $var]] \n
+	    }
+	}
+	foreach cmd [info procs ${nsp}::*] {
+	    append res [_serializeproc $cmd] \n
+	}
+	append res "}" \n
+	foreach nn [namespace children $nsp] {
+	    _serializensp $nn res
+	}
+	return $res
     }
 }
 
@@ -496,28 +496,28 @@ eval {
     #
 
     ttrace::addtrace load {cmdline code args} {
-        if {$code != 0} {
-            return
-        }
-        set image [lindex $cmdline 1]
-        set initp [lindex $cmdline 2]
-        if {$initp == ""} {
-            foreach pkg [info loaded] {
-                if {[lindex $pkg 0] == $image} {
-                    set initp [lindex $pkg 1]
-                }
-            }
-        }
-        ttrace::addentry load $image $initp
+	if {$code != 0} {
+	    return
+	}
+	set image [lindex $cmdline 1]
+	set initp [lindex $cmdline 2]
+	if {$initp == ""} {
+	    foreach pkg [info loaded] {
+		if {[lindex $pkg 0] == $image} {
+		    set initp [lindex $pkg 1]
+		}
+	    }
+	}
+	ttrace::addentry load $image $initp
     }
 
     ttrace::addscript load {
-        append res "\n"
-        foreach entry [ttrace::getentries load] {
-            set initp [ttrace::getentry load $entry]
-            append res "::load {} $initp" \n
-        }
-        return $res
+	append res "\n"
+	foreach entry [ttrace::getentries load] {
+	    set initp [ttrace::getentry load $entry]
+	    append res "::load {} $initp" \n
+	}
+	return $res
     }
 
     #
@@ -538,62 +538,62 @@ eval {
     #
 
     ttrace::addtrace namespace {cmdline code args} {
-        if {$code != 0} {
-            return
-        }
-        set nop [lindex $cmdline 1]
-        set cns [uplevel 1 namespace current]
-        if {$cns == "::"} {
-            set cns ""
-        }
-        switch -glob $nop {
-            eva* {
-                set nsp [lindex $cmdline 2]
-                if {![string match "::*" $nsp]} {
-                    set nsp ${cns}::$nsp
-                }
-                ttrace::addentry namespace $nsp 1
-            }
-            imp* {
-                # - parse import arguments (skip opt "-force")
-                set opts [lrange $cmdline 2 end]
-                if {[string match "-fo*" [lindex $opts 0]]} {
-                    set opts [lrange $cmdline 3 end]
-                }
-                # - register all imported procs and commands
-                foreach opt $opts {
-                    if {![string match "::*" [::namespace qual $opt]]} {
-                        set opt ${cns}::$opt
-                    }
-                    # - first import procs
-                    foreach entry [ttrace::getentries proc $opt] {
-                        set cmd ${cns}::[::namespace tail $entry]
-                        set nsp [::namespace qual $entry]
-                        set done($cmd) 1
-                        set entry [list 0 $nsp "" ""]
-                        ttrace::addentry proc $cmd $entry
-                    }
+	if {$code != 0} {
+	    return
+	}
+	set nop [lindex $cmdline 1]
+	set cns [uplevel 1 namespace current]
+	if {$cns == "::"} {
+	    set cns ""
+	}
+	switch -glob $nop {
+	    eva* {
+		set nsp [lindex $cmdline 2]
+		if {![string match "::*" $nsp]} {
+		    set nsp ${cns}::$nsp
+		}
+		ttrace::addentry namespace $nsp 1
+	    }
+	    imp* {
+		# - parse import arguments (skip opt "-force")
+		set opts [lrange $cmdline 2 end]
+		if {[string match "-fo*" [lindex $opts 0]]} {
+		    set opts [lrange $cmdline 3 end]
+		}
+		# - register all imported procs and commands
+		foreach opt $opts {
+		    if {![string match "::*" [::namespace qual $opt]]} {
+			set opt ${cns}::$opt
+		    }
+		    # - first import procs
+		    foreach entry [ttrace::getentries proc $opt] {
+			set cmd ${cns}::[::namespace tail $entry]
+			set nsp [::namespace qual $entry]
+			set done($cmd) 1
+			set entry [list 0 $nsp "" ""]
+			ttrace::addentry proc $cmd $entry
+		    }
 
-                    # - then import commands
-                    foreach entry [info commands $opt] {
-                        set cmd ${cns}::[::namespace tail $entry]
-                        set nsp [::namespace qual $entry]
-                        if {[info exists done($cmd)] == 0} {
-                            set entry [list 0 $nsp "" ""]
-                            ttrace::addentry proc $cmd $entry
-                        }
-                    }
-                }
-            }
-        }
+		    # - then import commands
+		    foreach entry [info commands $opt] {
+			set cmd ${cns}::[::namespace tail $entry]
+			set nsp [::namespace qual $entry]
+			if {[info exists done($cmd)] == 0} {
+			    set entry [list 0 $nsp "" ""]
+			    ttrace::addentry proc $cmd $entry
+			}
+		    }
+		}
+	    }
+	}
     }
 
     ttrace::addscript namespace {
-        append res \n
-        foreach entry [ttrace::getentries namespace] {
-            append res "::namespace eval $entry {}" \n
-        }
-        return $res
+	append res \n
+	foreach entry [ttrace::getentries namespace] {
+	    append res "::namespace eval $entry {}" \n
+	}
+	return $res
     }
 
     #
@@ -609,41 +609,41 @@ eval {
     #
 
     ttrace::addtrace variable {cmdline code args} {
-        if {$code != 0} {
-            return
-        }
-        set opts [lrange $cmdline 1 end]
-        if {[llength $opts]} {
-            set cns [uplevel 1 namespace current]
-            if {$cns == "::"} {
-                set cns ""
-            }
-            foreach {var val} $opts {
-                if {![string match "::*" $var]} {
-                    set var ${cns}::$var
-                }
-                ttrace::addentry variable $var 1
-            }
-        }
+	if {$code != 0} {
+	    return
+	}
+	set opts [lrange $cmdline 1 end]
+	if {[llength $opts]} {
+	    set cns [uplevel 1 namespace current]
+	    if {$cns == "::"} {
+		set cns ""
+	    }
+	    foreach {var val} $opts {
+		if {![string match "::*" $var]} {
+		    set var ${cns}::$var
+		}
+		ttrace::addentry variable $var 1
+	    }
+	}
     }
 
     ttrace::addscript variable {
-        append res \n
-        foreach entry [ttrace::getentries variable] {
-            set cns [namespace qual $entry]
-            set var [namespace tail $entry]
-            append res "::namespace eval $cns {" \n
-            append res "::variable $var"
-            if {[array exists $entry]} {
-                append res "\n::array set $var [list [array get $entry]]" \n
-            } elseif {[info exists $entry]} {
-                append res " [list [set $entry]]" \n
-            } else {
-                append res \n
-            }
-            append res "}" \n
-        }
-        return $res
+	append res \n
+	foreach entry [ttrace::getentries variable] {
+	    set cns [namespace qual $entry]
+	    set var [namespace tail $entry]
+	    append res "::namespace eval $cns {" \n
+	    append res "::variable $var"
+	    if {[array exists $entry]} {
+		append res "\n::array set $var [list [array get $entry]]" \n
+	    } elseif {[info exists $entry]} {
+		append res " [list [set $entry]]" \n
+	    } else {
+		append res \n
+	    }
+	    append res "}" \n
+	}
+	return $res
     }
 
 
@@ -659,35 +659,35 @@ eval {
     #
 
     ttrace::addtrace rename {cmdline code args} {
-        if {$code != 0} {
-            return
-        }
-        set cns [uplevel 1 namespace current]
-        if {$cns == "::"} {
-            set cns ""
-        }
-        set old [lindex $cmdline 1]
-        if {![string match "::*" $old]} {
-            set old ${cns}::$old
-        }
-        set new [lindex $cmdline 2]
-        if {$new != ""} {
-            if {![string match "::*" $new]} {
-                set new ${cns}::$new
-            }
-            ttrace::addentry rename $old $new
-        } else {
-            ttrace::delentry proc $old
-        }
+	if {$code != 0} {
+	    return
+	}
+	set cns [uplevel 1 namespace current]
+	if {$cns == "::"} {
+	    set cns ""
+	}
+	set old [lindex $cmdline 1]
+	if {![string match "::*" $old]} {
+	    set old ${cns}::$old
+	}
+	set new [lindex $cmdline 2]
+	if {$new != ""} {
+	    if {![string match "::*" $new]} {
+		set new ${cns}::$new
+	    }
+	    ttrace::addentry rename $old $new
+	} else {
+	    ttrace::delentry proc $old
+	}
     }
 
     ttrace::addscript rename {
-        append res \n
-        foreach old [ttrace::getentries rename] {
-            set new [ttrace::getentry rename $old]
-            append res "::rename $old {$new}" \n
-        }
-        return $res
+	append res \n
+	foreach old [ttrace::getentries rename] {
+	    set new [ttrace::getentry rename $old]
+	    append res "::rename $old {$new}" \n
+	}
+	return $res
     }
 
     #
@@ -704,82 +704,82 @@ eval {
     #
 
     ttrace::addtrace proc {cmdline code args} {
-        if {$code != 0} {
-            return
-        }
-        set cns [uplevel 1 namespace current]
-        if {$cns == "::"} {
-            set cns ""
-        }
-        set cmd [lindex $cmdline 1]
-        if {![string match "::*" $cmd]} {
-            set cmd ${cns}::$cmd
-        }
-        set dargs [info args $cmd]
-        set pbody [info body $cmd]
-        set pargs ""
-        foreach arg $dargs {
-            if {![info default $cmd $arg def]} {
-                lappend pargs $arg
-            } else {
-                lappend pargs [list $arg $def]
-            }
-        }
-        set pdef [ttrace::getentry proc $cmd]
-        if {$pdef == ""} {
-            set epoch -1 ; # never traced before
-        } else {
-            set epoch [lindex $pdef 0]
-        }
-        ttrace::addentry proc $cmd [list [incr epoch] "" $pargs $pbody]
+	if {$code != 0} {
+	    return
+	}
+	set cns [uplevel 1 namespace current]
+	if {$cns == "::"} {
+	    set cns ""
+	}
+	set cmd [lindex $cmdline 1]
+	if {![string match "::*" $cmd]} {
+	    set cmd ${cns}::$cmd
+	}
+	set dargs [info args $cmd]
+	set pbody [info body $cmd]
+	set pargs ""
+	foreach arg $dargs {
+	    if {![info default $cmd $arg def]} {
+		lappend pargs $arg
+	    } else {
+		lappend pargs [list $arg $def]
+	    }
+	}
+	set pdef [ttrace::getentry proc $cmd]
+	if {$pdef == ""} {
+	    set epoch -1 ; # never traced before
+	} else {
+	    set epoch [lindex $pdef 0]
+	}
+	ttrace::addentry proc $cmd [list [incr epoch] "" $pargs $pbody]
     }
 
     ttrace::addscript proc {
-        return {
-            if {[info command ::tcl::unknown] == ""} {
-                rename ::unknown ::tcl::unknown
-                namespace import -force ::ttrace::unknown
-            }
-            if {[info command ::tcl::info] == ""} {
-                rename ::info ::tcl::info
-            }
-            proc ::info args {
-                set cmd [lindex $args 0]
-                set hit [lsearch -glob {commands procs args default body} $cmd*]
-                if {$hit > 1} {
-                    if {[catch {uplevel 1 ::tcl::info $args}]} {
-                        uplevel 1 ttrace::_resolve [list [lindex $args 1]]
-                    }
-                    return [uplevel 1 ::tcl::info $args]
-                }
-                if {$hit == -1} {
-                    return [uplevel 1 ::tcl::info $args]
-                }
-                set cns [uplevel 1 namespace current]
-                if {$cns == "::"} {
-                    set cns ""
-                }
-                set pat [lindex $args 1]
-                if {![string match "::*" $pat]} {
-                    set pat ${cns}::$pat
-                }
-                set fns [ttrace::getentries proc $pat]
-                if {[string match $cmd* commands]} {
-                    set fns [concat $fns [ttrace::getentries xotcl $pat]]
-                }
-                foreach entry $fns {
-                    if {$cns != [namespace qual $entry]} {
-                        set lazy($entry) 1
-                    } else {
-                        set lazy([namespace tail $entry]) 1
-                    }
-                }
-                foreach entry [uplevel 1 ::tcl::info $args] {
-                    set lazy($entry) 1
-                }
-                array names lazy
-            }
-        }
+	return {
+	    if {[info command ::tcl::unknown] == ""} {
+		rename ::unknown ::tcl::unknown
+		namespace import -force ::ttrace::unknown
+	    }
+	    if {[info command ::tcl::info] == ""} {
+		rename ::info ::tcl::info
+	    }
+	    proc ::info args {
+		set cmd [lindex $args 0]
+		set hit [lsearch -glob {commands procs args default body} $cmd*]
+		if {$hit > 1} {
+		    if {[catch {uplevel 1 ::tcl::info $args}]} {
+			uplevel 1 ttrace::_resolve [list [lindex $args 1]]
+		    }
+		    return [uplevel 1 ::tcl::info $args]
+		}
+		if {$hit == -1} {
+		    return [uplevel 1 ::tcl::info $args]
+		}
+		set cns [uplevel 1 namespace current]
+		if {$cns == "::"} {
+		    set cns ""
+		}
+		set pat [lindex $args 1]
+		if {![string match "::*" $pat]} {
+		    set pat ${cns}::$pat
+		}
+		set fns [ttrace::getentries proc $pat]
+		if {[string match $cmd* commands]} {
+		    set fns [concat $fns [ttrace::getentries xotcl $pat]]
+		}
+		foreach entry $fns {
+		    if {$cns != [namespace qual $entry]} {
+			set lazy($entry) 1
+		    } else {
+			set lazy([namespace tail $entry]) 1
+		    }
+		}
+		foreach entry [uplevel 1 ::tcl::info $args] {
+		    set lazy($entry) 1
+		}
+		array names lazy
+	    }
+	}
     }
 
     #
@@ -789,53 +789,53 @@ eval {
     #
 
     ttrace::addresolver resolveprocs {cmd {export 0}} {
-        set cns [uplevel 1 namespace current]
-        set name [namespace tail $cmd]
-        if {$cns == "::"} {
-            set cns ""
-        }
-        if {![string match "::*" $cmd]} {
-            set ncmd ${cns}::$cmd
-            set gcmd ::$cmd
-        } else {
-            set ncmd $cmd
-            set gcmd $cmd
-        }
-        set pdef [ttrace::getentry proc $ncmd]
-        if {$pdef == ""} {
-            set pdef [ttrace::getentry proc $gcmd]
-            if {$pdef == ""} {
-                return 0
-            }
-            set cmd $gcmd
-        } else {
-            set cmd $ncmd
-        }
-        set epoch [lindex $pdef 0]
-        set pnsp  [lindex $pdef 1]
-        if {$pnsp != ""} {
-            set nsp [namespace qual $cmd]
-            if {$nsp == ""} {
-                set nsp ::
-            }
-            set cmd ${pnsp}::$name
-            if {[resolveprocs $cmd 1] == 0 && [info commands $cmd] == ""} {
-                return 0
-            }
-            namespace eval $nsp "namespace import -force $cmd"
-        } else {
-            uplevel 0 [list ::proc $cmd [lindex $pdef 2] [lindex $pdef 3]]
-            if {$export} {
-                set nsp [namespace qual $cmd]
-                if {$nsp == ""} {
-                    set nsp ::
-                }
-                namespace eval $nsp "namespace export $name"
-            }
-        }
-        variable resolveproc
-        set resolveproc($cmd) $epoch
-        return 1
+	set cns [uplevel 1 namespace current]
+	set name [namespace tail $cmd]
+	if {$cns == "::"} {
+	    set cns ""
+	}
+	if {![string match "::*" $cmd]} {
+	    set ncmd ${cns}::$cmd
+	    set gcmd ::$cmd
+	} else {
+	    set ncmd $cmd
+	    set gcmd $cmd
+	}
+	set pdef [ttrace::getentry proc $ncmd]
+	if {$pdef == ""} {
+	    set pdef [ttrace::getentry proc $gcmd]
+	    if {$pdef == ""} {
+		return 0
+	    }
+	    set cmd $gcmd
+	} else {
+	    set cmd $ncmd
+	}
+	set epoch [lindex $pdef 0]
+	set pnsp  [lindex $pdef 1]
+	if {$pnsp != ""} {
+	    set nsp [namespace qual $cmd]
+	    if {$nsp == ""} {
+		set nsp ::
+	    }
+	    set cmd ${pnsp}::$name
+	    if {[resolveprocs $cmd 1] == 0 && [info commands $cmd] == ""} {
+		return 0
+	    }
+	    namespace eval $nsp "namespace import -force $cmd"
+	} else {
+	    uplevel 0 [list ::proc $cmd [lindex $pdef 2] [lindex $pdef 3]]
+	    if {$export} {
+		set nsp [namespace qual $cmd]
+		if {$nsp == ""} {
+		    set nsp ::
+		}
+		namespace eval $nsp "namespace export $name"
+	    }
+	}
+	variable resolveproc
+	set resolveproc($cmd) $epoch
+	return 1
     }
 
     #
@@ -854,61 +854,61 @@ eval {
     #
 
     ttrace::atenable XOTclEnabler {args} {
-        if {[info commands ::xotcl::Class] == ""} {
-            return
-        }
-        if {[info commands ::xotcl::_creator] == ""} {
-            ::xotcl::Class create ::xotcl::_creator -instproc create {args} {
-                set result [next]
-                if {![string match ::xotcl::_* $result]} {
-                    ttrace::addentry xotcl $result ""
-                }
-                return $result
-            }
-        }
-        ::xotcl::Class instmixin ::xotcl::_creator
+	if {[info commands ::xotcl::Class] == ""} {
+	    return
+	}
+	if {[info commands ::xotcl::_creator] == ""} {
+	    ::xotcl::Class create ::xotcl::_creator -instproc create {args} {
+		set result [next]
+		if {![string match ::xotcl::_* $result]} {
+		    ttrace::addentry xotcl $result ""
+		}
+		return $result
+	    }
+	}
+	::xotcl::Class instmixin ::xotcl::_creator
     }
 
     ttrace::atdisable XOTclDisabler {args} {
-        if {   [info commands ::xotcl::Class] == ""
-            || [info commands ::xotcl::_creator] == ""} {
-            return
-        }
-        ::xotcl::Class instmixin ""
-        ::xotcl::_creator destroy
+	if {   [info commands ::xotcl::Class] == ""
+	    || [info commands ::xotcl::_creator] == ""} {
+	    return
+	}
+	::xotcl::Class instmixin ""
+	::xotcl::_creator destroy
     }
 
     set resolver [ttrace::addresolver resolveclasses {classname} {
-        set cns [uplevel 1 namespace current]
-        set script [ttrace::getentry xotcl $classname]
-        if {$script == ""} {
-            set name [namespace tail $classname]
-            if {$cns == "::"} {
-                set script [ttrace::getentry xotcl ::$name]
-            } else {
-                set script [ttrace::getentry xotcl ${cns}::$name]
-                if {$script == ""} {
-                    set script [ttrace::getentry xotcl ::$name]
-                }
-            }
-            if {$script == ""} {
-                return 0
-            }
-        }
-        uplevel 1 [list namespace eval $cns $script]
-        return 1
+	set cns [uplevel 1 namespace current]
+	set script [ttrace::getentry xotcl $classname]
+	if {$script == ""} {
+	    set name [namespace tail $classname]
+	    if {$cns == "::"} {
+		set script [ttrace::getentry xotcl ::$name]
+	    } else {
+		set script [ttrace::getentry xotcl ${cns}::$name]
+		if {$script == ""} {
+		    set script [ttrace::getentry xotcl ::$name]
+		}
+	    }
+	    if {$script == ""} {
+		return 0
+	    }
+	}
+	uplevel 1 [list namespace eval $cns $script]
+	return 1
     }]
 
     ttrace::addscript xotcl [subst -nocommands {
-        if {![catch {Serializer new} ss]} {
-            foreach entry [ttrace::getentries xotcl] {
-                if {[ttrace::getentry xotcl \$entry] == ""} {
-                    ttrace::addentry xotcl \$entry [\$ss serialize \$entry]
-                }
-            }
-            \$ss destroy
-            return {::xotcl::Class proc __unknown name {$resolver \$name}}
-        }
+	if {![catch {Serializer new} ss]} {
+	    foreach entry [ttrace::getentries xotcl] {
+		if {[ttrace::getentry xotcl \$entry] == ""} {
+		    ttrace::addentry xotcl \$entry [\$ss serialize \$entry]
+		}
+	    }
+	    \$ss destroy
+	    return {::xotcl::Class proc __unknown name {$resolver \$name}}
+	}
     }]
 
     #
@@ -917,17 +917,17 @@ eval {
     #
 
     ttrace::addcleanup {
-        variable resolveproc
-        foreach cmd [array names resolveproc] {
-            set def [ttrace::getentry proc $cmd]
-            if {$def != ""} {
-                set new [lindex $def 0]
-                set old $resolveproc($cmd)
-                if {[info command $cmd] != "" && $new != $old} {
-                    catch {rename $cmd ""}
-                }
-            }
-        }
+	variable resolveproc
+	foreach cmd [array names resolveproc] {
+	    set def [ttrace::getentry proc $cmd]
+	    if {$def != ""} {
+		set new [lindex $def 0]
+		set old $resolveproc($cmd)
+		if {[info command $cmd] != "" && $new != $old} {
+		    catch {rename $cmd ""}
+		}
+	    }
+	}
     }
 }
 

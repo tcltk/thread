@@ -53,32 +53,32 @@ namespace eval phttpd {
     variable ErrorPage;       # Format of error response page in html
 
     array set Httpd {
-        -name  phttpd
-        -vers  1.0
-        -root  "."
-        -index index.htm
+	-name  phttpd
+	-vers  1.0
+	-root  "."
+	-index index.htm
     }
     array set HttpCodes {
-        400  "Bad Request"
-        401  "Not Authorized"
-        404  "Not Found"
-        500  "Server error"
+	400  "Bad Request"
+	401  "Not Authorized"
+	404  "Not Found"
+	500  "Server error"
     }
     array set MimeTypes {
-        {}   "text/plain"
-        .txt "text/plain"
-        .htm "text/html"
-        .htm "text/html"
-        .gif "image/gif"
-        .jpg "image/jpeg"
-        .png "image/png"
+	{}   "text/plain"
+	.txt "text/plain"
+	.htm "text/html"
+	.htm "text/html"
+	.gif "image/gif"
+	.jpg "image/jpeg"
+	.png "image/png"
     }
     set ErrorPage {
-        <title>Error: %1$s %2$s</title>
-        <h1>%3$s</h1>
-        <p>Problem in accessing "%4$s" on this server.</p>
-        <hr>
-        <i>%5$s/%6$s Server at %7$s Port %8$s</i>
+	<title>Error: %1$s %2$s</title>
+	<h1>%3$s</h1>
+	<p>Problem in accessing "%4$s" on this server.</p>
+	<hr>
+	<i>%5$s/%6$s Server at %7$s Port %8$s</i>
     }
 }
 
@@ -104,16 +104,16 @@ proc phttpd::create {port args} {
 
     set arglen [llength $args]
     if {$arglen} {
-        if {$arglen % 2} {
-            error "wrong \# args, should be: key1 val1 key2 val2..."
-        }
-        set opts [array names Httpd]
-        foreach {arg val} $args {
-            if {[lsearch $opts $arg] < 0} {
-                error "unknown option \"$arg\""
-            }
-            set Httpd($arg) $val
-        }
+	if {$arglen % 2} {
+	    error "wrong \# args, should be: key1 val1 key2 val2..."
+	}
+	set opts [array names Httpd]
+	foreach {arg val} $args {
+	    if {[lsearch $opts $arg] < 0} {
+		error "unknown option \"$arg\""
+	    }
+	    set Httpd($arg) $val
+	}
     }
 
     #
@@ -121,15 +121,15 @@ proc phttpd::create {port args} {
     #
 
     if {[info exists ::TCL_TPOOL] == 0} {
-        #
-        # Using the internal C-based thread pool
-        #
-        set initcmd "source -encoding utf-8 ../phttpd/phttpd.tcl"
+	#
+	# Using the internal C-based thread pool
+	#
+	set initcmd "source -encoding utf-8 ../phttpd/phttpd.tcl"
     } else {
-        #
-        # Using the Tcl-level hand-crafted thread pool
-        #
-        append initcmd "source -encoding utf-8 ../phttpd/phttpd.tcl" \n $::TCL_TPOOL
+	#
+	# Using the Tcl-level hand-crafted thread pool
+	#
+	append initcmd "source -encoding utf-8 ../phttpd/phttpd.tcl" \n $::TCL_TPOOL
     }
 
     set Httpd(tpid) [tpool::create -maxworkers 8 -initcmd $initcmd]
@@ -258,57 +258,57 @@ proc phttpd::Read {sock} {
     set data(sock) $sock
 
     while {1} {
-        if {[catch {gets $data(sock) line} readCount] || [eof $data(sock)]} {
-            return [Done]
-        }
-        if {![info exists data(state)]} {
-            set pat {(POST|GET) ([^?]+)\??([^ ]*) HTTP/1\.[0-9]}
-            if {[regexp $pat $line x data(proto) data(url) data(query)]} {
-                set data(state) mime
-                continue
-            } else {
-                Log error "bad request line: (%s)" $line
-                Error 400
-                return [Done]
-            }
-        }
+	if {[catch {gets $data(sock) line} readCount] || [eof $data(sock)]} {
+	    return [Done]
+	}
+	if {![info exists data(state)]} {
+	    set pat {(POST|GET) ([^?]+)\??([^ ]*) HTTP/1\.[0-9]}
+	    if {[regexp $pat $line x data(proto) data(url) data(query)]} {
+		set data(state) mime
+		continue
+	    } else {
+		Log error "bad request line: (%s)" $line
+		Error 400
+		return [Done]
+	    }
+	}
 
-        # string compare $readCount 0 maps -1 to -1, 0 to 0, and > 0 to 1
+	# string compare $readCount 0 maps -1 to -1, 0 to 0, and > 0 to 1
 
-        set state [string compare $readCount 0],$data(state),$data(proto)
-        switch -- $state {
-            "0,mime,GET" - "0,query,POST" {
-                Respond
-                return [Done]
-            }
-            "0,mime,POST" {
-                set data(state) query
-                set data(query) ""
-            }
-            "1,mime,POST" - "1,mime,GET" {
-                if [regexp {([^:]+):[   ]*(.*)}  $line dummy key value] {
-                    set data(mime,[string tolower $key]) $value
-                }
-            }
-            "1,query,POST" {
-                append data(query) $line
-                set clen $data(mime,content-length)
-                if {($clen - [string length $data(query)]) <= 0} {
-                    Respond
-                    return [Done]
-                }
-            }
-            default {
-                if [eof $data(sock)] {
-                    Log error "unexpected eof; client closed connection"
-                    return [Done]
-                } else {
-                    Log error "bad http protocol state: %s" $state
-                    Error 400
-                    return [Done]
-                }
-            }
-        }
+	set state [string compare $readCount 0],$data(state),$data(proto)
+	switch -- $state {
+	    "0,mime,GET" - "0,query,POST" {
+		Respond
+		return [Done]
+	    }
+	    "0,mime,POST" {
+		set data(state) query
+		set data(query) ""
+	    }
+	    "1,mime,POST" - "1,mime,GET" {
+		if [regexp {([^:]+):[   ]*(.*)}  $line dummy key value] {
+		    set data(mime,[string tolower $key]) $value
+		}
+	    }
+	    "1,query,POST" {
+		append data(query) $line
+		set clen $data(mime,content-length)
+		if {($clen - [string length $data(query)]) <= 0} {
+		    Respond
+		    return [Done]
+		}
+	    }
+	    default {
+		if [eof $data(sock)] {
+		    Log error "unexpected eof; client closed connection"
+		    return [Done]
+		} else {
+		    Log error "bad http protocol state: %s" $state
+		    Error 400
+		    return [Done]
+		}
+	    }
+	}
     }
 }
 
@@ -335,7 +335,7 @@ proc phttpd::Done {} {
     close $data(sock)
 
     if {[info exists data]} {
-        unset data
+	unset data
     }
 
     set done 1 ; # Releases the request thread (See Ticket procedure)
@@ -362,48 +362,48 @@ proc phttpd::Respond {} {
 
     if {[info commands $data(url)] == $data(url)} {
 
-        #
-        # Service URL-procedure
-        #
+	#
+	# Service URL-procedure
+	#
 
-        if {[catch {
-            puts $data(sock) "HTTP/1.0 200 OK"
-            puts $data(sock) "Date: [Date]"
-            puts $data(sock) "Last-Modified: [Date]"
-        } err]} {
-            Log error "client closed connection prematurely: %s" $err
-            return
-        }
-        if {[catch {$data(url) data} err]} {
-            Log error "%s: %s" $data(url) $err
-        }
+	if {[catch {
+	    puts $data(sock) "HTTP/1.0 200 OK"
+	    puts $data(sock) "Date: [Date]"
+	    puts $data(sock) "Last-Modified: [Date]"
+	} err]} {
+	    Log error "client closed connection prematurely: %s" $err
+	    return
+	}
+	if {[catch {$data(url) data} err]} {
+	    Log error "%s: %s" $data(url) $err
+	}
 
     } else {
 
-        #
-        # Service regular file path
-        #
+	#
+	# Service regular file path
+	#
 
-        set mypath [Url2File $data(url)]
-        if {![catch {open $mypath} i]} {
-            if {[catch {
-                puts $data(sock) "HTTP/1.0 200 OK"
-                puts $data(sock) "Date: [Date]"
-                puts $data(sock) "Last-Modified: [Date [file mtime $mypath]]"
-                puts $data(sock) "Content-Type: [ContentType $mypath]"
-                puts $data(sock) "Content-Length: [file size $mypath]"
-                puts $data(sock) ""
-                fconfigure $data(sock) -translation binary -blocking 0
-                fconfigure $i          -translation binary
-                fcopy $i $data(sock)
-                close $i
-            } err]} {
-                Log error "client closed connection prematurely: %s" $err
-            }
-        } else {
-            Log error "%s: %s" $data(url) $i
-            Error 404
-        }
+	set mypath [Url2File $data(url)]
+	if {![catch {open $mypath} i]} {
+	    if {[catch {
+		puts $data(sock) "HTTP/1.0 200 OK"
+		puts $data(sock) "Date: [Date]"
+		puts $data(sock) "Last-Modified: [Date [file mtime $mypath]]"
+		puts $data(sock) "Content-Type: [ContentType $mypath]"
+		puts $data(sock) "Content-Length: [file size $mypath]"
+		puts $data(sock) ""
+		fconfigure $data(sock) -translation binary -blocking 0
+		fconfigure $i          -translation binary
+		fcopy $i $data(sock)
+		close $i
+	    } err]} {
+		Log error "client closed connection prematurely: %s" $err
+	    }
+	} else {
+	    Log error "%s: %s" $data(url) $i
+	    Error 404
+	}
     }
 }
 
@@ -459,24 +459,24 @@ proc phttpd::Error {code} {
 
     append data(url) ""
     set msg \
-        [format $ErrorPage     \
-             $code             \
-             $HttpCodes($code) \
-             $HttpCodes($code) \
-             $data(url)        \
-             $Httpd(-name)     \
-             $Httpd(-vers)     \
-             [info hostname]   \
-             80                \
-            ]
+	[format $ErrorPage     \
+	     $code             \
+	     $HttpCodes($code) \
+	     $HttpCodes($code) \
+	     $data(url)        \
+	     $Httpd(-name)     \
+	     $Httpd(-vers)     \
+	     [info hostname]   \
+	     80                \
+	    ]
     if {[catch {
-        puts $data(sock) "HTTP/1.0 $code $HttpCodes($code)"
-        puts $data(sock) "Date: [Date]"
-        puts $data(sock) "Content-Length: [string length $msg]"
-        puts $data(sock) ""
-        puts $data(sock) $msg
+	puts $data(sock) "HTTP/1.0 $code $HttpCodes($code)"
+	puts $data(sock) "Date: [Date]"
+	puts $data(sock) "Content-Length: [string length $msg]"
+	puts $data(sock) ""
+	puts $data(sock) $msg
     } err]} {
-        Log error "client closed connection prematurely: %s" $err
+	Log error "client closed connection prematurely: %s" $err
     }
 }
 
@@ -500,7 +500,7 @@ proc phttpd::Date {{seconds 0}} {
     # @c Generate a date string in HTTP format.
 
     if {$seconds == 0} {
-        set seconds [clock seconds]
+	set seconds [clock seconds]
     }
     clock format $seconds -format {%a, %d %b %Y %T %Z} -gmt 1
 }
@@ -553,27 +553,27 @@ proc phttpd::Url2File {url} {
     set level 0
 
     foreach part [split $url /] {
-        set part [CgiMap $part]
-        if [regexp {[:/]} $part] {
-            return ""
-        }
-        switch -- $part {
-            "." { }
-            ".." {incr level -1}
-            default {incr level}
-        }
-        if {$level <= 0} {
-            return ""
-        }
-        lappend pathlist $part
+	set part [CgiMap $part]
+	if [regexp {[:/]} $part] {
+	    return ""
+	}
+	switch -- $part {
+	    "." { }
+	    ".." {incr level -1}
+	    default {incr level}
+	}
+	if {$level <= 0} {
+	    return ""
+	}
+	lappend pathlist $part
     }
 
     set file [eval file join $pathlist]
 
     if {[file isdirectory $file]} {
-        return [file join $file $Httpd(-index)]
+	return [file join $file $Httpd(-index)]
     } else {
-        return $file
+	return $file
     }
 }
 
@@ -624,7 +624,7 @@ proc phttpd::QueryMap {query} {
     regsub -all {  }   $query { {} } query; # Othewise we lose empty values
 
     foreach {key val} $query {
-        lappend res [CgiMap $key] [CgiMap $val]
+	lappend res [CgiMap $key] [CgiMap $val]
     }
     return $res
 }
@@ -663,16 +663,16 @@ proc /monitor {array} {
     #
 
     puts $data(sock) [subst {
-        <html>
-        <body>
-        <h3>[clock format [clock seconds]]</h3>
+	<html>
+	<body>
+	<h3>[clock format [clock seconds]]</h3>
     }]
 
     after 1 ; # Simulate blocking call
 
     puts $data(sock) [subst {
-        </body>
-        </html>
+	</body>
+	</html>
     }]
 }
 

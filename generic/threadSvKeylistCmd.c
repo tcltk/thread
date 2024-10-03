@@ -55,16 +55,16 @@ Sv_RegisterKeylistCommands(void)
     static int initialized;
 
     if (initialized == 0) {
-        Tcl_MutexLock(&initMutex);
-        if (initialized == 0) {
-            Sv_RegisterCommand("keylset",  SvKeylsetObjCmd,  NULL, 0);
-            Sv_RegisterCommand("keylget",  SvKeylgetObjCmd,  NULL, 0);
-            Sv_RegisterCommand("keyldel",  SvKeyldelObjCmd,  NULL, 0);
-            Sv_RegisterCommand("keylkeys", SvKeylkeysObjCmd, NULL, 0);
-            Sv_RegisterObjType(&keyedListType, DupKeyedListInternalRepShared);
-            initialized = 1;
-        }
-        Tcl_MutexUnlock(&initMutex);
+	Tcl_MutexLock(&initMutex);
+	if (initialized == 0) {
+	    Sv_RegisterCommand("keylset",  SvKeylsetObjCmd,  NULL, 0);
+	    Sv_RegisterCommand("keylget",  SvKeylgetObjCmd,  NULL, 0);
+	    Sv_RegisterCommand("keyldel",  SvKeyldelObjCmd,  NULL, 0);
+	    Sv_RegisterCommand("keylkeys", SvKeylkeysObjCmd, NULL, 0);
+	    Sv_RegisterObjType(&keyedListType, DupKeyedListInternalRepShared);
+	    initialized = 1;
+	}
+	Tcl_MutexUnlock(&initMutex);
     }
 }
 
@@ -106,19 +106,19 @@ SvKeylsetObjCmd(
     flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
     if (ret != TCL_OK) {
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
     if ((objc - off) < 2 || ((objc - off) % 2)) {
-        Tcl_WrongNumArgs(interp, off, objv, "key value ?key value ...?");
-        goto cmd_err;
+	Tcl_WrongNumArgs(interp, off, objv, "key value ?key value ...?");
+	goto cmd_err;
     }
     for (i = off; i < objc; i += 2) {
-        key = Tcl_GetString(objv[i]);
-        val = Sv_DuplicateObj(objv[i+1]);
-        ret = TclX_KeyedListSet(interp, svObj->tclObj, key, val);
-        if (ret != TCL_OK) {
-            goto cmd_err;
-        }
+	key = Tcl_GetString(objv[i]);
+	val = Sv_DuplicateObj(objv[i+1]);
+	ret = TclX_KeyedListSet(interp, svObj->tclObj, key, val);
+	if (ret != TCL_OK) {
+	    goto cmd_err;
+	}
     }
 
     return Sv_PutContainer(interp, svObj, SV_CHANGED);
@@ -165,48 +165,48 @@ SvKeylgetObjCmd(
     flg = FLAGS_CREATEARRAY | FLAGS_CREATEVAR;
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, flg);
     if (ret != TCL_OK) {
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
     if ((objc - off) > 2) {
-        Tcl_WrongNumArgs(interp, off, objv, "?key? ?var?");
-        goto cmd_err;
+	Tcl_WrongNumArgs(interp, off, objv, "?key? ?var?");
+	goto cmd_err;
     }
     if ((objc - off) == 0) {
-        if (Sv_PutContainer(interp, svObj, SV_UNCHANGED) != TCL_OK) {
-            return TCL_ERROR;
-        }
-        return SvKeylkeysObjCmd(arg, interp, objc, objv);
+	if (Sv_PutContainer(interp, svObj, SV_UNCHANGED) != TCL_OK) {
+	    return TCL_ERROR;
+	}
+	return SvKeylkeysObjCmd(arg, interp, objc, objv);
     }
     if ((objc - off) == 2) {
-        varObjPtr = objv[off+1];
+	varObjPtr = objv[off+1];
     } else {
-        varObjPtr = NULL;
+	varObjPtr = NULL;
     }
 
     key = Tcl_GetString(objv[off]);
     ret = TclX_KeyedListGet(interp, svObj->tclObj, key, &valObjPtr);
     if (ret == TCL_ERROR) {
-        goto cmd_err;
+	goto cmd_err;
     }
 
     if (ret == TCL_BREAK) {
-        if (varObjPtr) {
-            Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
-        } else {
-            Tcl_AppendResult (interp, "key \"", key, "\" not found", NULL);
-            goto cmd_err;
-        }
+	if (varObjPtr) {
+	    Tcl_SetObjResult(interp, Tcl_NewIntObj(0));
+	} else {
+	    Tcl_AppendResult (interp, "key \"", key, "\" not found", NULL);
+	    goto cmd_err;
+	}
     } else {
-        Tcl_Obj *resObjPtr = Sv_DuplicateObj(valObjPtr);
-        if (varObjPtr) {
-            Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
-            Tcl_GetString(varObjPtr);
-            if (varObjPtr->length) {
-                Tcl_ObjSetVar2(interp, varObjPtr, NULL, resObjPtr, 0);
-            }
-        } else {
-            Tcl_SetObjResult(interp, resObjPtr);
-        }
+	Tcl_Obj *resObjPtr = Sv_DuplicateObj(valObjPtr);
+	if (varObjPtr) {
+	    Tcl_SetObjResult(interp, Tcl_NewIntObj(1));
+	    Tcl_GetString(varObjPtr);
+	    if (varObjPtr->length) {
+		Tcl_ObjSetVar2(interp, varObjPtr, NULL, resObjPtr, 0);
+	    }
+	} else {
+	    Tcl_SetObjResult(interp, resObjPtr);
+	}
     }
 
     return Sv_PutContainer(interp, svObj, SV_UNCHANGED);
@@ -251,21 +251,21 @@ SvKeyldelObjCmd(
 
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
     if ((objc - off) < 1) {
-        Tcl_WrongNumArgs(interp, off, objv, "key ?key ...?");
-        goto cmd_err;
+	Tcl_WrongNumArgs(interp, off, objv, "key ?key ...?");
+	goto cmd_err;
     }
     for (i = off; i < objc; i++) {
-        key = Tcl_GetString(objv[i]);
-        ret = TclX_KeyedListDelete(interp, svObj->tclObj, key);
-        if (ret == TCL_BREAK) {
-            Tcl_AppendResult(interp, "key \"", key, "\" not found", NULL);
-        }
-        if (ret == TCL_BREAK || ret == TCL_ERROR) {
-            goto cmd_err;
-        }
+	key = Tcl_GetString(objv[i]);
+	ret = TclX_KeyedListDelete(interp, svObj->tclObj, key);
+	if (ret == TCL_BREAK) {
+	    Tcl_AppendResult(interp, "key \"", key, "\" not found", NULL);
+	}
+	if (ret == TCL_BREAK || ret == TCL_ERROR) {
+	    goto cmd_err;
+	}
     }
 
     return Sv_PutContainer(interp, svObj, SV_CHANGED);
@@ -311,23 +311,23 @@ SvKeylkeysObjCmd(
 
     ret = Sv_GetContainer(interp, objc, objv, &svObj, &off, 0);
     if (ret != TCL_OK) {
-        return TCL_ERROR;
+	return TCL_ERROR;
     }
     if ((objc - off) > 1) {
-         Tcl_WrongNumArgs(interp, 1, objv, "?lkey?");
-         goto cmd_err;
+	 Tcl_WrongNumArgs(interp, 1, objv, "?lkey?");
+	 goto cmd_err;
     }
     if ((objc - off) == 1) {
-        key = Tcl_GetString(objv[off]);
+	key = Tcl_GetString(objv[off]);
     }
 
     ret = TclX_KeyedListGetKeys(interp, svObj->tclObj, key, &listObj);
 
     if (key && ret == TCL_BREAK) {
-        Tcl_AppendResult(interp, "key \"", key, "\" not found", NULL);
+	Tcl_AppendResult(interp, "key \"", key, "\" not found", NULL);
     }
     if (ret == TCL_BREAK || ret == TCL_ERROR) {
-        goto cmd_err;
+	goto cmd_err;
     }
 
     Tcl_SetObjResult (interp, listObj); /* listObj allocated by API !*/
