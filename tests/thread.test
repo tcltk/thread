@@ -24,11 +24,11 @@ set tcltest::mainThread [thread::id]
 
 proc ThreadReap {} {
     while {[llength [thread::names]] > 1} {
-        foreach tid [thread::names] {
-            if {$tid != $::tcltest::mainThread} {
-                catch {thread::release -wait $tid}
-            }
-        }
+	foreach tid [thread::names] {
+	    if {$tid != $::tcltest::mainThread} {
+		catch {thread::release -wait $tid}
+	    }
+	}
     }
     llength [thread::names]
 }
@@ -58,13 +58,13 @@ test thread-4.1 {thread::create: create one shot thread} {
     ThreadReap
     thread::create {set x 5}
     foreach try {0 1 2 4 5 6} {
-        # Try various ways to yield
-        update
-        after 10
-        set l [llength [thread::names]]
-        if {$l == 1} {
-            break
-        }
+	# Try various ways to yield
+	update
+	after 10
+	set l [llength [thread::names]]
+	if {$l == 1} {
+	    break
+	}
     }
     ThreadReap
     set l
@@ -342,13 +342,13 @@ test thread-13.0 {thread::broadcast} {
     ThreadReap
     catch {unset tids}
     foreach i {1 2 3 4} {
-        lappend tids [thread::create]
+	lappend tids [thread::create]
     }
     thread::broadcast {set x 5}
     update
     catch {unset r}
     foreach tid $tids {
-        lappend r [thread::send $tid {if {[info exists x]} {set x}}]
+	lappend r [thread::send $tid {if {[info exists x]} {set x}}]
     }
     ThreadReap
     set r
@@ -486,9 +486,9 @@ test thread-16.2 {thread::errorproc - async reporting} {
     set etid ""
     set emsg ""
     proc myerrproc {tid msg} {
-        global etid emsg
-        set etid $tid
-        set emsg $msg
+	global etid emsg
+	set etid $tid
+	set emsg $msg
     }
     ThreadReap
     thread::errorproc myerrproc
@@ -530,13 +530,13 @@ test thread-17.2 {thread::transfer - target thread dying} {chanTransfer} {
 
 test thread-17.3 {thread::transfer - clearing of fileevents} {chanTransfer} {
     proc _HandleIt_ {} {
-        global gotEvents tid file
-        if {$gotEvents == 0} {
-            thread::transfer $tid $file
-            # From now on no events should be delivered anymore,
-            # restricting the end value to 1
-        }
-        incr gotEvents
+	global gotEvents tid file
+	if {$gotEvents == 0} {
+	    thread::transfer $tid $file
+	    # From now on no events should be delivered anymore,
+	    # restricting the end value to 1
+	}
+	incr gotEvents
     }
     ThreadReap
     set tid [thread::create]
@@ -900,9 +900,9 @@ test thread-19.12 {thread::mutex - lock exclusive between threads} {
     set tid [thread::create]
     set emutex [thread::mutex create]
     thread::send -async $tid [subst {
-        thread::mutex lock $emutex
-        after 2000
-        thread::mutex unlock $emutex
+	thread::mutex lock $emutex
+	after 2000
+	thread::mutex unlock $emutex
     }]
     update
     after 10
@@ -985,9 +985,9 @@ test thread-20.8 {thread::rwmutex - readlock mutex} {
     set tid [thread::create]
     set rwmutex [thread::rwmutex create]
     thread::send -async $tid [subst {
-        thread::rwmutex rlock $rwmutex
-        after 1000
-        thread::rwmutex unlock $rwmutex
+	thread::rwmutex rlock $rwmutex
+	after 1000
+	thread::rwmutex unlock $rwmutex
     }]
     update
     after 10
@@ -1005,9 +1005,9 @@ test thread-20.9 {thread::rwmutex - writelock mutex} {
     set tid [thread::create]
     set rwmutex [thread::rwmutex create]
     thread::send -async $tid [subst {
-        thread::rwmutex wlock $rwmutex
-        after 2000
-        thread::rwmutex unlock $rwmutex
+	thread::rwmutex wlock $rwmutex
+	after 2000
+	thread::rwmutex unlock $rwmutex
     }]
     update
     after 10
@@ -1142,7 +1142,7 @@ test thread-21.12 {thread::cond - wait locked mutex from wrong thread} {
     set cond [thread::cond create]
     thread::mutex lock $emutex
     thread::send -async $tid [subst -nocommands {
-        set code [catch {thread::cond wait $cond $emutex 1000} result]
+	set code [catch {thread::cond wait $cond $emutex 1000} result]
     }]
     update
     after 20
@@ -1180,10 +1180,10 @@ test thread-21.15 {thread::cond - regular timed wait} {
     set emutex [thread::mutex create]
     set cond [thread::cond create]
     thread::send -async $tid [subst {
-        thread::mutex lock $emutex
-        thread::cond wait $cond $emutex 2000
-        thread::mutex unlock $emutex
-        set test 1
+	thread::mutex lock $emutex
+	thread::cond wait $cond $emutex 2000
+	thread::mutex unlock $emutex
+	set test 1
     }]
     update
     after 10
@@ -1203,9 +1203,9 @@ test thread-21.16 {thread::cond - delete waited variable} {
     set emutex [thread::mutex create]
     set cond [thread::cond create]
     thread::send -async $tid [subst {
-        thread::mutex lock $emutex
-        thread::cond wait $cond $emutex 500
-        thread::mutex unlock $emutex
+	thread::mutex lock $emutex
+	thread::cond wait $cond $emutex 500
+	thread::mutex unlock $emutex
     }]
     update
     after 10
@@ -1221,11 +1221,11 @@ test thread-21.16 {thread::cond - delete waited variable} {
 test thread-22.1  {thread::send -command} {
     ThreadReap
     after 0 [list ::apply [list {} {
-        set tid [thread::create]
-        thread::send -command $tid {lindex hello} [list ::apply [list args {
-            variable result
-            set result $args
-        } [namespace current]]]
+	set tid [thread::create]
+	thread::send -command $tid {lindex hello} [list ::apply [list args {
+	    variable result
+	    set result $args
+	} [namespace current]]]
     } [namespace current]]]
     vwait [namespace current]::result
     ThreadReap

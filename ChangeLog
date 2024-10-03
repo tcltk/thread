@@ -606,7 +606,7 @@
 	  source and target thread ID's for the detached
 	  channel to zero, thus signalizing the cleanup code
 	  to leave the channel in the cleanup-list when the
- 	  thread who detached it exits.
+	  thread who detached it exits.
 
 2005-08-24 Zoran Vasiljevic <zv@archiware.com>
 
@@ -1016,7 +1016,7 @@
 
 	* generic/threadPoolCmd.c: added "-nowait" option
 	to the "tpool::post" commandi. This allows the
- 	caller to post jobs to the threadpool queue without
+	caller to post jobs to the threadpool queue without
 	waiting for an idle thread. The implementation will
 	start at least one worker thread if there is none
 	available to satisfy the first request.
@@ -1151,7 +1151,7 @@
 	in the ThreadRelease.
 
 	* tcl/tpool/tpool.tcl: implemented missing API calls found
- 	in the C-level implementation.
+	in the C-level implementation.
 
 	* tcl/phttpd/phttpd.tcl: simplified switching to Tcl-level
 	threadpool implementation.
@@ -1296,7 +1296,7 @@
 	the thread waiting until the target thread has really
 	exited. Otherwise, the command exits immediately and
 	target thread may exit asynchronously some time later.
- 	This is not techically needed since one can always join
+	This is not techically needed since one can always join
 	the exiting thread, but the join command is not
 	available for some older Tcl versions.
 
@@ -1315,7 +1315,7 @@
 
 2002-07-09  Zoran Vasiljevic <zv@archiware.com>
 	* README: added this file
- 	* license.terms: added this file
+	* license.terms: added this file
 
 2002-07-05  Zoran Vasiljevic <zv@archiware.com>
 
@@ -1467,8 +1467,8 @@
 	running.
 
 	* generic/threadCmd.c: added conditional setup of the command
- 	prefix. Now, the "NS" can be used to select the command prefix
- 	for thread::* commands.
+	prefix. Now, the "NS" can be used to select the command prefix
+	for thread::* commands.
 
 2002-01-26  David Gravereaux <davygrvy@pobox.com>
 
@@ -1783,7 +1783,7 @@
 
 2000-07-03 Zoran Vasiljevic <zv@munich.com>
 
-   	Summary of changes:
+	Summary of changes:
 
 	* generic/threadSpCmd.c: new file with implementation of
 	  "thread::mutex" and "thread::cond" commands. Documentation

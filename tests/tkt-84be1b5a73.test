@@ -9,17 +9,17 @@ test tkt-84be1b5a73 {Ticket 84be1b5a73} -body {
     set resultvar() {}
 
     trace add variable resultvar() write {
-        unset -nocomplain resultvar()
-        list}
+	unset -nocomplain resultvar()
+	list}
 
     proc errorproc {tid einfo} {}
     thread::errorproc errorproc
     thread::send -async $t {
-        error ""
+	error ""
     } resultvar()
 
     after 1000 {
-        set forever 1
+	set forever 1
     }
     vwait forever
 } -returnCodes 0

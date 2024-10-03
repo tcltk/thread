@@ -182,9 +182,8 @@ ps_lmdb_open(
     ctx->err = mdb_env_open(ctx->env, ext, MDB_NOSUBDIR|MDB_NOLOCK, 0666);
     Tcl_DStringFree(&toext);
 
-    if (ctx->err)
-    {
-    	Tcl_Free(ctx);
+    if (ctx->err) {
+	Tcl_Free(ctx);
 	return NULL;
     }
 

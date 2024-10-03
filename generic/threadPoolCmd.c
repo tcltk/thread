@@ -1084,7 +1084,7 @@ CreateWorker(
     Tcl_MutexLock(&startMutex);
     if (Tcl_CreateThread(&id, TpoolWorker, &result,
 			 TCL_THREAD_STACK_DEFAULT, 0) != TCL_OK) {
-    	Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_INDEX_NONE));
+	Tcl_SetObjResult(interp, Tcl_NewStringObj("can't create a new thread", TCL_INDEX_NONE));
 	Tcl_MutexUnlock(&startMutex);
 	return TCL_ERROR;
     }
@@ -1579,7 +1579,7 @@ SetResult(
 	}
 	if (rPtr->errorInfo) {
 	    if (interp) {
-	    	Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(rPtr->errorInfo, TCL_INDEX_NONE));
+		Tcl_AppendObjToErrorInfo(interp, Tcl_NewStringObj(rPtr->errorInfo, TCL_INDEX_NONE));
 	    }
 	    Tcl_Free(rPtr->errorInfo);
 	    rPtr->errorInfo = NULL;
