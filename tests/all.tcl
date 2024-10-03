@@ -47,7 +47,7 @@ foreach file [lsort [::tcltest::getMatchingFiles]] {
     set tail [file tail $file]
     puts stdout $tail
     if {[catch {source -encoding utf-8 $file} msg]} {
-        puts stdout $msg
+	puts stdout $msg
     }
 }
 

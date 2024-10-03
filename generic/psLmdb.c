@@ -42,26 +42,26 @@ void LmdbTxnGet(LmdbCtx ctx, enum LmdbOpenMode mode)
     // Read transactions are reused, if possible
     if (ctx->txn && mode == LmdbRead)
     {
-        ctx->err = mdb_txn_renew(ctx->txn);
-        if (ctx->err)
-        {
-            ctx->txn = NULL;
-        }
+	ctx->err = mdb_txn_renew(ctx->txn);
+	if (ctx->err)
+	{
+	    ctx->txn = NULL;
+	}
     }
     else if (ctx->txn && mode == LmdbWrite)
     {
-        LmdbTxnAbort(ctx);
+	LmdbTxnAbort(ctx);
     }
 
     if (ctx->txn == NULL)
     {
-        ctx->err = mdb_txn_begin(ctx->env, NULL, 0, &ctx->txn);
+	ctx->err = mdb_txn_begin(ctx->env, NULL, 0, &ctx->txn);
     }
 
     if (ctx->err)
     {
-        ctx->txn = NULL;
-        return;
+	ctx->txn = NULL;
+	return;
     }
 
     // Given the setup above, and the arguments given, this won't fail.
@@ -162,7 +162,7 @@ ps_lmdb_open(
     ctx = (LmdbCtx)ckalloc(sizeof(*ctx));
     if (ctx == NULL)
     {
-        return NULL;
+	return NULL;
     }
 
     ctx->env = NULL;
@@ -173,8 +173,8 @@ ps_lmdb_open(
     ctx->err = mdb_env_create(&ctx->env);
     if (ctx->err)
     {
-        ckfree(ctx);
-        return NULL;
+	ckfree(ctx);
+	return NULL;
     }
 
     Tcl_DStringInit(&toext);
@@ -184,8 +184,8 @@ ps_lmdb_open(
 
     if (ctx->err)
     {
-        ckfree(ctx);
-        return NULL;
+	ckfree(ctx);
+	return NULL;
     }
 
     return ctx;
@@ -213,11 +213,11 @@ ps_lmdb_close(
     LmdbCtx ctx = (LmdbCtx)handle;
     if (ctx->cur)
     {
-        mdb_cursor_close(ctx->cur);
+	mdb_cursor_close(ctx->cur);
     }
     if (ctx->txn)
     {
-        LmdbTxnAbort(ctx);
+	LmdbTxnAbort(ctx);
     }
 
     mdb_env_close(ctx->env);
@@ -255,7 +255,7 @@ ps_lmdb_get(
     LmdbTxnGet(ctx, LmdbRead);
     if (ctx->err)
     {
-        return 1;
+	return 1;
     }
 
     key.mv_data = (void *)keyptr;
@@ -264,8 +264,8 @@ ps_lmdb_get(
     ctx->err = mdb_get(ctx->txn, ctx->dbi, &key, &data);
     if (ctx->err)
     {
-        mdb_txn_reset(ctx->txn);
-        return 1;
+	mdb_txn_reset(ctx->txn);
+	return 1;
     }
 
     *dataptrptr = (char *)data.mv_data;
@@ -310,22 +310,22 @@ ps_lmdb_first(
     LmdbTxnGet(ctx, LmdbRead);
     if (ctx->err)
     {
-        return 1;
+	return 1;
     }
 
     ctx->err = mdb_cursor_open(ctx->txn, ctx->dbi, &ctx->cur);
     if (ctx->err)
     {
-        return 1;
+	return 1;
     }
 
     ctx->err = mdb_cursor_get(ctx->cur, &key, &data, MDB_FIRST);
     if (ctx->err)
     {
-        mdb_txn_reset(ctx->txn);
-        mdb_cursor_close(ctx->cur);
-        ctx->cur = NULL;
-        return 1;
+	mdb_txn_reset(ctx->txn);
+	mdb_cursor_close(ctx->cur);
+	ctx->cur = NULL;
+	return 1;
     }
 
     *dataptrptr = (char *)data.mv_data;
@@ -363,10 +363,10 @@ static int ps_lmdb_next(
     ctx->err = mdb_cursor_get(ctx->cur, &key, &data, MDB_NEXT);
     if (ctx->err)
     {
-        mdb_txn_reset(ctx->txn);
-        mdb_cursor_close(ctx->cur);
-        ctx->cur = NULL;
-        return 1;
+	mdb_txn_reset(ctx->txn);
+	mdb_cursor_close(ctx->cur);
+	ctx->cur = NULL;
+	return 1;
     }
 
     *dataptrptr = (char *)data.mv_data;
@@ -406,7 +406,7 @@ ps_lmdb_put(
     LmdbTxnGet(ctx, LmdbWrite);
     if (ctx->err)
     {
-        return -1;
+	return -1;
     }
 
     key.mv_data = (void*)keyptr;
@@ -418,11 +418,11 @@ ps_lmdb_put(
     ctx->err = mdb_put(ctx->txn, ctx->dbi, &key, &data, 0);
     if (ctx->err)
     {
-        LmdbTxnAbort(ctx);
+	LmdbTxnAbort(ctx);
     }
     else
     {
-        LmdbTxnCommit(ctx);
+	LmdbTxnCommit(ctx);
     }
 
     return ctx->err ? -1 : 0;
@@ -456,7 +456,7 @@ ps_lmdb_delete(
     LmdbTxnGet(ctx, LmdbWrite);
     if (ctx->err)
     {
-        return -1;
+	return -1;
     }
 
     key.mv_data = (void*)keyptr;
@@ -465,11 +465,11 @@ ps_lmdb_delete(
     ctx->err = mdb_del(ctx->txn, ctx->dbi, &key, NULL);
     if (ctx->err)
     {
-        LmdbTxnAbort(ctx);
+	LmdbTxnAbort(ctx);
     }
     else
     {
-        LmdbTxnCommit(ctx);
+	LmdbTxnCommit(ctx);
     }
 
     ctx->txn = NULL;
@@ -504,7 +504,7 @@ ps_lmdb_free(
 
     if (ctx->cur == NULL)
     {
-        mdb_txn_reset(ctx->txn);
+	mdb_txn_reset(ctx->txn);
     }
 }
 

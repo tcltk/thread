@@ -58,7 +58,7 @@ typedef struct ThreadSpecificData {
     Tcl_ThreadId threadId;                /* The real ID of this thread */
     Tcl_Interp *interp;                   /* Main interp for this thread */
     Tcl_Condition doOneEvent;             /* Signalled just before running
-                                             an event from the event loop */
+					     an event from the event loop */
     int flags;                            /* One of the ThreadFlags below */
     size_t refCount;                      /* Used for thread reservation */
     int eventsPending;                    /* # of unprocessed events */
@@ -108,9 +108,9 @@ int threadTclVersion = 0;
 typedef struct ThreadCtrl {
     char *script;                         /* Script to execute */
     int flags;                            /* Initial value of the "flags"
-                                           * field in ThreadSpecificData */
+					   * field in ThreadSpecificData */
     Tcl_Condition condWait;               /* Condition variable used to
-                                           * sync parent and child threads */
+					   * sync parent and child threads */
     void *cd;                             /* Opaque ptr to pass to thread */
 } ThreadCtrl;
 
@@ -148,7 +148,7 @@ typedef struct ThreadEvent {
     struct ThreadSendData *sendData;      /* See below */
     struct ThreadClbkData *clbkData;      /* See below */
     struct ThreadEventResult *resultPtr;  /* To communicate the result back.
-                                           * NULL if we don't care about it */
+					   * NULL if we don't care about it */
 } ThreadEvent;
 
 typedef int  (ThreadSendProc) (Tcl_Interp*, void *);
@@ -196,10 +196,10 @@ typedef struct TransferEvent {
 typedef struct TransferResult {
     Tcl_Condition done;                   /* Set when transfer is done */
     int resultCode;                       /* Set to TCL_OK or TCL_ERROR when
-                                             the transfer is done. Def = -1 */
+					     the transfer is done. Def = -1 */
     char *resultMsg;                      /* Initialized to NULL. Set to a
-                                             allocated string by the target
-                                             thread in case of an error  */
+					     allocated string by the target
+					     thread in case of an error  */
     Tcl_ThreadId srcThreadId;             /* Id of src thread, if it dies */
     Tcl_ThreadId dstThreadId;             /* Id of tgt thread, if it dies */
     struct TransferEvent *eventPtr;       /* Back pointer */
@@ -246,38 +246,38 @@ ThreadInit(Tcl_Interp *interp);
 
 static int
 ThreadCreate(Tcl_Interp *interp,
-                               const char *script,
-                               TCL_HASH_TYPE stacksize,
-                               int flags,
-                               int preserve);
+			       const char *script,
+			       TCL_HASH_TYPE stacksize,
+			       int flags,
+			       int preserve);
 static int
 ThreadSend(Tcl_Interp *interp,
-                               Tcl_ThreadId id,
-                               ThreadSendData *sendPtr,
-                               ThreadClbkData *clbkPtr,
-                               int flags);
+			       Tcl_ThreadId id,
+			       ThreadSendData *sendPtr,
+			       ThreadClbkData *clbkPtr,
+			       int flags);
 static void
 ThreadSetResult(Tcl_Interp *interp,
-                               int code,
-                               ThreadEventResult *resultPtr);
+			       int code,
+			       ThreadEventResult *resultPtr);
 static int
 ThreadGetOption(Tcl_Interp *interp,
-                               Tcl_ThreadId id,
-                               char *option,
-                               Tcl_DString *ds);
+			       Tcl_ThreadId id,
+			       char *option,
+			       Tcl_DString *ds);
 static int
 ThreadSetOption(Tcl_Interp *interp,
-                               Tcl_ThreadId id,
-                               char *option,
-                               char *value);
+			       Tcl_ThreadId id,
+			       char *option,
+			       char *value);
 static int
 ThreadReserve(Tcl_Interp *interp,
-                               Tcl_ThreadId id,
-                               int operation,
-                               int wait);
+			       Tcl_ThreadId id,
+			       int operation,
+			       int wait);
 static int
 ThreadEventProc(Tcl_Event *evPtr,
-                               int mask);
+			       int mask);
 static int
 ThreadWait(Tcl_Interp *interp);
 
@@ -286,7 +286,7 @@ ThreadExists(Tcl_ThreadId id);
 
 static int
 ThreadList(Tcl_Interp *interp,
-                               Tcl_ThreadId **thrIdArray);
+			       Tcl_ThreadId **thrIdArray);
 static void
 ThreadErrorProc(Tcl_Interp *interp);
 
@@ -313,41 +313,41 @@ ListUpdateInner(ThreadSpecificData *tsdPtr);
 
 static int
 ThreadJoin(Tcl_Interp *interp,
-                               Tcl_ThreadId id);
+			       Tcl_ThreadId id);
 static int
 ThreadTransfer(Tcl_Interp *interp,
-                               Tcl_ThreadId id,
-                               Tcl_Channel chan);
+			       Tcl_ThreadId id,
+			       Tcl_Channel chan);
 static int
 ThreadDetach(Tcl_Interp *interp,
-                               Tcl_Channel chan);
+			       Tcl_Channel chan);
 static int
 ThreadAttach(Tcl_Interp *interp,
-                               char *chanName);
+			       char *chanName);
 static int
 TransferEventProc(Tcl_Event *evPtr,
-                               int mask);
+			       int mask);
 
 static void
 ThreadGetHandle(Tcl_ThreadId,
-                               char *handlePtr);
+			       char *handlePtr);
 
 static int
 ThreadGetId(Tcl_Interp *interp,
-                               Tcl_Obj *handleObj,
-                               Tcl_ThreadId *thrIdPtr);
+			       Tcl_Obj *handleObj,
+			       Tcl_ThreadId *thrIdPtr);
 static void
 ErrorNoSuchThread(Tcl_Interp *interp,
-                               Tcl_ThreadId thrId);
+			       Tcl_ThreadId thrId);
 static void
 ThreadCutChannel(Tcl_Interp *interp,
-                               Tcl_Channel channel);
+			       Tcl_Channel channel);
 
 static int
 ThreadCancel(Tcl_Interp *interp,
-                               Tcl_ThreadId thrId,
-                               const char *result,
-                               int flags);
+			       Tcl_ThreadId thrId,
+			       const char *result,
+			       int flags);
 
 /*
  * Functions implementing Tcl commands
@@ -1525,7 +1525,7 @@ ThreadConfigureObjCmd(
     Tcl_ThreadId thrId;         /* Id of the thread to configure */
     int i;                      /* Iterate over arg-value pairs. */
     Tcl_DString ds;             /* DString to hold result of
-                                 * calling GetThreadOption. */
+				 * calling GetThreadOption. */
 
     if (objc < 2 || (objc % 2 == 1 && objc != 3)) {
 	Tcl_WrongNumArgs(interp, 1, objv, "threadlId ?optionName? "
@@ -1687,7 +1687,7 @@ ThreadClbkSetVar(
     Tcl_IncrRefCount(valObj);
 
     if (resultPtr->result != threadEmptyResult) {
-        ckfree(resultPtr->result);
+	ckfree(resultPtr->result);
     }
 
     /*
@@ -2873,7 +2873,7 @@ ThreadSend(
 
     Tcl_ConditionFinalize(&resultPtr->done);
     if (resultPtr->result != threadEmptyResult) {
-        ckfree(resultPtr->result);
+	ckfree(resultPtr->result);
     }
     ckfree((char*)resultPtr);
 

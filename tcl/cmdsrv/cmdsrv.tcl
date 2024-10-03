@@ -55,7 +55,7 @@ proc cmdsrv::create {port args} {
     variable data
 
     if {[llength $args] % 2} {
-        error "wrong \# arguments, should be: key1 val1 key2 val2..."
+	error "wrong \# arguments, should be: key1 val1 key2 val2..."
     }
 
     #
@@ -63,8 +63,8 @@ proc cmdsrv::create {port args} {
     #
 
     array set data {
-        -idletime 300000
-        -initcmd  {source -encoding utf-8 cmdsrv.tcl}
+	-idletime 300000
+	-initcmd  {source -encoding utf-8 cmdsrv.tcl}
     }
 
     #
@@ -72,13 +72,13 @@ proc cmdsrv::create {port args} {
     #
 
     foreach {arg val} $args {
-        switch -- $arg {
-            -idletime {set data($arg) [expr {$val*1000}]}
-            -initcmd  {append data($arg) \n $val}
-            default {
-                error "unsupported pool option \"$arg\""
-            }
-        }
+	switch -- $arg {
+	    -idletime {set data($arg) [expr {$val*1000}]}
+	    -initcmd  {append data($arg) \n $val}
+	    default {
+		error "unsupported pool option \"$arg\""
+	    }
+	}
     }
 
     #
@@ -158,10 +158,10 @@ proc cmdsrv::Accept {s ipaddr port} {
     #
 
     thread::send -async $tid [subst {
-        array set [namespace current]::data {[array get data]}
-        fileevent $s readable {[namespace current]::Read $s}
-        proc exit args {[namespace current]::SockDone $s}
-        [namespace current]::StartIdleTimer $s
+	array set [namespace current]::data {[array get data]}
+	fileevent $s readable {[namespace current]::Read $s}
+	proc exit args {[namespace current]::SockDone $s}
+	[namespace current]::StartIdleTimer $s
     }]
 }
 
@@ -193,13 +193,13 @@ proc cmdsrv::Read {s} {
     #
 
     if {[eof $s] || [catch {read $s} line]} {
-        return [SockDone $s]
+	return [SockDone $s]
     }
     if {$line == "\n" || $line == ""} {
-        if {[catch {puts -nonewline $s "% "}]} {
-            return [SockDone $s]
-        }
-        return [StartIdleTimer $s]
+	if {[catch {puts -nonewline $s "% "}]} {
+	    return [SockDone $s]
+	}
+	return [StartIdleTimer $s]
     }
 
     #
@@ -208,10 +208,10 @@ proc cmdsrv::Read {s} {
 
     append data(cmd) $line
     if {[info complete $data(cmd)] == 0} {
-        if {[catch {puts -nonewline $s "> "}]} {
-            return [SockDone $s]
-        }
-        return [StartIdleTimer $s]
+	if {[catch {puts -nonewline $s "> "}]} {
+	    return [SockDone $s]
+	}
+	return [StartIdleTimer $s]
     }
 
     #
@@ -220,11 +220,11 @@ proc cmdsrv::Read {s} {
 
     catch {uplevel \#0 $data(cmd)} ret
     if {[catch {puts $s $ret}]} {
-        return [SockDone $s]
+	return [SockDone $s]
     }
     set data(cmd) ""
     if {[catch {puts -nonewline $s "% "}]} {
-        return [SockDone $s]
+	return [SockDone $s]
     }
     StartIdleTimer $s
 }
@@ -271,8 +271,8 @@ proc cmdsrv::StopIdleTimer {s} {
     variable data
 
     if {[info exists data(idleevent)]} {
-        after cancel $data(idleevent)
-        unset data(idleevent)
+	after cancel $data(idleevent)
+	unset data(idleevent)
     }
 }
 
@@ -296,7 +296,7 @@ proc cmdsrv::StartIdleTimer {s} {
     variable data
 
     set data(idleevent) \
-        [after $data(-idletime) [list [namespace current]::SockDone $s]]
+	[after $data(-idletime) [list [namespace current]::SockDone $s]]
 }
 
 # EOF $RCSfile: cmdsrv.tcl,v $

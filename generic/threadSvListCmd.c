@@ -953,7 +953,6 @@ SvLsetFlat(
     Tcl_Obj *pendingInvalidates[10]; /* Assumed max nesting depth */
     Tcl_Obj **pendingInvalidatesPtr = pendingInvalidates;
     Tcl_Size numPendingInvalidates = 0;
-     
 
     /*
      * Determine whether the index arg designates a list
