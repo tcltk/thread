@@ -38,20 +38,20 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904b0" /* LANG_ENGLISH/SUBLANG_ENGLISH_US, Unicode CP */
-        BEGIN
-            VALUE "FileDescription", "Threading extension library for Tcl"
-            VALUE "OriginalFilename", PRJLIBNAME
-            VALUE "CompanyName", "NONE! Open-sourced with no owner\0"
-            VALUE "FileVersion", DOTVERSION
-            VALUE "LegalCopyright", "Under BSD license\0"
-            VALUE "ProductName", "Tcl for Windows\0"
-            VALUE "ProductVersion", DOTVERSION
-            VALUE "Authors", "Brent Welch,\r\n" "Andreas Kupries, \r\n" "David Gravereaux,\r\n" "Zoran Vasiljevic" "\0"
-        END
+	BLOCK "040904b0" /* LANG_ENGLISH/SUBLANG_ENGLISH_US, Unicode CP */
+	BEGIN
+	    VALUE "FileDescription", "Threading extension library for Tcl"
+	    VALUE "OriginalFilename", PRJLIBNAME
+	    VALUE "CompanyName", "NONE! Open-sourced with no owner\0"
+	    VALUE "FileVersion", DOTVERSION
+	    VALUE "LegalCopyright", "Under BSD license\0"
+	    VALUE "ProductName", "Tcl for Windows\0"
+	    VALUE "ProductVersion", DOTVERSION
+	    VALUE "Authors", "Brent Welch,\r\n" "Andreas Kupries, \r\n" "David Gravereaux,\r\n" "Zoran Vasiljevic" "\0"
+	END
     END
     BLOCK "VarFileInfo"
     BEGIN
-        VALUE "Translation", 0x409, 1200
+	VALUE "Translation", 0x409, 1200
     END
 END
