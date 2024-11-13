@@ -33,6 +33,37 @@ proc ThreadReap {} {
     llength [thread::names]
 }
 
+test thread-1.11 {no segfault on 2nd interpreter, bug [d4ba38d00d06ebba]} -body {
+    # This behavior needs to be covered in a separate shell, because it doesn't expect
+    # any other thread invocation before 2nd interpreter gets the thread::id (TSD),
+    # but test-suite calls thread::id command (tcltest, all.tcl and thread.test):
+    set fd [open [list |[info nameofexecutable] << [string map [list {$$load} [tcltest::loadScript]] {
+    	$$load; package require thread
+	interp create ci
+	set l {}
+	ci eval {$$load; package require thread; thread::id}
+	thread::send -async [thread::id] {lappend l ev-1}; update
+	interp delete ci
+	thread::send -async [thread::id] {lappend l ev-2}; update; # no SF here
+	puts $l
+    }] 2>@stderr] r]
+    gets $fd
+} -cleanup {
+    catch { close $fd }
+} -result {ev-1 ev-2}
+
+test thread-1.12 {no events in 2nd interpreter, bug [d4ba38d00d06ebba]} -setup {
+    interp create ci
+} -body {
+    set l {}
+    thread::send -async [thread::id] {lappend l ev-1}; update
+    ci eval {package require tcltest; tcltest::loadTestedCommands; package require thread}
+    thread::send -async [thread::id] {lappend l ev-2}; update
+    set l
+} -cleanup {
+    interp delete ci
+} -result {ev-1 ev-2}
+
 test thread-2.0 {no global thread command} {
     info commands thread
 } {}
