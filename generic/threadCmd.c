@@ -621,8 +621,17 @@ Init(
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
     if (tsdPtr->interp == NULL) {
+	Tcl_Interp *tmpInterp, *mainInterp = interp;
 	memset(tsdPtr, 0, sizeof(ThreadSpecificData));
-	tsdPtr->interp = interp;
+	/* 
+	 * Retrieve main interpreter of the thread, only
+	 * main interpreter used as default thread-interpreter,
+	 * so no childs here, see bug [d4ba38d00d06ebba]
+	 */
+	while (mainInterp && (tmpInterp = Tcl_GetMaster(mainInterp))) {
+	    mainInterp = tmpInterp;
+	}
+	tsdPtr->interp = mainInterp;
 	ListUpdate(tsdPtr);
 	Tcl_CreateThreadExitHandler(ThreadExitProc,
 				    threadEmptyResult);
