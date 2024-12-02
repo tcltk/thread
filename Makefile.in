@@ -234,6 +234,9 @@ ${THREAD_ZIP_FILE}: ${ZIP_INSTALL_OBJS}
 	fi
 	@find ${THREAD_VFS_ROOT} -type d -empty -delete
 	@echo "creating ${THREAD_ZIP_FILE} from ${THREAD_VFS_PATH}"
+	if test -f ../../minizip.exe; then \
+	    cp ../../minizip.exe . ; \
+	fi
 	@(zip=`(realpath '${NATIVE_ZIP}' || readlink -m '${NATIVE_ZIP}' || \
 	    echo '${NATIVE_ZIP}' | sed "s?^\./?$$(pwd)/?")  2>/dev/null`; \
 	    echo 'cd ${THREAD_VFS_ROOT} &&' $$zip '${ZIP_PROG_OPTIONS} ../${THREAD_ZIP_FILE} ${ZIP_PROG_VFSSEARCH}'; \
