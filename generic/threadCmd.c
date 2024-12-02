@@ -573,7 +573,7 @@ Init(
     if (tsdPtr->interp == NULL) {
 	Tcl_Interp *tmpInterp, *mainInterp = interp;
 	memset(tsdPtr, 0, sizeof(ThreadSpecificData));
-	/* 
+	/*
 	 * Retrieve main interpreter of the thread, only
 	 * main interpreter used as default thread-interpreter,
 	 * so no childs here, see bug [d4ba38d00d06ebba]
@@ -2469,8 +2469,7 @@ ThreadTransfer(
      * Queue the event and poke the other thread's notifier.
      */
 
-    Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL);
-    Tcl_ThreadAlert(thrId);
+    Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
 
     /*
      * (*) Block until the other thread has either processed the transfer
@@ -2811,11 +2810,10 @@ ThreadSend(
 
     eventPtr->event.proc = ThreadEventProc;
     if ((flags & THREAD_SEND_HEAD)) {
-	Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_HEAD);
+	Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_HEAD|TCL_QUEUE_ALERT_IF_EMPTY);
     } else {
-	Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_TAIL);
+	Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
     }
-    Tcl_ThreadAlert(thrId);
 
     if ((flags & THREAD_SEND_WAIT) == 0) {
 	/*
@@ -3089,8 +3087,7 @@ ThreadReserve(
 	    evPtr->clbkData   = NULL;
 	    evPtr->resultPtr  = resultPtr;
 
-	    Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL);
-	    Tcl_ThreadAlert(thrId);
+	    Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
 
 	    if (dowait) {
 		while (resultPtr->result == NULL) {

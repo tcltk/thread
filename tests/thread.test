@@ -38,7 +38,7 @@ test thread-1.11 {no segfault on 2nd interpreter, bug [d4ba38d00d06ebba]} -body 
     # any other thread invocation before 2nd interpreter gets the thread::id (TSD),
     # but test-suite calls thread::id command (tcltest, all.tcl and thread.test):
     set fd [open [list |[info nameofexecutable] << [string map [list {$$load} [tcltest::loadScript]] {
-    	$$load; package require thread
+	$$load; package require thread
 	interp create ci
 	set l {}
 	ci eval {$$load; package require thread; thread::id}
