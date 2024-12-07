@@ -217,10 +217,6 @@ AC_ARG_ENABLE(zipfs,
     AS_HELP_STRING([--enable-zipfs],[build with Zipfs support (default: on)]),
     [tcl_ok=$enableval], [tcl_ok=yes])
 if test "$tcl_ok" = "yes" -a "x$enable_framework" != "xyes"; then
-    #
-    # Find a native zip implementation
-    #
-    TEA_ZIPFS_SUPPORT
     ZIPFS_BUILD=1
     THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
 else
