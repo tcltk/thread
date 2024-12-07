@@ -39,8 +39,8 @@ package ifneeded ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
 	source [file join $dir .. lib ttrace.tcl]
     } elseif {[file readable [file join $dir ttrace.tcl]]} {
 	source [file join $dir ttrace.tcl]
-    } elseif {![catch {zipfs mount //zipfs:/lib/thread [file join $dir @PKG_LIB_FILE@]}]} {
-	source //zipfs:/lib/thread/thread_library/ttrace.tcl
+    } elseif {![catch {zipfs mount [file join $dir @PKG_LIB_FILE@] //zipfs:/lib/thread}]} {
+	source //zipfs:/lib/thread/ttrace.tcl
     }
     if {[namespace which ::ttrace::update] ne ""} {
 	::ttrace::update
