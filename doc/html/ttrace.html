@@ -1,5 +1,6 @@
-
 <!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ttrace - Tcl Threading</title>
 <style type="text/css"><!--
     HTML {
@@ -97,7 +98,7 @@
 <!-- ttrace.n
    -->
 <body><div class="doctools">
-<h1 class="doctools_title">ttrace(n) 2.8  &quot;Tcl Threading&quot;</h1>
+<h1 class="doctools_title">ttrace(n) 3.0  &quot;Tcl Threading&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>ttrace - Trace-based interpreter initialization</p>
 </div>
@@ -116,8 +117,8 @@
 <div id="synopsis" class="doctools_section"><h2><a name="synopsis">Synopsis</a></h2>
 <div class="doctools_synopsis">
 <ul class="doctools_requirements">
-<li>package require <b class="pkgname">Tcl 8.7</b></li>
-<li>package require <b class="pkgname">thread <span class="opt">?2.9?</span></b></li>
+<li>package require <b class="pkgname">Tcl 9.0</b></li>
+<li>package require <b class="pkgname">thread <span class="opt">?3.0?</span></b></li>
 </ul>
 <ul class="doctools_syntax">
 <li><a href="#1"><b class="cmd">ttrace::eval</b> <i class="arg">arg</i> <span class="opt">?arg ...?</span></a></li>
@@ -151,14 +152,14 @@ America Online.</p>
 <p>In a nutshell, a short sample illustrating the usage of the ttrace
 with the Tcl threading extension:</p>
 <pre class="doctools_example">
-    % package require Ttrace
-    2.8.1
-    % set t1 [thread::create {package require Ttrace; thread::wait}]
+    % package require ttrace
+    3.0.1
+    % set t1 [thread::create {package require ttrace; thread::wait}]
     tid0x1802800
     % ttrace::eval {proc test args {return test-[thread::id]}}
     % thread::send $t1 test
     test-tid0x1802800
-    % set t2 [thread::create {package require Ttrace; thread::wait}]
+    % set t2 [thread::create {package require ttrace; thread::wait}]
     tid0x1804000
     % thread::send $t2 test
     test-tid0x1804000

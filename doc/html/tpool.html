@@ -1,5 +1,6 @@
-
 <!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>tpool - Tcl Threading</title>
 <style type="text/css"><!--
     HTML {
@@ -97,7 +98,7 @@
 <!-- tpool.n
    -->
 <body><div class="doctools">
-<h1 class="doctools_title">tpool(n) 2.8  &quot;Tcl Threading&quot;</h1>
+<h1 class="doctools_title">tpool(n) 3.0  &quot;Tcl Threading&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>tpool - Part of the Tcl threading extension implementing pools of worker threads.</p>
 </div>
@@ -115,8 +116,8 @@
 <div id="synopsis" class="doctools_section"><h2><a name="synopsis">Synopsis</a></h2>
 <div class="doctools_synopsis">
 <ul class="doctools_requirements">
-<li>package require <b class="pkgname">Tcl 8.7</b></li>
-<li>package require <b class="pkgname">thread <span class="opt">?2.9?</span></b></li>
+<li>package require <b class="pkgname">Tcl 9.0</b></li>
+<li>package require <b class="pkgname">thread <span class="opt">?3.0?</span></b></li>
 </ul>
 <ul class="doctools_syntax">
 <li><a href="#1"><b class="cmd">tpool::create</b> <span class="opt">?options?</span></a></li>
@@ -214,9 +215,9 @@ newly created thread is initialized. If the current number of worker
 threads is equal to the maximum number of worker threads, as defined
 during the threadpool creation, the command will enter the event loop and
 service events while waiting for one of the worker threads to become idle.
-If the optional <span class="opt">?-nowait?</span> argument is given, the command will not wait
-for one idle worker. It will just place the job in the pool's job queue
-and return immediately.</p>
+If the optional <span class="opt">?-nowait?</span> argument is given, the command just places the
+job in the pool's job queue without waiting for an idle worker or creating a
+new one, even if the pool would still have room for additional threads.</p>
 <p>The command returns the ID of the posted job. This ID is used for subsequent
 <b class="cmd">tpool::wait</b>, <b class="cmd">tpool::get</b> and <b class="cmd">tpool::cancel</b> commands to wait
 for and retrieve result of the posted script, or cancel the posted job

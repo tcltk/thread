@@ -1,5 +1,6 @@
-
 <!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>thread - Tcl Threading</title>
 <style type="text/css"><!--
     HTML {
@@ -97,7 +98,7 @@
 <!-- thread.n
    -->
 <body><div class="doctools">
-<h1 class="doctools_title">thread(n) 2.8  &quot;Tcl Threading&quot;</h1>
+<h1 class="doctools_title">thread(n) 3.0  &quot;Tcl Threading&quot;</h1>
 <div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>thread - Extension for script access to Tcl threading</p>
 </div>
@@ -115,8 +116,8 @@
 <div id="synopsis" class="doctools_section"><h2><a name="synopsis">Synopsis</a></h2>
 <div class="doctools_synopsis">
 <ul class="doctools_requirements">
-<li>package require <b class="pkgname">Tcl 8.7</b></li>
-<li>package require <b class="pkgname">thread <span class="opt">?2.9?</span></b></li>
+<li>package require <b class="pkgname">Tcl 9.0</b></li>
+<li>package require <b class="pkgname">thread <span class="opt">?3.0?</span></b></li>
 </ul>
 <ul class="doctools_syntax">
 <li><a href="#1"><b class="cmd">thread::create</b> <span class="opt">?-joinable?</span> <span class="opt">?-preserved?</span> <span class="opt">?script?</span></a></li>
@@ -363,7 +364,12 @@ thus being executed in the LIFO fashion.</p></dd>
 <dt><a name="12"><b class="cmd">thread::broadcast</b> <i class="arg">script</i></a></dt>
 <dd><p>This command passes a <i class="arg">script</i> to all threads created by the
 package for execution. It does not wait for response from any of
-the threads.</p></dd>
+the threads.</p>
+<p>The sending thread (the one executing the thread::broadcast command) does
+not send the script to itself.</p>
+<p>Each receiving thread is directed to place evaluation of the send script
+at the head of its event queue, stepping in front of any other events
+awaiting processing.</p></dd>
 <dt><a name="13"><b class="cmd">thread::wait</b></a></dt>
 <dd><p>This enters the event loop so a thread can receive messages from
 the <b class="cmd">thread::send</b> command. This command should only be used

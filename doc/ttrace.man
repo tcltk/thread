@@ -1,9 +1,9 @@
 [comment {-*- tcl -*- doctools manpage}]
-[manpage_begin ttrace n 2.8]
+[manpage_begin ttrace n 3.0]
 [moddesc {Tcl Threading}]
 [titledesc {Trace-based interpreter initialization}]
-[require Tcl 8.7]
-[require thread [opt 2.8]]
+[require Tcl 9.0]
+[require thread [opt 3.0]]
 
 [description]
 This package creates a framework for on-demand replication of the
@@ -21,7 +21,7 @@ with the Tcl threading extension:
 [example {
 
     % package require ttrace
-    2.8.1
+    3.0.1
 
     % set t1 [thread::create {package require ttrace; thread::wait}]
     tid0x1802800

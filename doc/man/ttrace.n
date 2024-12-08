@@ -1,7 +1,7 @@
 '\"
 '\" Generated from file '' by tcllib/doctools with format 'nroff'
 '\"
-.TH "ttrace" n 2\&.8  "Tcl Threading"
+.TH "ttrace" n 3\&.0  "Tcl Threading"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -273,9 +273,9 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 ttrace \- Trace-based interpreter initialization
 .SH SYNOPSIS
-package require \fBTcl  8\&.5\fR
+package require \fBTcl 9\&.0\fR
 .sp
-package require \fBthread  ?2\&.9?\fR
+package require \fBthread ?3\&.0?\fR
 .sp
 \fBttrace::eval\fR \fIarg\fR ?arg \&.\&.\&.?
 .sp
@@ -328,17 +328,17 @@ with the Tcl threading extension:
 
 
 
-    % package require Ttrace
-    2\&.8\&.2
+    % package require ttrace
+    3\&.0\&.1
 
-    % set t1 [thread::create {package require Ttrace; thread::wait}]
+    % set t1 [thread::create {package require ttrace; thread::wait}]
     tid0x1802800
 
     % ttrace::eval {proc test args {return test-[thread::id]}}
     % thread::send $t1 test
     test-tid0x1802800
 
-    % set t2 [thread::create {package require Ttrace; thread::wait}]
+    % set t2 [thread::create {package require ttrace; thread::wait}]
     tid0x1804000
 
     % thread::send $t2 test
@@ -504,3 +504,4 @@ replicated from the master to other Tcl thread/interpreters\&.
 thread, tpool, tsv
 .SH KEYWORDS
 command tracing, introspection
+
