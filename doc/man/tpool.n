@@ -1,7 +1,7 @@
 '\"
 '\" Generated from file '' by tcllib/doctools with format 'nroff'
 '\"
-.TH "tpool" n 2\&.8  "Tcl Threading"
+.TH "tpool" n 3\&.0  "Tcl Threading"
 .\" The -*- nroff -*- definitions below are for supplemental macros used
 .\" in Tcl/Tk manual entries.
 .\"
@@ -273,9 +273,9 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 tpool \- Part of the Tcl threading extension implementing pools of worker threads\&.
 .SH SYNOPSIS
-package require \fBTcl  8\&.5\fR
+package require \fBTcl 9\&.0\fR
 .sp
-package require \fBthread  ?2\&.9?\fR
+package require \fBthread ?3\&.0?\fR
 .sp
 \fBtpool::create\fR ?options?
 .sp
@@ -389,9 +389,9 @@ newly created thread is initialized\&. If the current number of worker
 threads is equal to the maximum number of worker threads, as defined
 during the threadpool creation, the command will enter the event loop and
 service events while waiting for one of the worker threads to become idle\&.
-If the optional ?-nowait? argument is given, the command will not wait
-for one idle worker\&. It will just place the job in the pool's job queue
-and return immediately\&.
+If the optional ?-nowait? argument is given, the command just places the
+job in the pool's job queue without waiting for an idle worker or creating a
+new one, even if the pool would still have room for additional threads\&.
 .sp
 The command returns the ID of the posted job\&. This ID is used for subsequent
 \fBtpool::wait\fR, \fBtpool::get\fR and \fBtpool::cancel\fR commands to wait
@@ -494,3 +494,4 @@ by forcing any request to wait until a thread is available to process it\&.
 thread, tsv, ttrace
 .SH KEYWORDS
 thread, threadpool
+
