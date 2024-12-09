@@ -97,9 +97,6 @@ THREAD_VFS_ROOT		= libthread.vfs
 THREAD_VFS_PATH		= ${THREAD_VFS_ROOT}/thread_library
 
 ZIPFS_BUILD		= @ZIPFS_BUILD@
-NATIVE_ZIP		= @ZIP_PROG@
-ZIP_PROG_OPTIONS	= @ZIP_PROG_OPTIONS@
-ZIP_PROG_VFSSEARCH	= @ZIP_PROG_VFSSEARCH@
 SHARED_BUILD		= @SHARED_BUILD@
 INSTALL_LIBRARIES	= @INSTALL_LIBRARIES@
 INSTALL_MSGS		= @INSTALL_MSGS@
@@ -227,21 +224,10 @@ ${THREAD_ZIP_FILE}: ${ZIP_INSTALL_OBJS}
 	@rm -rf ${THREAD_VFS_ROOT}
 	@mkdir -p ${THREAD_VFS_PATH}
 	@echo "creating ${THREAD_VFS_PATH} (prepare compression)"
-	@if \
-	    ln -s $(srcdir)/lib/* ${THREAD_VFS_PATH}/; \
-	then : ; else \
-	    cp -a $(srcdir)/lib/* ${THREAD_VFS_PATH}; \
-	fi
+	@cp -a $(srcdir)/lib/* ${THREAD_VFS_PATH};
 	@find ${THREAD_VFS_ROOT} -type d -empty -delete
 	@echo "creating ${THREAD_ZIP_FILE} from ${THREAD_VFS_PATH}"
-	if test -f ../../minizip.exe; then \
-	    cp ../../minizip.exe . ; \
-	fi
-	@(zip=`(realpath '${NATIVE_ZIP}' || readlink -m '${NATIVE_ZIP}' || \
-	    echo '${NATIVE_ZIP}' | sed "s?^\./?$$(pwd)/?")  2>/dev/null`; \
-	    echo 'cd ${THREAD_VFS_ROOT} &&' $$zip '${ZIP_PROG_OPTIONS} ../${THREAD_ZIP_FILE} ${ZIP_PROG_VFSSEARCH}'; \
-	    cd ${THREAD_VFS_ROOT} && \
-	    $$zip ${ZIP_PROG_OPTIONS} ../${THREAD_ZIP_FILE} ${ZIP_PROG_VFSSEARCH} >/dev/null)
+	@echo "zipfs mkzip ${THREAD_ZIP_FILE} ${THREAD_VFS_PATH} ${THREAD_VFS_PATH}" | $(TCLSH)
 
 
 #========================================================================
@@ -323,13 +309,7 @@ $(PKG_LIB_FILE): $(PKG_OBJECTS) ${THREAD_ZIP_FILE}
 	-rm -f $(PKG_LIB_FILE)
 	${MAKE_LIB}
 	@if test "${ZIPFS_BUILD}" = "1" ; then \
-	    if test "x$(MACHER)" = "x" ; then \
 	    cat ${THREAD_ZIP_FILE} >> ${PKG_LIB_FILE}; \
-	    else $(MACHER) append ${PKG_LIB_FILE} ${THREAD_ZIP_FILE} /tmp/macher_output; \
-		mv /tmp/macher_output ${PKG_LIB_FILE}; chmod u+x ${PKG_LIB_FILE}; \
-	    fi; \
-	    ${NATIVE_ZIP} -A ${PKG_LIB_FILE} \
-	    || echo 'ignore zip-error by adjust sfx process (not executable?)'; \
 	fi
 
 $(PKG_STUB_LIB_FILE): $(PKG_STUB_OBJECTS)
