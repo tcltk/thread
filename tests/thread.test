@@ -1267,7 +1267,7 @@ test thread-bug-f32864afe3 {Hang in thread::eval -lock} -body {
     set mu [thread::mutex create]
     thread::eval -lock $mu {}
     thread::mutex destroy $mu ; # <- Bug f32864af hang
-} -result {} -constraints bug-f32864afe3
+} -result {}
 
 removeFile dummyForTransfer
 ::tcltest::cleanupTests
