@@ -713,7 +713,7 @@ ThreadEvalObjCmd(
     }
 
     /*
-     * Find out wether to use the internal (recursive) mutex
+     * Find out whether to use the internal (recursive) mutex
      * or external mutex given on the command line, and lock
      * the corresponding mutex immediately.
      *
@@ -740,11 +740,13 @@ ThreadEvalObjCmd(
 	    return TCL_ERROR;
 	}
 	if (IsReadWrite(mutexPtr)) {
+            PutMutex(mutexPtr);
 	    Tcl_AppendResult(interp, "wrong mutex type, must be exclusive "
 			     "or recursive", NULL);
 	    return TCL_ERROR;
 	}
 	if (!SpMutexLock(mutexPtr)) {
+            PutMutex(mutexPtr);
 	    Tcl_AppendResult(interp, "locking the same exclusive mutex "
 			     "twice from the same thread", NULL);
 	    return TCL_ERROR;
@@ -786,6 +788,7 @@ ThreadEvalObjCmd(
 	Sp_RecursiveMutexUnlock(&evalMutex);
     } else {
 	SpMutexUnlock(mutexPtr);
+        PutMutex(mutexPtr);
     }
 
     return ret;

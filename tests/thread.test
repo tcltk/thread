@@ -1250,5 +1250,11 @@ test thread-21.16 {thread::cond - delete waited variable} {
     list $c1 $c2 $r1 $r2
 } {1 0 {condition variable is in use} {}}
 
+test thread-bug-f32864afe3 {Hang in thread::eval -lock} -body {
+    set mu [thread::mutex create]
+    thread::eval -lock $mu {}
+    thread::mutex destroy $mu ; # <- Bug f32864af hang
+} -result {}
+
 removeFile dummyForTransfer
 ::tcltest::cleanupTests
