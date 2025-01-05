@@ -1978,13 +1978,14 @@ ThreadErrorProc(
     const char *argv[3];
     char buf[THREAD_HNDLMAXLEN];
     const char *errorInfo;
+    Tcl_ThreadId myId = Tcl_GetCurrentThread();
 
     errorInfo = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
     if (errorInfo == NULL) {
 	errorInfo = "";
     }
 
-    if (errorProcString == NULL) {
+    if (errorProcString == NULL || errorThreadId == myId) {
 #ifdef NS_AOLSERVER
 	Ns_Log(Error, "%s\n%s", Tcl_GetString(Tcl_GetObjResult(interp)), errorInfo);
 #else
