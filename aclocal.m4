@@ -134,4 +134,72 @@ AC_DEFUN(TCLTHREAD_WITH_LMDB, [
     fi
 ])
 
+AC_DEFUN([XCHECK_NATIVE_TCLSH9], [
+  AC_MSG_CHECKING([for tclsh9])
+  AC_CHECK_PROGS([TCLSH_NATIVE], [tclsh9.0 tclsh90 tclsh], [no])
+  if test "$TCLSH_NATIVE" = "no"; then
+    AC_MSG_ERROR([A native tclsh9 is required to build this program])
+  else
+    # Check the version in case found program is tclsh
+    TCLSH_NATIVE_VERSION=$(echo 'puts $tcl_version' | $TCLSH_NATIVE )
+    case "$TCLSH_NATIVE_VERSION" in
+      9.*)
+        AC_MSG_RESULT([native Tcl 9 detected: $TCLSH_NATIVE_VERSION])
+        ;;
+      *)
+	    AC_MSG_NOTICE([$TCLSH_NATIVE] version is $TCLSH_NATIVE_VERSION)
+		if test -n "$TCLSH_PROG" -a "$ac_cv_cross" != "yes"; then
+		    AC_MSG_NOTICE([setting TCLSH_NATIVE to TCLSH_PROG ($TCLSH_PROG)])
+			TCLSH_NATIVE="$TCLSH_PROG"
+		else
+          AC_MSG_ERROR([A native tclsh9 is required, but version $TCLSH_NATIVE_VERSION was found])
+		  exit 1
+		fi
+        ;;
+    esac
+  fi
+  
+])
+
+# FIND_TCLSH9_NATIVE
+# Locates a Tcl 9 tclsh and set TCLSH_NATIVE to its path if found.
+# Unsets TCLSH_NATIVE if not found.
+AC_DEFUN([FIND_TCLSH9_NATIVE], [
+	found="no"
+	for f in tclsh9.0 tclsh90 tclsh; do
+	    AS_UNSET([TCLSH_NATIVE])
+	    AS_UNSET([ac_cv_path_TCLSH_NATIVE])
+	    AC_PATH_PROG([TCLSH_NATIVE], [$f], [no])
+		if test "$TCLSH_NATIVE" != "no"; then
+		    AC_MSG_CHECKING([tclsh for Tcl 9])
+		    CHECK_TCLSH_VERSION([found], [$TCLSH_NATIVE], [9])
+			AC_MSG_RESULT([$found])
+			if test "$found" = "yes"; then
+			   found=yes
+			   break
+			fi
+		fi
+	done
+    if test "$found" != "yes"; then
+	    AS_UNSET(TCLSH_NATIVE)
+	fi
+])
+
+# CHECK_TCLSH_VERSION(RESULTVAR, EXECUTABLE, VERSIONREQUIREMENTS)
+# RESULTVAR - name of variable to in which to store result.
+# EXECUTABLE - tclsh program to check
+# VERSIONREQUIREMENTS - version requirements as passed to Tcl [package vsatisfies]
+#
+# The stored result is "yes" if the EXECUTABLE is a tclsh and meets the
+# version requirements and "no" in all other cases.
+
+AC_DEFUN([CHECK_TCLSH_VERSION], [
+    $1=`echo "puts [[package vsatisfies \\$tcl_version $3]]" | $2`
+	if test "x[$][$1]" = "x1"; then
+	    $1=yes
+	else
+	    $1=no
+	fi
+])
+
 # EOF

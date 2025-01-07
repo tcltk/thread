@@ -241,6 +241,33 @@ AC_MSG_RESULT([no])
 INSTALL_LIBRARIES=install-libraries
 INSTALL_MSGS=install-msgs
 fi
+
+if test "${ZIPFS_BUILD}" != 0; then
+    # Only search if user has not specified
+    if test -z "$TCLSH_NATIVE"; then
+        FIND_TCLSH9_NATIVE
+        # If not found, and not cross building set to TCLSH_PROG. One is
+        # not supposed to use that for native operations so check that not cross-
+        # compiling.
+        if test -z "$TCLSH_NATIVE" -a -n "$TCLSH_PROG" -a x"$ac_cv_cross" != x"yes"; then
+            AC_MSG_CHECKING([$TCLSH_PROG for Tcl 9])
+            CHECK_TCLSH_VERSION([found], [$TCLSH_PROG], [9])
+            AC_MSG_RESULT([$found])
+            if test x"$found" != x"yes"; then
+                AC_MSG_ERROR([cannot find a usable native Tcl 9 tclsh. Either set TCLSH_NATIVE or use configure with --disable-zipfs])
+            fi
+            TCLSH_NATIVE="$TCLSH_PROG"
+        fi
+    else
+        # User specified. Check version acceptable.
+        CHECK_TCLSH_VERSION([found], [$TCLSH_NATIVE], [9])
+        if test x"$found" != x"yes"; then
+            AC_MSG_ERROR([$TCLSH_NATIVE is not a Tcl 9 tclsh.])
+        fi
+    fi
+fi
+
+AC_SUBST(TCLSH_NATIVE)
 AC_SUBST(ZIPFS_BUILD)
 AC_SUBST(THREAD_ZIP_FILE)
 AC_SUBST(INSTALL_LIBRARIES)
