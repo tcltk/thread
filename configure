@@ -9518,8 +9518,8 @@ fi
 
 
 		if test "$TCLSH_NATIVE" != "no"; then
-		    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking tclsh for Tcl 9" >&5
-printf %s "checking tclsh for Tcl 9... " >&6; }
+		    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking $TCLSH_NATIVE is Tcl 9" >&5
+printf %s "checking $TCLSH_NATIVE is Tcl 9... " >&6; }
 
     found=`echo "puts [package vsatisfies \\$tcl_version 9]" | $TCLSH_NATIVE`
 	if test "x$found" = "x1"; then

@@ -134,33 +134,6 @@ AC_DEFUN(TCLTHREAD_WITH_LMDB, [
     fi
 ])
 
-AC_DEFUN([XCHECK_NATIVE_TCLSH9], [
-  AC_MSG_CHECKING([for tclsh9])
-  AC_CHECK_PROGS([TCLSH_NATIVE], [tclsh9.0 tclsh90 tclsh], [no])
-  if test "$TCLSH_NATIVE" = "no"; then
-    AC_MSG_ERROR([A native tclsh9 is required to build this program])
-  else
-    # Check the version in case found program is tclsh
-    TCLSH_NATIVE_VERSION=$(echo 'puts $tcl_version' | $TCLSH_NATIVE )
-    case "$TCLSH_NATIVE_VERSION" in
-      9.*)
-        AC_MSG_RESULT([native Tcl 9 detected: $TCLSH_NATIVE_VERSION])
-        ;;
-      *)
-	    AC_MSG_NOTICE([$TCLSH_NATIVE] version is $TCLSH_NATIVE_VERSION)
-		if test -n "$TCLSH_PROG" -a "$ac_cv_cross" != "yes"; then
-		    AC_MSG_NOTICE([setting TCLSH_NATIVE to TCLSH_PROG ($TCLSH_PROG)])
-			TCLSH_NATIVE="$TCLSH_PROG"
-		else
-          AC_MSG_ERROR([A native tclsh9 is required, but version $TCLSH_NATIVE_VERSION was found])
-		  exit 1
-		fi
-        ;;
-    esac
-  fi
-  
-])
-
 # FIND_TCLSH9_NATIVE
 # Locates a Tcl 9 tclsh and set TCLSH_NATIVE to its path if found.
 # Unsets TCLSH_NATIVE if not found.
@@ -171,7 +144,7 @@ AC_DEFUN([FIND_TCLSH9_NATIVE], [
 	    AS_UNSET([ac_cv_path_TCLSH_NATIVE])
 	    AC_PATH_PROG([TCLSH_NATIVE], [$f], [no])
 		if test "$TCLSH_NATIVE" != "no"; then
-		    AC_MSG_CHECKING([tclsh for Tcl 9])
+		    AC_MSG_CHECKING([$TCLSH_NATIVE is Tcl 9])
 		    CHECK_TCLSH_VERSION([found], [$TCLSH_NATIVE], [9])
 			AC_MSG_RESULT([$found])
 			if test "$found" = "yes"; then

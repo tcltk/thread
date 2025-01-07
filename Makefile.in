@@ -228,7 +228,7 @@ ${THREAD_ZIP_FILE}: ${ZIP_INSTALL_OBJS}
 	@cp -a $(srcdir)/lib/* ${THREAD_VFS_PATH};
 	@find ${THREAD_VFS_ROOT} -type d -empty -delete
 	@echo "creating ${THREAD_ZIP_FILE} from ${THREAD_VFS_PATH}"
-	@echo "zipfs mkzip ${THREAD_ZIP_FILE} ${THREAD_VFS_PATH} ${THREAD_VFS_PATH}" | $(TCLSH)
+	@echo "zipfs mkzip ${THREAD_ZIP_FILE} ${THREAD_VFS_PATH} ${THREAD_VFS_PATH}" | $(TCLSH_NATIVE)
 
 
 #========================================================================
