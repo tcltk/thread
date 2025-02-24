@@ -678,7 +678,9 @@ TpoolCancelObjCmd(
 		    tpoolPtr->workTail = rPtr->prevPtr;
 		}
 		SetResult(NULL, rPtr); /* Just to free the result */
-		ckfree(rPtr->script);
+		if (rPtr->script) {
+		    ckfree(rPtr->script);
+		}
 		ckfree((char*)rPtr);
 		Tcl_ListObjAppendElement(interp, doneList, wObjv[ii]);
 		break;
@@ -1727,8 +1729,11 @@ TpoolRelease(
      * Cleanup jobs posted but never completed.
      */
 
-    for (rPtr = tpoolPtr->workHead; rPtr; rPtr = rPtr->nextPtr) {
-	ckfree(rPtr->script);
+    for (rPtr = tpoolPtr->workHead; rPtr; rPtr = tpoolPtr->workHead) {
+	tpoolPtr->workHead = rPtr->nextPtr;
+	if (rPtr->script) {
+	    ckfree(rPtr->script);
+	}
 	ckfree((char*)rPtr);
     }
     Tcl_MutexFinalize(&tpoolPtr->mutex);
