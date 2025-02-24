@@ -1251,6 +1251,7 @@ TpoolWorker(
 	Tcl_MutexUnlock(&tpoolPtr->mutex);
 	TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
 	ckfree(rPtr->script);
+	rPtr->script = NULL;
 	Tcl_MutexLock(&tpoolPtr->mutex);
 	if (!rPtr->detached) {
 	    int isNew;
