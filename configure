@@ -3995,8 +3995,11 @@ printf "%s\n" "$TEA_PLATFORM" >&6; }
 
     # The BUILD_$pkg is to define the correct extern storage class
     # handling when making this package
+    # To be able to sefely use the package name in a #define, it must not
+    # contain anything other than alphanumeric characters and underscores
+    SAFE_PKG_NAME=thread
 
-printf "%s\n" "#define BUILD_${PACKAGE_NAME} /**/" >>confdefs.h
+printf "%s\n" "#define BUILD_${SAFE_PKG_NAME} /**/" >>confdefs.h
 
     # Do this here as we have fully defined TEA_PLATFORM now
     if test "${TEA_PLATFORM}" = "windows" ; then
