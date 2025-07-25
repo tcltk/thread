@@ -64,7 +64,7 @@ e47b6a79a963c99b7de15a4817b3010fbb3dd693 {
   entity {
     name: thread
     shed_class: package
-    version: 3.0.2
+    version: 3.0.3
   }
   meta {
     build: tea
