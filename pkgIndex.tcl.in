@@ -2,15 +2,6 @@
 # Tcl package index file, version 1.1
 #
 
-# Tcl 8.7 interps are only supported on 32-bit platforms.
-# Lower than that is never supported. Bye!
-if {![package vsatisfies [package provide Tcl] 9.0]
-	&& ((![package vsatisfies [package provide Tcl] 8.7])
-	|| ($::tcl_platform(pointerSize)!=4))} {
-    return
-}
-
-# All Tcl 8.7+ interps can [load] thread @PACKAGE_VERSION@
 #
 # For interps that are not thread-enabled, we still call [package ifneeded].
 # This is contrary to the usual convention, but is a good idea because we
@@ -28,8 +19,6 @@ package ifneeded [string totitle @PACKAGE_NAME@] @PACKAGE_VERSION@ \
     [list package require -exact [string tolower @PACKAGE_NAME@] @PACKAGE_VERSION@]
 
 # package ttrace uses some support machinery.
-
-# In Tcl 8.7+ interps; use [::apply]
 
 package ifneeded ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
     if {[info exists ::env(TCL_THREAD_LIBRARY)] &&

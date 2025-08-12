@@ -375,25 +375,15 @@ static const char *
 ThreadInit(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
-    /* Tcl 8.7 interps are only supported on 32-bit machines.
-     * Lower than that is never supported. Bye!
-     */
-#if defined(TCL_WIDE_INT_IS_LONG) && TCL_MAJOR_VERSION < 9
-#   error "Thread 3.0 is only supported with Tcl 9.0 and higher."
-#	error "Please use Thread 2.8 (branch thread-2-8-branch)"
-#endif
-
-	/* Even though it's not supported, Thread 3.0 works with Tcl 8.7
-	 * on 32-bit platforms, so allow that for now. It could be that
-	 * Tcl 9.0 introduces a further binary incompatibility in the
-	 * future, so this is not guaranteed to stay like it is now!
-	 */
-    const char *ver = (sizeof(size_t) == sizeof(int))? "8.7-": "9.0";
-
-    if (!((Tcl_InitStubs)(interp, ver, (TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16),
-	    TCL_STUB_MAGIC))) {
+#ifdef USE_TCL_STUBS
+    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
 	return NULL;
     }
+#else
+    if (Tcl_PkgRequire(interp, "Tcl", TCL_VERSION, 0) == NULL) {
+	return NULL;
+    }
+#endif
 
     if (threadMutex == NULL){
 	Tcl_MutexLock(&threadMutex);
@@ -2469,7 +2459,7 @@ ThreadTransfer(
      * Queue the event and poke the other thread's notifier.
      */
 
-    Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
+    ThreadQueueEvent(thrId, (Tcl_Event *)evPtr, TCL_QUEUE_TAIL);
 
     /*
      * (*) Block until the other thread has either processed the transfer
@@ -2810,9 +2800,9 @@ ThreadSend(
 
     eventPtr->event.proc = ThreadEventProc;
     if ((flags & THREAD_SEND_HEAD)) {
-	Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_HEAD|TCL_QUEUE_ALERT_IF_EMPTY);
+	ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_HEAD);
     } else {
-	Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
+	ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_TAIL);
     }
 
     if ((flags & THREAD_SEND_WAIT) == 0) {
@@ -3087,7 +3077,7 @@ ThreadReserve(
 	    evPtr->clbkData   = NULL;
 	    evPtr->resultPtr  = resultPtr;
 
-	    Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
+	    ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL);
 
 	    if (dowait) {
 		while (resultPtr->result == NULL) {

@@ -190,9 +190,8 @@ ThreadMutexObjCmd(
     static const char *const cmdOpts[] = {
 	"create", "destroy", "lock", "unlock", NULL
     };
-    enum options {
-	m_CREATE, m_DESTROY, m_LOCK, m_UNLOCK
-    } opt;
+    enum options { m_CREATE, m_DESTROY, m_LOCK, m_UNLOCK };
+    int opt;
 
     /*
      * Syntax:
@@ -367,7 +366,8 @@ ThreadRWMutexObjCmd(
     };
     enum options {
 	w_CREATE, w_DESTROY, w_RLOCK, w_WLOCK, w_UNLOCK
-    } opt;
+    };
+    int opt;
 
     /*
      * Syntax:
@@ -527,9 +527,8 @@ ThreadCondObjCmd(
     static const char *const cmdOpts[] = {
 	"create", "destroy", "notify", "wait", NULL
     };
-    enum options {
-	c_CREATE, c_DESTROY, c_NOTIFY, c_WAIT
-    } opt;
+    enum options { c_CREATE, c_DESTROY, c_NOTIFY, c_WAIT };
+    int opt;
 
     /*
      * Syntax:
