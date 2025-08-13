@@ -2,6 +2,10 @@
 # Tcl package index file, version 1.1
 #
 
+if {![package vsatisfies [package provide Tcl] 8.6-]} {
+    return
+}
+
 #
 # For interps that are not thread-enabled, we still call [package ifneeded].
 # This is contrary to the usual convention, but is a good idea because we
