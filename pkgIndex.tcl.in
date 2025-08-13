@@ -13,10 +13,15 @@
 # about a thread-disabled interp, instead of the message
 # "can't find package thread".
 
-package ifneeded [string tolower @PACKAGE_NAME@] @PACKAGE_VERSION@ \
-    [list load [file join $dir @PKG_LIB_FILE@] [string totitle @PACKAGE_NAME@]]
+if {[package vsatisfies [package provide Tcl] 9.0-]} {
+    package ifneeded @PACKAGE_NAME@ @PACKAGE_VERSION@ \
+	    [list load [file join $dir @PKG_LIB_FILE9@] [string totitle @PACKAGE_NAME@]]
+} else {
+    package ifneeded @PACKAGE_NAME@ @PACKAGE_VERSION@ \
+	    [list load [file join $dir @PKG_LIB_FILE8@] [string totitle @PACKAGE_NAME@]]
+}
 package ifneeded [string totitle @PACKAGE_NAME@] @PACKAGE_VERSION@ \
-    [list package require -exact [string tolower @PACKAGE_NAME@] @PACKAGE_VERSION@]
+    [list package require -exact @PACKAGE_NAME@ @PACKAGE_VERSION@]
 
 # package ttrace uses some support machinery.
 
@@ -29,7 +34,7 @@ package ifneeded ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
     } elseif {[file readable [file join $dir ttrace.tcl]]} {
 	source [file join $dir ttrace.tcl]
     } elseif {[file exists //zipfs:/lib/thread/ttrace.tcl] ||
-              ![catch {zipfs mount [file join $dir @PKG_LIB_FILE@] //zipfs:/lib/thread}]} {
+              ![catch {zipfs mount [file join $dir @PKG_LIB_FILE9@] //zipfs:/lib/thread}]} {
 	source //zipfs:/lib/thread/ttrace.tcl
     }
     if {[namespace which ::ttrace::update] ne ""} {
@@ -38,7 +43,3 @@ package ifneeded ttrace @PACKAGE_VERSION@ [list ::apply {{dir} {
 }} $dir]
 package ifneeded Ttrace @PACKAGE_VERSION@ \
     [list package require -exact ttrace @PACKAGE_VERSION@]
-
-
-
-

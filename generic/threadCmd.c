@@ -375,15 +375,9 @@ static const char *
 ThreadInit(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
-#ifdef USE_TCL_STUBS
-    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) {
+    if (Tcl_InitStubs(interp, "8.6-", 0) == NULL) {
 	return NULL;
     }
-#else
-    if (Tcl_PkgRequire(interp, "Tcl", TCL_VERSION, 0) == NULL) {
-	return NULL;
-    }
-#endif
 
     if (threadMutex == NULL){
 	Tcl_MutexLock(&threadMutex);
