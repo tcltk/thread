@@ -1815,7 +1815,7 @@ SignalWaiter(
     evPtr = (Tcl_Event *)Tcl_Alloc(sizeof(Tcl_Event));
     evPtr->proc = RunStopEvent;
 
-    Tcl_ThreadQueueEvent(waitPtr->threadId,(Tcl_Event*)evPtr,TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
+    ThreadQueueEvent(waitPtr->threadId,(Tcl_Event*)evPtr,TCL_QUEUE_TAIL);
 }
 
 /*

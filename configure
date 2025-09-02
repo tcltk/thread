@@ -2834,11 +2834,6 @@ printf "%s\n" "found ${TCL_BIN_DIR}/tclConfig.sh" >&6; }
 	fi
     fi
 
-if test x"${with_tcl8}" != x; then
-with_tcl8=""
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: --with-tcl8 option ignored" >&5
-printf "%s\n" "$as_me: WARNING: --with-tcl8 option ignored" >&2;}
-fi
 
 
 
@@ -4026,11 +4021,6 @@ printf "%s\n" "#define BUILD_${SAFE_PKG_NAME} /**/" >>confdefs.h
 
 
 
-
-if test "${TCL_MAJOR_VERSION}" -eq 8; then
-    as_fn_error $? "${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 9.0+
-Found config for Tcl ${TCL_VERSION}" "$LINENO" 5
-fi
 
 #--------------------------------------------------------------------
 # Load the tkConfig.sh file if necessary (Tk extension)
@@ -9468,7 +9458,8 @@ printf "%s\n" "${TCLSH_PROG}" >&6; }
 #--------------------------------------------------------------------
 #	Zipfs support - Tip 430
 #--------------------------------------------------------------------
-# Check whether --enable-zipfs was given.
+if test "${TCL_MAJOR_VERSION}" -gt 8; then
+    # Check whether --enable-zipfs was given.
 if test ${enable_zipfs+y}
 then :
   enableval=$enable_zipfs; tcl_ok=$enableval
@@ -9477,13 +9468,15 @@ else case e in #(
 esac
 fi
 
-if test "$tcl_ok" = "yes" -a "x$enable_framework" != "xyes"; then
-    ZIPFS_BUILD=1
-    THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
-else
-    ZIPFS_BUILD=0
-    THREAD_ZIP_FILE=
+    if test "$tcl_ok" = "yes" -a "x$enable_framework" != "xyes"; then
+        ZIPFS_BUILD=1
+        THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
+    else
+        ZIPFS_BUILD=0
+        THREAD_ZIP_FILE=
+    fi
 fi
+
 # Do checking message here to not mess up interleaved configure output
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for building with zipfs" >&5
 printf %s "checking for building with zipfs... " >&6; }

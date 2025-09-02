@@ -1233,7 +1233,8 @@ SvArrayObjCmd(
     enum options {
 	ASET,   ARESET,  AGET,  ANAMES,  ASIZE,  AEXISTS, AISBOUND,
 	ABIND,  AUNBIND
-    } index;
+    };
+    int index;
 
     svObj = (Container*)arg;
 

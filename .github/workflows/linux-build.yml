@@ -12,17 +12,48 @@ jobs:
       matrix:
         compiler:
           - "gcc"
+          - "clang"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Environment
+      - name: Setup Environment (compiler=${{ matrix.compiler }})
         run: |
+          sudo apt-get install tcl8.6-dev libgdbm-dev liblmdb-dev
+          mkdir "$HOME/install dir"
           curl https://core.tcl-lang.org/tclconfig/tarball/main/tclconfig.tar.gz >tclconfig.tar.gz
           tar xfz tclconfig.tar.gz
-      - name: Configure (not really, just enough to do a "make dist")
+          echo "CFGOPT=--with-tcl=/usr/lib/tcl8.6 --with-gdbm --with-lmdb" >> $GITHUB_ENV
+          echo "CC=$COMPILER" >> $GITHUB_ENV
+        env:
+          COMPILER: ${{ matrix.compiler }}
+          OPTS: ${{ matrix.compiler }}
+      - name: Configure
         run: |
-          sed s/@srcdir@/\./ <Makefile.in | sed s/@abs_top_builddir@/./ | sed s/@SHELL@/bash/ | sed s/@PACKAGE_NAME@/thread/ | sed s/@PACKAGE_VERSION@/9.0a1/ | sed "s/@INSTALL@/tclconfig\/install-sh/" | sed "s/@INSTALL_DATA_DIR@/tclconfig\/install-sh -d -m 755/" >Makefile
-          touch config.status
+          ./configure $CFGOPT "--prefix=$HOME/install dir" "--exec-prefix=$HOME/install dir" || {
+            cat config.log
+            echo "::error::Failure during Configure"
+            exit 1
+          }
+      - name: Build
+        run: |
+          make || {
+            echo "::error::Failure during Build"
+            exit 1
+          }
+      - name: Run Tests
+        run: |
+          make test || {
+            echo "::error::Failure during Test"
+            exit 1
+          }
+        env:
+          ERROR_ON_FAILURES: 1
+      - name: Test-Drive Installation
+        run: |
+          make install || {
+            echo "::error::Failure during Install"
+            exit 1
+          }
       - name: Create Distribution Package
         run: |
           make dist || {

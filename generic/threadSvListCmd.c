@@ -13,6 +13,25 @@
 #include "threadSvCmd.h"
 #include "threadSvListCmd.h"
 
+/* Tcl 8 only defines Tcl_GetIntForIndex in its internal stubs */
+#if TCL_MAJOR_VERSION < 9 && defined(USE_TCL_STUBS)
+/*  Little hack to eliminate the need for "tclInt.h" here:
+    Just copy a small portion of TclIntStubs, just
+    enough to make it work */
+typedef struct TclIntStubs {
+    int magic;
+    void *hooks;
+    void (*dummy[34]) (void); /* dummy entries 0-33, not used */
+    int (*tclGetIntForIndex) (Tcl_Interp *interp, Tcl_Obj *objPtr, int endValue, int *indexPtr); /* 34 */
+} TclIntStubs;
+extern const TclIntStubs *tclIntStubsPtr;
+
+# undef Tcl_GetIntForIndex
+# define Tcl_GetIntForIndex(interp, obj, max, ptr) ((tclIntStubsPtr->tclGetIntForIndex == NULL)? \
+    ((int (*)(Tcl_Interp*,  Tcl_Obj *, int, int*))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[645]))((interp), (obj), (max), (ptr)): \
+	tclIntStubsPtr->tclGetIntForIndex((interp), (obj), (max), (ptr)))
+#endif
+
 /*
  * Implementation of list commands for shared variables.
  * Most of the standard Tcl list commands are implemented.
@@ -661,7 +680,8 @@ SvLsearchObjCmd(
     Container *svObj = (Container*)arg;
 
     static const char *const modes[] = {"-exact", "-glob", "-regexp", NULL};
-    enum {LS_EXACT, LS_GLOB, LS_REGEXP} mode;
+    enum { LS_EXACT, LS_GLOB, LS_REGEXP };
+    int mode;
 
     mode = LS_GLOB;
 

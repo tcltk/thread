@@ -312,7 +312,9 @@ const Tcl_ObjType keyedListType = {
     DupKeyedListInternalRep,  /* dupIntRepProc */
     UpdateStringOfKeyedList,  /* updateStringProc */
     NULL,                     /* setFromAnyProc */
+#if TCL_MAJOR_VERSION >= 9
     TCL_OBJTYPE_V0
+#endif
 };
 
 
@@ -861,7 +863,7 @@ TclX_KeyedListGet(
 ) {
     keylIntObj_t *keylIntPtr;
     const char *nextSubKey;
-    size_t findIdx;
+    Tcl_Size findIdx;
 
     if (keylPtr->typePtr != &keyedListType) {
 	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
@@ -919,7 +921,7 @@ TclX_KeyedListSet(
 ) {
     keylIntObj_t *keylIntPtr;
     const char *nextSubKey;
-    size_t findIdx;
+    Tcl_Size findIdx;
     int status;
     size_t keyLen;
     Tcl_Obj *newKeylPtr;
@@ -1022,7 +1024,7 @@ TclX_KeyedListDelete(
 ) {
     keylIntObj_t *keylIntPtr, *subKeylIntPtr;
     const char *nextSubKey;
-    size_t findIdx;
+    Tcl_Size findIdx;
     int status;
 
     if (keylPtr->typePtr != &keyedListType) {
@@ -1102,7 +1104,8 @@ TclX_KeyedListGetKeys(
     keylIntObj_t *keylIntPtr;
     Tcl_Obj *nameObjPtr, *listObjPtr;
     const char *nextSubKey;
-    size_t idx, findIdx;
+    size_t idx;
+    Tcl_Size findIdx;
 
     if (keylPtr->typePtr != &keyedListType) {
 	if (SetKeyedListFromAny(interp, keylPtr) != TCL_OK) {
