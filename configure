@@ -9470,11 +9470,11 @@ esac
 fi
 
     if test "$tcl_ok" = "yes" -a "x$enable_framework" != "xyes"; then
-        ZIPFS_BUILD=1
-        THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
+	ZIPFS_BUILD=1
+	THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
     else
-        ZIPFS_BUILD=0
-        THREAD_ZIP_FILE=
+	ZIPFS_BUILD=0
+	THREAD_ZIP_FILE=
     fi
 fi
 

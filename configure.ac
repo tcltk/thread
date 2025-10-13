@@ -206,14 +206,14 @@ TEA_PROG_TCLSH
 #--------------------------------------------------------------------
 if test "${TCL_MAJOR_VERSION}" -gt 8; then
     AC_ARG_ENABLE(zipfs,
-        AS_HELP_STRING([--enable-zipfs],[build with Zipfs support (default: on)]),
-        [tcl_ok=$enableval], [tcl_ok=yes])
+	AS_HELP_STRING([--enable-zipfs],[build with Zipfs support (default: on)]),
+		[tcl_ok=$enableval], [tcl_ok=yes])
     if test "$tcl_ok" = "yes" -a "x$enable_framework" != "xyes"; then
-        ZIPFS_BUILD=1
-        THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
+	ZIPFS_BUILD=1
+	THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
     else
-        ZIPFS_BUILD=0
-        THREAD_ZIP_FILE=
+	ZIPFS_BUILD=0
+	THREAD_ZIP_FILE=
     fi
 fi
 
