@@ -512,22 +512,18 @@ Thread_Init(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
     const char *version = ThreadInit(interp);
-    Tcl_CmdInfo info;
 
     if (version == NULL) {
 	return TCL_ERROR;
     }
 
-    if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
 #if TCL_MAJOR_VERSION > 8
-	if (info.isNativeObjectProc == 2) {
-	    Tcl_CreateObjCommand2(interp, "::thread::build-info",
-		    info.objProc2, (void *)version, NULL);
-	} else
-#endif
-	Tcl_CreateObjCommand(interp, "::thread::build-info",
-		info.objProc, (void *)version, NULL);
+    Tcl_CmdInfo info;
+    if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
+	Tcl_CreateObjCommand2(interp, "::thread::build-info",
+		info.objProc2, (void *)version, NULL);
     }
+#endif
     Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
     return Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
 }
