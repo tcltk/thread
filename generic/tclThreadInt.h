@@ -63,11 +63,16 @@
 # endif
 #endif
 
-#if (TCL_MAJOR_VERSION == 8) && defined(USE_TCL_STUBS)
+#if (TCL_MAJOR_VERSION == 8)
 #undef Tcl_Free
-#define Tcl_Free(p) tclStubsPtr->tcl_Free((char *)(p))
 #undef Tcl_Realloc
-#define Tcl_Realloc(p,m) tclStubsPtr->tcl_Realloc((char *)(p),(m))
+#if defined(USE_TCL_STUBS)
+#   define Tcl_Free(p) tclStubsPtr->tcl_Free((char *)(p))
+#   define Tcl_Realloc(p,m) tclStubsPtr->tcl_Realloc((char *)(p),(m))
+#else
+#   define Tcl_Free(p) Tcl_Free((char *)(p))
+#   define Tcl_Realloc(p,m) Tcl_Realloc((char *)(p),(m))
+#endif
 #endif
 
 #ifndef JOIN

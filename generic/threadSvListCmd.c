@@ -14,7 +14,8 @@
 #include "threadSvListCmd.h"
 
 /* Tcl 8 only defines Tcl_GetIntForIndex in its internal stubs */
-#if TCL_MAJOR_VERSION < 9 && defined(USE_TCL_STUBS)
+#if TCL_MAJOR_VERSION < 9
+# if defined(USE_TCL_STUBS)
 /*  Little hack to eliminate the need for "tclInt.h" here:
     Just copy a small portion of TclIntStubs, just
     enough to make it work */
@@ -30,6 +31,10 @@ extern const TclIntStubs *tclIntStubsPtr;
 # define Tcl_GetIntForIndex(interp, obj, max, ptr) ((tclIntStubsPtr->tclGetIntForIndex == NULL)? \
     ((int (*)(Tcl_Interp*,  Tcl_Obj *, int, int*))(void *)((&(tclStubsPtr->tcl_PkgProvideEx))[645]))((interp), (obj), (max), (ptr)): \
 	tclIntStubsPtr->tclGetIntForIndex((interp), (obj), (max), (ptr)))
+# else
+EXTERN int TclGetIntForIndex(Tcl_Interp *interp, Tcl_Obj *objPtr, int endValue, int *indexPtr);
+#   define Tcl_GetIntForIndex TclGetIntForIndex
+# endif
 #endif
 
 /*
