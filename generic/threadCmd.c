@@ -2830,7 +2830,7 @@ ThreadSend(
 
     if (resultPtr->code == TCL_ERROR) {
 	if (resultPtr->errorCode) {
-	    Tcl_SetErrorCode(interp, resultPtr->errorCode, NULL);
+	    Tcl_SetErrorCode(interp, resultPtr->errorCode, (char *)NULL);
 	    Tcl_Free(resultPtr->errorCode);
 	}
 	if (resultPtr->errorInfo) {
