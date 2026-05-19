@@ -1693,9 +1693,11 @@ ThreadClbkSetVar(
 	    Tcl_Free(resultPtr->errorInfo);
 	}
 	Tcl_SetObjResult(interp, valObj);
+	Tcl_DecrRefCount(valObj);
 	Tcl_BackgroundException(interp, TCL_ERROR);
 	return TCL_ERROR;
     }
+    Tcl_DecrRefCount(valObj);
     return TCL_OK;
 
 cleanup:
