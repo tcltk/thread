@@ -17,7 +17,7 @@ dnl	to configure the system for the local environment.
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
-AC_INIT([thread],[3.0.1])
+AC_INIT([thread],[3.0.6])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -34,16 +34,7 @@ AC_CONFIG_AUX_DIR(tclconfig)
 #--------------------------------------------------------------------
 
 TEA_PATH_TCLCONFIG
-if test x"${with_tcl8}" != x; then
-with_tcl8=""
-AC_MSG_WARN([--with-tcl8 option ignored])
-fi
 TEA_LOAD_TCLCONFIG
-
-if test "${TCL_MAJOR_VERSION}" -eq 8; then
-    AC_MSG_ERROR([${PACKAGE_NAME} ${PACKAGE_VERSION} requires Tcl 9.0+
-Found config for Tcl ${TCL_VERSION}])
-fi
 
 #--------------------------------------------------------------------
 # Load the tkConfig.sh file if necessary (Tk extension)
@@ -213,16 +204,19 @@ TEA_PROG_TCLSH
 #--------------------------------------------------------------------
 #	Zipfs support - Tip 430
 #--------------------------------------------------------------------
-AC_ARG_ENABLE(zipfs,
-    AS_HELP_STRING([--enable-zipfs],[build with Zipfs support (default: on)]),
-    [tcl_ok=$enableval], [tcl_ok=yes])
-if test "$tcl_ok" = "yes" -a "x$enable_framework" != "xyes"; then
-    ZIPFS_BUILD=1
-    THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
-else
-    ZIPFS_BUILD=0
-    THREAD_ZIP_FILE=
+if test "${TCL_MAJOR_VERSION}" -gt 8; then
+    AC_ARG_ENABLE(zipfs,
+	AS_HELP_STRING([--enable-zipfs],[build with Zipfs support (default: on)]),
+		[tcl_ok=$enableval], [tcl_ok=yes])
+    if test "$tcl_ok" = "yes" -a "x$enable_framework" != "xyes"; then
+	ZIPFS_BUILD=1
+	THREAD_ZIP_FILE=lib${PACKAGE_NAME}${PACKAGE_VERSION}.zip
+    else
+	ZIPFS_BUILD=0
+	THREAD_ZIP_FILE=
+    fi
 fi
+
 # Do checking message here to not mess up interleaved configure output
 AC_MSG_CHECKING([for building with zipfs])
 if test "${ZIPFS_BUILD}" = 1; then

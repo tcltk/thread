@@ -29,7 +29,7 @@
  * files built as part of that shell. Example: basekits.
  */
 #ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION "3.0.1"
+#define PACKAGE_VERSION "3.0.5"
 #endif
 
 /*
@@ -375,23 +375,7 @@ static const char *
 ThreadInit(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
-    /* Tcl 8.7 interps are only supported on 32-bit machines.
-     * Lower than that is never supported. Bye!
-     */
-#if defined(TCL_WIDE_INT_IS_LONG) && TCL_MAJOR_VERSION < 9
-#   error "Thread 3.0 is only supported with Tcl 9.0 and higher."
-#	error "Please use Thread 2.8 (branch thread-2-8-branch)"
-#endif
-
-	/* Even though it's not supported, Thread 3.0 works with Tcl 8.7
-	 * on 32-bit platforms, so allow that for now. It could be that
-	 * Tcl 9.0 introduces a further binary incompatibility in the
-	 * future, so this is not guaranteed to stay like it is now!
-	 */
-    const char *ver = (sizeof(size_t) == sizeof(int))? "8.7-": "9.0";
-
-    if (!((Tcl_InitStubs)(interp, ver, (TCL_MAJOR_VERSION<<8)|(TCL_MINOR_VERSION<<16),
-	    TCL_STUB_MAGIC))) {
+    if (Tcl_InitStubs(interp, "8.6-", 0) == NULL) {
 	return NULL;
     }
 
@@ -528,22 +512,18 @@ Thread_Init(
     Tcl_Interp *interp /* The current Tcl interpreter */
 ) {
     const char *version = ThreadInit(interp);
-    Tcl_CmdInfo info;
 
     if (version == NULL) {
 	return TCL_ERROR;
     }
 
-    if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
 #if TCL_MAJOR_VERSION > 8
-	if (info.isNativeObjectProc == 2) {
-	    Tcl_CreateObjCommand2(interp, "::thread::build-info",
-		    info.objProc2, (void *)version, NULL);
-	} else
-#endif
-	Tcl_CreateObjCommand(interp, "::thread::build-info",
-		info.objProc, (void *)version, NULL);
+    Tcl_CmdInfo info;
+    if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
+	Tcl_CreateObjCommand2(interp, "::thread::build-info",
+		info.objProc2, (void *)version, NULL);
     }
+#endif
     Tcl_PkgProvideEx(interp, "Thread", PACKAGE_VERSION, NULL);
     return Tcl_PkgProvideEx(interp, "thread", PACKAGE_VERSION, NULL);
 }
@@ -1713,9 +1693,11 @@ ThreadClbkSetVar(
 	    Tcl_Free(resultPtr->errorInfo);
 	}
 	Tcl_SetObjResult(interp, valObj);
+	Tcl_DecrRefCount(valObj);
 	Tcl_BackgroundException(interp, TCL_ERROR);
 	return TCL_ERROR;
     }
+    Tcl_DecrRefCount(valObj);
     return TCL_OK;
 
 cleanup:
@@ -2469,7 +2451,7 @@ ThreadTransfer(
      * Queue the event and poke the other thread's notifier.
      */
 
-    Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
+    ThreadQueueEvent(thrId, (Tcl_Event *)evPtr, TCL_QUEUE_TAIL);
 
     /*
      * (*) Block until the other thread has either processed the transfer
@@ -2810,9 +2792,9 @@ ThreadSend(
 
     eventPtr->event.proc = ThreadEventProc;
     if ((flags & THREAD_SEND_HEAD)) {
-	Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_HEAD|TCL_QUEUE_ALERT_IF_EMPTY);
+	ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_HEAD);
     } else {
-	Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
+	ThreadQueueEvent(thrId, (Tcl_Event*)eventPtr, TCL_QUEUE_TAIL);
     }
 
     if ((flags & THREAD_SEND_WAIT) == 0) {
@@ -2850,7 +2832,7 @@ ThreadSend(
 
     if (resultPtr->code == TCL_ERROR) {
 	if (resultPtr->errorCode) {
-	    Tcl_SetErrorCode(interp, resultPtr->errorCode, NULL);
+	    Tcl_SetErrorCode(interp, resultPtr->errorCode, (char *)NULL);
 	    Tcl_Free(resultPtr->errorCode);
 	}
 	if (resultPtr->errorInfo) {
@@ -3015,7 +2997,8 @@ ThreadReserve(
     int operation,                     /* THREAD_RESERVE | THREAD_RELEASE */
     int wait                           /* Wait for thread to exit */
 ) {
-    int users, dowait = 0;
+    Tcl_Size users;
+    int dowait = 0;
     ThreadEvent *evPtr;
     ThreadSpecificData *tsdPtr;
 
@@ -3087,7 +3070,7 @@ ThreadReserve(
 	    evPtr->clbkData   = NULL;
 	    evPtr->resultPtr  = resultPtr;
 
-	    Tcl_ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
+	    ThreadQueueEvent(thrId, (Tcl_Event*)evPtr, TCL_QUEUE_TAIL);
 
 	    if (dowait) {
 		while (resultPtr->result == NULL) {
@@ -3301,12 +3284,12 @@ ThreadSetResult(
 	result    = "no target interp!";
 	size    = strlen(result);
 	resultPtr->result = (size) ?
-	    memcpy(Tcl_Alloc(1+size), result, 1+size) : threadEmptyResult;
+	    (char *)memcpy(Tcl_Alloc(1+size), result, 1+size) : threadEmptyResult;
     } else {
 	result = Tcl_GetString(Tcl_GetObjResult(interp));
 	size = Tcl_GetObjResult(interp)->length;
 	resultPtr->result = (size) ?
-		memcpy(Tcl_Alloc(1+size), result, 1+size) : threadEmptyResult;
+		(char *)memcpy(Tcl_Alloc(1+size), result, 1+size) : threadEmptyResult;
 	if (code == TCL_ERROR) {
 	    errorCode = Tcl_GetVar2(interp, "errorCode", NULL, TCL_GLOBAL_ONLY);
 	    errorInfo = Tcl_GetVar2(interp, "errorInfo", NULL, TCL_GLOBAL_ONLY);
@@ -3743,7 +3726,7 @@ ThreadExitProc(
 	     * because the main thread is going to call free on it.
 	     */
 
-	    resultPtr->result = strcpy(Tcl_Alloc(1+strlen(diemsg)), diemsg);
+	    resultPtr->result = strcpy((char *)Tcl_Alloc(1+strlen(diemsg)), diemsg);
 	    resultPtr->code = TCL_ERROR;
 	    resultPtr->errorCode = resultPtr->errorInfo = NULL;
 	    Tcl_ConditionNotify(&resultPtr->done);

@@ -63,11 +63,16 @@
 # endif
 #endif
 
-#if (TCL_MAJOR_VERSION == 8) && defined(USE_TCL_STUBS)
+#if (TCL_MAJOR_VERSION == 8)
 #undef Tcl_Free
-#define Tcl_Free(p) tclStubsPtr->tcl_Free((void *)(p))
 #undef Tcl_Realloc
-#define Tcl_Realloc(p,m) tclStubsPtr->tcl_Realloc((void *)(p),(m))
+#if defined(USE_TCL_STUBS)
+#   define Tcl_Free(p) tclStubsPtr->tcl_Free((char *)(p))
+#   define Tcl_Realloc(p,m) tclStubsPtr->tcl_Realloc((char *)(p),(m))
+#else
+#   define Tcl_Free(p) Tcl_Free((char *)(p))
+#   define Tcl_Realloc(p,m) Tcl_Realloc((char *)(p),(m))
+#endif
 #endif
 
 #ifndef JOIN
@@ -135,6 +140,9 @@ MODULE_SCOPE const char *TpoolInit(Tcl_Interp *interp);
  * Utility macros
  */
 
+#if TCL_MAJOR_VERSION < 9
+# define Tcl_CreateObjCommand2 Tcl_CreateObjCommand
+#endif
 #define TCL_CMD(a,b,c) \
   if (Tcl_CreateObjCommand2((a),(b),(c),NULL, NULL) == NULL) \
     return NULL;
@@ -145,6 +153,19 @@ MODULE_SCOPE const char *TpoolInit(Tcl_Interp *interp);
 #ifndef TCL_TSD_INIT
 #define TCL_TSD_INIT(keyPtr) \
   (ThreadSpecificData*)Tcl_GetThreadData((keyPtr),sizeof(ThreadSpecificData))
+#endif
+
+#ifdef TCL_QUEUE_ALERT_IF_EMPTY
+static inline void
+ThreadQueueEvent(Tcl_ThreadId thrId, Tcl_Event *evPtr, Tcl_QueuePosition position) {
+    Tcl_ThreadQueueEvent(thrId, evPtr, position|TCL_QUEUE_ALERT_IF_EMPTY);
+}
+#else
+static inline void
+ThreadQueueEvent(Tcl_ThreadId thrId, Tcl_Event *evPtr, Tcl_QueuePosition position) {
+    Tcl_ThreadQueueEvent(thrId, evPtr, position);
+    Tcl_ThreadAlert(thrId);
+}
 #endif
 
 /*

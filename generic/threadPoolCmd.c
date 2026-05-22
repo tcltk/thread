@@ -676,7 +676,9 @@ TpoolCancelObjCmd(
 		    tpoolPtr->workTail = rPtr->prevPtr;
 		}
 		SetResult(NULL, rPtr); /* Just to free the result */
-		Tcl_Free(rPtr->script);
+		if (rPtr->script) {
+		    Tcl_Free(rPtr->script);
+		}
 		Tcl_Free(rPtr);
 		Tcl_ListObjAppendElement(interp, doneList, wObjv[ii]);
 		break;
@@ -1241,6 +1243,7 @@ TpoolWorker(
 	Tcl_MutexUnlock(&tpoolPtr->mutex);
 	TpoolEval(interp, rPtr->script, rPtr->scriptLen, rPtr);
 	Tcl_Free(rPtr->script);
+	rPtr->script = NULL;
 	Tcl_MutexLock(&tpoolPtr->mutex);
 	if (!rPtr->detached) {
 	    int isNew;
@@ -1716,8 +1719,11 @@ TpoolRelease(
      * Cleanup jobs posted but never completed.
      */
 
-    for (rPtr = tpoolPtr->workHead; rPtr; rPtr = rPtr->nextPtr) {
-	Tcl_Free(rPtr->script);
+    for (rPtr = tpoolPtr->workHead; rPtr; rPtr = tpoolPtr->workHead) {
+	tpoolPtr->workHead = rPtr->nextPtr;
+	if (rPtr->script) {
+	    Tcl_Free(rPtr->script);
+	}
 	Tcl_Free(rPtr);
     }
     Tcl_MutexFinalize(&tpoolPtr->mutex);
@@ -1809,7 +1815,7 @@ SignalWaiter(
     evPtr = (Tcl_Event *)Tcl_Alloc(sizeof(Tcl_Event));
     evPtr->proc = RunStopEvent;
 
-    Tcl_ThreadQueueEvent(waitPtr->threadId,(Tcl_Event*)evPtr,TCL_QUEUE_TAIL|TCL_QUEUE_ALERT_IF_EMPTY);
+    ThreadQueueEvent(waitPtr->threadId,(Tcl_Event*)evPtr,TCL_QUEUE_TAIL);
 }
 
 /*
