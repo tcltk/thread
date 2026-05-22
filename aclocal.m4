@@ -134,4 +134,45 @@ AC_DEFUN(TCLTHREAD_WITH_LMDB, [
     fi
 ])
 
+# FIND_TCLSH9_NATIVE
+# Locates a Tcl 9 tclsh and set TCLSH_NATIVE to its path if found.
+# Unsets TCLSH_NATIVE if not found.
+AC_DEFUN([FIND_TCLSH9_NATIVE], [
+	found="no"
+	for f in tclsh9.0 tclsh90 tclsh; do
+	    AS_UNSET([TCLSH_NATIVE])
+	    AS_UNSET([ac_cv_path_TCLSH_NATIVE])
+	    AC_PATH_PROG([TCLSH_NATIVE], [$f], [no])
+		if test "$TCLSH_NATIVE" != "no"; then
+		    AC_MSG_CHECKING([$TCLSH_NATIVE is Tcl 9])
+		    CHECK_TCLSH_VERSION([found], [$TCLSH_NATIVE], [9])
+			AC_MSG_RESULT([$found])
+			if test "$found" = "yes"; then
+			   found=yes
+			   break
+			fi
+		fi
+	done
+    if test "$found" != "yes"; then
+	    AS_UNSET(TCLSH_NATIVE)
+	fi
+])
+
+# CHECK_TCLSH_VERSION(RESULTVAR, EXECUTABLE, VERSIONREQUIREMENTS)
+# RESULTVAR - name of variable to in which to store result.
+# EXECUTABLE - tclsh program to check
+# VERSIONREQUIREMENTS - version requirements as passed to Tcl [package vsatisfies]
+#
+# The stored result is "yes" if the EXECUTABLE is a tclsh and meets the
+# version requirements and "no" in all other cases.
+
+AC_DEFUN([CHECK_TCLSH_VERSION], [
+    $1=`echo "puts [[package vsatisfies \\$tcl_version $3]]" | $2`
+	if test "x[$][$1]" = "x1"; then
+	    $1=yes
+	else
+	    $1=no
+	fi
+])
+
 # EOF
