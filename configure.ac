@@ -205,7 +205,7 @@ TEA_PROG_TCLSH
 #--------------------------------------------------------------------
 #	Zipfs support - Tip 430
 #--------------------------------------------------------------------
-if test "${TCL_MAJOR_VERSION}" -gt 8; then
+if test "${TCL_MAJOR_VERSION}" -gt 8 -a x"${with_tcl8}" = x; then
     AC_ARG_ENABLE(zipfs,
 	AS_HELP_STRING([--enable-zipfs],[build with Zipfs support (default: on)]),
 		[tcl_ok=$enableval], [tcl_ok=yes])

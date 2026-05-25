@@ -9685,7 +9685,7 @@ printf '%s\n' "${TCLSH_PROG}" >&6; }
 #--------------------------------------------------------------------
 #	Zipfs support - Tip 430
 #--------------------------------------------------------------------
-if test "${TCL_MAJOR_VERSION}" -gt 8; then
+if test "${TCL_MAJOR_VERSION}" -gt 8 -a x"${with_tcl8}" = x; then
     # Check whether --enable-zipfs was given.
 if test ${enable_zipfs+y}
 then :
