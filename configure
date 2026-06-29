@@ -9815,6 +9815,35 @@ printf '%s\n' "$found" >&6; }
             { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking $TCLSH_PROG for Tcl 9" >&5
 printf %s "checking $TCLSH_PROG for Tcl 9... " >&6; }
 
+            tcl_build_dir=`$as_dirname -- "$TCLSH_PROG" ||
+$as_expr X"$TCLSH_PROG" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$TCLSH_PROG" : 'X\(//\)[^/]' \| \
+	 X"$TCLSH_PROG" : 'X\(//\)$' \| \
+	 X"$TCLSH_PROG" : 'X\(/\)' \| . 2>/dev/null ||
+printf '%s\n' X"$TCLSH_PROG" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q'`
+
+            eval "tcl_save_libpath=\$$LD_LIBRARY_PATH_VAR"
+            eval "$LD_LIBRARY_PATH_VAR=\$tcl_build_dir"
+            eval "export $LD_LIBRARY_PATH_VAR"
+
+
     found=`echo "puts [package vsatisfies \\$tcl_version 9]" | $TCLSH_PROG`
 	if test "x$found" = "x1"; then
 	    found=yes
@@ -9822,12 +9851,16 @@ printf %s "checking $TCLSH_PROG for Tcl 9... " >&6; }
 	    found=no
 	fi
 
+
+            eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath"
+            eval "export $LD_LIBRARY_PATH_VAR"
+
             { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $found" >&5
 printf '%s\n' "$found" >&6; }
             if test x"$found" != x"yes"; then
                 as_fn_error $? "cannot find a usable native Tcl 9 tclsh. Either set TCLSH_NATIVE or use configure with --disable-zipfs" "$LINENO" 5
             fi
-            TCLSH_NATIVE="$TCLSH_PROG"
+            eval "TCLSH_NATIVE=\"$LD_LIBRARY_PATH_VAR=\$tcl_build_dir \$TCLSH_PROG\""
         fi
     else
         # User specified. Check version acceptable.
