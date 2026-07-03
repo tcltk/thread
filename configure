@@ -9843,7 +9843,7 @@ printf '%s\n' X"$TCLSH_PROG" |
 	  s/.*/./; q'`
 
             eval "tcl_save_libpath=\$$LD_LIBRARY_PATH_VAR"
-            eval "$LD_LIBRARY_PATH_VAR=\$tcl_build_dir"
+            eval "$LD_LIBRARY_PATH_VAR=\$tcl_build_dir:$tcl_save_libpath"
             eval "export $LD_LIBRARY_PATH_VAR"
 
 
@@ -9855,7 +9855,7 @@ printf '%s\n' X"$TCLSH_PROG" |
 	fi
 
 
-            eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath:\$$LD_LIBRARY_PATH_VAR"
+            eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath"
             eval "export $LD_LIBRARY_PATH_VAR"
 
             { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $found" >&5
@@ -9863,7 +9863,7 @@ printf '%s\n' "$found" >&6; }
             if test x"$found" != x"yes"; then
                 as_fn_error $? "cannot find a usable native Tcl 9 tclsh. Either set TCLSH_NATIVE or use configure with --disable-zipfs" "$LINENO" 5
             fi
-            eval "TCLSH_NATIVE=\"$LD_LIBRARY_PATH_VAR=\$tcl_build_dir \$TCLSH_PROG\""
+            eval "TCLSH_NATIVE=\"$LD_LIBRARY_PATH_VAR=\$tcl_build_dir:\\\$($LD_LIBRARY_PATH_VAR) \$TCLSH_PROG\""
         fi
     else
         # User specified. Check version acceptable.
