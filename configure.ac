@@ -248,12 +248,23 @@ if test "${ZIPFS_BUILD}" != 0; then
         # compiling.
         if test -z "$TCLSH_NATIVE" -a -n "$TCLSH_PROG" -a x"$ac_cv_cross" != x"yes"; then
             AC_MSG_CHECKING([$TCLSH_PROG for Tcl 9])
+
+            tcl_build_dir=`AS_DIRNAME(["$TCLSH_PROG"])`
+
+            eval "tcl_save_libpath=\$$LD_LIBRARY_PATH_VAR"
+            eval "$LD_LIBRARY_PATH_VAR=\$tcl_build_dir:$tcl_save_libpath"
+            eval "export $LD_LIBRARY_PATH_VAR"
+
             CHECK_TCLSH_VERSION([found], [$TCLSH_PROG], [9])
+
+            eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath"
+            eval "export $LD_LIBRARY_PATH_VAR"
+
             AC_MSG_RESULT([$found])
             if test x"$found" != x"yes"; then
                 AC_MSG_ERROR([cannot find a usable native Tcl 9 tclsh. Either set TCLSH_NATIVE or use configure with --disable-zipfs])
             fi
-            TCLSH_NATIVE="$TCLSH_PROG"
+            eval "TCLSH_NATIVE=\"$LD_LIBRARY_PATH_VAR=\$tcl_build_dir:\\\$($LD_LIBRARY_PATH_VAR) \$TCLSH_PROG\""
         fi
     else
         # User specified. Check version acceptable.
