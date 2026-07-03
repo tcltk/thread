@@ -732,13 +732,13 @@ ThreadEvalObjCmd(
 	    return TCL_ERROR;
 	}
 	if (IsReadWrite(mutexPtr)) {
-            PutMutex(mutexPtr);
+	    PutMutex(mutexPtr);
 	    Tcl_AppendResult(interp, "wrong mutex type, must be exclusive "
 			     "or recursive", (void *)NULL);
 	    return TCL_ERROR;
 	}
 	if (!SpMutexLock(mutexPtr)) {
-            PutMutex(mutexPtr);
+	    PutMutex(mutexPtr);
 	    Tcl_AppendResult(interp, "locking the same exclusive mutex "
 			     "twice from the same thread", (void *)NULL);
 	    return TCL_ERROR;
@@ -778,7 +778,7 @@ ThreadEvalObjCmd(
 	Sp_RecursiveMutexUnlock(&evalMutex);
     } else {
 	SpMutexUnlock(mutexPtr);
-        PutMutex(mutexPtr);
+	PutMutex(mutexPtr);
     }
 
     return ret;
