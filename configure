@@ -9855,7 +9855,7 @@ printf '%s\n' X"$TCLSH_PROG" |
 	fi
 
 
-            eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath"
+            eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath:\$$LD_LIBRARY_PATH_VAR"
             eval "export $LD_LIBRARY_PATH_VAR"
 
             { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: $found" >&5

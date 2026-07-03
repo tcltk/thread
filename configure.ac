@@ -257,7 +257,7 @@ if test "${ZIPFS_BUILD}" != 0; then
 
             CHECK_TCLSH_VERSION([found], [$TCLSH_PROG], [9])
 
-            eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath"
+            eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath:\$$LD_LIBRARY_PATH_VAR"
             eval "export $LD_LIBRARY_PATH_VAR"
 
             AC_MSG_RESULT([$found])
