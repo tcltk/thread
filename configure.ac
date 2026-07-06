@@ -17,6 +17,7 @@ dnl	to configure the system for the local environment.
 # so you can encode the package version directly into the source files.
 #-----------------------------------------------------------------------
 
+dnl Don't forget to update the package version in lib/ttrace.tcl !
 AC_INIT([thread],[3.0.6])
 
 #--------------------------------------------------------------------
