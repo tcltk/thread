@@ -18,7 +18,7 @@ dnl	to configure the system for the local environment.
 #-----------------------------------------------------------------------
 
 dnl Don't forget to update the package version in lib/ttrace.tcl !
-AC_INIT([thread],[3.0.6])
+AC_INIT([thread],[3.0.7])
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
@@ -225,14 +225,14 @@ fi
 AC_MSG_CHECKING([for building with zipfs])
 if test "${ZIPFS_BUILD}" = 1; then
     if test "${SHARED_BUILD}" = 0; then
-       ZIPFS_BUILD=2;
-       AC_DEFINE(ZIPFS_BUILD, 2, [Are we building with zipfs enabled?])
-       INSTALL_LIBRARIES=install-demos
-       AC_MSG_RESULT([yes])
+	ZIPFS_BUILD=2;
+	AC_DEFINE(ZIPFS_BUILD, 2, [Are we building with zipfs enabled?])
+	INSTALL_LIBRARIES=install-demos
+	AC_MSG_RESULT([yes])
      else
-       AC_DEFINE(ZIPFS_BUILD, 1, [Are we building with zipfs enabled?])\
-       INSTALL_LIBRARIES=install-demos
-       AC_MSG_RESULT([yes])
+	AC_DEFINE(ZIPFS_BUILD, 1, [Are we building with zipfs enabled?])\
+	INSTALL_LIBRARIES=install-demos
+	AC_MSG_RESULT([yes])
     fi
 else
 AC_MSG_RESULT([no])
@@ -243,36 +243,36 @@ fi
 if test "${ZIPFS_BUILD}" != 0; then
     # Only search if user has not specified
     if test -z "$TCLSH_NATIVE"; then
-        FIND_TCLSH9_NATIVE
-        # If not found, and not cross building set to TCLSH_PROG. One is
-        # not supposed to use that for native operations so check that not cross-
-        # compiling.
-        if test -z "$TCLSH_NATIVE" -a -n "$TCLSH_PROG" -a x"$ac_cv_cross" != x"yes"; then
-            AC_MSG_CHECKING([$TCLSH_PROG for Tcl 9])
+	FIND_TCLSH9_NATIVE
+	# If not found, and not cross building set to TCLSH_PROG. One is
+	# not supposed to use that for native operations so check that not cross-
+	# compiling.
+	if test -z "$TCLSH_NATIVE" -a -n "$TCLSH_PROG" -a x"$ac_cv_cross" != x"yes"; then
+	    AC_MSG_CHECKING([$TCLSH_PROG for Tcl 9])
 
-            tcl_build_dir=`AS_DIRNAME(["$TCLSH_PROG"])`
+	   tcl_build_dir=`AS_DIRNAME(["$TCLSH_PROG"])`
 
-            eval "tcl_save_libpath=\$$LD_LIBRARY_PATH_VAR"
-            eval "$LD_LIBRARY_PATH_VAR=\$tcl_build_dir:$tcl_save_libpath"
-            eval "export $LD_LIBRARY_PATH_VAR"
+	    eval "tcl_save_libpath=\$$LD_LIBRARY_PATH_VAR"
+	    eval "$LD_LIBRARY_PATH_VAR=\$tcl_build_dir:$tcl_save_libpath"
+	    eval "export $LD_LIBRARY_PATH_VAR"
 
-            CHECK_TCLSH_VERSION([found], [$TCLSH_PROG], [9])
+	    CHECK_TCLSH_VERSION([found], [$TCLSH_PROG], [9])
 
-            eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath"
-            eval "export $LD_LIBRARY_PATH_VAR"
+	    eval "$LD_LIBRARY_PATH_VAR=\$tcl_save_libpath"
+	    eval "export $LD_LIBRARY_PATH_VAR"
 
-            AC_MSG_RESULT([$found])
-            if test x"$found" != x"yes"; then
-                AC_MSG_ERROR([cannot find a usable native Tcl 9 tclsh. Either set TCLSH_NATIVE or use configure with --disable-zipfs])
-            fi
-            eval "TCLSH_NATIVE=\"$LD_LIBRARY_PATH_VAR=\$tcl_build_dir:\\\$($LD_LIBRARY_PATH_VAR) \$TCLSH_PROG\""
-        fi
+	    AC_MSG_RESULT([$found])
+	    if test x"$found" != x"yes"; then
+		AC_MSG_ERROR([cannot find a usable native Tcl 9 tclsh. Either set TCLSH_NATIVE or use configure with --disable-zipfs])
+	    fi
+	    eval "TCLSH_NATIVE=\"$LD_LIBRARY_PATH_VAR=\$tcl_build_dir:\\\$($LD_LIBRARY_PATH_VAR) \$TCLSH_PROG\""
+	fi
     else
-        # User specified. Check version acceptable.
-        CHECK_TCLSH_VERSION([found], [$TCLSH_NATIVE], [9])
-        if test x"$found" != x"yes"; then
-            AC_MSG_ERROR([$TCLSH_NATIVE is not a Tcl 9 tclsh.])
-        fi
+	# User specified. Check version acceptable.
+	CHECK_TCLSH_VERSION([found], [$TCLSH_NATIVE], [9])
+	if test x"$found" != x"yes"; then
+	    AC_MSG_ERROR([$TCLSH_NATIVE is not a Tcl 9 tclsh.])
+	fi
     fi
 fi
 
