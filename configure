@@ -629,6 +629,8 @@ THREAD_ZIP_FILE
 ZIPFS_BUILD
 TCLSH_NATIVE
 TCLSH_PROG
+VC_MANIFEST_EMBED_EXE
+VC_MANIFEST_EMBED_DLL
 RANLIB_STUB
 PKG_STUB_LIB_FILE
 MAKE_STUB_LIB
@@ -754,6 +756,7 @@ enable_64bit
 enable_64bit_vis
 enable_rpath
 enable_symbols
+with_tclsh
 enable_zipfs
 '
       ac_precious_vars='build_alias
@@ -1403,6 +1406,7 @@ Optional Packages:
   --with-lmdb             link with optional LMDB support
   --with-naviserver       directory with NaviServer/AOLserver distribution
   --with-tclinclude       directory containing the public Tcl header files
+  --with-tclsh            Path to tclsh executable
 
 Some influential environment variables:
   CC          C compiler command
@@ -2605,7 +2609,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 #--------------------------------------------------------------------
 
 
-    TEA_VERSION="3.13"
+    TEA_VERSION="3.14"
 
     { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking TEA configuration" >&5
 printf %s "checking TEA configuration... " >&6; }
@@ -2763,7 +2767,7 @@ printf '%s\n' "$tcl_cv_sys_version" >&6; }
     system=$tcl_cv_sys_version
 
     case $system in
-	HP-UX-*) INSTALL_LIBRARY='${INSTALL} -m 755' ;;
+	CYGWIN_*|MINGW32_*|MINGW64_*|MSYS_*|HP-UX-*) INSTALL_LIBRARY='${INSTALL} -m 755' ;;
 	      *) INSTALL_LIBRARY='${INSTALL} -m 644' ;;
     esac
 
@@ -9456,12 +9460,19 @@ printf '%s\n' "$ac_cv_path_EGREP_TRADITIONAL" >&6; }
 	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+#if defined(_MSC_VER) && _MSC_VER >= 1400
+print("manifest needed")
+#endif
 
 _ACEOF
 if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
   $EGREP_TRADITIONAL "manifest needed" >/dev/null 2>&1
 then :
 
+	# Could do a CHECK_PROG for mt, but should always be with MSVC8+
+	VC_MANIFEST_EMBED_DLL="if test -f \$@.manifest ; then mt.exe -nologo -manifest \$@.manifest -outputresource:\$@\;2 ; fi"
+	VC_MANIFEST_EMBED_EXE="if test -f \$@.manifest ; then mt.exe -nologo -manifest \$@.manifest -outputresource:\$@\;1 ; fi"
+	MAKE_SHARED_LIB="${MAKE_SHARED_LIB} ; ${VC_MANIFEST_EMBED_DLL}"
 
     CLEANFILES="$CLEANFILES *.manifest"
 
@@ -9620,6 +9631,8 @@ printf '%s\n' "$tcl_cv_ld_high_entropy" >&6; }
 
 
 
+
+
 #--------------------------------------------------------------------
 # Determine the name of the tclsh and/or wish executables in the
 # Tcl and Tk build directories or the location they were installed
@@ -9629,40 +9642,52 @@ printf '%s\n' "$tcl_cv_ld_high_entropy" >&6; }
 #--------------------------------------------------------------------
 
 
+
+# Check whether --with-tclsh was given.
+if test ${with_tclsh+y}
+then :
+  withval=$with_tclsh; with_tclsh="${withval}"
+fi
+
     { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking for tclsh" >&5
 printf %s "checking for tclsh... " >&6; }
-    if test -f "${TCL_BIN_DIR}/Makefile" ; then
-	# tclConfig.sh is in Tcl build directory
-	if test "${TEA_PLATFORM}" = "windows"; then
-	  if test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${EXEEXT}" ; then
-	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${EXEEXT}"
-	  elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}s${EXEEXT}" ; then
-	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}s${EXEEXT}"
-	  elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}t${EXEEXT}" ; then
-	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}t${EXEEXT}"
-	  elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}st${EXEEXT}" ; then
-	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}st${EXEEXT}"
-	  fi
-	else
-	    TCLSH_PROG="${TCL_BIN_DIR}/tclsh"
-	fi
-    else
-	# tclConfig.sh is in install location
-	if test "${TEA_PLATFORM}" = "windows"; then
-	    TCLSH_PROG="tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${EXEEXT}"
-	else
-	    TCLSH_PROG="tclsh${TCL_MAJOR_VERSION}.${TCL_MINOR_VERSION}"
-	fi
-	list="`ls -d ${TCL_BIN_DIR}/../bin 2>/dev/null` \
-	      `ls -d ${TCL_BIN_DIR}/..     2>/dev/null` \
-	      `ls -d ${TCL_PREFIX}/bin     2>/dev/null`"
-	for i in $list ; do
-	    if test -f "$i/${TCLSH_PROG}" ; then
-		REAL_TCL_BIN_DIR="`cd "$i"; pwd`/"
-		break
+    if test x"${with_tclsh}" != x; then
+	TCLSH_PROG=${with_tclsh}
+    fi
+    if test x"${TCLSH_PROG}" = x; then
+	if test -f "${TCL_BIN_DIR}/Makefile" ; then
+	    # tclConfig.sh is in Tcl build directory
+	    if test "${TEA_PLATFORM}" = "windows"; then
+		if test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${EXEEXT}" ; then
+		    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${EXEEXT}"
+		elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}s${EXEEXT}" ; then
+		    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}s${EXEEXT}"
+		elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}t${EXEEXT}" ; then
+		    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}t${EXEEXT}"
+		elif test -f "${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}st${EXEEXT}" ; then
+		    TCLSH_PROG="${TCL_BIN_DIR}/tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}st${EXEEXT}"
+		fi
+	    else
+		TCLSH_PROG="${TCL_BIN_DIR}/tclsh"
 	    fi
-	done
-	TCLSH_PROG="${REAL_TCL_BIN_DIR}${TCLSH_PROG}"
+	else
+	    # tclConfig.sh is in install location
+	    if test "${TEA_PLATFORM}" = "windows"; then
+		TCLSH_PROG="tclsh${TCL_MAJOR_VERSION}${TCL_MINOR_VERSION}${EXEEXT}"
+	    else
+		TCLSH_PROG="tclsh${TCL_MAJOR_VERSION}.${TCL_MINOR_VERSION}"
+	    fi
+	    list="`ls -d ${TCL_BIN_DIR}/../bin 2>/dev/null` \
+		`ls -d ${TCL_BIN_DIR}/..     2>/dev/null` \
+		`ls -d ${TCL_PREFIX}/bin     2>/dev/null`"
+	    for i in $list ; do
+		if test -f "$i/${TCLSH_PROG}" ; then
+		    REAL_TCL_BIN_DIR="`cd "$i"; pwd`/"
+		break
+		fi
+	    done
+	    TCLSH_PROG="${REAL_TCL_BIN_DIR}${TCLSH_PROG}"
+	fi
     fi
     { printf '%s\n' "$as_me:${as_lineno-$LINENO}: result: ${TCLSH_PROG}" >&5
 printf '%s\n' "${TCLSH_PROG}" >&6; }
