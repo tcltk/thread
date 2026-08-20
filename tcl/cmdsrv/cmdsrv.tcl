@@ -27,7 +27,7 @@
 # redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 # -----------------------------------------------------------------------------
 
-package require Tcl    8.5-
+package require Tcl    8.6-
 package require thread 2.9-
 
 namespace eval cmdsrv {
