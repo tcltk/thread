@@ -3718,12 +3718,15 @@ ThreadExitProc(
 	    SpliceOut(resultPtr, resultList);
 	    Tcl_Free(resultPtr);
 
-	} else if (resultPtr->dstThreadId == self) {
+	} else if (resultPtr->dstThreadId == self
+		&& resultPtr->result == NULL) {
 
 	    /*
 	     * Dang. The target is going away. Unblock the caller.
 	     * The result string must be dynamically allocated
 	     * because the main thread is going to call free on it.
+	     * Skip results already set: the caller has not woken up
+	     * yet, and must get the real result.
 	     */
 
 	    resultPtr->result = strcpy((char *)Tcl_Alloc(1+strlen(diemsg)), diemsg);
@@ -3746,11 +3749,14 @@ ThreadExitProc(
 	    SpliceOut(tResultPtr, transferList);
 	    Tcl_Free(tResultPtr);
 
-	} else if (tResultPtr->dstThreadId == self) {
+	} else if (tResultPtr->dstThreadId == self
+		&& tResultPtr->resultCode < 0) {
 	    /*
 	     * Dang. The target is going away. Unblock the caller.
 	     * The result string must be dynamically allocated
 	     * because the main thread is going to call free on it.
+	     * Skip transfers already done: the channel is in this
+	     * thread now, and the caller must not take it back.
 	     */
 
 	    tResultPtr->resultMsg = strcpy((char *)Tcl_Alloc(1+strlen(diemsg)),
