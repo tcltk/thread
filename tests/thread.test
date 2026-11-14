@@ -1269,5 +1269,17 @@ test thread-bug-f32864afe3 {Hang in thread::eval -lock} -body {
     thread::mutex destroy $mu ; # <- Bug f32864af hang
 } -result {}
 
+test thread-bug-531fa7c688 {thread events are file events} -body {
+    set ::result {}
+    thread::send -async [thread::id] {lappend ::result send}
+    # Like [update], but without file events
+    vwait -nofileevents -timeout 0
+    lappend ::result |
+    update
+    set ::result
+} -cleanup {
+    unset -nocomplain ::result
+} -result {| send}
+
 removeFile dummyForTransfer
 ::tcltest::cleanupTests

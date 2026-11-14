@@ -3100,7 +3100,8 @@ ThreadReserve(
  *  Handle the event in the target thread.
  *
  * Results:
- *  Returns 1 to indicate that the event was processed.
+ *  Returns 1 to indicate that the event was processed, 0 if file events
+ *  are not serviced.
  *
  * Side effects:
  *  Fills out the ThreadEventResult struct.
@@ -3110,7 +3111,7 @@ ThreadReserve(
 static int
 ThreadEventProc(
     Tcl_Event *evPtr,          /* Really ThreadEvent */
-    TCL_UNUSED(int)
+    int mask
 ) {
     ThreadSpecificData* tsdPtr = TCL_TSD_INIT(&dataKey);
 
@@ -3122,6 +3123,16 @@ ThreadEventProc(
     ThreadEventResult* resultPtr = eventPtr->resultPtr;
 
     int code = TCL_ERROR; /* Pessimistic assumption */
+
+    if (!(mask & TCL_FILE_EVENTS)) {
+	/*
+	 * Leave the event in the queue if only other kinds of events are
+	 * serviced, e.g. [update idletasks] or Tk servicing only window
+	 * events in the middle of a redisplay, see [531fa7c688].
+	 */
+
+	return 0;
+    }
 
     /*
      * See whether user has any preferences about which interpreter
@@ -3485,7 +3496,8 @@ ThreadSetOption(
  *  Handle a transfer event in the target thread.
  *
  * Results:
- *  Returns 1 to indicate that the event was processed.
+ *  Returns 1 to indicate that the event was processed, 0 if file events
+ *  are not serviced.
  *
  * Side effects:
  *  Fills out the TransferResult struct.
@@ -3496,7 +3508,7 @@ ThreadSetOption(
 static int
 TransferEventProc(
     Tcl_Event *evPtr,          /* Really ThreadEvent */
-    TCL_UNUSED(int)
+    int mask
 ) {
     ThreadSpecificData    *tsdPtr = TCL_TSD_INIT(&dataKey);
     TransferEvent       *eventPtr = (TransferEvent *)evPtr;
@@ -3504,6 +3516,15 @@ TransferEventProc(
     Tcl_Interp            *interp = tsdPtr->interp;
     int code;
     const char* msg = NULL;
+
+    if (!(mask & TCL_FILE_EVENTS)) {
+	/*
+	 * Leave the event in the queue if only other kinds of events are
+	 * serviced, e.g. [update idletasks] (see ThreadEventProc).
+	 */
+
+	return 0;
+    }
 
     if (interp == NULL) {
 	/*

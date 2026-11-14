@@ -1289,7 +1289,7 @@ TpoolWorker(
  *  Signalizes the waiter thread to stop waiting.
  *
  * Results:
- *  1 (always)
+ *  1 if the event was processed, 0 if file events are not serviced.
  *
  * Side effects:
  *  None.
@@ -1299,10 +1299,13 @@ TpoolWorker(
 static int
 RunStopEvent(
     TCL_UNUSED(Tcl_Event *),
-    TCL_UNUSED(int)
+    int mask
 ) {
     ThreadSpecificData *tsdPtr = TCL_TSD_INIT(&dataKey);
 
+    if (!(mask & TCL_FILE_EVENTS)) {
+	return 0; /* See ThreadEventProc in threadCmd.c */
+    }
     tsdPtr->stop = 1;
     return 1;
 }
