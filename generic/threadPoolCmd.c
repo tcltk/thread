@@ -37,9 +37,11 @@ typedef struct ThreadPool {
     Tcl_WideInt maxWorkers;         /* Maximum number of worker threads */
     Tcl_WideInt numWorkers;         /* Current number of worker threads */
     Tcl_WideInt idleWorkers;        /* Number of idle workers */
+    Tcl_WideInt numExiting;         /* Workers still tearing down their thread */
     size_t refCount;                /* Reference counter for reserve/release */
     Tcl_Mutex mutex;                /* Pool mutex */
     Tcl_Condition cond;             /* Pool condition variable */
+    Tcl_Condition exitCond;         /* Notified as each exiting worker is done */
     Tcl_HashTable jobsDone;         /* Stores processed job results */
     struct TpoolResult *workTail;   /* Tail of the list with jobs pending*/
     struct TpoolResult *workHead;   /* Head of the list with jobs pending*/
@@ -1132,7 +1134,7 @@ TpoolWorker(
     TpoolResult          *rPtr = (TpoolResult *)clientData;
     ThreadPool       *tpoolPtr = rPtr->tpoolPtr;
 
-    int tout = 0;
+    int tout = 0, exiting = 0;
     Tcl_Interp *interp;
     Tcl_Time waitTime, *idlePtr;
     const char *errMsg;
@@ -1265,6 +1267,8 @@ TpoolWorker(
     }
 
     tpoolPtr->numWorkers--;
+    tpoolPtr->numExiting++;
+    exiting = 1;
     SignalWaiter(tpoolPtr);
     Tcl_MutexUnlock(&tpoolPtr->mutex);
 
@@ -1276,6 +1280,24 @@ TpoolWorker(
 #else
     Tcl_DeleteInterp(interp);
 #endif
+
+    if (exiting) {
+	/*
+	 * Deleting the interp and finalizing the thread run command delete
+	 * procs and thread exit handlers, which can use process-wide state.
+	 * On exit, the exit handlers that run after AppExitHandler free
+	 * that state, so TpoolRelease waits for numExiting to drop to 0.
+	 * Finalize here, and only then report this worker done: the code
+	 * after Tcl_FinalizeThread must not allocate.
+	 */
+
+	Tcl_FinalizeThread();
+	Tcl_MutexLock(&tpoolPtr->mutex);
+	tpoolPtr->numExiting--;
+	Tcl_ConditionNotify(&tpoolPtr->exitCond);
+	Tcl_MutexUnlock(&tpoolPtr->mutex);
+	TCL_THREAD_CREATE_RETURN;
+    }
     Tcl_ExitThread(0);
 
     TCL_THREAD_CREATE_RETURN;
@@ -1678,6 +1700,15 @@ TpoolRelease(
 	}
 	Tcl_MutexLock(&tpoolPtr->mutex);
     }
+
+    /*
+     * Workers leave numWorkers before they delete their interp and
+     * finalize their thread: wait for that too (see TpoolWorker).
+     */
+
+    while (tpoolPtr->numExiting > 0) {
+	Tcl_ConditionWait(&tpoolPtr->exitCond, &tpoolPtr->mutex, NULL);
+    }
     Tcl_MutexUnlock(&tpoolPtr->mutex);
 
     /*
@@ -1728,6 +1759,7 @@ TpoolRelease(
     }
     Tcl_MutexFinalize(&tpoolPtr->mutex);
     Tcl_ConditionFinalize(&tpoolPtr->cond);
+    Tcl_ConditionFinalize(&tpoolPtr->exitCond);
     Tcl_Free(tpoolPtr);
 
     return 0;

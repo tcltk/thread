@@ -1,1 +1,21 @@
+package require tcltest
+namespace import ::tcltest::*
+tcltest::loadTestedCommands
+package require thread
+
+test tpool-1.1 {tpool::release waits until the workers have exited} -setup {
+    set threads [llength [thread::names]]
+} -body {
+    # A big interp makes the worker's teardown slow.
+    set pool [tpool::create -minworkers 2 -initcmd {
+	thread::id
+	for {set i 0} {$i < 20000} {incr i} {proc p$i {} {}}
+    }]
+    tpool::release $pool
+    expr {[llength [thread::names]] - $threads}
+} -cleanup {
+    unset -nocomplain threads pool
+} -result 0
+
+::tcltest::cleanupTests
 return
