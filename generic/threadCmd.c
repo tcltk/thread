@@ -5,7 +5,7 @@
  * level access to threading. It will not load into a core that was
  * not compiled for thread support.
  *
- * See http://www.tcl.tk/doc/howto/thread_model.html
+ * See https://www.tcl-lang.org/doc/howto/thread_model.html
  *
  * Some of this code is based on work done by Richard Hipp on behalf of
  * Conservation Through Innovation, Limited, with their permission.

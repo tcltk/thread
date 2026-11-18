@@ -610,7 +610,7 @@ For advanced multithreading scripts, script-level access to two
 basic synchronization primitives, mutex and condition variables,
 is also supported.
 
-[see_also tsv tpool ttrace [uri http://www.tcl.tk/doc/howto/thread_model.html]]
+[see_also tsv tpool ttrace [uri https://www.tcl-lang.org/doc/howto/thread_model.html]]
 
 [keywords thread events {message passing} synchronization mutex]
 
